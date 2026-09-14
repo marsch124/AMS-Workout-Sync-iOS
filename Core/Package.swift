@@ -12,10 +12,12 @@ let package = Package(
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "WorkoutCore", targets: ["WorkoutCore"]),
-        .executable(name: "plan-dump", targets: ["PlanDump"])
+        .executable(name: "plan-dump", targets: ["PlanDump"]),
+        .executable(name: "write-dump", targets: ["WriteDump"])
     ],
     targets: [
         .target(name: "WorkoutCore"),
-        .executableTarget(name: "PlanDump", dependencies: ["WorkoutCore"])
+        .executableTarget(name: "PlanDump", dependencies: ["WorkoutCore"]),
+        .executableTarget(name: "WriteDump", dependencies: ["WorkoutCore"])
     ]
 )

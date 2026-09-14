@@ -134,13 +134,49 @@ func joinText(_ fragment: String) -> String {
  */
 public func jsNumberString(_ n: Double) -> String {
     if n.isNaN { return "NaN" }
-    if n == n.rounded(), abs(n) < 1e21 { return String(format: "%.0f", n) }
-    var s = String(n)
-    if s.contains("e") {
-        s = s.replacingOccurrences(of: "e-", with: "e-").replacingOccurrences(of: "e", with: "e+")
-            .replacingOccurrences(of: "e+-", with: "e-")
+    if n == 0 { return "0" }
+    if n.isInfinite { return n < 0 ? "-Infinity" : "Infinity" }
+    if n < 0 { return "-" + jsNumberString(-n) }
+
+    // Swift's description is the shortest digit string that round-trips, the
+    // same digits ECMAScript's Number::toString chooses; only the layout
+    // differs. Take the digits and the exponent out of it, then lay them out
+    // the way the spec does.
+    let d = n.description.lowercased()
+    var mantissa = d
+    var exp = 0
+    if let e = d.firstIndex(of: "e") {
+        mantissa = String(d[d.startIndex..<e])
+        exp = Int(d[d.index(after: e)...]) ?? 0
     }
-    return s
+    var intPart = mantissa
+    var fracPart = ""
+    if let dot = mantissa.firstIndex(of: ".") {
+        intPart = String(mantissa[mantissa.startIndex..<dot])
+        fracPart = String(mantissa[mantissa.index(after: dot)...])
+    }
+    var digits = intPart + fracPart
+    var point = intPart.count + exp             // decimal point position within digits
+    while digits.hasPrefix("0") && digits.count > 1 { digits.removeFirst(); point -= 1 }
+    while digits.hasSuffix("0") && digits.count > 1 { digits.removeLast() }
+
+    let k = digits.count
+    let e10 = point                             // value = 0.digits × 10^e10  →  spec's n
+    if k <= e10 && e10 <= 21 {
+        return digits + String(repeating: "0", count: e10 - k)
+    }
+    if 0 < e10 && e10 <= 21 {
+        let i = digits.index(digits.startIndex, offsetBy: e10)
+        return String(digits[..<i]) + "." + String(digits[i...])
+    }
+    if -6 < e10 && e10 <= 0 {
+        return "0." + String(repeating: "0", count: -e10) + digits
+    }
+    let shown = e10 - 1
+    let sign = shown < 0 ? "-" : "+"
+    let head = String(digits.prefix(1))
+    let tail = String(digits.dropFirst())
+    return head + (tail.isEmpty ? "" : "." + tail) + "e" + sign + String(abs(shown))
 }
 
 // MARK: - dates
@@ -237,15 +273,17 @@ public final class Workbook {
         }
     }
 
-    public let archive: ZipArchive
-    public private(set) var sheets: [SheetMeta] = []
+    public let archive: Archive
+    public internal(set) var sheets: [SheetMeta] = []
     public private(set) var sharedStrings: [String] = []
     public private(set) var dateStyles: Set<Int> = []
     public private(set) var date1904 = false
-    private var cache: [String: Sheet] = [:]
+    var cache: [String: Sheet] = [:]
+    public internal(set) var dirtySheets = Set<String>()
+    public internal(set) var formulaDropped = false
 
     public init(data: Data) throws {
-        archive = try ZipArchive(data: data)
+        archive = try Archive(data: data)
         try loadWorkbook()
         try loadSharedStrings()
         try loadStyles()
