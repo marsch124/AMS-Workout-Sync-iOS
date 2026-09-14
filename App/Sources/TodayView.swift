@@ -76,7 +76,7 @@ struct TodayView: View {
                     .lineLimit(1)
             }
             Spacer()
-            ReadOnlyChip()
+            if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { ReadOnlyChip() }
         }
         .padding(.top, 12)
     }
@@ -90,6 +90,22 @@ struct ReadOnlyChip: View {
         .foregroundStyle(Theme.secondary)
         .padding(.horizontal, 8).padding(.vertical, 4)
         .background(Capsule().strokeBorder(Theme.border))
+    }
+}
+
+/* Which workbook logging goes into — so the test copy can never be mistaken for the plan. */
+struct PlanChip: View {
+    let name: String
+    let syncing: Bool
+    let waiting: Int
+    var body: some View {
+        let isTest = name.lowercased().contains("test")
+        Text(syncing ? "Sending…" : (waiting > 0 ? "\(waiting) waiting" : (isTest ? "TEST COPY" : "Writes to plan")))
+            .font(.caption.weight(.bold))
+            .foregroundStyle(isTest ? Color.white : Theme.secondary)
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(Capsule().fill(isTest ? Color.orange : Color.clear))
+            .overlay(Capsule().strokeBorder(isTest ? Color.clear : Theme.border))
     }
 }
 
@@ -108,6 +124,7 @@ struct RestCard: View {
 
 /* The week drawn rather than described: a column a day, a bar a session. */
 struct WeekCard: View {
+    @EnvironmentObject var store: Store
     let view: PlanView
     let today: String
 
@@ -115,7 +132,7 @@ struct WeekCard: View {
         let days = view.week(of: today, today: today)
         let tallest = max(days.map(\.plannedSeconds).max() ?? 0, 1)
         let planned = days.reduce(0) { $0 + $1.plannedSeconds }
-        let done = days.flatMap(\.training).filter { $0.state == .done }
+        let done = days.flatMap(\.training).filter { $0.state == .done || store.isWaiting($0.key) }
             .reduce(0.0) { $0 + (Plan.plannedSeconds($1, view.mapping) ?? 0) }
 
         VStack(alignment: .leading, spacing: 12) {
@@ -138,7 +155,7 @@ struct WeekCard: View {
                                 } else {
                                     ForEach(day.training) { w in
                                         let seconds = Plan.plannedSeconds(w, view.mapping) ?? 0
-                                        StateFill(sport: w.discipline.id, state: w.state)
+                                        StateFill(sport: w.discipline.id, state: store.isWaiting(w.key) && w.state == .todo ? .done : w.state)
                                             .frame(height: max(9, geo.size.height * seconds / tallest - 3))
                                     }
                                 }

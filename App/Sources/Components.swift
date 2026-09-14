@@ -55,9 +55,14 @@ struct DoneTick: View {
 }
 
 struct SessionCard: View {
+    @EnvironmentObject var store: Store
     let workout: Workout
     let mapping: Mapping
     var showDay = false
+
+    /* Logged on this phone and on its way: drawn as done, and says so. */
+    private var waiting: Bool { store.isWaiting(workout.key) }
+    private var shown: SessionState { waiting && workout.state == .todo ? .done : workout.state }
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -78,10 +83,11 @@ struct SessionCard: View {
                     }
                     if !workout.planned.intensity.isEmpty { Pill(text: workout.planned.intensity) }
                     if workout.missed { Pill(text: "Missed", tint: Theme.danger) }
+                    if waiting { Pill(text: "Waiting to sync", tint: Theme.today) }
                 }
             }
             Spacer(minLength: 0)
-            if workout.state == .done { DoneTick() }
+            if shown == .done { DoneTick() }
         }
         .padding(14)
         .background(
@@ -89,12 +95,12 @@ struct SessionCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(border, style: StrokeStyle(lineWidth: workout.state == .todo ? 1 : 2))
+                .strokeBorder(border, style: StrokeStyle(lineWidth: shown == .todo ? 1 : 2))
         )
     }
 
     private var border: Color {
-        switch workout.state {
+        switch shown {
         case .done: return Theme.today
         case .missed: return Theme.danger.opacity(0.7)
         case .todo: return Theme.border

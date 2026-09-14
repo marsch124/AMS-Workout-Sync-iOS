@@ -41,6 +41,24 @@ struct SessionView: View {
                         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                     }
 
+                    if store.isWaiting(w.key) {
+                        Text("Logged on this phone · waiting to sync").font(.headline).foregroundStyle(Theme.today)
+                    } else if w.state == .todo, w.discipline.id != "rest", store.canLog,
+                              let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
+                        Button {
+                            store.logAsPlanned(w)
+                        } label: {
+                            HStack(spacing: 10) {
+                                Glyph(name: "icon-check", size: 22)
+                                Text("Done as planned · \(formatDuration(planned))")
+                            }
+                            .font(.title3.weight(.bold))
+                            .frame(maxWidth: .infinity, minHeight: 60)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Theme.today)
+                    }
+
                     if w.missed {
                         Text("Marked missed").font(.headline).foregroundStyle(Theme.danger)
                     }

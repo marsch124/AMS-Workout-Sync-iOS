@@ -32,6 +32,10 @@ final class Store: ObservableObject {
         didSet { UserDefaults.standard.set(dropboxPath, forKey: "dropboxPath") }
     }
 
+    /* Logged on this phone and not yet in Dropbox. Kept on disk: it is the only copy. */
+    @Published private(set) var queue: [QueuedEntry] = []
+    @Published private(set) var syncing = false
+
     private let bookmarkKey = "workbookBookmark"
     private let nameKey = "workbookName"
     private let readAtKey = "workbookReadAt"
@@ -56,7 +60,23 @@ final class Store: ObservableObject {
         return dir.appendingPathComponent("workbook.xlsx")
     }
 
+    private var queueURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("queue.json")
+    }
+
+    private func saveQueue() {
+        do {
+            try FileManager.default.createDirectory(at: queueURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try JSONEncoder().encode(queue).write(to: queueURL, options: .atomic)
+        } catch {
+            lastProblem = "Could not save the waiting log on this phone: \(error.localizedDescription)"
+        }
+    }
+
     init() {
+        if let data = try? Data(contentsOf: queueURL), let saved = try? JSONDecoder().decode([QueuedEntry].self, from: data) {
+            queue = saved
+        }
         fileName = UserDefaults.standard.string(forKey: nameKey) ?? ""
         readAt = UserDefaults.standard.object(forKey: readAtKey) as? Date
         #if DEBUG
@@ -103,6 +123,7 @@ final class Store: ObservableObject {
         if ProcessInfo.processInfo.environment["AMSWS_FILE"] != nil { return }
         #endif
         if let path = dropboxPath, Dropbox.shared.isConnected {
+            if !queue.isEmpty { syncNow(); return }
             if plan.isEmpty { phase = .loading }
             Task {
                 do {
@@ -179,4 +200,59 @@ final class Store: ObservableObject {
     }
 
     func workout(_ key: String) -> Workout? { plan.first { $0.key == key } }
+
+    // MARK: logging
+
+    var canLog: Bool { dropboxPath != nil && Dropbox.shared.isConnected }
+
+    func isWaiting(_ key: String) -> Bool { queue.contains { $0.workoutKey == key } }
+
+    /*
+     * One tap: the planned length as the actual one, and nothing else — so
+     * exactly the duration and the done marker are written, as in the web
+     * app's logAsPlanned. Queued first, then sent.
+     */
+    func logAsPlanned(_ workout: Workout) {
+        guard canLog, let mapping, let seconds = Plan.plannedSeconds(workout, mapping), seconds > 0 else { return }
+        var entry = LogEntry()
+        entry.actualDuration = String(Int((seconds / 60 + 0.5).rounded(.down)))
+        queue.append(QueuedEntry(workout: workout, entry: entry))
+        saveQueue()
+        syncNow()
+    }
+
+    func discard(_ id: String) {
+        queue.removeAll { $0.id == id }
+        saveQueue()
+    }
+
+    func syncNow() {
+        guard !syncing, !queue.isEmpty, let path = dropboxPath, Dropbox.shared.isConnected else { return }
+        syncing = true
+        let snapshot = queue
+        Task {
+            defer { self.syncing = false }
+            do {
+                let result = try await Sync.run(snapshot, path: path, remote: DropboxRemote())
+                let gone = Set(result.written + result.dropped)
+                self.queue.removeAll { gone.contains($0.id) }
+                for i in self.queue.indices {
+                    if let why = result.failed[self.queue[i].id] {
+                        self.queue[i].attempts += 1
+                        self.queue[i].lastError = why
+                    }
+                }
+                self.saveQueue()
+                if let uploaded = result.uploaded {
+                    self.rev = uploaded.rev
+                    self.parse(uploaded.data, cached: false)
+                }
+                self.lastProblem = result.failed.isEmpty ? nil : "Some logging could not be written — see Settings."
+            } catch RemoteError.conflict {
+                self.lastProblem = "The plan kept changing in Dropbox while sending. Your logging is still waiting; try again in a moment."
+            } catch {
+                self.lastProblem = "Could not send your logging just now: \(error.localizedDescription) It is still waiting on this phone."
+            }
+        }
+    }
 }

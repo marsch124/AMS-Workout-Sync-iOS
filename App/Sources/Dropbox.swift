@@ -3,6 +3,7 @@ import AuthenticationServices
 import CryptoKit
 import Security
 import UIKit
+import WorkoutCore
 
 /*
  * Dropbox, spoken directly — the native counterpart of js/dropbox.js.
@@ -182,6 +183,27 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
         return (data, rev, meta["name"] as? String ?? "")
     }
 
+    /*
+     * Upload over exactly the revision that was downloaded. If the file moved on
+     * in between — logged in the web app, edited on the laptop — Dropbox
+     * refuses, and the sync starts again from the newer copy.
+     */
+    func upload(_ path: String, _ data: Data, rev: String) async throws -> RemoteFile {
+        var request = URLRequest(url: URL(string: contentURL + "/files/upload")!, timeoutInterval: 90)
+        request.httpMethod = "POST"
+        request.setValue("Bearer " + (try await token()), forHTTPHeaderField: "Authorization")
+        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        request.setValue(Self.apiArg(["path": path, "mode": [".tag": "update", "update": rev],
+                                      "autorename": false, "mute": true]), forHTTPHeaderField: "Dropbox-API-Arg")
+        let (body, response) = try await URLSession.shared.upload(for: request, from: data)
+        let http = response as! HTTPURLResponse
+        if http.statusCode == 409, String(decoding: body, as: UTF8.self).contains("conflict") { throw RemoteError.conflict }
+        guard http.statusCode == 200 else { throw DropboxError.http(http.statusCode, String(decoding: body, as: UTF8.self)) }
+        guard let meta = try JSONSerialization.jsonObject(with: body) as? [String: Any],
+              let newRev = meta["rev"] as? String else { throw DropboxError.badResponse }
+        return RemoteFile(data: data, rev: newRev, name: meta["name"] as? String ?? "")
+    }
+
     // MARK: plumbing
 
     private func rpc(_ endpoint: String, _ body: [String: Any]?) async throws -> [String: Any] {
@@ -255,4 +277,17 @@ enum Keychain {
     }
 
     static func delete(_ key: String) { SecItemDelete(query(key) as CFDictionary) }
+}
+
+
+/* The sync engine's view of Dropbox. */
+struct DropboxRemote: Remote {
+    func download(_ path: String) async throws -> RemoteFile {
+        let file = try await Dropbox.shared.download(path)
+        return RemoteFile(data: file.data, rev: file.rev, name: file.name)
+    }
+
+    func upload(_ path: String, _ data: Data, rev: String) async throws -> RemoteFile {
+        try await Dropbox.shared.upload(path, data, rev: rev)
+    }
 }

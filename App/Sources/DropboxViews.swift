@@ -37,6 +37,23 @@ struct DropboxSection: View {
                 .buttonStyle(.borderedProminent).tint(Theme.today).disabled(working)
             }
             if let problem { Text(problem).font(.footnote).foregroundStyle(Theme.danger) }
+
+            if connected {
+                SectionHeading(text: "Waiting to sync")
+                if store.queue.isEmpty {
+                    SettingsRow(title: "Nothing waiting", sub: store.syncing ? "Sending…" : "Everything logged on this phone is in Dropbox")
+                } else {
+                    ForEach(store.queue) { q in
+                        VStack(alignment: .leading, spacing: 6) {
+                            SettingsRow(title: q.title, sub: Dates.short(q.dayKey) + (q.lastError.map { " · " + $0 } ?? " · waiting"))
+                            Button("Discard this log") { store.discard(q.id) }
+                                .font(.footnote).tint(Theme.danger)
+                        }
+                    }
+                    Button(store.syncing ? "Sending…" : "Send now") { store.syncNow() }
+                        .buttonStyle(.borderedProminent).tint(Theme.today).disabled(store.syncing)
+                }
+            }
         }
         .sheet(isPresented: $browsing) {
             DropboxBrowser(path: "") { file in
