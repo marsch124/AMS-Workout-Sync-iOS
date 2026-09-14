@@ -193,7 +193,8 @@ do {
     line("written / failed", "\(result.written.count) / \(result.failed.count)")
     line("reason given", result.failed[q.id]?.prefix(60) ?? "(none)")
     line("uploads", remote.uploads)
-    check(result.written.isEmpty && result.failed[q.id] != nil && remote.uploads == 0, "a log must not be written into a row that is now another sport")
+    // Every other run with this wording is weeks away in his plan, so nothing may be written.
+    check(result.written.isEmpty && result.failed[q.id] != nil && remote.uploads == 0, "a log must not be written into a row that is now another sport, nor into the same test weeks later")
     check(try Data(contentsOf: url) == before, "the file changed although nothing should have been written")
 }
 

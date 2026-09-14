@@ -147,6 +147,14 @@ public enum Sync {
         return w.dayKey == e.dayKey || titlesAgree(w.title, e.title)
     }
 
+    static let nearbyDays = 7.0
+
+    static func withinAWeek(_ w: Workout, _ e: QueuedEntry) -> Bool {
+        if e.dayKey.isEmpty { return true }
+        guard let a = parseDayKey(w.dayKey), let b = parseDayKey(e.dayKey) else { return false }
+        return abs(a.timeIntervalSince(b)) <= nearbyDays * 86400
+    }
+
     /*
      * The row is checked before it is used. The discipline must still match;
      * then either the date or the wording must — rewording a session keeps its
@@ -158,7 +166,9 @@ public enum Sync {
 
         if let same = here.first(where: { $0.key == e.workoutKey }), stillTheSameSession(same, e) { return same }
 
-        let sameSession = here.filter { stillTheSameSession($0, e) }
+        // And only nearby: a plan repeats sessions word for word, so wording
+        // alone found the same test seven weeks away (web app v1.72.1, the same rule).
+        let sameSession = here.filter { stillTheSameSession($0, e) && withinAWeek($0, e) }
         if sameSession.isEmpty { return nil }
         if sameSession.count == 1 { return sameSession[0] }
 
