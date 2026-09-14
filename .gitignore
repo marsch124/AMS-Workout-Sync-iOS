@@ -1,0 +1,9 @@
+.DS_Store
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+Core/.build/
+Core/.swiftpm/
+node_modules/
+*.xlsx
