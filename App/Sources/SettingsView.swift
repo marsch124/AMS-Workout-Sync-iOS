@@ -12,12 +12,14 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Settings").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
 
+                    DropboxSection()
+
                     SectionHeading(text: "Workbook")
                     Group {
                         row(store.fileName.isEmpty ? "No workbook yet" : store.fileName,
                             sub: readLine)
                         HStack(spacing: 10) {
-                            Button("Choose") { picking = true }
+                            Button("Choose in Files") { picking = true }
                                 .buttonStyle(.borderedProminent).tint(Theme.today)
                             Button("Read again") { store.refresh() }
                                 .buttonStyle(.bordered).tint(Theme.today)

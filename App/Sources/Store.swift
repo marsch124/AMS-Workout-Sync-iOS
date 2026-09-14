@@ -26,6 +26,11 @@ final class Store: ObservableObject {
     @Published private(set) var readAt: Date?
     @Published private(set) var fromCache = false
     @Published private(set) var lastProblem: String?
+    /* The Dropbox revision last read — what an upload will have to match. */
+    @Published private(set) var rev: String?
+    @Published var dropboxPath: String? = UserDefaults.standard.string(forKey: "dropboxPath") {
+        didSet { UserDefaults.standard.set(dropboxPath, forKey: "dropboxPath") }
+    }
 
     private let bookmarkKey = "workbookBookmark"
     private let nameKey = "workbookName"
@@ -67,7 +72,15 @@ final class Store: ObservableObject {
         }
     }
 
-    var hasWorkbook: Bool { UserDefaults.standard.data(forKey: bookmarkKey) != nil || !plan.isEmpty }
+    var hasWorkbook: Bool { UserDefaults.standard.data(forKey: bookmarkKey) != nil || dropboxPath != nil || !plan.isEmpty }
+
+    /* A plan picked inside the app from his Dropbox, read through the API. */
+    func chooseDropbox(_ file: DropboxFile) {
+        dropboxPath = file.pathLower
+        fileName = file.name
+        UserDefaults.standard.set(file.name, forKey: nameKey)
+        refresh()
+    }
 
     /* The file picked in the Files app. */
     func choose(_ url: URL) {
@@ -89,6 +102,21 @@ final class Store: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FILE"] != nil { return }
         #endif
+        if let path = dropboxPath, Dropbox.shared.isConnected {
+            if plan.isEmpty { phase = .loading }
+            Task {
+                do {
+                    let file = try await Dropbox.shared.download(path)
+                    self.rev = file.rev
+                    if !file.name.isEmpty { self.fileName = file.name }
+                    self.parse(file.data, cached: false)
+                } catch {
+                    self.lastProblem = "Could not read the plan from Dropbox just now: \(error.localizedDescription)"
+                    if self.plan.isEmpty { self.phase = .failed(self.lastProblem!) }
+                }
+            }
+            return
+        }
         guard let bookmark = UserDefaults.standard.data(forKey: bookmarkKey) else { return }
         if plan.isEmpty { phase = .loading }
 
