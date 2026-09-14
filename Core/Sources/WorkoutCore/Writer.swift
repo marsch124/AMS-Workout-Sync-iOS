@@ -34,6 +34,13 @@ public struct CellEdit: Equatable {
     public let value: EditValue
     public let field: String
     public var styleIndex: Int = -1
+
+    public init(ref: String, value: EditValue, field: String, styleIndex: Int = -1) {
+        self.ref = ref
+        self.value = value
+        self.field = field
+        self.styleIndex = styleIndex
+    }
 }
 
 /* escapeXml from js/xlsx.js: the five entities, and control characters dropped. */

@@ -13,11 +13,13 @@ let package = Package(
     products: [
         .library(name: "WorkoutCore", targets: ["WorkoutCore"]),
         .executable(name: "plan-dump", targets: ["PlanDump"]),
-        .executable(name: "write-dump", targets: ["WriteDump"])
+        .executable(name: "write-dump", targets: ["WriteDump"]),
+        .executable(name: "sync-check", targets: ["SyncCheck"])
     ],
     targets: [
         .target(name: "WorkoutCore"),
         .executableTarget(name: "PlanDump", dependencies: ["WorkoutCore"]),
-        .executableTarget(name: "WriteDump", dependencies: ["WorkoutCore"])
+        .executableTarget(name: "WriteDump", dependencies: ["WorkoutCore"]),
+        .executableTarget(name: "SyncCheck", dependencies: ["WorkoutCore"])
     ]
 )

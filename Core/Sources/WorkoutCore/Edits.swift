@@ -12,7 +12,7 @@ import Foundation
  * rewrite would quietly write a different number into his plan.
  */
 
-public struct LogEntry {
+public struct LogEntry: Codable {
     public var actualDuration: String?
     public var actualDistance: String?
     public var distanceUnit: String?
