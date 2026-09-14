@@ -45,6 +45,20 @@ Pre-Season plans and 16 fixtures — differences: none. A single planted
 character in one note was caught. All 336 native outputs pass `unzip -t` and
 open in openpyxl.
 
+**Second run, same day:** the first 336 never reached several branches —
+his plans and every openpyxl fixture already carry fullCalcOnLoad, no
+formulas in result columns, text dates, minutes, kilometres. So
+`tools/make-edge-books.py` builds eight workbooks that do: no calcPr, calcPr
+without the flag, formulas + calcChain in the result columns, date-styled
+dates and a "Logged on" column with hours and metres, the 1904 date system,
+h:mm:ss durations, one row per section, a stale dimension with self-closed
+rows. Reading: differences none. Writing, all books together: **513
+scenarios, differences: none**, with each branch confirmed hit (chain
+removed, flag added both ways, 1904 serials, time fractions, metres,
+section groups, dimension widened). One harness fault found on the way: a
+step without a log time lets each writer stamp "now", so every step now
+carries one.
+
 Not yet covered, and so not yet allowed in the app: extras (appending to the
 Extras sheet, creating it), and everything around a sync — the Dropbox
 download and upload, the revision check, verify-before-upload, the queue.

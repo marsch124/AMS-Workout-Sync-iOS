@@ -103,6 +103,12 @@ def main():
             steps.append({"key": many[3]["key"], "entry": {"moveTo": shift(many[3]["dayKey"], 1)}})
         out.append({"name": f"{base}--week-offline", "file": path, "steps": steps})
 
+    # Every step carries a log time. Without one each writer stamps "now",
+    # and two runs seconds apart then disagree about nothing.
+    for scenario in out:
+        for step in scenario["steps"]:
+            if "moveTo" not in step["entry"]:
+                step["entry"] = dict(step["entry"], completedAt=step["entry"].get("completedAt", WHEN))
     json.dump(out, sys.stdout, ensure_ascii=False, indent=1)
 
 
