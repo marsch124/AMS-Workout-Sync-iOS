@@ -82,6 +82,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "0.5 (16)", date: "15 September 2026", headline: "Next 3 sessions", items: [
+            "Coming up on Today is always the next three sessions, so it says so."
+        ]),
         Release(version: "0.5 (15)", date: "15 September 2026", headline: "A Key button on the week card", items: [
             "The word beside This week is a small button now. Tapping the card still works too."
         ]),

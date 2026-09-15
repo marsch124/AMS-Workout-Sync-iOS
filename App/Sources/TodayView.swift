@@ -79,7 +79,7 @@ struct TodayView: View {
             }
 
             if !next.isEmpty {
-                SectionHeading(text: "Coming up")
+                SectionHeading(text: "Next 3 sessions")
                 ForEach(next) { w in
                     NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping, showDay: true) }
                         .buttonStyle(.plain)
