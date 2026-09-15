@@ -238,6 +238,44 @@ do {
     check(lost, "verify accepted a workbook with sessions missing")
 }
 
+// 9 ------------------------------------------------------------------
+print("\nWHAT THE SCREEN SHOWS BEFORE THE SYNC")
+do {
+    let doneRun = todo[0]
+    var missed = LogEntry(); missed.missed = true
+    var move = LogEntry(); move.moveTo = PlanView.addDays(todo[2].dayKey, 3)
+    let queue = [QueuedEntry(workout: todo[0], entry: oneTap(todo[0]), now: now),
+                 QueuedEntry(workout: todo[1], entry: missed, now: now),
+                 QueuedEntry(workout: todo[2], entry: move, now: now),
+                 QueuedEntry(workout: todo[3], entry: oneTap(todo[3]), now: now),
+                 QueuedEntry(workout: todo[3], entry: move, now: now)]
+    let shown = Sync.overlay(base.plan, queue)
+    let byKey = Dictionary(uniqueKeysWithValues: shown.map { ($0.key, $0) })
+    line("one-tap shows as done", byKey[doneRun.key]!.logged)
+    line("missed shows as missed", byKey[todo[1].key]!.missed)
+    line("moved shows on", byKey[todo[2].key]!.dayKey + " (was " + todo[2].dayKey + ")")
+    line("logged then moved: done and moved", "\(byKey[todo[3].key]!.logged) / \(byKey[todo[3].key]!.pendingMove ?? "-")")
+    check(byKey[doneRun.key]!.logged && byKey[doneRun.key]!.pending != nil, "a queued log must show as done")
+    check(byKey[todo[1].key]!.missed && byKey[todo[1].key]!.logged, "a queued missed must show as missed")
+    check(byKey[todo[2].key]!.dayKey == move.moveTo && !byKey[todo[2].key]!.logged, "a queued move must show on its new day and not as done")
+    check(byKey[todo[3].key]!.logged && byKey[todo[3].key]!.pendingMove == move.moveTo, "a move must not hide a queued log (web app v1.72.0)")
+    check(shown.map(\.key).count == base.plan.count, "the overlay must not lose sessions")
+    check(zip(shown, shown.dropFirst()).allSatisfy { $0.date <= $1.date }, "the overlay must stay in date order")
+    check(base.plan.first { $0.key == todo[2].key }!.dayKey == todo[2].dayKey, "the overlay must not touch the plan itself")
+
+    // The swap list: not done (sheet or waiting), nearest first, future first on a tie.
+    let swim = shown.first { $0.discipline.id == "swim" && !$0.logged && $0.dayKey > doneRun.dayKey }!
+    let offered = Sync.swapCandidates(for: swim, in: shown)
+    line("swap list size / gaps", "\(offered.count) / " + offered.map { String($0.gap) }.joined(separator: " "))
+    check(!offered.contains { $0.workout.logged }, "a done or waiting session must never be offered to swap")
+    check(!offered.contains { $0.workout.discipline.id == "rest" }, "a rest day must never be offered to swap")
+    check(!offered.contains { $0.workout.key == swim.key }, "a session must not be offered to swap with itself")
+    for (a, b) in zip(offered, offered.dropFirst()) {
+        check(abs(a.gap) <= abs(b.gap), "not nearest first")
+        if abs(a.gap) == abs(b.gap) { check(a.gap >= b.gap, "a past session offered before an equally near future one") }
+    }
+}
+
 let json = try JSONSerialization.data(withJSONObject: scenarios, options: [.prettyPrinted])
 try json.write(to: work.appendingPathComponent("sync-scenarios.json"))
 print("\nerrors:", errors.isEmpty ? "none" : "\n - " + errors.joined(separator: "\n - "))

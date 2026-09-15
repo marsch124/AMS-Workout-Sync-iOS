@@ -62,7 +62,7 @@ public struct PlanView {
 
     /* Before today and never recorded. */
     public func outstanding(before today: String) -> [Workout] {
-        plan.filter { $0.dayKey < today && $0.discipline.id != "rest" && !$0.loggedInSheet }
+        plan.filter { $0.dayKey < today && $0.discipline.id != "rest" && !$0.logged }
     }
 
     public func week(of key: String, today: String) -> [PlanDay] {

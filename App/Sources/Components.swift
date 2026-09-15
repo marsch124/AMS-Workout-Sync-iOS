@@ -5,7 +5,12 @@ import WorkoutCore
 enum SessionState { case done, todo, missed }
 
 extension Workout {
-    var state: SessionState { missed ? .missed : (loggedInSheet ? .done : .todo) }
+    var state: SessionState { missed ? .missed : (logged ? .done : .todo) }
+    var waitingLabel: String? {
+        if pending != nil { return missed ? "Missed · waiting to sync" : "Waiting to sync" }
+        if pendingMove != nil { return "Moved · waiting to sync" }
+        return nil
+    }
 }
 
 struct Hatch: Shape {
@@ -60,9 +65,7 @@ struct SessionCard: View {
     let mapping: Mapping
     var showDay = false
 
-    /* Logged on this phone and on its way: drawn as done, and says so. */
-    private var waiting: Bool { store.isWaiting(workout.key) }
-    private var shown: SessionState { waiting && workout.state == .todo ? .done : workout.state }
+    private var shown: SessionState { workout.state }
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -83,7 +86,7 @@ struct SessionCard: View {
                     }
                     if !workout.planned.intensity.isEmpty { Pill(text: workout.planned.intensity) }
                     if workout.missed { Pill(text: "Missed", tint: Theme.danger) }
-                    if waiting { Pill(text: "Waiting to sync", tint: Theme.today) }
+                    if let label = workout.waitingLabel { Pill(text: label, tint: Theme.today) }
                 }
             }
             Spacer(minLength: 0)

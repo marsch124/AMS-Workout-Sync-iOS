@@ -5,6 +5,9 @@ struct SessionView: View {
     @EnvironmentObject var store: Store
     let key: String
     @State private var logging = false
+    @State private var moving = false
+    @State private var askingMissed = false
+    @State private var missedNote = ""
 
     var body: some View {
         ScrollView {
@@ -42,13 +45,12 @@ struct SessionView: View {
                         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                     }
 
-                    if store.isWaiting(w.key) {
-                        Text("Logged on this phone · waiting to sync").font(.headline).foregroundStyle(Theme.today)
+                    if let label = w.waitingLabel {
+                        Text("Logged on this phone · " + label.lowercased()).font(.headline).foregroundStyle(Theme.today)
                     }
                     if store.canLog, w.discipline.id != "rest" {
                         VStack(spacing: 10) {
-                            if w.state == .todo, !store.isWaiting(w.key),
-                               let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
+                            if !w.logged || w.missed, let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
                                 Button {
                                     store.logAsPlanned(w)
                                 } label: {
@@ -65,12 +67,31 @@ struct SessionView: View {
                             Button {
                                 logging = true
                             } label: {
-                                Text(w.loggedInSheet || store.isWaiting(w.key) ? "Adjust logged data" : "Log details")
+                                Text(w.logged && !w.missed ? "Adjust logged data" : "Log details")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity, minHeight: 48)
                             }
                             .buttonStyle(.bordered)
                             .tint(Theme.today)
+                            HStack(spacing: 10) {
+                                if !w.missed {
+                                    Button {
+                                        missedNote = ""
+                                        askingMissed = true
+                                    } label: {
+                                        Text("Missed").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .tint(Theme.danger)
+                                }
+                                Button {
+                                    moving = true
+                                } label: {
+                                    Text("Move").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(Theme.plan)
+                            }
                         }
                     }
 
@@ -112,8 +133,25 @@ struct SessionView: View {
                 LogFormView(workout: w, mapping: mapping).environmentObject(store)
             }
         }
+        .sheet(isPresented: $moving) {
+            if let w = store.workout(key) {
+                MoveView(workout: w).environmentObject(store)
+            }
+        }
+        .alert("Mark this session as missed?", isPresented: $askingMissed) {
+            TextField("Why? (optional)", text: $missedNote)
+            Button("Mark missed", role: .destructive) {
+                if let w = store.workout(key) { store.markMissed(w, note: missedNote) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Only the missed marker and your note are written. Nothing else in the row changes, and you can still log it later if you did it after all.")
+        }
         #if DEBUG
-        .onAppear { if ProcessInfo.processInfo.environment["AMSWS_LOGFORM"] != nil { logging = true } }
+        .onAppear {
+            if ProcessInfo.processInfo.environment["AMSWS_LOGFORM"] != nil { logging = true }
+            if ProcessInfo.processInfo.environment["AMSWS_MOVE"] != nil { moving = true }
+        }
         #endif
     }
 

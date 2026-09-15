@@ -52,7 +52,9 @@ final class Store: ObservableObject {
 
     var today: String { todayOverride ?? PlanView.todayKey() }
 
-    var view: PlanView? { mapping.map { PlanView(plan: plan, mapping: $0) } }
+    /* The plan as shown: the sheet with the queue laid over it. */
+    var displayed: [Workout] { Sync.overlay(plan, queue) }
+    var view: PlanView? { mapping.map { PlanView(plan: displayed, mapping: $0) } }
 
     private var cacheURL: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -202,11 +204,16 @@ final class Store: ObservableObject {
         }
     }
 
-    func workout(_ key: String) -> Workout? { plan.first { $0.key == key } }
+    func workout(_ key: String) -> Workout? { displayed.first { $0.key == key } }
 
     // MARK: logging
 
-    var canLog: Bool { dropboxPath != nil && Dropbox.shared.isConnected }
+    var canLog: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_SHOW_BUTTONS"] != nil { return true }
+        #endif
+        return dropboxPath != nil && Dropbox.shared.isConnected
+    }
 
     func isWaiting(_ key: String) -> Bool { queue.contains { $0.workoutKey == key } }
 
@@ -228,6 +235,36 @@ final class Store: ObservableObject {
     func log(_ workout: Workout, _ entry: LogEntry) {
         guard canLog else { return }
         queue.append(QueuedEntry(workout: workout, entry: entry))
+        saveQueue()
+        syncNow()
+    }
+
+    /* A session that did not happen: the marker and a note, nothing else. */
+    func markMissed(_ workout: Workout, note: String) {
+        var entry = LogEntry()
+        entry.missed = true
+        let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { entry.notes = trimmed }
+        log(workout, entry)
+    }
+
+    /* Only the date is rewritten; the weekday beside it is learned from the sheet at sync time. */
+    func move(_ workout: Workout, to dayKey: String) {
+        guard dayKey != workout.dayKey else { return }
+        var entry = LogEntry()
+        entry.moveTo = dayKey
+        log(workout, entry)
+    }
+
+    /* Two moves, both days read before either is queued. */
+    func swap(_ a: Workout, _ b: Workout) {
+        let aDay = a.dayKey
+        let bDay = b.dayKey
+        guard aDay != bDay, canLog else { return }
+        var first = LogEntry(); first.moveTo = bDay
+        var second = LogEntry(); second.moveTo = aDay
+        queue.append(QueuedEntry(workout: a, entry: first))
+        queue.append(QueuedEntry(workout: b, entry: second))
         saveQueue()
         syncNow()
     }

@@ -104,8 +104,13 @@ public struct Workout: Identifiable, Equatable {
     public var sections: [Section]
     public var planned: Planned
     public var results: [String: ResultValue]
+    /* What the sheet says, and never changes until the sheet is read again. */
     public var loggedInSheet: Bool
     public var missed: Bool
+    /* What the app shows: the sheet, with anything queued on this phone laid over it. */
+    public var logged: Bool = false
+    public var pending: LogEntry? = nil
+    public var pendingMove: String? = nil
 }
 
 let sectionOrder = ["warmup", "intervals", "technique", "cooldown"]
@@ -422,6 +427,7 @@ public enum Plan {
         for i in workouts.indices {
             workouts[i].discipline = Disciplines.classify(workouts[i].disciplineRaw)
             workouts[i].loggedInSheet = isLogged(workouts[i].results)
+            workouts[i].logged = workouts[i].loggedInSheet
             if let done = workouts[i].results["done"] { workouts[i].missed = normalise(done.text) == missedMarker }
             let order = { (kind: String) -> Int in sectionOrder.firstIndex(of: kind) ?? 99 }
             workouts[i].sections = workouts[i].sections.enumerated()

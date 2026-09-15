@@ -70,7 +70,7 @@ struct PlanTab: View {
         case .done:
             return view.plan.filter { $0.state == .done }.reversed()
         case .missed:
-            return view.plan.filter { $0.missed }.reversed()
+            return view.plan.filter { $0.state == .missed }.reversed()
         case .all:
             return view.visible
         }

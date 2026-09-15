@@ -132,7 +132,7 @@ struct WeekCard: View {
         let days = view.week(of: today, today: today)
         let tallest = max(days.map(\.plannedSeconds).max() ?? 0, 1)
         let planned = days.reduce(0) { $0 + $1.plannedSeconds }
-        let done = days.flatMap(\.training).filter { $0.state == .done || store.isWaiting($0.key) }
+        let done = days.flatMap(\.training).filter { $0.state == .done }
             .reduce(0.0) { $0 + (Plan.plannedSeconds($1, view.mapping) ?? 0) }
 
         VStack(alignment: .leading, spacing: 12) {
@@ -155,7 +155,7 @@ struct WeekCard: View {
                                 } else {
                                     ForEach(day.training) { w in
                                         let seconds = Plan.plannedSeconds(w, view.mapping) ?? 0
-                                        StateFill(sport: w.discipline.id, state: store.isWaiting(w.key) && w.state == .todo ? .done : w.state)
+                                        StateFill(sport: w.discipline.id, state: w.state)
                                             .frame(height: max(9, geo.size.height * seconds / tallest - 3))
                                     }
                                 }

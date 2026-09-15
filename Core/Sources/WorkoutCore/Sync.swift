@@ -185,6 +185,69 @@ public enum Sync {
         return best
     }
 
+    // MARK: what the screen shows before the sync
+
+    /* Every queued entry belonging to a session, in queue order. As matchEntries in the web app. */
+    static func entries(for w: Workout, in queue: [QueuedEntry]) -> [QueuedEntry] {
+        let byKey = queue.filter { $0.workoutKey == w.key }
+        if !byKey.isEmpty { return byKey }
+        return queue.filter { $0.dayKey == w.dayKey && $0.disciplineId == w.discipline.id && $0.sheet == w.sheet }
+    }
+
+    /*
+     * The plan with the queue laid over it, so what was just logged or moved
+     * shows straight away rather than after the sync. A queued move and a
+     * queued record are kept apart: a move never hides that a session is done
+     * (web app v1.72.0). Nothing here is written anywhere.
+     */
+    public static func overlay(_ plan: [Workout], _ queue: [QueuedEntry]) -> [Workout] {
+        var out = plan.map { w -> Workout in
+            var w = w
+            w.logged = w.loggedInSheet
+            w.pending = nil
+            w.pendingMove = nil
+            let mine = entries(for: w, in: queue)
+            if let move = mine.last(where: { $0.entry.moveTo != nil }), let to = move.entry.moveTo, let date = parseDayKey(to) {
+                w = Workout(key: w.key, sheet: w.sheet, row: w.row, rows: w.rows, date: date, dayKey: to,
+                            disciplineRaw: w.disciplineRaw, discipline: w.discipline, title: w.title, phase: w.phase,
+                            sections: w.sections, planned: w.planned, results: w.results, loggedInSheet: w.loggedInSheet,
+                            missed: w.missed, logged: w.logged, pending: nil, pendingMove: to)
+            }
+            if let record = mine.last(where: { $0.entry.moveTo == nil }) {
+                w.pending = record.entry
+                w.logged = true
+                w.missed = record.entry.missed
+            }
+            return w
+        }
+        out.sort { ($0.date, $0.row) < ($1.date, $1.row) }
+        return out
+    }
+
+    /*
+     * The sessions offered under "Or swap it with": nearby, not rest, not
+     * done (in the sheet or waiting), nearest first and the one still ahead
+     * first on a tie — web app v1.71.2, the lesson of 14 September.
+     */
+    public static func swapCandidates(for w: Workout, in shown: [Workout]) -> [(workout: Workout, gap: Int)] {
+        guard let here = parseDayKey(w.dayKey) else { return [] }
+        // Stable, as the web app's sort is: equal gaps keep plan order.
+        return shown.enumerated()
+            .filter { $0.element.key != w.key && $0.element.discipline.id != "rest" && !$0.element.logged }
+            .compactMap { pair -> (Workout, Int, Int)? in
+                guard let d = parseDayKey(pair.element.dayKey) else { return nil }
+                return (pair.element, Int((d.timeIntervalSince(here) / 86400).rounded()), pair.offset)
+            }
+            .filter { abs($0.1) <= 10 }
+            .sorted { a, b in
+                if abs(a.1) != abs(b.1) { return abs(a.1) < abs(b.1) }
+                if a.1 != b.1 { return a.1 > b.1 }
+                return a.2 < b.2
+            }
+            .prefix(12)
+            .map { (workout: $0.0, gap: $0.1) }
+    }
+
     // MARK: applying the queue
 
     /*
