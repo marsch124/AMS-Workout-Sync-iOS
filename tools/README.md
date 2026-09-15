@@ -74,3 +74,18 @@ one upload, a conflict retried, a second conflict refused, a reworded row
 followed, a row changed to another sport refused, one bad entry not blocking
 the rest, verify refusing bad bytes, the overlay and swap list, and extras
 appended without doubling.
+
+## Progress — the figures
+
+```bash
+Core/.build/release/stats-dump books/*.xlsx > native-stats.json
+node tools/js-dump.js books/*.xlsx > web-stats.json      # carries a `stats` block from AmsSync.stats()
+python3 tools/stats-parity.py web-stats.json native-stats.json
+```
+
+Kept / missed / unanswered, streaks, by sport, missed-or-moved, the trends
+(distance per heartbeat, then against now) and twelve weeks of load, from the
+same workbooks on the same day. **2026-09-15: 23 workbooks, differences none**
+(season-underway.xlsx reaches "enough" for all three trend sports). The road
+card is native-only arithmetic (the web app keeps it inside ui.js); its parts
+— race day, phases, days between — are simple and read-checked.

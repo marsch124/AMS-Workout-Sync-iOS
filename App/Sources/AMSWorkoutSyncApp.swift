@@ -36,6 +36,7 @@ struct RootView: View {
         TabView(selection: $tab) {
             TodayView().tag("today")
             PlanTab().tag("plan")
+            ProgressView().tag("progress")
             SettingsView().tag("settings")
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
@@ -54,6 +55,7 @@ struct RootView: View {
     private var tint: Color {
         switch tab {
         case "plan": return Theme.plan
+        case "progress": return Theme.progress
         case "settings": return Theme.settings
         default: return Theme.today
         }
@@ -66,7 +68,8 @@ struct BottomBar: View {
     let tint: Color
 
     private let items: [(id: String, label: String, icon: String)] = [
-        ("today", "Today", "icon-today"), ("plan", "Sessions", "icon-plan"), ("settings", "Settings", "icon-settings")
+        ("today", "Today", "icon-today"), ("plan", "Sessions", "icon-plan"),
+        ("progress", "Progress", "icon-progress"), ("settings", "Settings", "icon-settings")
     ]
 
     var body: some View {

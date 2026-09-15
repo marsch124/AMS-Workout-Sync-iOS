@@ -272,12 +272,38 @@ final class Store: ObservableObject {
         log(workout, entry)
     }
 
+    /*
+     * The move log: the one thing this app remembers that the workbook does
+     * not. Rescheduling overwrites the date, so the sheet keeps no memory of a
+     * move; Progress needs it for "moved rather than lost". Kept on this
+     * phone, keyed by the session, believed only while the sport still
+     * matches the row (web app v1.40.0 rules).
+     */
+    @Published private(set) var moves: [String: MoveRecord] = {
+        guard let data = UserDefaults.standard.data(forKey: "moveLog"),
+              let saved = try? JSONDecoder().decode([String: MoveRecord].self, from: data) else { return [:] }
+        return saved
+    }()
+    var movesSince: Date? { moves.values.map(\.at).min() }
+
+    private func rememberMove(_ workout: Workout, to dayKey: String) {
+        let existing = moves[workout.key]
+        // A session moved twice is one move from where the plan first put it.
+        let from = existing?.from ?? workout.dayKey
+        moves[workout.key] = MoveRecord(from: from, to: dayKey, disciplineId: workout.discipline.id, at: Date())
+        if moves.count > 600 {
+            for key in moves.sorted { $0.value.at < $1.value.at }.prefix(moves.count - 600).map(\.key) { moves[key] = nil }
+        }
+        if let data = try? JSONEncoder().encode(moves) { UserDefaults.standard.set(data, forKey: "moveLog") }
+    }
+
     /* Only the date is rewritten; the weekday beside it is learned from the sheet at sync time. */
     func move(_ workout: Workout, to dayKey: String) {
-        guard dayKey != workout.dayKey else { return }
+        guard dayKey != workout.dayKey, canLog else { return }
         var entry = LogEntry()
         entry.moveTo = dayKey
         log(workout, entry)
+        rememberMove(workout, to: dayKey)
     }
 
     /* Two moves, both days read before either is queued. */
@@ -290,7 +316,31 @@ final class Store: ObservableObject {
         queue.append(QueuedEntry(workout: a, entry: first))
         queue.append(QueuedEntry(workout: b, entry: second))
         saveQueue()
+        rememberMove(a, to: bDay)
+        rememberMove(b, to: aDay)
         syncNow()
+    }
+
+    // MARK: progress
+
+    struct Progress {
+        let summary: Stats.Summary
+        let trends: [Stats.Trend]
+        let load: Stats.Load
+        let road: Stats.Road?
+    }
+
+    /* Derived here and now from the plan already in memory; nothing cached, nothing written. */
+    var progress: Progress? {
+        guard let mapping, let view else { return nil }
+        let plan = displayed
+        let today = self.today
+        return Progress(
+            summary: Stats.summarise(plan, moves: moves, movesSince: movesSince, today: today, mapping: mapping),
+            trends: Stats.trends(Stats.trendRows(plan, mapping)),
+            load: Stats.load(Stats.loadRows(plan, mapping), weekStarts: Stats.recentWeekStarts(12, today: today),
+                             endExclusive: PlanView.addDays(PlanView.weekStart(today), 7)),
+            road: Stats.road(view.visible, today: today, mapping: mapping))
     }
 
     /* Text for the warning once the oldest waiting entry is a full day old; nil below that. */

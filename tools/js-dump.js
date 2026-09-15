@@ -33,16 +33,33 @@ const LAUNCH = CHROME && require('fs').existsSync(CHROME) ? { executablePath: CH
       return (s.plan && s.plan.length) || s.lastError;
     }, null, { timeout: 30000 }).catch(() => {});
 
-    out[path.basename(file)] = await page.evaluate(() => {
+    out[path.basename(file)] = await page.evaluate(async () => {
       const s = AmsSync.getState();
       const m = s.mapping;
       if (!m) return { mapping: null, workouts: [], error: s.lastError ? String(s.lastError.message || s.lastError) : null };
+      await AmsDb.set('moveLog', { since: null, moves: {} });
+      const st = await AmsSync.stats();
+      const stats = {
+        today: AmsSync.todayKey(),
+        summary: { any: st.any, counted: st.counted, done: st.done, missed: st.missed, unlogged: st.unlogged, answered: st.answered,
+          firstDay: st.firstDay, lastDay: st.lastDay, streak: st.streak,
+          sport: { rows: st.sport.rows.map(r => ({ id: r.id, label: r.label, planned: r.planned, done: r.done, missed: r.missed, unlogged: r.unlogged,
+                    plannedSeconds: r.plannedSeconds, doneSeconds: r.doneSeconds, rate: r.rate })), worst: st.sport.worst ? st.sport.worst.id : null },
+          moves: { missed: st.moves.missed, moved: st.moves.moved, keptByMoving: st.moves.keptByMoving } },
+        trends: st.trends.sports.map(t => t.enough
+          ? { sport: t.sport, enough: true, have: t.sessions, need: 8, usable: undefined, easyOnly: t.easyOnly, sessions: t.sessions, change: t.change,
+              verdict: t.verdict, speedChange: t.speedChange, hrChange: t.hrChange, then: t.then, now: t.now }
+          : { sport: t.sport, enough: false, have: t.have, need: t.need, usable: t.usable, easyOnly: t.easyOnly }),
+        load: { planned: st.load.planned, actual: st.load.actual, weeks: st.load.weeks,
+          sports: st.load.sports.map(x => ({ sport: x.sport, planned: x.planned, actual: x.actual, shareActual: x.shareActual, sharePlanned: x.sharePlanned })) }
+      };
       const results = (w) => {
         const o = {};
         Object.keys(w.results || {}).forEach((k) => { o[k] = w.results[k].text; });
         return o;
       };
       return {
+        stats,
         mapping: {
           sheets: m.sheets, headerRow: m.headerRow, firstDataRow: m.firstDataRow, lastDataRow: m.lastDataRow,
           mode: m.mode, sectionColumn: m.sectionColumn || null, columns: m.columns,

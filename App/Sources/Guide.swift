@@ -44,8 +44,12 @@ struct GuideView: View {
             "A session or an extra can carry photographs. They live on this phone beside the plan, never inside it: the workbook stays the record, and the iPhone's own backup covers the pictures. Settings → Photos saves them all out, and brings in the web app's export.",
             "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
         ]),
+        Part(id: "Progress", body: [
+            "Nothing here is read from the Progress sheet — its cells are formulas that carry Excel's last answer, and the app never recalculates them. Every figure is worked out from the session rows each time the screen opens, and none of it is stored.",
+            "The road: weeks to the race, the phases as one bar with today marked on it, sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
+        ]),
         Part(id: "Still in the web app", body: [
-            "The Progress tab, spoken logging and the calendar export are in the web app for now. Both apps write to the same plan and check Dropbox's version first, so you can use them side by side."
+            "Spoken logging and the calendar export are in the web app for now. Both apps write to the same plan and check Dropbox's version first, so you can use them side by side."
         ])
     ]
 
@@ -82,6 +86,12 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (20)", date: "15 September 2026", headline: "Progress, and a proper icon", items: [
+            "The Progress tab, as in the web app: the road to the race with the phases as one bar, is it working (distance per heartbeat, then against now), twelve weeks against what they asked for, where the hours went by sport, and what was kept — consistency, the sport that runs behind, missed or moved. Every figure checked against the web app's on the same workbooks: no differences.",
+            "Moves made in this app are remembered on this phone for the missed-or-moved figure, as the web app remembers its own.",
+            "A new app icon, drawn the same way as the others: the calendar with a tick on a calm green.",
+            "Swipe reaches Progress like the other pages."
+        ]),
         Release(version: "1.0 (19)", date: "15 September 2026", headline: "Tomorrow, not the next three", items: [
             "Under today's sessions, Today now shows only tomorrow's — a rest day included — instead of the next three sessions."
         ]),

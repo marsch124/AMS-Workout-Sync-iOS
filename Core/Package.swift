@@ -15,13 +15,15 @@ let package = Package(
         .executable(name: "plan-dump", targets: ["PlanDump"]),
         .executable(name: "write-dump", targets: ["WriteDump"]),
         .executable(name: "sync-check", targets: ["SyncCheck"]),
-        .executable(name: "form-check", targets: ["FormCheck"])
+        .executable(name: "form-check", targets: ["FormCheck"]),
+        .executable(name: "stats-dump", targets: ["StatsDump"])
     ],
     targets: [
         .target(name: "WorkoutCore"),
         .executableTarget(name: "PlanDump", dependencies: ["WorkoutCore"]),
         .executableTarget(name: "WriteDump", dependencies: ["WorkoutCore"]),
         .executableTarget(name: "SyncCheck", dependencies: ["WorkoutCore"]),
-        .executableTarget(name: "FormCheck", dependencies: ["WorkoutCore"])
+        .executableTarget(name: "FormCheck", dependencies: ["WorkoutCore"]),
+        .executableTarget(name: "StatsDump", dependencies: ["WorkoutCore"])
     ]
 )

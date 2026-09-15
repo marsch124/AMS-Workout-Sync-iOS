@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0472DFF26CE85F3ADE7D8932 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A14825F875D7AF6B7EE715C /* Store.swift */; };
 		24DD67DD79E07FEC82557AFF /* MoveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */; };
+		37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8173903887939F8A3DB90D8D /* ProgressView.swift */; };
 		397F613B7445E14D20C9656C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2CB3C689413A3D9CB97FA7 /* Photos.swift */; };
 		3B18EC3B9D29DE2C27133D11 /* WorkoutCore in Frameworks */ = {isa = PBXBuildFile; productRef = D690C9E09EB79AAE0C30F1A6 /* WorkoutCore */; };
 		4C92AF2407F8B9021267FA3C /* PhotoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */; };
@@ -38,6 +39,7 @@
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		70231C046226474A30263864 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSWorkoutSyncApp.swift; sourceTree = "<group>"; };
+		8173903887939F8A3DB90D8D /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
 		874D363C030B897E786F6F58 /* Guide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Guide.swift; sourceTree = "<group>"; };
 		8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropbox.swift; sourceTree = "<group>"; };
 		8CDFC67F6D3D022CEEC7F7CC /* Health.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Health.swift; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 				0C2CB3C689413A3D9CB97FA7 /* Photos.swift */,
 				18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */,
 				A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */,
+				8173903887939F8A3DB90D8D /* ProgressView.swift */,
 				E7A03855A2195F5FD77B7F7C /* SessionView.swift */,
 				70231C046226474A30263864 /* SettingsView.swift */,
 				0A14825F875D7AF6B7EE715C /* Store.swift */,
@@ -217,6 +220,7 @@
 				4C92AF2407F8B9021267FA3C /* PhotoViews.swift in Sources */,
 				397F613B7445E14D20C9656C /* Photos.swift in Sources */,
 				F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */,
+				37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */,
 				F152713F3C49201271BBD36B /* SessionView.swift in Sources */,
 				7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */,
 				0472DFF26CE85F3ADE7D8932 /* Store.swift in Sources */,
@@ -263,7 +267,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -277,7 +281,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -323,7 +327,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -343,7 +347,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
