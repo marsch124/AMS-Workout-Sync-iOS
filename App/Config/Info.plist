@@ -41,6 +41,8 @@
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Workout Sync reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them. Nothing is written to Health.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Workout Sync never writes anything to Health. Apple requires this text to be present anyway.</string>
 	<key>UIFileSharingEnabled</key>
 	<false/>
 	<key>UILaunchScreen</key>
