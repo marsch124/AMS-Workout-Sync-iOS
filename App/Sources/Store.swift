@@ -96,7 +96,10 @@ final class Store: ObservableObject {
 
     /* A plan picked inside the app from his Dropbox, read through the API. */
     func chooseDropbox(_ file: DropboxFile) {
-        dropboxPath = file.pathLower
+        // The displayed path, not path_lower: an upload re-cases the file's
+        // name to the path it was sent to, and "Workout Sync TEST.xlsx" came
+        // back from the first phone sync as "workout sync test.xlsx".
+        dropboxPath = file.path
         fileName = file.name
         UserDefaults.standard.set(file.name, forKey: nameKey)
         refresh()
