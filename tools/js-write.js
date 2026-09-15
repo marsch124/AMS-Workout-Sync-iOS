@@ -39,6 +39,14 @@ const LAUNCH = CHROME && fs.existsSync(CHROME) ? { executablePath: CHROME } : {}
         for (const sheet of mapping.sheets) names[sheet] = AmsPlan.learnWeekdayNames(await wb.readSheet(sheet), mapping);
 
         for (const step of steps) {
+          if (step.extra) {
+            const name = await AmsExtras.ensureSheet(wb);
+            const sheet = await wb.readSheet(name);
+            if (AmsExtras.alreadyRecorded(sheet, step.extra)) continue;
+            const built = AmsExtras.buildEdits(sheet, step.extra, names[mapping.sheets[0]]);
+            await wb.writeCells(name, built.edits);
+            continue;
+          }
           const workout = plan.find(w => w.key === step.key);
           if (!workout) return { error: 'no session ' + step.key };
           const entry = Object.assign({}, step.entry);

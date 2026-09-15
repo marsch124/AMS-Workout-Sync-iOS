@@ -121,3 +121,58 @@ struct SectionHeading: View {
             .padding(.top, 8)
     }
 }
+
+
+/* Outside the plan: the activity's own colour, dotted down the middle — the web app's v1.71.1 drawing. */
+struct DottedFill: View {
+    let colorId: String
+    var body: some View {
+        let colour = Theme.sport(colorId)
+        RoundedRectangle(cornerRadius: 3, style: .continuous)
+            .fill(colour.opacity(0.22))
+            .overlay(
+                GeometryReader { geo in
+                    let n = max(1, Int(geo.size.height / 6))
+                    VStack(spacing: 3) {
+                        ForEach(0..<n, id: \.self) { _ in Circle().fill(colour).frame(width: 3, height: 3) }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            )
+            .overlay(RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .strokeBorder(style: StrokeStyle(lineWidth: 1.2, dash: [2, 2]))
+                .foregroundStyle(colour))
+    }
+}
+
+struct ExtraCard: View {
+    let extra: ExtraSummary
+    var body: some View {
+        let activity = Extras.activity(extra.activity)
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                Circle().fill(Theme.sport(activity.colorId).opacity(0.22))
+                Glyph(name: activity.icon, size: 22).foregroundStyle(Theme.sportInk(activity.colorId))
+            }
+            .frame(width: 44, height: 44)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("EXTRA · " + extra.label.uppercased())
+                    .font(.caption.weight(.bold)).tracking(0.6)
+                    .foregroundStyle(Theme.sportInk(activity.colorId))
+                Text(extra.what.isEmpty ? extra.label : extra.what)
+                    .font(.headline).foregroundStyle(Theme.text).lineLimit(2)
+                HStack(spacing: 6) {
+                    if let m = extra.minutes { Pill(text: formatDuration(m * 60)) }
+                    Pill(text: extra.isTraining ? "Counts as training" : "Not training load")
+                    if extra.pending { Pill(text: "Waiting to sync", tint: Theme.today) }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+            .foregroundStyle(Theme.sport(activity.colorId)))
+    }
+}

@@ -58,14 +58,14 @@ func firstCommaToDot(_ s: String) -> String { replaceFirst(",", in: s, with: "."
 private let floatPrefix = Pattern("^[\\t\\n\\v\\f\\r \\u00a0\\ufeff]*([+-]?(?:Infinity|\\d+\\.?\\d*(?:[eE][+-]?\\d+)?|\\.\\d+(?:[eE][+-]?\\d+)?))")
 
 /* parseFloat: the longest number at the start of the string, or NaN. */
-func jsParseFloat(_ s: String) -> Double {
+public func jsParseFloat(_ s: String) -> Double {
     guard let m = floatPrefix.first(s), let text = m[1] else { return .nan }
     if text.hasSuffix("Infinity") { return text.hasPrefix("-") ? -.infinity : .infinity }
     return Double(text) ?? .nan
 }
 
 /* Math.round: halves go up, towards positive infinity. */
-func jsRound(_ x: Double) -> Double { (x + 0.5).rounded(.down) }
+public func jsRound(_ x: Double) -> Double { (x + 0.5).rounded(.down) }
 
 /* String.prototype.trim, whose idea of whitespace is not quite Foundation's:
    it includes the byte-order mark and leaves U+0085 alone. */

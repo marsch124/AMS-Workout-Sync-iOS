@@ -276,6 +276,69 @@ extension Workbook {
         return replaceFirst(whole, in: xml, with: "<dimension ref=\"\(widened)\"/>")
     }
 
+    /*
+     * Add a worksheet. Four parts have to agree for Excel to accept it: the
+     * sheet XML, an entry in [Content_Types].xml, a relationship in the
+     * workbook's rels, and a <sheet> in workbook.xml pointing at it. Miss one
+     * and Excel calls the file corrupt without saying which. Every string
+     * here is the web app's, character for character.
+     */
+    public func createSheet(_ name: String, headers: [String]) throws {
+        if findSheet(name) != nil { return }
+
+        var index = 1
+        while archive.has("xl/worksheets/sheet\(index).xml") { index += 1 }
+        let path = "xl/worksheets/sheet\(index).xml"
+
+        let relsPath = "xl/_rels/workbook.xml.rels"
+        guard var rels = try archive.text(relsPath) else { throw WorkbookError.noRels }
+        var relIndex = 1
+        while rels.contains("Id=\"rId\(relIndex)\"") { relIndex += 1 }
+        let relId = "rId\(relIndex)"
+
+        let header = headers.enumerated().map { i, text in
+            "<c r=\"\(makeRef(i + 1, 1))\" t=\"inlineStr\"><is><t>\(escapeXml(text))</t></is></c>"
+        }.joined()
+
+        let sheetXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            + "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
+            + "<dimension ref=\"A1:\(makeRef(max(headers.count, 1), 1))\"/>"
+            + "<sheetViews><sheetView workbookViewId=\"0\">"
+            + "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>"
+            + "</sheetView></sheetViews>"
+            + "<sheetFormatPr defaultRowHeight=\"15\"/>"
+            + "<sheetData>" + (header.isEmpty ? "" : "<row r=\"1\">" + header + "</row>") + "</sheetData>"
+            + "</worksheet>"
+        archive.set(path, sheetXml)
+
+        if var types = try archive.text("[Content_Types].xml"), !types.contains("/" + path) {
+            types = replaceFirst("</Types>", in: types, with:
+                "<Override PartName=\"/\(path)\" ContentType=\"application/vnd.openxmlformats-"
+                + "officedocument.spreadsheetml.worksheet+xml\"/></Types>")
+            archive.set("[Content_Types].xml", types)
+        }
+
+        rels = replaceFirst("</Relationships>", in: rels, with:
+            "<Relationship Id=\"\(relId)\" Type=\"http://schemas.openxmlformats.org/officeDocument/"
+            + "2006/relationships/worksheet\" Target=\"worksheets/sheet\(index).xml\"/></Relationships>")
+        archive.set(relsPath, rels)
+
+        guard var workbookXml = try archive.text("xl/workbook.xml") else { throw WorkbookError.notAWorkbook }
+        var sheetId = 1
+        while workbookXml.contains("sheetId=\"\(sheetId)\"") { sheetId += 1 }
+        let entry = "<sheet name=\"\(escapeXml(name))\" sheetId=\"\(sheetId)\" r:id=\"\(relId)\"/>"
+        if workbookXml.contains("</sheets>") {
+            workbookXml = replaceFirst("</sheets>", in: workbookXml, with: entry + "</sheets>")
+        } else {
+            workbookXml = replaceFirst("<sheets/>", in: workbookXml, with: "<sheets>" + entry + "</sheets>")
+        }
+        archive.set("xl/workbook.xml", workbookXml)
+
+        sheets.append(SheetMeta(name: name, path: path, hidden: false))
+        dirtySheets.insert(name)
+        cache[name] = nil
+    }
+
     public func save() throws -> Data {
         if formulaDropped && archive.has("xl/calcChain.xml") {
             archive.remove("xl/calcChain.xml")

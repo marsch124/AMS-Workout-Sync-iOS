@@ -263,10 +263,11 @@ public struct SheetMeta {
 
 public final class Workbook {
     public enum WorkbookError: Error, LocalizedError {
-        case notAWorkbook, noSheets, noSheet(String)
+        case notAWorkbook, noSheets, noSheet(String), noRels
         public var errorDescription: String? {
             switch self {
             case .notAWorkbook: return "This file is not a workbook — xl/workbook.xml is missing."
+            case .noRels: return "This workbook has no relationships part, so a sheet cannot be added."
             case .noSheets: return "This workbook has no readable sheets."
             case .noSheet(let name): return "No sheet named \"\(name)\" in this workbook."
             }

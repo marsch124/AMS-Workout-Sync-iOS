@@ -58,7 +58,12 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
     private var accessExpires = Date.distantPast
     private var session: ASWebAuthenticationSession?
 
-    var isConnected: Bool { Keychain.read("dropbox.refresh") != nil }
+    var isConnected: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_CONNECTED"] != nil { return true }
+        #endif
+        return Keychain.read("dropbox.refresh") != nil
+    }
 
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow }.first ?? ASPresentationAnchor()
@@ -132,7 +137,12 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
         UserDefaults.standard.removeObject(forKey: "dropbox.account")
     }
 
-    var account: String { UserDefaults.standard.string(forKey: "dropbox.account") ?? "" }
+    var account: String {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_CONNECTED"] != nil { return "martin@example.com" }
+        #endif
+        return UserDefaults.standard.string(forKey: "dropbox.account") ?? ""
+    }
 
     // MARK: tokens
 

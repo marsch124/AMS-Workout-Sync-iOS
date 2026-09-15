@@ -3,6 +3,7 @@ import WorkoutCore
 
 struct TodayView: View {
     @EnvironmentObject var store: Store
+    @State private var addingExtra = false
 
     var body: some View {
         NavigationStack {
@@ -19,6 +20,10 @@ struct TodayView: View {
             .refreshable { store.refresh() }
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .toolbar(.hidden, for: .navigationBar)
+            .sheet(isPresented: $addingExtra) { ExtraFormView(day: store.today).environmentObject(store) }
+            #if DEBUG
+            .onAppear { if ProcessInfo.processInfo.environment["AMSWS_EXTRAFORM"] != nil { addingExtra = true } }
+            #endif
         }
     }
 
@@ -42,6 +47,22 @@ struct TodayView: View {
                     NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
                         .buttonStyle(.plain)
                 }
+            }
+
+            let todaysExtras = view.extras(on: today)
+            if !todaysExtras.isEmpty {
+                SectionHeading(text: "Extra, outside the plan")
+                ForEach(todaysExtras) { ExtraCard(extra: $0) }
+            }
+            if store.canLog {
+                Button { addingExtra = true } label: {
+                    HStack(spacing: 8) {
+                        Glyph(name: "icon-plus", size: 18)
+                        Text("Extra activity")
+                    }
+                    .font(.headline).frame(maxWidth: .infinity, minHeight: 46)
+                }
+                .buttonStyle(.bordered).tint(Theme.today)
             }
 
             if !behind.isEmpty {
@@ -130,7 +151,9 @@ struct WeekCard: View {
 
     var body: some View {
         let days = view.week(of: today, today: today)
-        let tallest = max(days.map(\.plannedSeconds).max() ?? 0, 1)
+        // Extras count towards the day total, or a two-hour hike would draw
+        // a bar taller than the column it sits in.
+        let tallest = max(days.map { $0.plannedSeconds + $0.extraSeconds }.max() ?? 0, 1)
         let planned = days.reduce(0) { $0 + $1.plannedSeconds }
         let done = days.flatMap(\.training).filter { $0.state == .done }
             .reduce(0.0) { $0 + (Plan.plannedSeconds($1, view.mapping) ?? 0) }
@@ -149,7 +172,7 @@ struct WeekCard: View {
                         GeometryReader { geo in
                             VStack(spacing: 3) {
                                 Spacer(minLength: 0)
-                                if day.isRest {
+                                if day.isRest && day.extras.isEmpty {
                                     RoundedRectangle(cornerRadius: 2).fill(Theme.sport("rest"))
                                         .frame(width: geo.size.width * 0.6, height: 3)
                                 } else {
@@ -157,6 +180,10 @@ struct WeekCard: View {
                                         let seconds = Plan.plannedSeconds(w, view.mapping) ?? 0
                                         StateFill(sport: w.discipline.id, state: w.state)
                                             .frame(height: max(9, geo.size.height * seconds / tallest - 3))
+                                    }
+                                    ForEach(day.extras) { x in
+                                        DottedFill(colorId: Extras.activity(x.activity).colorId)
+                                            .frame(height: max(9, geo.size.height * x.seconds / tallest - 3))
                                     }
                                 }
                             }

@@ -93,6 +93,23 @@ def main():
             out.append({"name": f"{base}--move{j}", "file": path,
                         "steps": [{"key": w["key"], "entry": {"moveTo": shift(w["dayKey"], n)}}]})
 
+        # Extras: on their own sheet, created when the workbook has none.
+        day0 = todo[0]["dayKey"] if todo else workouts[0]["dayKey"]
+        walk = {"date": day0, "activity": "walk", "what": "Dog walk", "minutes": 35, "isTraining": False, "ref": "xtest0001"}
+        yoga = {"date": shift(day0, 1), "activity": "yoga", "what": "Evening flow", "minutes": 20, "effort": 3, "isTraining": False,
+                "notes": "Stiff <hips> & \"calm\"", "ref": "xtest0002"}
+        run = {"date": day0, "activity": "run", "what": "Extra easy run", "minutes": 42, "distance": 6.8, "avgHr": 131, "effort": 4,
+               "isTraining": True, "ref": "xtest0003"}
+        walk2 = dict(walk, ref="xtest0004")                  # a genuine repeat: same day, activity, length
+        legacy = {"date": day0, "activity": "hike", "minutes": 90, "isTraining": True}   # no ref, as before v1.55.0
+        out.append({"name": f"{base}--extra-one", "file": path, "steps": [{"extra": walk}]})
+        out.append({"name": f"{base}--extra-three", "file": path, "steps": [{"extra": walk}, {"extra": yoga}, {"extra": run}]})
+        out.append({"name": f"{base}--extra-repeat", "file": path, "steps": [{"extra": walk}, {"extra": walk2}]})
+        out.append({"name": f"{base}--extra-replay", "file": path, "steps": [{"extra": walk}, {"extra": walk}]})
+        out.append({"name": f"{base}--extra-noref", "file": path, "steps": [{"extra": legacy}, {"extra": legacy}]})
+        out.append({"name": f"{base}--extra-with-logs", "file": path,
+                    "steps": [{"key": pick(todo, 0)["key"], "entry": FULL}, {"extra": walk}, {"key": pick(todo, 1)["key"], "entry": {"missed": True}}]})
+
         # One sync carrying many sessions, as after a week offline.
         many = [pick(todo, k) for k in range(0, min(len(todo), 12))]
         steps = []
@@ -107,7 +124,7 @@ def main():
     # and two runs seconds apart then disagree about nothing.
     for scenario in out:
         for step in scenario["steps"]:
-            if "moveTo" not in step["entry"]:
+            if "entry" in step and "moveTo" not in step["entry"]:
                 step["entry"] = dict(step["entry"], completedAt=step["entry"].get("completedAt", WHEN))
     json.dump(out, sys.stdout, ensure_ascii=False, indent=1)
 

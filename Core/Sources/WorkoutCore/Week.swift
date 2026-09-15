@@ -5,6 +5,24 @@ import Foundation
  * looks like, what is still to come. Ported from js/sync.js.
  */
 
+/* One extra as the drawings need it: which day, which activity, how long. */
+public struct ExtraSummary: Identifiable, Equatable {
+    public let id: String
+    public let dayKey: String
+    public let activity: String
+    public let label: String
+    public let what: String
+    public let minutes: Double?
+    public let isTraining: Bool
+    public let pending: Bool
+    public var seconds: Double { (minutes ?? 0) * 60 }
+
+    public init(id: String, dayKey: String, activity: String, label: String, what: String, minutes: Double?, isTraining: Bool, pending: Bool) {
+        self.id = id; self.dayKey = dayKey; self.activity = activity; self.label = label; self.what = what
+        self.minutes = minutes; self.isTraining = isTraining; self.pending = pending
+    }
+}
+
 public struct PlanDay: Identifiable {
     public var id: String { dayKey }
     public let dayKey: String
@@ -13,18 +31,25 @@ public struct PlanDay: Identifiable {
     public let isPast: Bool
     public let sessions: [Workout]
     public let training: [Workout]
+    /* An extra does not end a rest day the way a session moved onto one does. */
     public let isRest: Bool
     public let plannedSeconds: Double
+    public let extras: [ExtraSummary]
+    public var extraSeconds: Double { extras.reduce(0) { $0 + $1.seconds } }
 }
 
 public struct PlanView {
     public let plan: [Workout]
     public let mapping: Mapping
+    public let extras: [ExtraSummary]
 
-    public init(plan: [Workout], mapping: Mapping) {
+    public init(plan: [Workout], mapping: Mapping, extras: [ExtraSummary] = []) {
         self.plan = plan
         self.mapping = mapping
+        self.extras = extras
     }
+
+    public func extras(on day: String) -> [ExtraSummary] { extras.filter { $0.dayKey == day } }
 
     /* Today in the phone's own calendar, keyed the way the sheet's dates are. */
     public static func todayKey(_ now: Date = Date()) -> String {
@@ -75,7 +100,7 @@ public struct PlanView {
             return PlanDay(dayKey: day, date: parseDayKey(day) ?? Date(), isToday: day == today, isPast: day < today,
                            sessions: sessions, training: sessions.filter { $0.discipline.id != "rest" },
                            isRest: !sessions.isEmpty && sessions.allSatisfy { $0.discipline.id == "rest" },
-                           plannedSeconds: planned)
+                           plannedSeconds: planned, extras: extras(on: day))
         }
     }
 

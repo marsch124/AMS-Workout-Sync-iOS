@@ -59,6 +59,18 @@ section groups, dimension widened). One harness fault found on the way: a
 step without a log time lets each writer stamp "now", so every step now
 carries one.
 
-Not yet covered, and so not yet allowed in the app: extras (appending to the
-Extras sheet, creating it), and everything around a sync — the Dropbox
-download and upload, the revision check, verify-before-upload, the queue.
+**Extras (2026-09-15):** `make-scenarios.py` adds six extras scenarios per
+workbook — one extra (creating the sheet where there is none), three in one
+sync, a genuine repeat (same day, activity and length, its own ref), a replay
+(same ref twice, written once), two without refs (the pre-v1.55.0 shape), and
+extras mixed with logs. Both writers create the sheet (four parts: sheet XML,
+[Content_Types], rels, workbook.xml), append to his real Extras sheet, add the
+Ref heading to a ten-column sheet, and leave a foreign "Extras" sheet alone.
+**651 scenarios, 182 with extras: differences none.**
+
+Still outside these tools: the sync itself. `Core/.build/release/sync-check
+<xlsx> <dir>` covers that against a file-backed Dropbox — a queue of four in
+one upload, a conflict retried, a second conflict refused, a reworded row
+followed, a row changed to another sport refused, one bad entry not blocking
+the rest, verify refusing bad bytes, the overlay and swap list, and extras
+appended without doubling.

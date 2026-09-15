@@ -276,6 +276,38 @@ do {
     }
 }
 
+// 10 -----------------------------------------------------------------
+print("\nEXTRAS: APPENDED, NEVER DOUBLED, NEVER DROPPED")
+do {
+    let url = try fresh("extras")
+    let remote = FileRemote(url)
+    var walk = ExtraEntry(date: todo[0].dayKey, activity: "walk", ref: "xcheck001")
+    walk.what = "Dog walk"; walk.minutes = 35
+    var walkAgain = walk; walkAgain.ref = "xcheck002"          // a second walk, same day and length
+    var yoga = ExtraEntry(date: todo[0].dayKey, activity: "yoga", ref: "xcheck003")
+    yoga.minutes = 20; yoga.notes = "calm"
+    let queue = [QueuedEntry(extra: walk, now: now), QueuedEntry(extra: walk, now: now),
+                 QueuedEntry(extra: walkAgain, now: now), QueuedEntry(extra: yoga, now: now),
+                 QueuedEntry(workout: todo[1], entry: oneTap(todo[1]), now: now)]
+    let result = try await Sync.run(queue, path: "/test", remote: remote, now: now)
+    let after = try Workbook(data: try Data(contentsOf: url))
+    let rows = Extras.read(after)
+    let before = Extras.read(try Workbook(data: try Data(contentsOf: source)))
+    line("written / failed / uploads", "\(result.written.count) / \(result.failed.count) / \(remote.uploads)")
+    line("extras rows before / after", "\(before.count) / \(rows.count)")
+    line("refs written", rows.filter { $0.ref.hasPrefix("xcheck") }.map(\.ref).sorted().joined(separator: " "))
+    check(result.written.count == 5 && result.failed.isEmpty, "every entry, the replay included, should be reported written")
+    check(rows.count == before.count + 3, "three new rows expected: the replay must not double, the repeat must not be swallowed")
+    check(Set(rows.map(\.ref)).contains("xcheck002"), "a genuine repeat with its own ref must be written")
+    check(rows.filter { $0.ref == "xcheck001" }.count == 1, "a replayed extra must appear once")
+    let aftersheet = try after.readSheet(try Extras.sheetName(for: after))
+    check(Extras.alreadyRecorded(aftersheet, walk), "a written extra must be recognised on the next replay")
+    // The sync re-read: sessions untouched, the one-tap landed.
+    let plan = try planOf(try Data(contentsOf: url))
+    check(plan.plan.count == base.plan.count, "the plan must keep every session")
+    check(plan.plan.first { $0.key == todo[1].key }!.loggedInSheet, "the one-tap alongside the extras did not land")
+}
+
 let json = try JSONSerialization.data(withJSONObject: scenarios, options: [.prettyPrinted])
 try json.write(to: work.appendingPathComponent("sync-scenarios.json"))
 print("\nerrors:", errors.isEmpty ? "none" : "\n - " + errors.joined(separator: "\n - "))

@@ -37,9 +37,19 @@ public struct QueuedEntry: Codable, Identifiable, Equatable {
     public let disciplineId: String
     public let title: String
     public var entry: LogEntry
+    /* An extra belongs to no row; when set, everything above is blank. */
+    public var extra: ExtraEntry?
     public let createdAt: Date
     public var attempts: Int = 0
     public var lastError: String?
+
+    public init(extra: ExtraEntry, now: Date = Date()) {
+        id = UUID().uuidString
+        workoutKey = ""; sheet = ""; row = 0; dayKey = extra.date; disciplineId = ""; title = ""
+        entry = LogEntry()
+        self.extra = extra
+        createdAt = now
+    }
 
     public init(workout: Workout, entry: LogEntry, now: Date = Date()) {
         id = UUID().uuidString
@@ -96,7 +106,7 @@ public protocol Remote {
 }
 
 public enum SyncError: LocalizedError {
-    case noLayout, unreadable(String), noSheets, sessionsLost(Int, Int), noSession(String), nothingToWrite
+    case noLayout, unreadable(String), noSheets, sessionsLost(Int, Int), noSession(String), nothingToWrite, extrasSheetTaken
 
     public var errorDescription: String? {
         switch self {
@@ -111,7 +121,9 @@ public enum SyncError: LocalizedError {
         case .noSession(let title):
             return "The session this was logged against (\"\(title.prefix(40))\") is no longer in the workbook, or has been changed into a different one. Nothing was written; log it again against the row you want."
         case .nothingToWrite:
-            return "This entry had nothing that could be written."
+            return "This entry had nothing that could be written to the Extras sheet."
+        case .extrasSheetTaken:
+            return "There is already a sheet called \"Extras\" that is not this app’s, and no free name to use instead."
         }
     }
 }
@@ -189,6 +201,7 @@ public enum Sync {
 
     /* Every queued entry belonging to a session, in queue order. As matchEntries in the web app. */
     static func entries(for w: Workout, in queue: [QueuedEntry]) -> [QueuedEntry] {
+        let queue = queue.filter { $0.extra == nil }
         let byKey = queue.filter { $0.workoutKey == w.key }
         if !byKey.isEmpty { return byKey }
         return queue.filter { $0.dayKey == w.dayKey && $0.disciplineId == w.discipline.id && $0.sheet == w.sheet }
@@ -262,6 +275,19 @@ public enum Sync {
 
         for queued in queue {
             do {
+                if let extra = queued.extra {
+                    // Appending is not idempotent the way writing to a known row
+                    // is, so a replay must not add the same thing twice.
+                    let name = try Extras.ensureSheet(workbook)
+                    let sheet = try workbook.readSheet(name)
+                    if Extras.alreadyRecorded(sheet, extra) { result.written.append(queued.id); continue }
+                    let names = (try? learnWeekdayNames(try workbook.readSheet(mapping.sheets[0]), mapping)) ?? [:]
+                    let built = Extras.buildEdits(sheet, extra, weekdayNames: names)
+                    if built.edits.isEmpty { throw SyncError.nothingToWrite }
+                    try workbook.writeCells(name, built.edits)
+                    result.written.append(queued.id)
+                    continue
+                }
                 guard let workout = findWorkout(for: queued, in: plan) else { throw SyncError.noSession(queued.title) }
                 var entry = queued.entry
                 if entry.moveTo != nil && entry.weekdayNames == nil {

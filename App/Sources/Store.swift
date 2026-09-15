@@ -28,7 +28,7 @@ final class Store: ObservableObject {
     @Published private(set) var lastProblem: String?
     /* The Dropbox revision last read — what an upload will have to match. */
     @Published private(set) var rev: String?
-    @Published var dropboxPath: String? = UserDefaults.standard.string(forKey: "dropboxPath") {
+    @Published var dropboxPath: String? = ProcessInfo.processInfo.environment["AMSWS_FAKE_PATH"] ?? UserDefaults.standard.string(forKey: "dropboxPath") {
         didSet { UserDefaults.standard.set(dropboxPath, forKey: "dropboxPath") }
     }
 
@@ -54,7 +54,30 @@ final class Store: ObservableObject {
 
     /* The plan as shown: the sheet with the queue laid over it. */
     var displayed: [Workout] { Sync.overlay(plan, queue) }
-    var view: PlanView? { mapping.map { PlanView(plan: displayed, mapping: $0) } }
+    var view: PlanView? { mapping.map { PlanView(plan: displayed, mapping: $0, extras: allExtras) } }
+
+    @Published private(set) var extras: [ExtraRecord] = []
+
+    /* Waiting on this phone first, then the sheet's rows — newest first. */
+    var allExtras: [ExtraSummary] {
+        let waiting = queue.compactMap { q -> ExtraSummary? in
+            guard let x = q.extra else { return nil }
+            return ExtraSummary(id: q.id, dayKey: x.date, activity: x.activity, label: Extras.activity(x.activity).label,
+                                what: x.what, minutes: x.minutes, isTraining: x.isTraining, pending: true)
+        }.reversed()
+        let saved = extras.map { r in
+            ExtraSummary(id: r.id, dayKey: r.date, activity: r.activity, label: r.label, what: r.what,
+                         minutes: r.minutes, isTraining: r.isTraining, pending: false)
+        }
+        return waiting + saved
+    }
+
+    func logExtra(_ entry: ExtraEntry) {
+        guard canLog else { return }
+        queue.append(QueuedEntry(extra: entry))
+        saveQueue()
+        syncNow()
+    }
 
     private var cacheURL: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -189,6 +212,7 @@ final class Store: ObservableObject {
                     NSLocalizedDescriptionKey: "Nothing in this workbook looks like a training plan."])
             }
             self.plan = Plan.build(workbook, mapping)
+            self.extras = Extras.read(workbook)
             self.mapping = mapping
             self.fromCache = cached
             self.phase = .ready

@@ -11,17 +11,22 @@ import WorkoutCore
  */
 
 struct Step: Decodable {
-    let key: String
-    let entry: [String: EntryValue]
+    let key: String?
+    let entry: [String: EntryValue]?
+    let extra: [String: EntryValue]?
 }
 
 enum EntryValue: Decodable {
-    case string(String), bool(Bool)
+    case string(String), bool(Bool), number(Double)
     init(from decoder: Decoder) throws {
         let c = try decoder.singleContainer()
-        if let b = try? c.decode(Bool.self) { self = .bool(b) } else { self = .string(try c.decode(String.self)) }
+        if let b = try? c.decode(Bool.self) { self = .bool(b) }
+        else if let n = try? c.decode(Double.self) { self = .number(n) }
+        else { self = .string(try c.decode(String.self)) }
     }
     var string: String? { if case .string(let s) = self { return s } else { return nil } }
+    var number: Double? { if case .number(let n) = self { return n } else { return nil } }
+    var bool: Bool { if case .bool(let b) = self { return b } else { return false } }
 }
 
 extension Decoder {
@@ -56,9 +61,25 @@ for scenario in scenarios {
         for sheet in mapping.sheets { names[sheet] = learnWeekdayNames(try workbook.readSheet(sheet), mapping) }
 
         for step in scenario.steps {
-            guard let workout = plan.first(where: { $0.key == step.key }) else { throw NSError(domain: "no session \(step.key)", code: 2) }
+            if let x = step.extra {
+                var extra = ExtraEntry(date: x["date"]?.string ?? "", activity: x["activity"]?.string ?? "other", ref: x["ref"]?.string ?? "")
+                extra.what = x["what"]?.string ?? ""
+                extra.minutes = x["minutes"]?.number
+                extra.distance = x["distance"]?.number
+                extra.avgHr = x["avgHr"]?.number
+                extra.effort = x["effort"]?.number
+                extra.isTraining = x["isTraining"]?.bool ?? false
+                extra.notes = x["notes"]?.string ?? ""
+                let name = try Extras.ensureSheet(workbook)
+                let sheet = try workbook.readSheet(name)
+                if Extras.alreadyRecorded(sheet, extra) { continue }
+                let built = Extras.buildEdits(sheet, extra, weekdayNames: names[mapping.sheets[0]] ?? [:])
+                try workbook.writeCells(name, built.edits)
+                continue
+            }
+            guard let key = step.key, let workout = plan.first(where: { $0.key == key }) else { throw NSError(domain: "no session \(step.key ?? "?")", code: 2) }
             var e = LogEntry()
-            let v = step.entry
+            let v = step.entry ?? [:]
             e.actualDuration = v["actualDuration"]?.string
             e.actualDistance = v["actualDistance"]?.string
             e.distanceUnit = v["distanceUnit"]?.string
