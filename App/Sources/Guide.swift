@@ -24,7 +24,7 @@ struct GuideView: View {
             "Done as planned writes the planned length and the done mark, nothing else — for the sessions that went as planned.",
             "Log details opens the form: duration, distance, pace or speed, heart rate, effort, notes. A bare number in Duration means minutes; 1:15, 1h20 and 90min work too. A decimal comma is fine.",
             "On a session already recorded the same button says Adjust logged data and the form opens filled in. Only the boxes you change are written — the button counts them.",
-            "From Apple Health: if Health holds a workout for that day and sport (your Garmin sends them there), it is offered at the top of the form. Use fills the boxes. Nothing is saved until you press Save."
+            "From Apple Health: if Health holds a workout for that day and sport (your Garmin sends them there), it is offered at the top of the form. Use fills the boxes. Nothing is saved until you press Save. Optional — Settings → Apple Health → Stop switches it off."
         ]),
         Part(id: "Missed, Move, Swap", body: [
             "Missed writes the missed mark and an optional note. You can still log the session later if you did it after all.",
@@ -78,6 +78,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "0.4 (10)", date: "15 September 2026", headline: "Stop using Apple Health", items: [
+            "Settings → Apple Health has a Stop button: the app then never asks Health for anything again, and Use again turns it back on. iOS does not let an app give its own permission back, so the permission itself is taken away in the Health app — the row says where, and opens it for you."
+        ]),
         Release(version: "0.4 (9)", date: "15 September 2026", headline: "How this works, and What's new", items: [
             "This guide and this list, as the web app has them.",
             "Read it again now is a button."

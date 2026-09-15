@@ -221,14 +221,26 @@ struct HealthSettings: View {
         switch health.status {
         case .unavailable:
             SettingsRow(title: "Not available on this device", sub: "Apple Health is iPhone only.")
+        case .asked where health.enabled:
+            SettingsRow(title: "In use",
+                        sub: "The log form offers the day’s workouts from Health to fill the boxes. Health is only read, never written.",
+                        action: ("Stop", { health.enabled = false }))
+            Text("Stop means the app never asks Health for anything again. To also take the permission away, open the Health app → your picture → Apps → Workout Sync.")
+                .font(.caption).foregroundStyle(Theme.secondary)
+            Button("Open the Health app") {
+                if let url = URL(string: "x-apple-health://") { UIApplication.shared.open(url) }
+            }
+            .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
         case .asked:
-            SettingsRow(title: "Connected", sub: "The log form offers the day’s workouts from Health to fill the boxes. Health is only read, never written. Change what it may read in the Health app → Sharing → Apps.")
+            SettingsRow(title: "Not in use",
+                        sub: "The app does not read Health. The permission may still be granted in the Health app.",
+                        action: ("Use again", { health.enabled = true }))
         case .denied:
-            SettingsRow(title: "Could not ask", sub: "iOS did not let the app ask for access. Open the Health app → Sharing → Apps → Workout Sync.")
+            SettingsRow(title: "Could not ask", sub: "iOS did not let the app ask for access. Open the Health app → your picture → Apps → Workout Sync.")
         case .unknown:
             SettingsRow(title: "Not connected",
-                        sub: "Let the app read your workouts, heart rate and distances, and the log form fills itself from what your Garmin sent to Health.",
-                        action: ("Connect", { Task { await health.requestAccess() } }))
+                        sub: "Let the app read your workouts, heart rate and distances, and the log form can fill itself from what your Garmin sent to Health. Optional.",
+                        action: ("Connect", { Task { await health.requestAccess(); health.enabled = true } }))
         }
     }
 }

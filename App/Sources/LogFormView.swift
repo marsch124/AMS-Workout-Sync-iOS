@@ -51,7 +51,7 @@ struct LogFormView: View {
                             for (id, value) in picked.formValues(for: workout.discipline.id) { values[id] = value }
                             if workout.discipline.id == "swim" { distanceUnit = "m" }
                         }
-                    } else if healthChecked && HealthImport.shared.status == .asked {
+                    } else if healthChecked && HealthImport.shared.inUse {
                         Text("Nothing in Apple Health for this day and sport.").font(.caption).foregroundStyle(Theme.secondary)
                     }
 
@@ -87,7 +87,7 @@ struct LogFormView: View {
             }
             .onAppear(perform: load)
             .task {
-                guard HealthImport.shared.status == .asked || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
+                guard HealthImport.shared.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
                 let all = await HealthImport.shared.workouts(on: workout.dayKey)
                 let sport = workout.discipline.id
                 healthWorkouts = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }

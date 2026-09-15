@@ -29,7 +29,18 @@ final class HealthImport: ObservableObject {
     private let store = HKHealthStore()
     @Published private(set) var status: Status = .unknown
 
+    /*
+     * Whether the app reads Health at all. iOS does not let an app give its
+     * own permission back — only the Health app can — so this is the switch
+     * the app can honour itself: off, and nothing is asked of Health again.
+     */
+    @Published var enabled: Bool = UserDefaults.standard.object(forKey: "health.enabled") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(enabled, forKey: "health.enabled") }
+    }
+
     enum Status: Equatable { case unavailable, unknown, asked, denied }
+
+    var inUse: Bool { status == .asked && enabled }
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
@@ -89,7 +100,7 @@ final class HealthImport: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil { return Self.fakes(dayKey) }
         #endif
-        guard isAvailable, let day = parseDayKey(dayKey) else { return [] }
+        guard isAvailable, enabled, let day = parseDayKey(dayKey) else { return [] }
         // The sheet's day is a calendar date; Health's workouts are instants in local time.
         let local = Calendar.current
         let comps = utc.dateComponents([.year, .month, .day], from: day)
