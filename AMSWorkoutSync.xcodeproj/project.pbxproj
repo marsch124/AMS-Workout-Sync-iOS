@@ -13,6 +13,7 @@
 		7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70231C046226474A30263864 /* SettingsView.swift */; };
 		860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201A884ED7294E23A8047706 /* Components.swift */; };
 		8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */; };
+		89CDC9463998F4995477427E /* LogFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFFF43913961BBC438C16AF /* LogFormView.swift */; };
 		8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */; };
 		AE4B787B0C3121743BEC221B /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5419017E5E37523852FF0B4F /* TodayView.swift */; };
 		C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6525576D143C59A4723612 /* DropboxViews.swift */; };
@@ -25,6 +26,7 @@
 		0A14825F875D7AF6B7EE715C /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		201A884ED7294E23A8047706 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		2E6525576D143C59A4723612 /* DropboxViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxViews.swift; sourceTree = "<group>"; };
+		3BFFF43913961BBC438C16AF /* LogFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFormView.swift; sourceTree = "<group>"; };
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		70231C046226474A30263864 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSWorkoutSyncApp.swift; sourceTree = "<group>"; };
@@ -98,6 +100,7 @@
 				201A884ED7294E23A8047706 /* Components.swift */,
 				8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */,
 				2E6525576D143C59A4723612 /* DropboxViews.swift */,
+				3BFFF43913961BBC438C16AF /* LogFormView.swift */,
 				A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */,
 				E7A03855A2195F5FD77B7F7C /* SessionView.swift */,
 				70231C046226474A30263864 /* SettingsView.swift */,
@@ -188,6 +191,7 @@
 				860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */,
 				8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */,
 				C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */,
+				89CDC9463998F4995477427E /* LogFormView.swift in Sources */,
 				F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */,
 				F152713F3C49201271BBD36B /* SessionView.swift in Sources */,
 				7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */,
@@ -235,7 +239,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -295,7 +299,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

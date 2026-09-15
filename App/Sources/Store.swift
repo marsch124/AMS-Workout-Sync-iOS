@@ -224,6 +224,14 @@ final class Store: ObservableObject {
         syncNow()
     }
 
+    /* Anything from the log form. Queued first, then sent; only what changed is in it. */
+    func log(_ workout: Workout, _ entry: LogEntry) {
+        guard canLog else { return }
+        queue.append(QueuedEntry(workout: workout, entry: entry))
+        saveQueue()
+        syncNow()
+    }
+
     func discard(_ id: String) {
         queue.removeAll { $0.id == id }
         saveQueue()

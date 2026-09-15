@@ -4,6 +4,7 @@ import WorkoutCore
 struct SessionView: View {
     @EnvironmentObject var store: Store
     let key: String
+    @State private var logging = false
 
     var body: some View {
         ScrollView {
@@ -43,20 +44,34 @@ struct SessionView: View {
 
                     if store.isWaiting(w.key) {
                         Text("Logged on this phone · waiting to sync").font(.headline).foregroundStyle(Theme.today)
-                    } else if w.state == .todo, w.discipline.id != "rest", store.canLog,
-                              let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
-                        Button {
-                            store.logAsPlanned(w)
-                        } label: {
-                            HStack(spacing: 10) {
-                                Glyph(name: "icon-check", size: 22)
-                                Text("Done as planned · \(formatDuration(planned))")
+                    }
+                    if store.canLog, w.discipline.id != "rest" {
+                        VStack(spacing: 10) {
+                            if w.state == .todo, !store.isWaiting(w.key),
+                               let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
+                                Button {
+                                    store.logAsPlanned(w)
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Glyph(name: "icon-check", size: 22)
+                                        Text("Done as planned · \(formatDuration(planned))")
+                                    }
+                                    .font(.title3.weight(.bold))
+                                    .frame(maxWidth: .infinity, minHeight: 60)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(Theme.today)
                             }
-                            .font(.title3.weight(.bold))
-                            .frame(maxWidth: .infinity, minHeight: 60)
+                            Button {
+                                logging = true
+                            } label: {
+                                Text(w.loggedInSheet || store.isWaiting(w.key) ? "Adjust logged data" : "Log details")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, minHeight: 48)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(Theme.today)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Theme.today)
                     }
 
                     if w.missed {
@@ -92,6 +107,14 @@ struct SessionView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $logging) {
+            if let w = store.workout(key), let mapping = store.mapping {
+                LogFormView(workout: w, mapping: mapping).environmentObject(store)
+            }
+        }
+        #if DEBUG
+        .onAppear { if ProcessInfo.processInfo.environment["AMSWS_LOGFORM"] != nil { logging = true } }
+        #endif
     }
 
     /* The recorded numbers, each in its own unit, only where the sheet holds one. */

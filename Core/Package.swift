@@ -14,12 +14,14 @@ let package = Package(
         .library(name: "WorkoutCore", targets: ["WorkoutCore"]),
         .executable(name: "plan-dump", targets: ["PlanDump"]),
         .executable(name: "write-dump", targets: ["WriteDump"]),
-        .executable(name: "sync-check", targets: ["SyncCheck"])
+        .executable(name: "sync-check", targets: ["SyncCheck"]),
+        .executable(name: "form-check", targets: ["FormCheck"])
     ],
     targets: [
         .target(name: "WorkoutCore"),
         .executableTarget(name: "PlanDump", dependencies: ["WorkoutCore"]),
         .executableTarget(name: "WriteDump", dependencies: ["WorkoutCore"]),
-        .executableTarget(name: "SyncCheck", dependencies: ["WorkoutCore"])
+        .executableTarget(name: "SyncCheck", dependencies: ["WorkoutCore"]),
+        .executableTarget(name: "FormCheck", dependencies: ["WorkoutCore"])
     ]
 )
