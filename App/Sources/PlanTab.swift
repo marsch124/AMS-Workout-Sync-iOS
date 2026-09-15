@@ -15,7 +15,7 @@ struct PlanTab: View {
             ScrollView {
                 if let view = store.view {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Plan").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
+                        Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
                         Picker("Show", selection: $range) {
                             ForEach(Range.allCases) { Text($0.rawValue).tag($0) }
                         }

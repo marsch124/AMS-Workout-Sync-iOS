@@ -34,7 +34,7 @@ struct RootView: View {
                 .tabItem { Label { Text("Today") } icon: { Image("icon-today") } }
                 .tag("today")
             PlanTab()
-                .tabItem { Label { Text("Plan") } icon: { Image("icon-plan") } }
+                .tabItem { Label { Text("Sessions") } icon: { Image("icon-plan") } }
                 .tag("plan")
             SettingsView()
                 .tabItem { Label { Text("Settings") } icon: { Image("icon-settings") } }

@@ -82,6 +82,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "0.5 (13)", date: "15 September 2026", headline: "Plan is now Sessions", items: [
+            "The middle tab holds every session in every state — upcoming, done, missed, all — and two of those are the past, so \"Plan\" was the wrong word for it. Sessions, as you chose."
+        ]),
         Release(version: "0.5 (12)", date: "15 September 2026", headline: "Photographs", items: [
             "A session or an extra can carry photographs, from the library or the camera, shrunk to a size a phone can hold a season of. Tap one to see it full size, share it or delete it.",
             "They stay on this phone — never in the workbook, never in Dropbox — and the iPhone's own backup includes them. Settings → Photos saves them all out as a zip, or brings in the zip the web app's Save them all makes, so your pictures from there come across.",
