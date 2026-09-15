@@ -88,19 +88,11 @@ struct TodayView: View {
         }
     }
 
+    /* No date here: it is always today, and he would rather have the room (v1.0 (18)). */
     private func header(_ view: PlanView, _ today: String) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 4) {
-                let phase = view.phase(on: today)
-                if !phase.isEmpty {
-                    Text(phase).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.today)
-                }
-                Text(Dates.long(today))
-                    .font(.largeTitle.weight(.bold))
-                    .foregroundStyle(Theme.text)
-                    .minimumScaleFactor(0.7)
-                    .lineLimit(1)
-            }
+            let phase = view.phase(on: today)
+            Text(phase.isEmpty ? "Today" : phase).font(.title3.weight(.bold)).foregroundStyle(Theme.today)
             Spacer()
             if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { ReadOnlyChip() }
         }

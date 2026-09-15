@@ -28,18 +28,19 @@ struct RootView: View {
         #endif
     }()
 
+    /*
+     * The three screens are pages you swipe between, as in AMS PARA, with a
+     * bar of our own underneath — the page style has no tab bar of its own.
+     */
     var body: some View {
         TabView(selection: $tab) {
-            TodayView()
-                .tabItem { Label { Text("Today") } icon: { Image("icon-today") } }
-                .tag("today")
-            PlanTab()
-                .tabItem { Label { Text("Sessions") } icon: { Image("icon-plan") } }
-                .tag("plan")
-            SettingsView()
-                .tabItem { Label { Text("Settings") } icon: { Image("icon-settings") } }
-                .tag("settings")
+            TodayView().tag("today")
+            PlanTab().tag("plan")
+            SettingsView().tag("settings")
         }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .ignoresSafeArea(.keyboard)
+        .safeAreaInset(edge: .bottom, spacing: 0) { BottomBar(tab: $tab, tint: tint) }
         .tint(tint)
         #if DEBUG
         .overlay {
@@ -56,5 +57,36 @@ struct RootView: View {
         case "settings": return Theme.settings
         default: return Theme.today
         }
+    }
+}
+
+
+struct BottomBar: View {
+    @Binding var tab: String
+    let tint: Color
+
+    private let items: [(id: String, label: String, icon: String)] = [
+        ("today", "Today", "icon-today"), ("plan", "Sessions", "icon-plan"), ("settings", "Settings", "icon-settings")
+    ]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(items, id: \.id) { item in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { tab = item.id }
+                } label: {
+                    VStack(spacing: 3) {
+                        Glyph(name: item.icon, size: 24)
+                        Text(item.label).font(.caption2.weight(.semibold))
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .foregroundStyle(tab == item.id ? tint : Theme.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.top, 6)
+        .background(.bar)
+        .overlay(alignment: .top) { Rectangle().fill(Theme.border).frame(height: 0.5) }
     }
 }

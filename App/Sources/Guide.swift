@@ -82,6 +82,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.0 (18)", date: "15 September 2026", headline: "Swipe between the screens", items: [
+            "Today, Sessions and Settings are pages: swipe left or right to move between them, or tap the bar as before.",
+            "The date is gone from the top of Today — it is always today — and the room went to the week and the sessions."
+        ]),
         Release(version: "1.0 (17)", date: "15 September 2026", headline: "The AMS Workout Sync app", items: [
             "From today this is the primary Workout Sync: one-tap, the log form, corrections, missed, move and swap, extra activities, photographs and Apple Health, all writing into your plan exactly as the web app did — proven on 651 scenarios, then on your own plan.",
             "The web app stays for the Progress tab, spoken logging and the Mac. Both write to the same plan and check Dropbox's version first, so they can be used side by side."
