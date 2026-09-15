@@ -17,7 +17,7 @@ struct GuideView: View {
             "It writes nothing anywhere else. Every other part of the workbook is copied through untouched."
         ]),
         Part(id: "Today", body: [
-            "The week strip is one column a day, one bar a session. Solid is recorded, hollow is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line.",
+            "The week strip is one column a day, one bar a session. Solid is recorded, hollow is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
             "Below it: today's sessions, anything behind you that was never recorded, and what is coming up. Tap a session to open it."
         ]),
         Part(id: "Logging a session", body: [
@@ -78,6 +78,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "0.4 (11)", date: "15 September 2026", headline: "A heart on the button, the week key, and a warning", items: [
+            "The log button carries a small heart and the word Garmin when Apple Health holds a workout for that day and sport — the numbers are one tap away inside.",
+            "Tap the This week card and it explains its own drawing: recorded, still to do, missed, extra, rest day, and the sport colours.",
+            "If logging has waited a full day to reach Dropbox, Today says so at the top, with the reason and a Send it now button. Silent below that."
+        ]),
         Release(version: "0.4 (10)", date: "15 September 2026", headline: "Stop using Apple Health", items: [
             "Settings → Apple Health has a Stop button: the app then never asks Health for anything again, and Use again turns it back on. iOS does not let an app give its own permission back, so the permission itself is taken away in the Health app — the row says where, and opens it for you."
         ]),

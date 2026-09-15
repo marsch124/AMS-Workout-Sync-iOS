@@ -293,6 +293,17 @@ final class Store: ObservableObject {
         syncNow()
     }
 
+    /* Text for the warning once the oldest waiting entry is a full day old; nil below that. */
+    var waitedTooLong: String? {
+        guard let oldest = queue.map(\.createdAt).min() else { return nil }
+        let hours = Date().timeIntervalSince(oldest) / 3600
+        guard hours >= 24 else { return nil }
+        let count = queue.count
+        let age = hours >= 48 ? "\(Int(hours / 24)) days" : "a day"
+        let reason = queue.compactMap(\.lastError).last ?? lastProblem ?? "The phone may have been offline, or Dropbox unreachable."
+        return "\(count) entr\(count == 1 ? "y has" : "ies have") waited \(age). \(reason)"
+    }
+
     func discard(_ id: String) {
         queue.removeAll { $0.id == id }
         saveQueue()

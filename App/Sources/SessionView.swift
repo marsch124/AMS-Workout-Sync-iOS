@@ -8,6 +8,7 @@ struct SessionView: View {
     @State private var moving = false
     @State private var askingMissed = false
     @State private var missedNote = ""
+    @State private var fromHealth = 0
 
     var body: some View {
         ScrollView {
@@ -67,9 +68,16 @@ struct SessionView: View {
                             Button {
                                 logging = true
                             } label: {
-                                Text(w.logged && !w.missed ? "Adjust logged data" : "Log details")
-                                    .font(.headline)
-                                    .frame(maxWidth: .infinity, minHeight: 48)
+                                HStack(spacing: 8) {
+                                    Text(w.logged && !w.missed ? "Adjust logged data" : "Log details")
+                                    if fromHealth > 0 {
+                                        // Health has this day's workout: the numbers are one tap away inside.
+                                        Glyph(name: "icon-heart", size: 18)
+                                        Text("Garmin").font(.subheadline.weight(.semibold))
+                                    }
+                                }
+                                .font(.headline)
+                                .frame(maxWidth: .infinity, minHeight: 48)
                             }
                             .buttonStyle(.bordered)
                             .tint(Theme.today)
@@ -128,6 +136,13 @@ struct SessionView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .task(id: key) {
+            guard let w = store.workout(key),
+                  HealthImport.shared.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
+            let all = await HealthImport.shared.workouts(on: w.dayKey)
+            let sport = w.discipline.id
+            fromHealth = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }.count
+        }
         .sheet(isPresented: $logging) {
             if let w = store.workout(key), let mapping = store.mapping {
                 LogFormView(workout: w, mapping: mapping).environmentObject(store)

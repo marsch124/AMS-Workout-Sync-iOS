@@ -36,6 +36,7 @@ struct TodayView: View {
 
         VStack(alignment: .leading, spacing: 14) {
             header(view, today)
+            if let waited = store.waitedTooLong { WaitingWarning(text: waited) }
             WeekCard(view: view, today: today)
 
             if sessions.isEmpty {
@@ -103,6 +104,29 @@ struct TodayView: View {
     }
 }
 
+/*
+ * Logging that has waited a full day to reach Dropbox. Silent below that —
+ * an ordinary send takes seconds, and a warning that appears on an ordinary
+ * day is one you learn to ignore (web app v1.55.0).
+ */
+struct WaitingWarning: View {
+    @EnvironmentObject var store: Store
+    let text: String
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Logging has not reached Dropbox").font(.headline).foregroundStyle(Theme.text)
+            Text(text).font(.subheadline).foregroundStyle(Theme.secondary)
+            Button(store.syncing ? "Sending…" : "Send it now") { store.syncNow() }
+                .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.danger)
+                .disabled(store.syncing)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.danger, lineWidth: 2))
+    }
+}
+
 /* Stage 1 says what it is, once, small: this app looks and does not touch. */
 struct ReadOnlyChip: View {
     var body: some View {
@@ -155,6 +179,8 @@ struct WeekCard: View {
     @EnvironmentObject var store: Store
     let view: PlanView
     let today: String
+    /* Tap the card and the week explains its own drawing — a shape carries no label. */
+    @State private var keyOpen = false
 
     var body: some View {
         let days = view.week(of: today, today: today)
@@ -168,6 +194,7 @@ struct WeekCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("This week").font(.headline).foregroundStyle(Theme.text)
+                Text(keyOpen ? "hide key" : "key").font(.caption).foregroundStyle(Theme.secondary)
                 Spacer()
                 Text(done > 0 ? "\(formatDuration(done)) of \(formatDuration(planned))" : "\(formatDuration(planned)) planned")
                     .font(.subheadline.weight(.semibold).monospacedDigit())
@@ -205,9 +232,60 @@ struct WeekCard: View {
                     }
                 }
             }
+            if keyOpen { WeekKey(days: days) }
         }
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .contentShape(Rectangle())
+        .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { keyOpen.toggle() } }
+    }
+}
+
+/*
+ * The key: what the shapes mean, then the colours. The five sports are always
+ * listed, in training order, so the key is a key rather than a description of
+ * this particular week; anything else the week holds is added after.
+ */
+struct WeekKey: View {
+    let days: [PlanDay]
+
+    var body: some View {
+        let sports = Disciplines.five.map { ($0.id, $0.label) } + others
+        VStack(alignment: .leading, spacing: 10) {
+            Divider()
+            HStack(spacing: 14) {
+                keyItem(StateFill(sport: "run", state: .done), "Recorded")
+                keyItem(StateFill(sport: "run", state: .todo), "Still to do")
+                keyItem(StateFill(sport: "run", state: .missed), "Missed")
+            }
+            HStack(spacing: 14) {
+                keyItem(DottedFill(colorId: "walk"), "Extra, outside the plan")
+                keyItem(RoundedRectangle(cornerRadius: 2).fill(Theme.sport("rest")).frame(height: 3).frame(maxHeight: .infinity), "Rest day")
+            }
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 6) {
+                ForEach(sports, id: \.0) { id, label in
+                    HStack(spacing: 6) {
+                        Circle().fill(Theme.sport(id)).frame(width: 10, height: 10)
+                        Text(label).font(.caption).foregroundStyle(Theme.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private var others: [(String, String)] {
+        var seen: [(String, String)] = []
+        for w in days.flatMap(\.training) where Disciplines.order(w.discipline.id) == Disciplines.five.count {
+            if !seen.contains(where: { $0.0 == w.discipline.id }) { seen.append((w.discipline.id, w.discipline.label)) }
+        }
+        return seen
+    }
+
+    private func keyItem<Shape: View>(_ shape: Shape, _ label: String) -> some View {
+        HStack(spacing: 6) {
+            shape.frame(width: 14, height: 18)
+            Text(label).font(.caption).foregroundStyle(Theme.secondary)
+        }
     }
 }
 
