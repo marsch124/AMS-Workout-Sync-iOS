@@ -37,7 +37,8 @@ struct SettingsView: View {
                             .buttonStyle(.borderedProminent).tint(Theme.today)
                         } else {
                             Button("Read it again now") { store.refresh() }
-                                .font(.subheadline.weight(.semibold)).tint(Theme.today)
+                                .font(.subheadline.weight(.semibold))
+                                .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
                         }
                     } else {
                         SettingsRow(title: "Not connected to Dropbox",
@@ -103,8 +104,14 @@ struct SettingsView: View {
                     }
 
                     SectionHeading(text: "This app")
-                    SettingsRow(title: "Workout Sync for iPhone \(version)",
-                                sub: "Logs to the same plan as the web app. Photos, Progress and voice are still there for now.")
+                    NavigationLink { GuideView() } label: {
+                        SettingsRow(title: "How this works", sub: "The week strip, logging, syncing and what keeps your plan safe", chevron: true)
+                    }
+                    .buttonStyle(.plain)
+                    NavigationLink { WhatsNewView() } label: {
+                        SettingsRow(title: "What’s new", sub: "Workout Sync for iPhone \(version)", chevron: true)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)

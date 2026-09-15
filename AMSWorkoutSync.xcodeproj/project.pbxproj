@@ -17,6 +17,7 @@
 		8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */; };
 		89CDC9463998F4995477427E /* LogFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFFF43913961BBC438C16AF /* LogFormView.swift */; };
 		8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */; };
+		A8D54A1892111BFD679F82AF /* Guide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874D363C030B897E786F6F58 /* Guide.swift */; };
 		AE4B787B0C3121743BEC221B /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5419017E5E37523852FF0B4F /* TodayView.swift */; };
 		C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6525576D143C59A4723612 /* DropboxViews.swift */; };
 		DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B0778365FA2EAD6A05938A /* ExtraViews.swift */; };
@@ -33,6 +34,7 @@
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		70231C046226474A30263864 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSWorkoutSyncApp.swift; sourceTree = "<group>"; };
+		874D363C030B897E786F6F58 /* Guide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Guide.swift; sourceTree = "<group>"; };
 		8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropbox.swift; sourceTree = "<group>"; };
 		8CDFC67F6D3D022CEEC7F7CC /* Health.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Health.swift; sourceTree = "<group>"; };
 		8F6976A1E0C9C11CAB4C4134 /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Core; path = Core; sourceTree = SOURCE_ROOT; };
@@ -107,6 +109,7 @@
 				8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */,
 				2E6525576D143C59A4723612 /* DropboxViews.swift */,
 				E8B0778365FA2EAD6A05938A /* ExtraViews.swift */,
+				874D363C030B897E786F6F58 /* Guide.swift */,
 				8CDFC67F6D3D022CEEC7F7CC /* Health.swift */,
 				3BFFF43913961BBC438C16AF /* LogFormView.swift */,
 				E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */,
@@ -201,6 +204,7 @@
 				8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */,
 				C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */,
 				DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */,
+				A8D54A1892111BFD679F82AF /* Guide.swift in Sources */,
 				5CCB2FFB5FB33334D047E2F2 /* Health.swift in Sources */,
 				89CDC9463998F4995477427E /* LogFormView.swift in Sources */,
 				24DD67DD79E07FEC82557AFF /* MoveView.swift in Sources */,
@@ -251,7 +255,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -311,7 +315,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
