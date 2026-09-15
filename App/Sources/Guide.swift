@@ -82,6 +82,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "0.5 (14)", date: "15 September 2026", headline: "Colours and shapes in Settings", items: [
+            "The key — recorded, still to do, missed, extra, rest day, and each sport's colour — is now always in Settings as well as one tap away on the This week card."
+        ]),
         Release(version: "0.5 (13)", date: "15 September 2026", headline: "Plan is now Sessions", items: [
             "The middle tab holds every session in every state — upcoming, done, missed, all — and two of those are the past, so \"Plan\" was the wrong word for it. Sessions, as you chose."
         ]),

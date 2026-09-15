@@ -81,6 +81,14 @@ struct SettingsView: View {
                                     sub: "Done is written \(mapping.doneValue), missed \(mapping.missedValue)")
                     }
 
+                    SectionHeading(text: "Colours and shapes")
+                    VStack(alignment: .leading, spacing: 10) {
+                        WeekKey(days: [])
+                        Text("Also one tap away: tap the This week card on Today.").font(.caption).foregroundStyle(Theme.secondary)
+                    }
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+
                     SectionHeading(text: "Extra activities")
                     NavigationLink { ExtrasListView() } label: {
                         SettingsRow(title: "\(store.allExtras.count) recorded",

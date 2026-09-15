@@ -254,9 +254,9 @@ struct WeekKey: View {
     let days: [PlanDay]
 
     var body: some View {
-        let sports = Disciplines.five.map { ($0.id, $0.label) } + others
+        let sports = Disciplines.five.map { ($0.id, $0.label) } + others + [("rest", "Rest / not a plan sport")]
         VStack(alignment: .leading, spacing: 10) {
-            Divider()
+            if !days.isEmpty { Divider() }
             HStack(spacing: 14) {
                 keyItem(StateFill(sport: "run", state: .done), "Recorded")
                 keyItem(StateFill(sport: "run", state: .todo), "Still to do")
