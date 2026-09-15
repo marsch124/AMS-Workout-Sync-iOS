@@ -18,7 +18,7 @@ struct GuideView: View {
         ]),
         Part(id: "Today", body: [
             "The week strip is one column a day, one bar a session. Solid is recorded, hollow is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
-            "Below it: today's sessions, anything behind you that was never recorded, and what is coming up. Tap a session to open it."
+            "Below it: today's sessions, anything behind you that was never recorded, and tomorrow. Tap a session to open it."
         ]),
         Part(id: "Logging a session", body: [
             "Done as planned writes the planned length and the done mark, nothing else — for the sessions that went as planned.",
@@ -82,6 +82,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.0 (19)", date: "15 September 2026", headline: "Tomorrow, not the next three", items: [
+            "Under today's sessions, Today now shows only tomorrow's — a rest day included — instead of the next three sessions."
+        ]),
         Release(version: "1.0 (18)", date: "15 September 2026", headline: "Swipe between the screens", items: [
             "Today, Sessions and Settings are pages: swipe left or right to move between them, or tap the bar as before.",
             "The date is gone from the top of Today — it is always today — and the room went to the week and the sessions."

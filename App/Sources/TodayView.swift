@@ -34,7 +34,7 @@ struct TodayView: View {
         let today = store.today
         let sessions = view.forDay(today)
         let behind = view.outstanding(before: today).filter { $0.dayKey >= PlanView.addDays(today, -7) }
-        let next = view.upcoming(from: today, limit: 3)
+        let tomorrow = view.forDay(PlanView.addDays(today, 1))
 
         VStack(alignment: .leading, spacing: 14) {
             header(view, today)
@@ -78,11 +78,16 @@ struct TodayView: View {
                 }
             }
 
-            if !next.isEmpty {
-                SectionHeading(text: "Next 3 sessions")
-                ForEach(next) { w in
-                    NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping, showDay: true) }
-                        .buttonStyle(.plain)
+            // Only tomorrow, as he asked: what to think about tonight, not the week.
+            if !tomorrow.isEmpty {
+                SectionHeading(text: "Tomorrow")
+                if tomorrow.allSatisfy({ $0.discipline.id == "rest" }) {
+                    RestCard(text: tomorrow[0].title)
+                } else {
+                    ForEach(tomorrow.filter { $0.discipline.id != "rest" }) { w in
+                        NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                            .buttonStyle(.plain)
+                    }
                 }
             }
         }
