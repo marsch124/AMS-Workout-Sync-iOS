@@ -82,6 +82,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.0 (17)", date: "15 September 2026", headline: "The AMS Workout Sync app", items: [
+            "From today this is the primary Workout Sync: one-tap, the log form, corrections, missed, move and swap, extra activities, photographs and Apple Health, all writing into your plan exactly as the web app did — proven on 651 scenarios, then on your own plan.",
+            "The web app stays for the Progress tab, spoken logging and the Mac. Both write to the same plan and check Dropbox's version first, so they can be used side by side."
+        ]),
         Release(version: "0.5 (16)", date: "15 September 2026", headline: "Next 3 sessions", items: [
             "Coming up on Today is always the next three sessions, so it says so."
         ]),

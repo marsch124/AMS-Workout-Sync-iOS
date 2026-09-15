@@ -120,7 +120,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     NavigationLink { WhatsNewView() } label: {
-                        SettingsRow(title: "What’s new", sub: "Workout Sync for iPhone \(version)", chevron: true)
+                        SettingsRow(title: "What’s new", sub: "AMS Workout Sync \(version)", chevron: true)
                     }
                     .buttonStyle(.plain)
                 }
