@@ -82,6 +82,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "0.5 (15)", date: "15 September 2026", headline: "A Key button on the week card", items: [
+            "The word beside This week is a small button now. Tapping the card still works too."
+        ]),
         Release(version: "0.5 (14)", date: "15 September 2026", headline: "Colours and shapes in Settings", items: [
             "The key — recorded, still to do, missed, extra, rest day, and each sport's colour — is now always in Settings as well as one tap away on the This week card."
         ]),

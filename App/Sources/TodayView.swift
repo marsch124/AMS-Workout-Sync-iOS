@@ -198,7 +198,8 @@ struct WeekCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("This week").font(.headline).foregroundStyle(Theme.text)
-                Text(keyOpen ? "hide key" : "key").font(.caption).foregroundStyle(Theme.secondary)
+                Button(keyOpen ? "Hide key" : "Key") { withAnimation(.easeInOut(duration: 0.15)) { keyOpen.toggle() } }
+                    .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
                 Spacer()
                 Text(done > 0 ? "\(formatDuration(done)) of \(formatDuration(planned))" : "\(formatDuration(planned)) planned")
                     .font(.subheadline.weight(.semibold).monospacedDigit())
