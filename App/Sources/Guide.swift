@@ -40,8 +40,12 @@ struct GuideView: View {
             "Each send starts from the copy that is in Dropbox right now, writes into it, reads the result back to check it, and uploads it against the exact version it started from. If the file changed in between — the web app, Excel on the laptop — Dropbox refuses, and the app starts again from the newer copy. Nothing is ever overwritten, and nothing you logged is lost.",
             "A row is checked before it is written into. If the session was changed in Excel into something else, the log is kept waiting with the reason rather than written into the wrong place."
         ]),
+        Part(id: "Photographs", body: [
+            "A session or an extra can carry photographs. They live on this phone beside the plan, never inside it: the workbook stays the record, and the iPhone's own backup covers the pictures. Settings → Photos saves them all out, and brings in the web app's export.",
+            "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
+        ]),
         Part(id: "Still in the web app", body: [
-            "Photographs, the Progress tab, spoken logging and the calendar export are in the web app for now. Both apps write to the same plan and check Dropbox's version first, so you can use them side by side."
+            "The Progress tab, spoken logging and the calendar export are in the web app for now. Both apps write to the same plan and check Dropbox's version first, so you can use them side by side."
         ])
     ]
 
@@ -78,6 +82,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "0.5 (12)", date: "15 September 2026", headline: "Photographs", items: [
+            "A session or an extra can carry photographs, from the library or the camera, shrunk to a size a phone can hold a season of. Tap one to see it full size, share it or delete it.",
+            "They stay on this phone — never in the workbook, never in Dropbox — and the iPhone's own backup includes them. Settings → Photos saves them all out as a zip, or brings in the zip the web app's Save them all makes, so your pictures from there come across.",
+            "A photograph is never shown against a session whose sport no longer matches its row; it is still counted and still exported."
+        ]),
         Release(version: "0.4 (11)", date: "15 September 2026", headline: "A heart on the button, the week key, and a warning", items: [
             "The log button carries a small heart and the word Garmin when Apple Health holds a workout for that day and sport — the numbers are one tap away inside.",
             "Tap the This week card and it explains its own drawing: recorded, still to do, missed, extra, rest day, and the sport colours.",

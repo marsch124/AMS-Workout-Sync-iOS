@@ -308,3 +308,71 @@ private func le16(_ v: UInt16) -> Data { Data([UInt8(v & 0xff), UInt8(v >> 8)]) 
 private func le32(_ v: UInt32) -> Data {
     Data([UInt8(v & 0xff), UInt8((v >> 8) & 0xff), UInt8((v >> 16) & 0xff), UInt8(v >> 24)])
 }
+
+/*
+ * A zip built from nothing, for saving photographs out of the app — the
+ * web app's AmsZip.build. Stored rather than deflated, deliberately: a JPEG
+ * is already compressed, so deflating it spends time to make it a fraction
+ * of a percent smaller, and store-only keeps this to the one thing it has to
+ * get right, which is the offsets. The header fields are the ones save()
+ * writes.
+ */
+public enum ZipBuilder {
+    public static func build(_ files: [(name: String, data: Data)]) -> Data {
+        var out = Data()
+        struct Central { let name: Data; let crc: UInt32; let size: Int; let offset: Int }
+        var central: [Central] = []
+
+        for file in files {
+            let nameBytes = Data(file.name.utf8)
+            let crc = crc32(file.data)
+            let offset = out.count
+            out.append(le32(0x0403_4b50))
+            out.append(le16(20))
+            out.append(le16(0x0800))
+            out.append(le16(0))
+            out.append(le16(0))
+            out.append(le16(0x21))
+            out.append(le32(crc))
+            out.append(le32(UInt32(file.data.count)))
+            out.append(le32(UInt32(file.data.count)))
+            out.append(le16(UInt16(nameBytes.count)))
+            out.append(le16(0))
+            out.append(nameBytes)
+            out.append(file.data)
+            central.append(Central(name: nameBytes, crc: crc, size: file.data.count, offset: offset))
+        }
+
+        let centralStart = out.count
+        for item in central {
+            out.append(le32(0x0201_4b50))
+            out.append(le16(20))
+            out.append(le16(20))
+            out.append(le16(0x0800))
+            out.append(le16(0))
+            out.append(le16(0))
+            out.append(le16(0x21))
+            out.append(le32(item.crc))
+            out.append(le32(UInt32(item.size)))
+            out.append(le32(UInt32(item.size)))
+            out.append(le16(UInt16(item.name.count)))
+            out.append(le16(0))
+            out.append(le16(0))
+            out.append(le16(0))
+            out.append(le16(0))
+            out.append(le32(0))
+            out.append(le32(UInt32(item.offset)))
+            out.append(item.name)
+        }
+        let centralSize = out.count - centralStart
+        out.append(le32(0x0605_4b50))
+        out.append(le16(0))
+        out.append(le16(0))
+        out.append(le16(UInt16(central.count)))
+        out.append(le16(UInt16(central.count)))
+        out.append(le32(UInt32(centralSize)))
+        out.append(le32(UInt32(centralStart)))
+        out.append(le16(0))
+        return out
+    }
+}

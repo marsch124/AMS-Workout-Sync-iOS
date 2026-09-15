@@ -14,8 +14,8 @@ settings:
     DEVELOPMENT_TEAM: D24ENP83QQ
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.4"
-    CURRENT_PROJECT_VERSION: "11"
+    MARKETING_VERSION: "0.5"
+    CURRENT_PROJECT_VERSION: "12"
 packages:
   WorkoutCore:
     path: Core
@@ -57,6 +57,7 @@ targets:
           - CFBundleURLName: com.schabbauer.amsworkoutsync
             CFBundleURLSchemes: [amsworkoutsync]
         ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: To take a photograph of a session and keep it beside the plan. Photos stay on this phone.
         NSHealthUpdateUsageDescription: Workout Sync never writes anything to Health. Apple requires this text to be present anyway.
         NSHealthShareUsageDescription: Workout Sync reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them. Nothing is written to Health.
         LSSupportsOpeningDocumentsInPlace: true

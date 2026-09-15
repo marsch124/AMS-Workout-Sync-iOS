@@ -4,6 +4,7 @@ import WorkoutCore
 struct TodayView: View {
     @EnvironmentObject var store: Store
     @State private var addingExtra = false
+    @State private var openExtra: ExtraSummary?
 
     var body: some View {
         NavigationStack {
@@ -21,6 +22,7 @@ struct TodayView: View {
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $addingExtra) { ExtraFormView(day: store.today).environmentObject(store) }
+            .sheet(item: $openExtra) { x in ExtraDetailView(extra: x) }
             #if DEBUG
             .onAppear { if ProcessInfo.processInfo.environment["AMSWS_EXTRAFORM"] != nil { addingExtra = true } }
             #endif
@@ -53,7 +55,9 @@ struct TodayView: View {
             let todaysExtras = view.extras(on: today)
             if !todaysExtras.isEmpty {
                 SectionHeading(text: "Extra, outside the plan")
-                ForEach(todaysExtras) { ExtraCard(extra: $0) }
+                ForEach(todaysExtras) { x in
+                    Button { openExtra = x } label: { ExtraCard(extra: x) }.buttonStyle(.plain)
+                }
             }
             if store.canLog {
                 Button { addingExtra = true } label: {

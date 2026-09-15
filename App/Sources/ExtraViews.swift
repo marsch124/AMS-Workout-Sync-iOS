@@ -137,6 +137,7 @@ struct ExtraFormView: View {
 struct ExtrasListView: View {
     @EnvironmentObject var store: Store
     @State private var adding = false
+    @State private var open: ExtraSummary?
 
     var body: some View {
         ScrollView {
@@ -147,7 +148,9 @@ struct ExtrasListView: View {
                 }
                 ForEach(grouped(all), id: \.0) { day, list in
                     SectionHeading(text: Dates.long(day))
-                    ForEach(list) { ExtraCard(extra: $0) }
+                    ForEach(list) { x in
+                        Button { open = x } label: { ExtraCard(extra: x) }.buttonStyle(.plain)
+                    }
                 }
             }
             .padding(16).padding(.bottom, 32)
@@ -161,6 +164,7 @@ struct ExtrasListView: View {
             }
         }
         .sheet(isPresented: $adding) { ExtraFormView(day: store.today).environmentObject(store) }
+        .sheet(item: $open) { x in ExtraDetailView(extra: x) }
     }
 
     private func grouped(_ list: [ExtraSummary]) -> [(String, [ExtraSummary])] {

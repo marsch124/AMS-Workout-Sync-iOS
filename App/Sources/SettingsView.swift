@@ -88,6 +88,9 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
 
+                    SectionHeading(text: "Photos")
+                    PhotoSettings()
+
                     SectionHeading(text: "Apple Health")
                     HealthSettings()
 

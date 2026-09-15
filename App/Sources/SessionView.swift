@@ -122,6 +122,8 @@ struct SessionView: View {
                             }
                         }
                     }
+                    PhotoStrip(owner: PhotoOwner(w))
+
                     if let notes = w.results["notes"]?.text, !notes.isEmpty {
                         Text(notes).font(.body).foregroundStyle(Theme.text)
                             .frame(maxWidth: .infinity, alignment: .leading)

@@ -87,6 +87,7 @@ struct SessionCard: View {
                     if !workout.planned.intensity.isEmpty { Pill(text: workout.planned.intensity) }
                     if workout.missed { Pill(text: "Missed", tint: Theme.danger) }
                     if let label = workout.waitingLabel { Pill(text: label, tint: Theme.today) }
+                    PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(workout)))
                 }
             }
             Spacer(minLength: 0)
@@ -165,6 +166,7 @@ struct ExtraCard: View {
                     if let m = extra.minutes { Pill(text: formatDuration(m * 60)) }
                     Pill(text: extra.isTraining ? "Counts as training" : "Not training load")
                     if extra.pending { Pill(text: "Waiting to sync", tint: Theme.today) }
+                    PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(extra: extra)))
                 }
             }
             Spacer(minLength: 0)
