@@ -87,6 +87,9 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
 
+                    SectionHeading(text: "Apple Health")
+                    HealthSettings()
+
                     SectionHeading(text: "Dropbox")
                     if Dropbox.shared.isConnected {
                         SettingsRow(title: Dropbox.shared.account.isEmpty ? "Connected" : Dropbox.shared.account,
@@ -199,6 +202,26 @@ struct WorkbookPicker: ViewModifier {
             allowsMultipleSelection: false
         ) { result in
             if case .success(let urls) = result, let url = urls.first { store.choose(url) }
+        }
+    }
+}
+
+
+struct HealthSettings: View {
+    @ObservedObject private var health = HealthImport.shared
+
+    var body: some View {
+        switch health.status {
+        case .unavailable:
+            SettingsRow(title: "Not available on this device", sub: "Apple Health is iPhone only.")
+        case .asked:
+            SettingsRow(title: "Connected", sub: "The log form offers the day’s workouts from Health to fill the boxes. Health is only read, never written. Change what it may read in the Health app → Sharing → Apps.")
+        case .denied:
+            SettingsRow(title: "Could not ask", sub: "iOS did not let the app ask for access. Open the Health app → Sharing → Apps → Workout Sync.")
+        case .unknown:
+            SettingsRow(title: "Not connected",
+                        sub: "Let the app read your workouts, heart rate and distances, and the log form fills itself from what your Garmin sent to Health.",
+                        action: ("Connect", { Task { await health.requestAccess() } }))
         }
     }
 }

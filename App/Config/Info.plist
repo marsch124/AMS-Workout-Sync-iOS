@@ -39,6 +39,8 @@
 	<string>public.app-category.healthcare-fitness</string>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Workout Sync reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them. Nothing is written to Health.</string>
 	<key>UIFileSharingEnabled</key>
 	<false/>
 	<key>UILaunchScreen</key>

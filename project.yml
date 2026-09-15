@@ -14,8 +14,8 @@ settings:
     DEVELOPMENT_TEAM: D24ENP83QQ
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.3"
-    CURRENT_PROJECT_VERSION: "7"
+    MARKETING_VERSION: "0.4"
+    CURRENT_PROJECT_VERSION: "8"
 packages:
   WorkoutCore:
     path: Core
@@ -26,6 +26,11 @@ targets:
     sources:
       - path: App/Sources
       - path: App/Resources
+    entitlements:
+      path: App/Config/AMSWorkoutSync.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
     dependencies:
       - package: WorkoutCore
     settings:
@@ -35,6 +40,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: App/Config/Info.plist
         GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: App/Config/AMSWorkoutSync.entitlements
     info:
       path: App/Config/Info.plist
       properties:
@@ -51,5 +57,6 @@ targets:
           - CFBundleURLName: com.schabbauer.amsworkoutsync
             CFBundleURLSchemes: [amsworkoutsync]
         ITSAppUsesNonExemptEncryption: false
+        NSHealthShareUsageDescription: Workout Sync reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them. Nothing is written to Health.
         LSSupportsOpeningDocumentsInPlace: true
         UIFileSharingEnabled: false

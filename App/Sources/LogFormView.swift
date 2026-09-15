@@ -22,6 +22,8 @@ struct LogFormView: View {
     @AppStorage("log.showAllFields") private var showAll = false
     @State private var distanceUnit: String
     @State private var loaded = false
+    @State private var healthWorkouts: [HealthWorkout] = []
+    @State private var healthChecked = false
 
     init(workout: Workout, mapping: Mapping) {
         self.workout = workout
@@ -43,6 +45,15 @@ struct LogFormView: View {
                         .font(.caption.weight(.bold)).tracking(0.6)
                         .foregroundStyle(Theme.sportInk(workout.discipline.id))
                     Text(workout.title).font(.headline).foregroundStyle(Theme.secondary).lineLimit(2)
+
+                    if !healthWorkouts.isEmpty {
+                        HealthSuggestions(workouts: healthWorkouts, disciplineId: workout.discipline.id) { picked in
+                            for (id, value) in picked.formValues(for: workout.discipline.id) { values[id] = value }
+                            if workout.discipline.id == "swim" { distanceUnit = "m" }
+                        }
+                    } else if healthChecked && HealthImport.shared.status == .asked {
+                        Text("Nothing in Apple Health for this day and sport.").font(.caption).foregroundStyle(Theme.secondary)
+                    }
 
                     ForEach(shown) { field in
                         FieldBox(field: field,
@@ -75,6 +86,13 @@ struct LogFormView: View {
                 .background(Theme.bg)
             }
             .onAppear(perform: load)
+            .task {
+                guard HealthImport.shared.status == .asked || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
+                let all = await HealthImport.shared.workouts(on: workout.dayKey)
+                let sport = workout.discipline.id
+                healthWorkouts = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }
+                healthChecked = true
+            }
         }
     }
 
@@ -166,5 +184,34 @@ struct FieldBox: View {
             .fill(Theme.surface)
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(changed ? Theme.today : Theme.border, lineWidth: changed ? 2 : 1))
+    }
+}
+
+
+/* The day's workouts from Apple Health, one tap each to fill the boxes. */
+struct HealthSuggestions: View {
+    let workouts: [HealthWorkout]
+    let disciplineId: String
+    let use: (HealthWorkout) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("FROM APPLE HEALTH").font(.caption.weight(.bold)).tracking(0.8).foregroundStyle(Theme.secondary)
+            ForEach(workouts) { w in
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(w.typeName + " · " + w.start.formatted(date: .omitted, time: .shortened))
+                            .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                        Text(w.summary + " · " + w.source).font(.caption).foregroundStyle(Theme.secondary)
+                    }
+                    Spacer()
+                    Button("Use") { use(w) }
+                        .buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.today)
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+            }
+            Text("Fills the boxes; nothing is saved until you press Save.").font(.caption).foregroundStyle(Theme.secondary)
+        }
     }
 }

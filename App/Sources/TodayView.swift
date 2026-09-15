@@ -114,19 +114,26 @@ struct ReadOnlyChip: View {
     }
 }
 
-/* Which workbook logging goes into — so the test copy can never be mistaken for the plan. */
+/*
+ * Says something only when there is something to say: that logging is on its
+ * way, or that the app is pointed at a test copy rather than the plan. On the
+ * real plan it shows nothing — "Writes to plan" sat there permanently and
+ * read as a stuck message.
+ */
 struct PlanChip: View {
     let name: String
     let syncing: Bool
     let waiting: Int
     var body: some View {
         let isTest = name.lowercased().contains("test")
-        Text(syncing ? "Sending…" : (waiting > 0 ? "\(waiting) waiting" : (isTest ? "TEST COPY" : "Writes to plan")))
-            .font(.caption.weight(.bold))
-            .foregroundStyle(isTest ? Color.white : Theme.secondary)
-            .padding(.horizontal, 8).padding(.vertical, 4)
-            .background(Capsule().fill(isTest ? Color.orange : Color.clear))
-            .overlay(Capsule().strokeBorder(isTest ? Color.clear : Theme.border))
+        if syncing || waiting > 0 || isTest {
+            Text(syncing ? "Sending…" : (waiting > 0 ? "\(waiting) waiting" : "TEST COPY"))
+                .font(.caption.weight(.bold))
+                .foregroundStyle(isTest && !syncing && waiting == 0 ? Color.white : Theme.secondary)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Capsule().fill(isTest && !syncing && waiting == 0 ? Color.orange : Color.clear))
+                .overlay(Capsule().strokeBorder(isTest && !syncing && waiting == 0 ? Color.clear : Theme.border))
+        }
     }
 }
 
