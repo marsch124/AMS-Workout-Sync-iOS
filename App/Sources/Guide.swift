@@ -86,10 +86,13 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
-        Release(version: "1.1 (20)", date: "15 September 2026", headline: "Progress, and a proper icon", items: [
+        Release(version: "1.1 (21)", date: "16 September 2026", headline: "The wave is back", items: [
+            "The app icon is the green training wave on dark teal again — the web app's icon, redrawn with one even stroke, equal peaks and round corners. The calendar from build 20 is gone."
+        ]),
+        Release(version: "1.1 (20)", date: "15 September 2026", headline: "Progress", items: [
             "The Progress tab, as in the web app: the road to the race with the phases as one bar, is it working (distance per heartbeat, then against now), twelve weeks against what they asked for, where the hours went by sport, and what was kept — consistency, the sport that runs behind, missed or moved. Every figure checked against the web app's on the same workbooks: no differences.",
             "Moves made in this app are remembered on this phone for the missed-or-moved figure, as the web app remembers its own.",
-            "A new app icon, drawn the same way as the others: the calendar with a tick on a calm green.",
+            "A new app icon (replaced again in build 21).",
             "Swipe reaches Progress like the other pages."
         ]),
         Release(version: "1.0 (19)", date: "15 September 2026", headline: "Tomorrow, not the next three", items: [

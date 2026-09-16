@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- AMS Workout Sync's icon: the training wave — three blocks of work on a
+       rest line — the web app's icon redrawn with one stroke width, equal
+       peaks and round joins. Render with tools/render-icon.js (Chrome), never
+       by hand: the PNG in the asset catalog is made from this file. -->
+  <rect width="1024" height="1024" fill="#0b1f20"/>
+  <g transform="translate(512 505) scale(0.93) translate(-512 -505)">
+    <line x1="172" y1="665" x2="852" y2="665" stroke="#255851" stroke-width="40" stroke-linecap="round"/>
+    <polyline fill="none" stroke="#01c97b" stroke-width="92" stroke-linejoin="round" stroke-linecap="round"
+      points="137,665 192,345 292,345 347,665 407,665 462,345 562,345 617,665 677,665 732,345 832,345 887,665"/>
+  </g>
+</svg>
