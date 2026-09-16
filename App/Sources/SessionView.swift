@@ -9,6 +9,9 @@ struct SessionView: View {
     @State private var askingMissed = false
     @State private var missedNote = ""
     @State private var fromHealth = 0
+    @State private var zoneAsk: ZoneAsk?
+    @State private var sharing = false
+    @State private var payload: SharePayload?
 
     var body: some View {
         ScrollView {
@@ -31,7 +34,17 @@ struct SessionView: View {
                     HStack(spacing: 6) {
                         if let s = Plan.plannedSeconds(w, mapping), s > 0 { Pill(text: formatDuration(s)) }
                         if let d = w.planned.distanceRaw { Pill(text: jsNumberString(d) + " " + mapping.units.distance) }
-                        if !w.planned.intensity.isEmpty { Pill(text: w.planned.intensity) }
+                        if !w.planned.intensity.isEmpty {
+                            if store.zones != nil {
+                                // What Z2 means for him this season — the zones sheet, one tap away.
+                                Button { zoneAsk = ZoneAsk(intensity: w.planned.intensity, sport: w.discipline.id) } label: {
+                                    ZonePill(text: w.planned.intensity, sport: w.discipline.id)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                Pill(text: w.planned.intensity)
+                            }
+                        }
                         if !w.phase.isEmpty { Pill(text: w.phase) }
                     }
 
@@ -138,6 +151,28 @@ struct SessionView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if store.workout(key) != nil {
+                    Button { sharing = true } label: { Glyph(name: "icon-share", size: 22) }
+                        .accessibilityLabel("Send it to somebody")
+                }
+            }
+        }
+        .confirmationDialog("Send it to somebody", isPresented: $sharing, titleVisibility: .visible) {
+            if let w = store.workout(key), let mapping = store.mapping {
+                if w.state == .done {
+                    Button("Send what you did") {
+                        payload = SharePayload(items: [ShareText.done(w, mapping, today: store.today)] + ShareText.photos(w))
+                    }
+                }
+                Button("Send the whole session") {
+                    payload = SharePayload(items: [ShareText.session(w, mapping)] + ShareText.photos(w))
+                }
+            }
+        }
+        .sheet(item: $payload) { p in ActivitySheet(items: p.items) }
+        .sheet(item: $zoneAsk) { ask in ZoneSheet(ask: ask).environmentObject(store) }
         .task(id: key) {
             guard let w = store.workout(key),
                   HealthImport.shared.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
@@ -168,6 +203,8 @@ struct SessionView: View {
         .onAppear {
             if ProcessInfo.processInfo.environment["AMSWS_LOGFORM"] != nil { logging = true }
             if ProcessInfo.processInfo.environment["AMSWS_MOVE"] != nil { moving = true }
+            if ProcessInfo.processInfo.environment["AMSWS_ZONE"] != nil, let w = store.workout(key) { zoneAsk = ZoneAsk(intensity: w.planned.intensity, sport: w.discipline.id) }
+            if ProcessInfo.processInfo.environment["AMSWS_SHARE"] != nil { sharing = true }
         }
         #endif
     }

@@ -39,6 +39,8 @@
 	<string>public.app-category.healthcare-fitness</string>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>To keep your sessions in a Training calendar — added, moved and removed as the plan changes. Full access is what iOS requires for an app to update events it made itself.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>To take a photograph of a session and keep it beside the plan. Photos stay on this phone.</string>
 	<key>NSHealthShareUsageDescription</key>

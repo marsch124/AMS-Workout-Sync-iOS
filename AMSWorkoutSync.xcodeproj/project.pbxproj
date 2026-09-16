@@ -20,8 +20,11 @@
 		8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */; };
 		89CDC9463998F4995477427E /* LogFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFFF43913961BBC438C16AF /* LogFormView.swift */; };
 		8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */; };
+		9B5D2417943ED124065919BD /* TrainingCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */; };
 		A8D54A1892111BFD679F82AF /* Guide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874D363C030B897E786F6F58 /* Guide.swift */; };
 		AE4B787B0C3121743BEC221B /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5419017E5E37523852FF0B4F /* TodayView.swift */; };
+		AEFF0862782DA869C0A3032B /* ZonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B7A403EF7D24F842CE496 /* ZonesView.swift */; };
+		B26A348E8757F3F57C510F55 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD39982CFB85EDA1755222A /* ShareText.swift */; };
 		C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6525576D143C59A4723612 /* DropboxViews.swift */; };
 		DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B0778365FA2EAD6A05938A /* ExtraViews.swift */; };
 		F152713F3C49201271BBD36B /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A03855A2195F5FD77B7F7C /* SessionView.swift */; };
@@ -36,7 +39,10 @@
 		201A884ED7294E23A8047706 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		2E6525576D143C59A4723612 /* DropboxViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxViews.swift; sourceTree = "<group>"; };
 		3BFFF43913961BBC438C16AF /* LogFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFormView.swift; sourceTree = "<group>"; };
+		4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingCalendar.swift; sourceTree = "<group>"; };
+		4CD39982CFB85EDA1755222A /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		6D4B7A403EF7D24F842CE496 /* ZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesView.swift; sourceTree = "<group>"; };
 		70231C046226474A30263864 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSWorkoutSyncApp.swift; sourceTree = "<group>"; };
 		8173903887939F8A3DB90D8D /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
@@ -125,9 +131,12 @@
 				8173903887939F8A3DB90D8D /* ProgressView.swift */,
 				E7A03855A2195F5FD77B7F7C /* SessionView.swift */,
 				70231C046226474A30263864 /* SettingsView.swift */,
+				4CD39982CFB85EDA1755222A /* ShareText.swift */,
 				0A14825F875D7AF6B7EE715C /* Store.swift */,
 				D6E3DEEE01504BE66D135FE3 /* Theme.swift */,
 				5419017E5E37523852FF0B4F /* TodayView.swift */,
+				4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */,
+				6D4B7A403EF7D24F842CE496 /* ZonesView.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -223,9 +232,12 @@
 				37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */,
 				F152713F3C49201271BBD36B /* SessionView.swift in Sources */,
 				7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */,
+				B26A348E8757F3F57C510F55 /* ShareText.swift in Sources */,
 				0472DFF26CE85F3ADE7D8932 /* Store.swift in Sources */,
 				626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */,
 				AE4B787B0C3121743BEC221B /* TodayView.swift in Sources */,
+				9B5D2417943ED124065919BD /* TrainingCalendar.swift in Sources */,
+				AEFF0862782DA869C0A3032B /* ZonesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,7 +279,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 23;
+				CURRENT_PROJECT_VERSION = 24;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -327,7 +339,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 23;
+				CURRENT_PROJECT_VERSION = 24;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

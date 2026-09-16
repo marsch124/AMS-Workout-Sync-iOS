@@ -16,7 +16,8 @@ let package = Package(
         .executable(name: "write-dump", targets: ["WriteDump"]),
         .executable(name: "sync-check", targets: ["SyncCheck"]),
         .executable(name: "form-check", targets: ["FormCheck"]),
-        .executable(name: "stats-dump", targets: ["StatsDump"])
+        .executable(name: "stats-dump", targets: ["StatsDump"]),
+        .executable(name: "zones-dump", targets: ["ZonesDump"])
     ],
     targets: [
         .target(name: "WorkoutCore"),
@@ -24,6 +25,7 @@ let package = Package(
         .executableTarget(name: "WriteDump", dependencies: ["WorkoutCore"]),
         .executableTarget(name: "SyncCheck", dependencies: ["WorkoutCore"]),
         .executableTarget(name: "FormCheck", dependencies: ["WorkoutCore"]),
-        .executableTarget(name: "StatsDump", dependencies: ["WorkoutCore"])
+        .executableTarget(name: "StatsDump", dependencies: ["WorkoutCore"]),
+        .executableTarget(name: "ZonesDump", dependencies: ["WorkoutCore"])
     ]
 )

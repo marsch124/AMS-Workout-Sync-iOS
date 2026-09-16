@@ -21,6 +21,7 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Settings").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
@@ -81,6 +82,12 @@ struct SettingsView: View {
                                     sub: "Done is written \(mapping.doneValue), missed \(mapping.missedValue)")
                     }
 
+                    SectionHeading(text: "Your zones").id("zones")
+                    NavigationLink { ZonesView() } label: {
+                        SettingsRow(title: zonesTitle, sub: zonesSub, chevron: true)
+                    }
+                    .buttonStyle(.plain)
+
                     SectionHeading(text: "Colours and shapes")
                     VStack(alignment: .leading, spacing: 10) {
                         WeekKey(days: [])
@@ -101,6 +108,9 @@ struct SettingsView: View {
 
                     SectionHeading(text: "Apple Health")
                     HealthSettings()
+
+                    SectionHeading(text: "Calendar").id("calendar")
+                    CalendarSettings()
 
                     SectionHeading(text: "Dropbox")
                     if Dropbox.shared.isConnected {
@@ -129,6 +139,15 @@ struct SettingsView: View {
             }
             .background(Theme.bg.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+            #if DEBUG
+            .onAppear {
+                // A screenshot of one section, far down the page.
+                if let id = ProcessInfo.processInfo.environment["AMSWS_SCROLL"] {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { proxy.scrollTo(id, anchor: .top) }
+                }
+            }
+            #endif
+            }
         }
         .workbookPicker(isPresented: $picking)
         .sheet(isPresented: $browsing) {
@@ -152,6 +171,24 @@ struct SettingsView: View {
         let f = RelativeDateTimeFormatter()
         f.unitsStyle = .full
         return prefix + f.localizedString(for: at, relativeTo: Date())
+    }
+
+    /* "LTHR 150 bpm · CSS 121 sec/100 m · Weight 79 kg" — the sheet's own labels, shortened. */
+    private var zonesTitle: String {
+        guard let z = store.zones else { return "No zones sheet in this workbook" }
+        let known = z.current.filter { !$0.value.isEmpty }
+        if known.isEmpty { return "No test entered yet" }
+        return known.map { row in
+            let parts = row.label.split(separator: "(", maxSplits: 1)
+            let name = parts.first.map { String($0).trimmingCharacters(in: .whitespaces) } ?? row.label
+            let unit = parts.count > 1 ? " " + String(parts[1]).replacingOccurrences(of: ")", with: "").trimmingCharacters(in: .whitespaces) : ""
+            return name + " " + row.value + unit
+        }.joined(separator: " · ")
+    }
+
+    private var zonesSub: String {
+        guard let z = store.zones else { return "The app reads the Test Results & Zones sheet for what Z2 means. This workbook has none." }
+        return (z.latestTest.isEmpty ? "" : "From " + z.latestTest + ". ") + "Tap a session’s Z2 or Z4–Z5 for what it means for you."
     }
 
     private var version: String {
@@ -253,5 +290,70 @@ struct HealthSettings: View {
                         sub: "Let the app read your workouts, heart rate and distances, and the log form can fill itself from what your Garmin sent to Health. Optional.",
                         action: ("Connect", { Task { await health.requestAccess(); health.enabled = true } }))
         }
+    }
+}
+
+
+/*
+ * The plan in the Calendar app. One button in, one button out; the hour the
+ * day's first session starts at is the only setting.
+ */
+struct CalendarSettings: View {
+    @EnvironmentObject var store: Store
+    @ObservedObject private var cal = TrainingCalendar.shared
+    @State private var start = Date()
+
+    var body: some View {
+        if cal.enabled && cal.status == .granted {
+            SettingsRow(title: "\(cal.count) sessions and rest days in your Training calendar",
+                        sub: updatedLine,
+                        action: ("Take them out", { cal.disable() }))
+            HStack {
+                Text("The day’s first session starts at").font(.subheadline).foregroundStyle(Theme.text)
+                Spacer()
+                DatePicker("", selection: $start, displayedComponents: .hourAndMinute).labelsHidden().tint(Theme.today)
+            }
+            .padding(14)
+            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+            .onAppear { start = Self.date(minutes: cal.startMinutes); cal.refreshStatus() }
+            .onChange(of: start) { _, d in
+                let m = Self.minutes(d)
+                if m != cal.startMinutes { cal.startMinutes = m; store.calendarChanged() }
+            }
+            Text("Every session from today to the end of the plan, each as long as it is planned, one after the other on a day with two; a rest day is an all-day event. Six in the morning stays six in the morning wherever the phone is. The Training calendar is the app’s own: from today onwards it holds the plan and nothing else, and Take them out removes the calendar.")
+                .font(.caption).foregroundStyle(Theme.secondary)
+        } else if cal.status == .denied {
+            SettingsRow(title: "Not allowed",
+                        sub: "iOS is not letting the app write to your calendar. Settings → Apps → Workout Sync → Calendars → Full Access.")
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+            }
+            .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+        } else {
+            SettingsRow(title: "Not in your calendar",
+                        sub: "Put every session from today onwards into a Training calendar at 06:00, each as long as it is planned, and keep them right when sessions move.",
+                        action: ("Put them in", { Task { await cal.enable(); store.calendarChanged() } }))
+        }
+        if let p = cal.problem {
+            Text(p).font(.footnote).foregroundStyle(Theme.danger)
+        }
+    }
+
+    private var updatedLine: String {
+        if cal.busy { return "Updating…" }
+        guard let at = cal.lastSync else { return "Not written yet" }
+        if Date().timeIntervalSince(at) < 60 { return "Updated just now · from today to the end of the plan" }
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .full
+        return "Updated " + f.localizedString(for: at, relativeTo: Date()) + " · from today to the end of the plan"
+    }
+
+    static func date(minutes: Int) -> Date {
+        Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: Date()) ?? Date()
+    }
+
+    static func minutes(_ date: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (c.hour ?? 6) * 60 + (c.minute ?? 0)
     }
 }

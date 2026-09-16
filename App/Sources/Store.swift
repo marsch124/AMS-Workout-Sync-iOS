@@ -57,6 +57,8 @@ final class Store: ObservableObject {
     var view: PlanView? { mapping.map { PlanView(plan: displayed, mapping: $0, extras: allExtras) } }
 
     @Published private(set) var extras: [ExtraRecord] = []
+    /* The Test Results & Zones sheet, for what a session's Z2 means. */
+    @Published private(set) var zones: Zones?
 
     /* Waiting on this phone first, then the sheet's rows — newest first. */
     var allExtras: [ExtraSummary] {
@@ -96,6 +98,13 @@ final class Store: ObservableObject {
         } catch {
             lastProblem = "Could not save the waiting log on this phone: \(error.localizedDescription)"
         }
+        calendarChanged()
+    }
+
+    /* The Calendar app follows the plan as shown: the sheet with the queue laid over it. */
+    func calendarChanged() {
+        guard let mapping else { return }
+        TrainingCalendar.shared.sync(displayed, mapping: mapping, today: today)
     }
 
     init() {
@@ -213,9 +222,11 @@ final class Store: ObservableObject {
             }
             self.plan = Plan.build(workbook, mapping)
             self.extras = Extras.read(workbook)
+            self.zones = Zones.read(workbook)
             self.mapping = mapping
             self.fromCache = cached
             self.phase = .ready
+            calendarChanged()
             if !cached {
                 lastProblem = nil
                 readAt = Date()

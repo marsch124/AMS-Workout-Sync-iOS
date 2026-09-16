@@ -48,8 +48,19 @@ struct GuideView: View {
             "Nothing here is read from the Progress sheet — its cells are formulas that carry Excel's last answer, and the app never recalculates them. Every figure is worked out from the session rows each time the screen opens, and none of it is stored.",
             "The road: weeks to the race, the phases as one bar with today marked on it, sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
         ]),
-        Part(id: "Still in the web app", body: [
-            "Spoken logging and the calendar export are in the web app for now. Both apps write to the same plan and check Dropbox's version first, so you can use them side by side."
+        Part(id: "Your zones", body: [
+            "A session's Z2 or Z4–Z5 is a pill on its screen. Tap it and the app says what that is for you this season — heart rate always, bike power on a ride once an FTP is entered, the swim paces on a swim — read from the Test Results & Zones sheet of your workbook, from your latest test. The app never works a zone out itself.",
+            "The whole sheet, the current numbers and the words it uses, is under Settings → Your zones."
+        ]),
+        Part(id: "In your calendar", body: [
+            "Settings → Calendar → Put them in writes every session from today to the end of the plan into a calendar called Training: at six in the morning (or the hour you set), each as long as it is planned, one after the other on a day with two. A rest day is an all-day event. The events float, so six stays six wherever the phone is.",
+            "The app keeps them right: a moved session moves its event, a changed row rewrites it, a session that disappears takes its event with it. Days already behind are left as they were. The Training calendar is the app's own — from today onwards it holds the plan and nothing else — and Take them out removes it."
+        ]),
+        Part(id: "Sending a session", body: [
+            "The share button at the top of a session offers the whole session — the brief, for a training partner — and, once it is done, what you did: one sentence for the person at home, with the time and the distance. Photos on the session go along. Heart rate and effort never do."
+        ]),
+        Part(id: "Speaking instead of typing", body: [
+            "Any box takes dictation: the microphone on the keyboard. The web app's spoken logging is not needed here."
         ])
     ]
 
@@ -86,6 +97,12 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (24)", date: "16 September 2026", headline: "Zones, the calendar, and sending a session", items: [
+            "Tap a session's Z2 or Z4–Z5 and the app says what that is for you — heart rate, bike power, swim paces — from the Test Results & Zones sheet of your workbook, from your latest test. The whole sheet is under Settings → Your zones.",
+            "Settings → Calendar → Put them in keeps every session from today onwards in a Training calendar, at the hour you set and as long as it is planned, and keeps the events right when sessions move.",
+            "The share button on a session sends the whole session, or, once it is done, what you did, with its photos.",
+            "How this works no longer points at the web app: the phone app is the app."
+        ]),
         Release(version: "1.1 (23)", date: "16 September 2026", headline: "Bike and strength told apart", items: [
             "The bike's yellow is brighter and the strength orange stronger, so the two no longer look alike in the week bars and on the badges. The web app uses the same two colours from v1.72.2. (Build 22 carried a quieter version of the same change.)"
         ]),

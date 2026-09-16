@@ -89,3 +89,34 @@ same workbooks on the same day. **2026-09-15: 23 workbooks, differences none**
 (season-underway.xlsx reaches "enough" for all three trend sports). The road
 card is native-only arithmetic (the web app keeps it inside ui.js); its parts
 — race day, phases, days between — are simple and read-checked.
+
+## Zones — the Test Results & Zones sheet
+
+```bash
+Core/.build/release/zones-dump books/*.xlsx > zones-native.json
+python3 tools/zones-parity.py zones-native.json books/*.xlsx
+```
+
+`Core/Sources/WorkoutCore/Zones.swift` reads the sheet by its shape (the
+"Test block" heading row, the "CURRENT" row, the row with "ZONES" in it, the
+"ABBREVIATIONS" row) and cuts the tables down to what a session's intensity
+names. `tools/zones-parity.py` is a second reader written apart, in openpyxl,
+plus the same worked examples. **2026-09-16: his plan, the TEST copy and 23
+fixture workbooks, differences none** (the fixtures have no zones sheet; both
+sides read nothing).
+
+## The Training calendar
+
+Not a parity check — the web app only exported a week as a file — but the
+simulator can prove it: `xcrun simctl privacy <udid> grant calendar
+com.schabbauer.AMSWorkoutSync`, launch with `SIMCTL_CHILD_AMSWS_CALENDAR=1`,
+then read the simulator's calendar database:
+
+```bash
+sqlite3 ~/Library/Developer/CoreSimulator/Devices/<udid>/data/Library/Calendar/Calendar.sqlitedb \
+  "select datetime(i.start_date+978307200,'unixepoch'), i.all_day, i.summary from CalendarItem i join Calendar c on c.ROWID=i.calendar_id where c.title='Training' order by i.start_date limit 8;"
+```
+
+2026-09-16: 413 events from today to the end of the plan, the second session
+of a day starting when the first ends, rest days all-day, and a second launch
+left the count at 413.
