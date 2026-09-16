@@ -97,6 +97,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (25)", date: "16 September 2026", headline: "Red where something is taken away", items: [
+            "Stop under Apple Health and Take them out under Calendar are red now, like Disconnect and Discard: every button that takes something away is red, every other one green."
+        ]),
         Release(version: "1.1 (24)", date: "16 September 2026", headline: "Zones, the calendar, and sending a session", items: [
             "Tap a session's Z2 or Z4–Z5 and the app says what that is for you — heart rate, bike power, swim paces — from the Test Results & Zones sheet of your workbook, from your latest test. The whole sheet is under Settings → Your zones.",
             "Settings → Calendar → Put them in keeps every session from today onwards in a Training calendar, at the hour you set and as long as it is planned, and keeps the events right when sessions move.",

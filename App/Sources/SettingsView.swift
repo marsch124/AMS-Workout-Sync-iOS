@@ -213,6 +213,9 @@ struct SettingsView: View {
 
 /* A row with a title, a grey line under it and, at most, one small button on the right. */
 struct SettingsRow: View {
+    /* Buttons that take something away are red; every other one is green. */
+    static let takesAway: Set<String> = ["Disconnect", "Discard", "Stop", "Take them out"]
+
     let title: String
     let sub: String
     var action: (String, () -> Void)? = nil
@@ -229,7 +232,7 @@ struct SettingsRow: View {
                 Button(action.0, action: action.1)
                     .font(.subheadline.weight(.semibold))
                     .buttonStyle(.bordered).controlSize(.small)
-                    .tint(action.0 == "Disconnect" || action.0 == "Discard" ? Theme.danger : Theme.today)
+                    .tint(SettingsRow.takesAway.contains(action.0) ? Theme.danger : Theme.today)
             }
             if chevron {
                 Text("›").font(.title2).foregroundStyle(Theme.secondary)
