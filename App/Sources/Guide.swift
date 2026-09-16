@@ -86,6 +86,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (23)", date: "16 September 2026", headline: "Bike and strength told apart", items: [
+            "The bike's yellow is brighter and the strength orange stronger, so the two no longer look alike in the week bars and on the badges. The web app uses the same two colours from v1.72.2. (Build 22 carried a quieter version of the same change.)"
+        ]),
         Release(version: "1.1 (21)", date: "16 September 2026", headline: "The wave is back", items: [
             "The app icon is the green training wave on dark teal again — the web app's icon, redrawn with one even stroke, equal peaks and round corners. The calendar from build 20 is gone."
         ]),
