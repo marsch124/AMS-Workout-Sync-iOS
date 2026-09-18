@@ -53,7 +53,7 @@ struct GuideView: View {
             "The whole sheet, the current numbers and the words it uses, is under Settings → Your zones."
         ]),
         Part(id: "In your calendar", body: [
-            "Settings → Calendar → Put them in writes every session from today to the end of the plan into a calendar called Training: at six in the morning (or the hour you set), each as long as it is planned, one after the other on a day with two. A rest day is an all-day event. The events float, so six stays six wherever the phone is.",
+            "Settings → Calendar → Put them in writes every session from today to the end of the plan into a calendar called Training: at six in the morning (or the hour you set), each as long as it is planned, one after the other on a day with two. Each is headed by the sport and its length and nothing else — Run 35, Swim 40, Bike 2h30min — with the session's own words in the notes. A rest day is an all-day event. The events float, so six stays six wherever the phone is.",
             "The app keeps them right: a moved session moves its event, a changed row rewrites it, a session that disappears takes its event with it. Days already behind are left as they were. The Training calendar is the app's own — from today onwards it holds the plan and nothing else — and Take them out removes it."
         ]),
         Part(id: "Sending a session", body: [
@@ -97,6 +97,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (26)", date: "18 September 2026", headline: "Short headings in the calendar", items: [
+            "A calendar event is now headed by the sport and its length and nothing else: Run 35, Swim 40, Bike 2h30min. The session's own words are still there, in the event's notes. Events from today onwards are rewritten the next time the app opens; days already behind keep the heading they had."
+        ]),
         Release(version: "1.1 (25)", date: "16 September 2026", headline: "Red where something is taken away", items: [
             "Stop under Apple Health and Take them out under Calendar are red now, like Disconnect and Discard: every button that takes something away is red, every other one green."
         ]),

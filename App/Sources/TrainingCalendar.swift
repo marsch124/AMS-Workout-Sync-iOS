@@ -157,10 +157,9 @@ final class TrainingCalendar: ObservableObject {
                     continue
                 }
                 let seconds = Int(Plan.plannedSeconds(w, mapping) ?? 0)
-                let planned = seconds > 0 ? formatDuration(Double(seconds)) : ""
-                var summary = w.discipline.label + (planned.isEmpty ? "" : " " + planned)
-                if !w.title.isEmpty { summary += " — " + w.title }
-                if summary.count > 80 { summary = String(summary.prefix(79)).trimmingCharacters(in: .whitespaces) + "…" }
+                // The heading is the sport and its length and nothing else — his words: "Run 35",
+                // "Swim 40", "Bike 2h30min". The session's own words are the first line of the notes.
+                let summary = Self.shortTitle(w.discipline.label, seconds: seconds)
 
                 var notes: [String] = []
                 var seen = Set<String>()
@@ -182,6 +181,15 @@ final class TrainingCalendar: ObservableObject {
             }
         }
         return out
+    }
+
+    /* Minutes as a bare number under the hour; from the hour up, 1h, 1h10min, 2h30min. */
+    static func shortTitle(_ label: String, seconds: Int) -> String {
+        guard seconds > 0 else { return label }
+        let minutes = Int((Double(seconds) / 60).rounded())
+        if minutes < 60 { return label + " " + String(minutes) }
+        let h = minutes / 60, m = minutes % 60
+        return label + " " + String(h) + "h" + (m == 0 ? "" : String(m) + "min")
     }
 
     // MARK: EventKit
