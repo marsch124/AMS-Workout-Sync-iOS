@@ -120,3 +120,24 @@ sqlite3 ~/Library/Developer/CoreSimulator/Devices/<udid>/data/Library/Calendar/C
 2026-09-16: 413 events from today to the end of the plan, the second session
 of a day starting when the first ends, rest days all-day, and a second launch
 left the count at 413.
+
+## UI tests, in CI, on every push
+
+`UITests/WorkoutSyncUITests.swift`, run by `.github/workflows/tests.yml` on
+every push (the repository is public, so GitHub's Mac runners are free).
+Controls are found by accessibility identifier, never by their words:
+`tab-<page>`, `today-session-<day>-<sport>`, `sessions-session-<day>-<sport>`,
+`settings-title`, `sessions-title`, `progress-title`, `settings-whats-new`,
+`session-title`, `zone-pill`, `zone-sheet-title`, `zone-row`. The tests open
+`UITests/Fixtures/plan.xlsx` — the web app's "plain" fortnight plus an
+invented Test Results & Zones sheet, never his real plan — on 16 Sep 2026.
+
+Two tests to start, grown one at a time. Each was seen to go red when the
+thing it names was broken on purpose (2026-09-18): the version dropped from
+What's new; a Settings tab that did nothing; a zone sheet showing all five
+heart-rate rows instead of the one named.
+
+```bash
+xcodebuild test -project AMSWorkoutSync.xcodeproj -scheme AMSWorkoutSync \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /tmp/amsws-dd CODE_SIGNING_ALLOWED=NO
+```

@@ -15,6 +15,7 @@
 		4C92AF2407F8B9021267FA3C /* PhotoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */; };
 		5CCB2FFB5FB33334D047E2F2 /* Health.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CDFC67F6D3D022CEEC7F7CC /* Health.swift */; };
 		626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E3DEEE01504BE66D135FE3 /* Theme.swift */; };
+		6951774C8A2ED04539AE4CAC /* plan.xlsx in Resources */ = {isa = PBXBuildFile; fileRef = 727F13AC6FACE0F75894E10A /* plan.xlsx */; };
 		7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70231C046226474A30263864 /* SettingsView.swift */; };
 		860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201A884ED7294E23A8047706 /* Components.swift */; };
 		8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */; };
@@ -26,11 +27,22 @@
 		AEFF0862782DA869C0A3032B /* ZonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B7A403EF7D24F842CE496 /* ZonesView.swift */; };
 		B26A348E8757F3F57C510F55 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD39982CFB85EDA1755222A /* ShareText.swift */; };
 		C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6525576D143C59A4723612 /* DropboxViews.swift */; };
+		CFB5629FD0291B55CE501A48 /* WorkoutSyncUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901F20941815D8CBD3B54485 /* WorkoutSyncUITests.swift */; };
 		DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B0778365FA2EAD6A05938A /* ExtraViews.swift */; };
 		F152713F3C49201271BBD36B /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A03855A2195F5FD77B7F7C /* SessionView.swift */; };
 		F2F2BDCD888BD5FA0D0A875A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4D1347269B601D5C3B5B64A /* Assets.xcassets */; };
 		F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		681D1EFD84E092312C4F81A4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF3B1A6C01ACE1D7D83D9B9B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2FD1FD98D80E78B5DDF30F0C;
+			remoteInfo = AMSWorkoutSync;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0A14825F875D7AF6B7EE715C /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
@@ -44,12 +56,15 @@
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		6D4B7A403EF7D24F842CE496 /* ZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesView.swift; sourceTree = "<group>"; };
 		70231C046226474A30263864 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		727F13AC6FACE0F75894E10A /* plan.xlsx */ = {isa = PBXFileReference; path = plan.xlsx; sourceTree = "<group>"; };
 		7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSWorkoutSyncApp.swift; sourceTree = "<group>"; };
 		8173903887939F8A3DB90D8D /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
 		874D363C030B897E786F6F58 /* Guide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Guide.swift; sourceTree = "<group>"; };
 		8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropbox.swift; sourceTree = "<group>"; };
 		8CDFC67F6D3D022CEEC7F7CC /* Health.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Health.swift; sourceTree = "<group>"; };
 		8F6976A1E0C9C11CAB4C4134 /* Core */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Core; path = Core; sourceTree = SOURCE_ROOT; };
+		901F20941815D8CBD3B54485 /* WorkoutSyncUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSyncUITests.swift; sourceTree = "<group>"; };
+		A5A2454D99D607D5E8D4E8C3 /* AMSWorkoutSyncUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AMSWorkoutSyncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanTab.swift; sourceTree = "<group>"; };
 		ADB40EE4205D1E5B3E2587DE /* AMSWorkoutSync.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AMSWorkoutSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4D1347269B601D5C3B5B64A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -80,11 +95,21 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		441A12163782FBD9175BF099 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				901F20941815D8CBD3B54485 /* WorkoutSyncUITests.swift */,
+				E234DFAF2A8355631210C352 /* Fixtures */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		6FDE345219CCF60C1A2958EE = {
 			isa = PBXGroup;
 			children = (
 				42167F9205B054F7709DFD18 /* App */,
 				C2AA019AB38185D1211DE4DB /* Packages */,
+				441A12163782FBD9175BF099 /* UITests */,
 				BA3E6BB86778EB5325FA327F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				ADB40EE4205D1E5B3E2587DE /* AMSWorkoutSync.app */,
+				A5A2454D99D607D5E8D4E8C3 /* AMSWorkoutSyncUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -141,9 +167,36 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		E234DFAF2A8355631210C352 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				727F13AC6FACE0F75894E10A /* plan.xlsx */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		26C3152C6E12453EE17D0C7A /* AMSWorkoutSyncUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E3DCE9C0267843DF7994504 /* Build configuration list for PBXNativeTarget "AMSWorkoutSyncUITests" */;
+			buildPhases = (
+				51242D72EE5AB2B6A6EAF5FB /* Sources */,
+				43DB63F3B1B1D76B00DA4F76 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8C8A40D849DF57FD8171C44D /* PBXTargetDependency */,
+			);
+			name = AMSWorkoutSyncUITests;
+			packageProductDependencies = (
+			);
+			productName = AMSWorkoutSyncUITests;
+			productReference = A5A2454D99D607D5E8D4E8C3 /* AMSWorkoutSyncUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		2FD1FD98D80E78B5DDF30F0C /* AMSWorkoutSync */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C33912BB38DFBFC1C2AD7369 /* Build configuration list for PBXNativeTarget "AMSWorkoutSync" */;
@@ -173,6 +226,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					26C3152C6E12453EE17D0C7A = {
+						DevelopmentTeam = D24ENP83QQ;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 2FD1FD98D80E78B5DDF30F0C;
+					};
 					2FD1FD98D80E78B5DDF30F0C = {
 						DevelopmentTeam = D24ENP83QQ;
 						ProvisioningStyle = Automatic;
@@ -197,6 +255,7 @@
 			projectRoot = "";
 			targets = (
 				2FD1FD98D80E78B5DDF30F0C /* AMSWorkoutSync */,
+				26C3152C6E12453EE17D0C7A /* AMSWorkoutSyncUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -207,6 +266,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				F2F2BDCD888BD5FA0D0A875A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		43DB63F3B1B1D76B00DA4F76 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6951774C8A2ED04539AE4CAC /* plan.xlsx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,7 +308,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		51242D72EE5AB2B6A6EAF5FB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CFB5629FD0291B55CE501A48 /* WorkoutSyncUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8C8A40D849DF57FD8171C44D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2FD1FD98D80E78B5DDF30F0C /* AMSWorkoutSync */;
+			targetProxy = 681D1EFD84E092312C4F81A4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		4C2A1DAAC32003E2CB3072E5 /* Release */ = {
@@ -407,6 +490,40 @@
 			};
 			name = Release;
 		};
+		F8E4612C0234B0FB96FAE545 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.schabbauer.AMSWorkoutSyncUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AMSWorkoutSync;
+			};
+			name = Debug;
+		};
+		F95F2435C3BF46B064719133 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.schabbauer.AMSWorkoutSyncUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AMSWorkoutSync;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -415,6 +532,15 @@
 			buildConfigurations = (
 				B41A912B2EA222213F55D8B6 /* Debug */,
 				4C2A1DAAC32003E2CB3072E5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7E3DCE9C0267843DF7994504 /* Build configuration list for PBXNativeTarget "AMSWorkoutSyncUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8E4612C0234B0FB96FAE545 /* Debug */,
+				F95F2435C3BF46B064719133 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

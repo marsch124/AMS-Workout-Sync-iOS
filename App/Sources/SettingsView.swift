@@ -25,6 +25,7 @@ struct SettingsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Settings").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
+                        .accessibilityIdentifier("settings-title")
 
                     SectionHeading(text: "Your plan")
                     if Dropbox.shared.isConnected {
@@ -133,6 +134,7 @@ struct SettingsView: View {
                         SettingsRow(title: "What’s new", sub: "AMS Workout Sync \(version)", chevron: true)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings-whats-new")
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)
@@ -173,7 +175,7 @@ struct SettingsView: View {
         return prefix + f.localizedString(for: at, relativeTo: Date())
     }
 
-    /* "LTHR 150 bpm · CSS 121 sec/100 m · Weight 79 kg" — the sheet's own labels, shortened. */
+    /* "LTHR 150 bpm · CSS 121 sec/100 m · Weight 80 kg" (invented) — the sheet's own labels, shortened. */
     private var zonesTitle: String {
         guard let z = store.zones else { return "No zones sheet in this workbook" }
         let known = z.current.filter { !$0.value.isEmpty }

@@ -48,6 +48,7 @@ struct TodayView: View {
             } else {
                 ForEach(sessions) { w in
                     NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                        .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
                         .buttonStyle(.plain)
                 }
             }
@@ -74,6 +75,7 @@ struct TodayView: View {
                 SectionHeading(text: "Behind you, not recorded")
                 ForEach(behind) { w in
                     NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping, showDay: true) }
+                        .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
                         .buttonStyle(.plain)
                 }
             }
@@ -86,6 +88,7 @@ struct TodayView: View {
                 } else {
                     ForEach(tomorrow.filter { $0.discipline.id != "rest" }) { w in
                         NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                        .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
                             .buttonStyle(.plain)
                     }
                 }

@@ -89,6 +89,7 @@ struct BottomBar: View {
                     .foregroundStyle(tab == item.id ? tint : Theme.secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("tab-" + item.id)
             }
         }
         .padding(.top, 6)

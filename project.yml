@@ -63,3 +63,23 @@ targets:
         NSHealthShareUsageDescription: Workout Sync reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them. Nothing is written to Health.
         LSSupportsOpeningDocumentsInPlace: true
         UIFileSharingEnabled: false
+  AMSWorkoutSyncUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: AMSWorkoutSync
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.schabbauer.AMSWorkoutSyncUITests
+        TEST_TARGET_NAME: AMSWorkoutSync
+schemes:
+  AMSWorkoutSync:
+    build:
+      targets:
+        AMSWorkoutSync: all
+    test:
+      targets:
+        - AMSWorkoutSyncUITests

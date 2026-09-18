@@ -16,6 +16,7 @@ struct PlanTab: View {
                 if let view = store.view {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
+                            .accessibilityIdentifier("sessions-title")
                         Picker("Show", selection: $range) {
                             ForEach(Range.allCases) { Text($0.rawValue).tag($0) }
                         }
@@ -29,6 +30,7 @@ struct PlanTab: View {
                             SectionHeading(text: Dates.long(day))
                             ForEach(list) { w in
                                 NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                                    .accessibilityIdentifier("sessions-session-\(w.dayKey)-\(w.discipline.id)")
                                     .buttonStyle(.plain)
                             }
                         }

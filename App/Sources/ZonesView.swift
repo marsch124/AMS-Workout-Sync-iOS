@@ -93,6 +93,8 @@ struct ZoneTableCard: View {
                                 .multilineTextAlignment(.trailing)
                         }
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("zone-row")
                 }
             }
         }
@@ -131,6 +133,7 @@ struct ZoneSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(ask.intensity).font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
+                        .accessibilityIdentifier("zone-sheet-title")
                     if let z = store.zones {
                         let tables = z.explain(intensity: ask.intensity, sport: ask.sport)
                         let wantsRpe = ask.intensity.uppercased().contains("RPE")

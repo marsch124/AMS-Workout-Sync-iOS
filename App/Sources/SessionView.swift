@@ -30,6 +30,7 @@ struct SessionView: View {
                     }
 
                     Text(w.title).font(.title2.weight(.bold)).foregroundStyle(Theme.text)
+                        .accessibilityIdentifier("session-title")
 
                     HStack(spacing: 6) {
                         if let s = Plan.plannedSeconds(w, mapping), s > 0 { Pill(text: formatDuration(s)) }
@@ -41,6 +42,7 @@ struct SessionView: View {
                                     ZonePill(text: w.planned.intensity, sport: w.discipline.id)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityIdentifier("zone-pill")
                             } else {
                                 Pill(text: w.planned.intensity)
                             }

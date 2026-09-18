@@ -16,6 +16,7 @@ struct ProgressView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Progress").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
+                        .accessibilityIdentifier("progress-title")
                     if let p = store.progress, let mapping = store.mapping {
                         if let road = p.road { RoadCard(road: road, today: store.today) }
                         if !p.summary.any {

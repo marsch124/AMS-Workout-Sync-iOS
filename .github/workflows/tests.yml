@@ -1,0 +1,65 @@
+name: Tests
+
+# Every push runs the UI tests. A red run means the build is not fit to
+# upload to TestFlight. The tests find every control by accessibility
+# identifier, never by its words, and open a small invented workbook
+# (UITests/Fixtures/plan.xlsx) on a fixed day — never his real plan.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show what we are building with
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available | grep -E "iPhone" | head
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the project
+        run: xcodegen generate
+
+      - name: Pick a simulator the runner actually has
+        run: |
+          # The highest-numbered iPhone: present on the runner image, and predictable.
+          LINE=$(xcrun simctl list devices available \
+            | grep -E "^ +iPhone [0-9]" | sort -V | tail -1)
+          if [ -z "$LINE" ]; then
+            LINE=$(xcrun simctl list devices available | grep -E "^ +iPhone" | tail -1)
+          fi
+          UDID=$(echo "$LINE" | sed -E 's/.*\(([0-9A-Fa-f-]{36})\).*/\1/')
+          if [ -z "$UDID" ]; then
+            echo "::error::no iPhone simulator on this runner"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "SIM_UDID=$UDID" >> $GITHUB_ENV
+          echo "Using simulator:$(echo "$LINE" | sed -E 's/ *\(.*//')"
+
+      - name: UI tests
+        run: |
+          xcodebuild test \
+            -project AMSWorkoutSync.xcodeproj \
+            -scheme AMSWorkoutSync \
+            -destination "platform=iOS Simulator,id=$SIM_UDID" \
+            -derivedDataPath build \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+      - name: Keep the results when it goes red
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: TestResults.xcresult

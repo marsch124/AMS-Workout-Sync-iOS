@@ -1,0 +1,70 @@
+import XCTest
+
+/*
+ * The app driven the way he uses it, found by accessibility identifier and
+ * never by its words — a label can be improved without a test noticing.
+ *
+ * Every test opens the same small workbook (UITests/Fixtures/plan.xlsx: the
+ * web app's "plain" fortnight plus an invented zones sheet — never his real
+ * plan) on a fixed day, Wednesday 16 September 2026, whose one session is a
+ * 35-minute run at Z2.
+ *
+ * Grown one test at a time; each was seen to go red when the thing it names
+ * was broken on purpose.
+ */
+final class WorkoutSyncUITests: XCTestCase {
+    override func setUp() {
+        continueAfterFailure = false
+    }
+
+    private func launch() -> XCUIApplication {
+        let app = XCUIApplication()
+        let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
+        app.launchEnvironment["AMSWS_FILE"] = plan.path
+        app.launchEnvironment["AMSWS_TODAY"] = "2026-09-16"
+        app.launch()
+        return app
+    }
+
+    /* 1. It opens on Today with today's session, and Settings carries the version. */
+    func testOpensOnTodayAndSettingsShowsTheVersion() {
+        let app = launch()
+
+        let run = app.buttons["today-session-2026-09-16-run"]
+        XCTAssertTrue(run.waitForExistence(timeout: 15), "Today does not show the day's run")
+        XCTAssertTrue(run.isHittable, "the day's run is not on screen")
+
+        let title = app.staticTexts["settings-title"]
+        XCTAssertFalse(title.exists && title.isHittable, "Settings is already on screen before its tab was tapped")
+        app.buttons["tab-settings"].tap()
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        let shown = expectation(for: NSPredicate(format: "isHittable == true"), evaluatedWith: title)
+        wait(for: [shown], timeout: 5)
+
+        let whatsNew = app.buttons["settings-whats-new"]
+        XCTAssertTrue(whatsNew.waitForExistence(timeout: 5))
+        XCTAssertNotNil(whatsNew.label.range(of: #"AMS Workout Sync \d+\.\d+ \(\d+\)"#, options: .regularExpression),
+                        "the version is missing from What's new: \(whatsNew.label)")
+    }
+
+    /* 2. A session's Z2 opens what Z2 is for him: one heart-rate row, from the zones sheet. */
+    func testASessionsZoneOpensWhatItMeans() {
+        let app = launch()
+
+        let run = app.buttons["today-session-2026-09-16-run"]
+        XCTAssertTrue(run.waitForExistence(timeout: 15))
+        run.tap()
+        XCTAssertTrue(app.staticTexts["session-title"].waitForExistence(timeout: 5), "the session did not open")
+
+        let pill = app.buttons["zone-pill"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 5), "the session has no zone pill")
+        pill.tap()
+        XCTAssertTrue(app.staticTexts["zone-sheet-title"].waitForExistence(timeout: 5), "the zone sheet did not open")
+
+        let rows = app.descendants(matching: .any).matching(identifier: "zone-row")
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 5), "the zone sheet shows no rows")
+        XCTAssertEqual(rows.count, 1, "a run at Z2 should show exactly the Z2 heart-rate row")
+        let label = rows.firstMatch.label
+        XCTAssertTrue(label.contains("Z2") && label.contains("122–134"), "wrong row: \(label)")
+    }
+}
