@@ -70,9 +70,14 @@ struct BottomBar: View {
     @Binding var tab: String
     let tint: Color
 
+    /*
+     * The four disciplines across the bar — his idea: swim, bike, run,
+     * strength. The words carry the meaning, so the glyphs are free to say
+     * what the app is about. Each still takes its page's colour.
+     */
     private let items: [(id: String, label: String, icon: String)] = [
-        ("today", "Today", "icon-today"), ("plan", "Sessions", "icon-plan"),
-        ("progress", "Progress", "icon-progress"), ("settings", "Settings", "icon-settings")
+        ("today", "Today", "icon-swim"), ("plan", "Sessions", "icon-bike"),
+        ("progress", "Progress", "icon-run"), ("settings", "Settings", "icon-strength")
     ]
 
     var body: some View {

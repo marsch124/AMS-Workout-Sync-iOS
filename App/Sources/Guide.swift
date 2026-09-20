@@ -101,6 +101,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (29)", date: "20 September 2026", headline: "The four disciplines along the bottom", items: [
+            "The tab bar now carries the sports: swim for Today, bike for Sessions, run for Progress, strength for Settings. The words are unchanged, and each icon still takes its page's colour."
+        ]),
         Release(version: "1.1 (28)", date: "20 September 2026", headline: "One size of button in Settings", items: [
             "Every button on the Settings screen is now the same size, and it is the small one: the full-width buttons for choosing the plan and connecting Dropbox are gone.",
             "Settings → Calendar can put the sessions in as all-day events instead of at an hour. Choose At a time or All day; everything from today onwards changes over."
