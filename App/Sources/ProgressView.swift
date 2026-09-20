@@ -133,6 +133,8 @@ struct EmptyCard: View {
 struct RoadCard: View {
     let road: Stats.Road
     let today: String
+    /* The race's own words are one tap away: a flag, not four lines of text. */
+    @State private var raceOpen = false
 
     private var clock: (number: String, unit: String) {
         if road.daysToGo < 0 { return ("—", "the race has been") }
@@ -145,11 +147,27 @@ struct RoadCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(clock.number).font(.system(size: 44, weight: .bold, design: .rounded)).foregroundStyle(Theme.progress)
-                Text(clock.unit).font(.headline).foregroundStyle(Theme.secondary)
+            HStack(alignment: .center, spacing: 8) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(clock.number).font(.system(size: 44, weight: .bold, design: .rounded)).foregroundStyle(Theme.progress)
+                    Text(clock.unit).font(.headline).foregroundStyle(Theme.secondary)
+                }
+                Spacer(minLength: 8)
+                Button { withAnimation(.easeInOut(duration: 0.15)) { raceOpen.toggle() } } label: {
+                    ZStack {
+                        Circle().fill(Theme.progress.opacity(raceOpen ? 0.3 : 0.16))
+                        Glyph(name: "icon-race", size: 20).foregroundStyle(Theme.progress)
+                    }
+                    .frame(width: 38, height: 38)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("race-what")
+                .accessibilityLabel(raceOpen ? "Hide what the race is" : "What the race is")
             }
-            Text(road.raceTitle).font(.headline).foregroundStyle(Theme.text).lineLimit(4)
+            if raceOpen {
+                Text(road.raceTitle).font(.subheadline).foregroundStyle(Theme.text)
+                    .accessibilityIdentifier("race-title")
+            }
             Text(Dates.long(road.raceDay) + (parseDayKey(road.raceDay).map { " " + String(utc.component(.year, from: $0)) } ?? ""))
                 .font(.subheadline).foregroundStyle(Theme.secondary)
 

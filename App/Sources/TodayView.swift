@@ -80,18 +80,27 @@ struct TodayView: View {
                 }
             }
 
-            // Only tomorrow, as he asked: what to think about tonight, not the week.
+            // Only tomorrow, as he asked: what to think about tonight, not the
+            // week — and on its own pale blue ground, so the eye knows at once
+            // that everything below the line is no longer today.
             if !tomorrow.isEmpty {
-                SectionHeading(text: "Tomorrow")
-                if tomorrow.allSatisfy({ $0.discipline.id == "rest" }) {
-                    RestCard(text: tomorrow[0].title)
-                } else {
-                    ForEach(tomorrow.filter { $0.discipline.id != "rest" }) { w in
-                        NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
-                        .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
-                            .buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: 14) {
+                    SectionHeading(text: "Tomorrow")
+                    if tomorrow.allSatisfy({ $0.discipline.id == "rest" }) {
+                        RestCard(text: tomorrow[0].title)
+                    } else {
+                        ForEach(tomorrow.filter { $0.discipline.id != "rest" }) { w in
+                            NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                            .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
+                                .buttonStyle(.plain)
+                        }
                     }
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.tomorrow))
+                .padding(.horizontal, -12)
             }
         }
     }
@@ -201,9 +210,15 @@ struct WeekCard: View {
                 Button(keyOpen ? "Hide key" : "Key") { withAnimation(.easeInOut(duration: 0.15)) { keyOpen.toggle() } }
                     .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
                 Spacer()
-                Text(done > 0 ? "\(formatDuration(done)) of \(formatDuration(planned))" : "\(formatDuration(planned)) planned")
-                    .font(.subheadline.weight(.semibold).monospacedDigit())
-                    .foregroundStyle(Theme.secondary)
+                VStack(alignment: .trailing, spacing: 5) {
+                    Text(done > 0 ? "\(formatDuration(done)) of \(formatDuration(planned))" : "\(formatDuration(planned)) planned")
+                        .font(.subheadline.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(Theme.secondary)
+                    if planned > 0 {
+                        WeekProgress(done: done, planned: planned,
+                                     dueByToday: days.filter { $0.dayKey <= today }.reduce(0) { $0 + $1.plannedSeconds })
+                    }
+                }
             }
             HStack(alignment: .bottom, spacing: 8) {
                 ForEach(days) { day in
@@ -322,5 +337,35 @@ struct EmptyWorkbook: View {
         }
         .padding(24)
         .workbookPicker(isPresented: $picking)
+    }
+}
+
+
+/*
+ * The week as one hairline: how much of the planned time is recorded, and a
+ * faint notch where the week should stand by the end of today. No words, no
+ * percentage — it lives in the space the figures already leave.
+ */
+struct WeekProgress: View {
+    let done: Double
+    let planned: Double
+    let dueByToday: Double
+
+    var body: some View {
+        let share = planned > 0 ? min(max(done / planned, 0), 1) : 0
+        let pace = planned > 0 ? min(max(dueByToday / planned, 0), 1) : 0
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Theme.surface2)
+                Capsule().fill(Theme.today).frame(width: max(geo.size.width * share, share > 0 ? 3 : 0))
+                if pace > 0.02, pace < 0.98 {
+                    // Where tonight's session leaves the week, if nothing slips.
+                    Capsule().fill(Theme.secondary.opacity(0.7))
+                        .frame(width: 1.5, height: geo.size.height + 4)
+                        .offset(x: geo.size.width * pace - 0.75)
+                }
+            }
+        }
+        .frame(width: 96, height: 4)
     }
 }

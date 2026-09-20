@@ -50,6 +50,12 @@ public struct Zones: Equatable, Codable {
 
     public var rpe: String? { abbreviations.first { $0.label.uppercased() == "RPE" }?.value }
 
+    /* The zone tables are formulas. Empty means Excel has not worked them out
+       since the file was last written — not that nothing was ever entered. */
+    public var waitingForExcel: Bool {
+        !tables.isEmpty && tables.allSatisfy { t in t.rows.allSatisfy { $0.value.isEmpty } }
+    }
+
     /* "Z2 — Aerobic" → 2. Only a Z straight followed by one digit counts. */
     public static func zoneNumber(of label: String) -> Int? {
         let chars = Array(label.trimmingCharacters(in: .whitespaces))
@@ -129,6 +135,11 @@ public struct Zones: Equatable, Codable {
         var current: [ZoneRow] = []
         if let cr = currentRow {
             for h in header where valueCols.contains(h.col) { current.append(ZoneRow(label: h.text, value: t(cr, h.col))) }
+        }
+        // The CURRENT row is a formula picking the last test with a number in it.
+        // When its answer is missing, that test's own cells still hold the numbers.
+        if current.allSatisfy({ $0.value.isEmpty }), let lr = latestTestRow {
+            current = header.filter { valueCols.contains($0.col) }.map { ZoneRow(label: $0.text, value: t(lr, $0.col)) }
         }
         var latest = ""
         if let lr = latestTestRow {

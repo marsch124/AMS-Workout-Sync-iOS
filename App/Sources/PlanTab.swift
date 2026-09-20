@@ -17,10 +17,27 @@ struct PlanTab: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
                             .accessibilityIdentifier("sessions-title")
-                        Picker("Show", selection: $range) {
-                            ForEach(Range.allCases) { Text($0.rawValue).tag($0) }
+                        // Four counts, each the length of the list its word opens —
+                        // counted from that same list, so the two cannot disagree.
+                        // A segmented control cut "Upcoming" short; the number
+                        // stands under the word instead.
+                        HStack(spacing: 6) {
+                            ForEach(Range.allCases) { r in
+                                let chosen = r == range
+                                Button { withAnimation(.easeInOut(duration: 0.12)) { range = r } } label: {
+                                    VStack(spacing: 1) {
+                                        Text(r.rawValue).font(.caption.weight(.semibold))
+                                        Text("\(list(r, view).count)").font(.title3.weight(.bold).monospacedDigit())
+                                    }
+                                    .frame(maxWidth: .infinity, minHeight: 50)
+                                    .foregroundStyle(chosen ? Theme.plan : Theme.secondary)
+                                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(chosen ? Theme.plan.opacity(0.16) : Theme.surface))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("sessions-filter-\(r.rawValue.lowercased())")
+                            }
                         }
-                        .pickerStyle(.segmented)
 
                         let days = grouped(workouts(view))
                         if days.isEmpty {
@@ -62,13 +79,13 @@ struct PlanTab: View {
      * today that was never recorded, so it cannot fall between Upcoming and
      * Done and never be seen again.
      */
-    private func workouts(_ view: PlanView) -> [Workout] {
+    private func list(_ range: Range, _ view: PlanView) -> [Workout] {
         let today = store.today
         switch range {
         case .upcoming:
             let behind = view.outstanding(before: today)
             let ahead = view.visible.filter { $0.dayKey >= today && $0.state == .todo }
-            return Array((behind + ahead).prefix(120))
+            return behind + ahead
         case .done:
             return view.plan.filter { $0.state == .done }.reversed()
         case .missed:
@@ -76,6 +93,12 @@ struct PlanTab: View {
         case .all:
             return view.visible
         }
+    }
+
+    /* The list as shown. Only the length of Upcoming is capped, never its count. */
+    private func workouts(_ view: PlanView) -> [Workout] {
+        let all = list(range, view)
+        return range == .upcoming ? Array(all.prefix(120)) : all
     }
 
     private func grouped(_ list: [Workout]) -> [(String, [Workout])] {

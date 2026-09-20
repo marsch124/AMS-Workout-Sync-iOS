@@ -45,6 +45,10 @@ def read(path):
         if a.lower().startswith('test') and any(t(r, c) for c in value_cols):
             latest = r
     current = [{'label': x, 'value': t(current_row, c)} for c, x in header if c in value_cols] if current_row else []
+    # The CURRENT row is a formula; when its answer is missing from the file,
+    # the latest test's own cells still hold the numbers.
+    if all(not r['value'] for r in current) and latest:
+        current = [{'label': x, 'value': t(latest, c)} for c, x in header if c in value_cols]
     latest_s = ''
     if latest:
         latest_s = t(latest, label_col) + ((', ' + t(latest, dates_col)) if dates_col and t(latest, dates_col) else '')

@@ -18,7 +18,8 @@ struct GuideView: View {
         ]),
         Part(id: "Today", body: [
             "The week strip is one column a day, one bar a session. Solid is recorded, hollow is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
-            "Below it: today's sessions, anything behind you that was never recorded, and tomorrow. Tap a session to open it."
+            "Beside the hours, a hairline: how much of the week's planned time is recorded, and a faint notch marking where the week stands once tonight is done.",
+            "Below it: today's sessions, anything behind you that was never recorded, and tomorrow on its own pale blue ground. Tap a session to open it."
         ]),
         Part(id: "Logging a session", body: [
             "Done as planned writes the planned length and the done mark, nothing else — for the sessions that went as planned.",
@@ -45,12 +46,14 @@ struct GuideView: View {
             "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
         ]),
         Part(id: "Progress", body: [
+            "The flag beside the weeks to go holds what the race is — distances, where, and the day. It is a tap because it is the one thing on that screen you already know.",
             "Nothing here is read from the Progress sheet — its cells are formulas that carry Excel's last answer, and the app never recalculates them. Every figure is worked out from the session rows each time the screen opens, and none of it is stored.",
             "The road: weeks to the race, the phases as one bar with today marked on it, sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
         ]),
         Part(id: "Your zones", body: [
             "A session's Z2 or Z4–Z5 is a pill on its screen. Tap it and the app says what that is for you this season — heart rate always, bike power on a ride once an FTP is entered, the swim paces on a swim — read from the Test Results & Zones sheet of your workbook, from your latest test. The app never works a zone out itself.",
-            "The whole sheet, the current numbers and the words it uses, is under Settings → Your zones."
+            "The whole sheet, the current numbers and the words it uses, is under Settings → Your zones.",
+            "The numbers come from your latest test row. The zone tables are your sheet's own formulas: if another program saves the file without the answers Excel worked out, the tables show a dash until you open the plan in Excel once and save it."
         ]),
         Part(id: "In your calendar", body: [
             "Settings → Calendar → Put them in writes every session from today to the end of the plan into a calendar called Training: at six in the morning (or the hour you set), each as long as it is planned, one after the other on a day with two. Each is headed by the sport and its length and nothing else — Run 35, Swim 40, Bike 2h30min — with the session's own words in the notes. A rest day is an all-day event. The events float, so six stays six wherever the phone is.",
@@ -97,6 +100,14 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (27)", date: "20 September 2026", headline: "Four small things you asked for", items: [
+            "Under the week's hours on Today: a hairline showing how much of the planned time is recorded, with a faint notch where the week stands once tonight is done.",
+            "Tomorrow sits on its own pale blue ground, so the eye knows at once that everything below it is no longer today.",
+            "Sessions shows how many are upcoming, done and missed, the number under each word.",
+            "Progress no longer carries the race description. It is behind the small flag beside the weeks: tap it for the race's own words, tap again and it goes.",
+            "Settings is quieter: Read it again now is a small grey line under Change, and what the app made of your sheet is one grey line instead of a section. The photo buttons are small.",
+            "Your zones now read your latest test's own numbers, so they show even when the file has lost what Excel worked out. When the zone tables themselves are empty, the app says why and what to do about it."
+        ]),
         Release(version: "1.1 (26)", date: "18 September 2026", headline: "Short headings in the calendar", items: [
             "A calendar event is now headed by the sport and its length and nothing else: Run 35, Swim 40, Bike 2h30min. The session's own words are still there, in the event's notes. Events from today onwards are rewritten the next time the app opens; days already behind keep the heading they had."
         ]),

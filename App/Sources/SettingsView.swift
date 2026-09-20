@@ -38,9 +38,15 @@ struct SettingsView: View {
                             }
                             .buttonStyle(.borderedProminent).tint(Theme.today)
                         } else {
-                            Button("Read it again now") { store.refresh() }
-                                .font(.subheadline.weight(.semibold))
-                                .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+                            // Quiet, and under the Change button: the app reads the
+                            // plan by itself, so this is only for the impatient minute
+                            // after an edit in Excel.
+                            HStack {
+                                Spacer()
+                                Button("Read it again now") { store.refresh() }
+                                    .font(.caption).buttonStyle(.plain).foregroundStyle(Theme.secondary)
+                                    .accessibilityIdentifier("settings-read-again")
+                            }
                         }
                     } else {
                         SettingsRow(title: "Not connected to Dropbox",
@@ -75,12 +81,13 @@ struct SettingsView: View {
                         }
                     }
 
+                    // What the app made of the sheet, in one grey line: it matters
+                    // only when something looks wrong, so it no longer takes a
+                    // heading and two cards to say it.
                     if let mapping = store.mapping {
-                        SectionHeading(text: "How the sheet is read")
-                        SettingsRow(title: mapping.sheets.joined(separator: ", "),
-                                    sub: "\(store.plan.count) sessions · headings on row \(mapping.headerRow)")
-                        SettingsRow(title: "Durations in \(mapping.units.duration), distances in \(mapping.units.distance)",
-                                    sub: "Done is written \(mapping.doneValue), missed \(mapping.missedValue)")
+                        Text("\(mapping.sheets.joined(separator: ", ")) · \(store.plan.count) sessions · \(mapping.units.duration) and \(mapping.units.distance) · done is written \(mapping.doneValue)")
+                            .font(.caption).foregroundStyle(Theme.secondary)
+                            .padding(.horizontal, 2)
                     }
 
                     SectionHeading(text: "Your zones").id("zones")
@@ -104,7 +111,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
 
-                    SectionHeading(text: "Photos")
+                    SectionHeading(text: "Photos").id("photos")
                     PhotoSettings()
 
                     SectionHeading(text: "Apple Health")

@@ -36,6 +36,9 @@ enum Theme {
     static let plan = Color.dynamic(light: 0x1266C8, dark: 0x3B9EFF)
     static let progress = Color.dynamic(light: 0x7C3AED, dark: 0xC084FC)
     static let settings = Color.dynamic(light: 0x5A6B7B, dark: 0x94A3B8)
+    /* The ground under Tomorrow: pale blue by day, a deep quiet blue at night —
+       a place, not a state, so it never competes with a sport's colour. */
+    static let tomorrow = Color.dynamic(light: 0xe8f1fb, dark: 0x122b3d)
 
     static func sportHex(_ id: String) -> UInt32 {
         switch id {

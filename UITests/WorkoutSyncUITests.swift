@@ -47,6 +47,23 @@ final class WorkoutSyncUITests: XCTestCase {
                         "the version is missing from What's new: \(whatsNew.label)")
     }
 
+    /* 3. The race's words are behind the flag on Progress, not on the screen. */
+    func testTheRaceIsBehindTheFlag() {
+        let app = launch()
+        XCTAssertTrue(app.buttons["today-session-2026-09-16-run"].waitForExistence(timeout: 15))
+        app.buttons["tab-progress"].tap()
+
+        let flag = app.buttons["race-what"]
+        XCTAssertTrue(flag.waitForExistence(timeout: 5), "Progress has no race flag")
+        XCTAssertFalse(app.staticTexts["race-title"].exists, "the race description is on the screen before the flag was tapped")
+        flag.tap()
+        let title = app.staticTexts["race-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 3), "the flag did not show what the race is")
+        XCTAssertFalse(title.label.isEmpty)
+        flag.tap()
+        XCTAssertFalse(title.waitForExistence(timeout: 2), "the race description did not go away again")
+    }
+
     /* 2. A session's Z2 opens what Z2 is for him: one heart-rate row, from the zones sheet. */
     func testASessionsZoneOpensWhatItMeans() {
         let app = launch()

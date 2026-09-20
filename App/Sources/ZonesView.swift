@@ -33,7 +33,8 @@ struct ZonesView: View {
                     if !z.latestTest.isEmpty {
                         Text("From " + z.latestTest).font(.footnote).foregroundStyle(Theme.secondary)
                     }
-                    ForEach(z.tables, id: \.title) { table in ZoneTableCard(table: table) }
+                    if z.waitingForExcel { WaitingForExcel() }
+                    ForEach(z.tables, id: \.title) { table in ZoneTableCard(table: table, waiting: z.waitingForExcel) }
                     if !z.note.isEmpty {
                         Card { Text(z.note).font(.footnote).foregroundStyle(Theme.secondary) }
                     }
@@ -65,6 +66,20 @@ struct ZonesView: View {
     }
 }
 
+/* Said in full once, so the app never claims nothing was entered when it was. */
+struct WaitingForExcel: View {
+    var body: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Your zone tables are empty").font(.headline).foregroundStyle(Theme.text)
+                Text("The sheet works the zones out with formulas, and the numbers Excel had worked out are not in the file any more — another program saved it without them. Your test results themselves are still there. Open the plan in Excel on the Mac once and save it, and the tables fill in again.")
+                    .font(.footnote).foregroundStyle(Theme.secondary)
+            }
+        }
+        .accessibilityIdentifier("zones-waiting-for-excel")
+    }
+}
+
 struct Card<Content: View>: View {
     @ViewBuilder let content: Content
     var body: some View {
@@ -77,6 +92,8 @@ struct Card<Content: View>: View {
 
 struct ZoneTableCard: View {
     let table: ZoneTable
+    /* Empty because Excel has not worked them out, not because nothing was entered. */
+    var waiting = false
 
     var body: some View {
         Card {
@@ -87,7 +104,7 @@ struct ZoneTableCard: View {
                         Text(row.label).font(.body).foregroundStyle(Theme.text)
                         Spacer(minLength: 12)
                         if row.value.isEmpty {
-                            Text("not entered yet").font(.footnote).foregroundStyle(Theme.secondary)
+                            Text(waiting ? "—" : "not entered yet").font(.footnote).foregroundStyle(Theme.secondary)
                         } else {
                             Text(row.value).font(.body.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
                                 .multilineTextAlignment(.trailing)
@@ -154,7 +171,9 @@ struct ZoneSheet: View {
                             Text("No bike FTP is entered in the sheet yet, so there are no power zones — heart rate only.")
                                 .font(.footnote).foregroundStyle(Theme.secondary)
                         }
-                        if tables.isEmpty, !(wantsRpe && z.rpe != nil) {
+                        if z.waitingForExcel {
+                            WaitingForExcel()
+                        } else if tables.isEmpty, !(wantsRpe && z.rpe != nil) {
                             Card { Text("Nothing in your zones sheet matches " + ask.intensity + ".").font(.body).foregroundStyle(Theme.secondary) }
                         }
                         NavigationLink { ZonesView() } label: {

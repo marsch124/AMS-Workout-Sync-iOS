@@ -217,24 +217,25 @@ struct PhotoSettings: View {
         SettingsRow(title: "\(photos.index.count) photo\(photos.index.count == 1 ? "" : "s") · \(String(format: "%.1f", mb)) MB",
                     sub: "On this phone only, and in the iPhone's own backup. Not in the workbook, not in Dropbox."
                         + (orphans > 0 ? " \(orphans) belong to a session that has since changed — still here, still exported." : ""))
-        HStack(spacing: 10) {
-            Button("Save them all") {
+        HStack(spacing: 8) {
+            Button("Save all") {
                 let url = FileManager.default.temporaryDirectory
                     .appendingPathComponent("workout-photos-\(PlanView.todayKey()).zip")
                 try? photos.exportZip().write(to: url)
                 exportURL = url
             }
-            .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+            .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
             .disabled(photos.index.isEmpty)
-            Button("Bring in from the web app") { importing = true }
-                .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+            Button("Bring in a zip") { importing = true }
+                .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
             if !photos.index.isEmpty {
                 Button("Delete all") { confirmDeleteAll = true }
-                    .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.danger)
+                    .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.danger)
             }
+            Spacer(minLength: 0)
         }
         if let note { Text(note).font(.footnote).foregroundStyle(Theme.secondary) }
-        Text("In the web app: Settings → Photos → Save them all, and save the zip to Files. Then Bring in from the web app and pick that zip; each picture goes to its session by day and sport.")
+        Text("Save all writes every picture into one zip you can keep in Files. Bring in a zip takes one back, each picture to its session by the day and sport in its name.")
             .font(.caption).foregroundStyle(Theme.secondary)
             .fileImporter(isPresented: $importing, allowedContentTypes: [.zip], allowsMultipleSelection: false) { result in
                 guard case .success(let urls) = result, let url = urls.first else { return }
