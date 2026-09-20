@@ -57,6 +57,7 @@ struct GuideView: View {
         ]),
         Part(id: "In your calendar", body: [
             "Settings → Calendar → Put them in writes every session from today to the end of the plan into a calendar called Training: at six in the morning (or the hour you set), each as long as it is planned, one after the other on a day with two. Each is headed by the sport and its length and nothing else — Run 35, Swim 40, Bike 2h30min — with the session's own words in the notes. A rest day is an all-day event. The events float, so six stays six wherever the phone is.",
+            "Or choose All day, and every session becomes an all-day event on its own day instead, still headed by the sport and its length.",
             "The app keeps them right: a moved session moves its event, a changed row rewrites it, a session that disappears takes its event with it. Days already behind are left as they were. The Training calendar is the app's own — from today onwards it holds the plan and nothing else — and Take them out removes it."
         ]),
         Part(id: "Sending a session", body: [
@@ -100,6 +101,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (28)", date: "20 September 2026", headline: "One size of button in Settings", items: [
+            "Every button on the Settings screen is now the same size, and it is the small one: the full-width buttons for choosing the plan and connecting Dropbox are gone.",
+            "Settings → Calendar can put the sessions in as all-day events instead of at an hour. Choose At a time or All day; everything from today onwards changes over."
+        ]),
         Release(version: "1.1 (27)", date: "20 September 2026", headline: "Four small things you asked for", items: [
             "Under the week's hours on Today: a hairline showing how much of the planned time is recorded, with a faint notch where the week stands once tonight is done.",
             "Tomorrow sits on its own pale blue ground, so the eye knows at once that everything below it is no longer today.",

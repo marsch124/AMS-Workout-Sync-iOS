@@ -33,10 +33,8 @@ struct SettingsView: View {
                                     sub: planLine,
                                     action: store.dropboxPath == nil ? nil : ("Change", { browsing = true }))
                         if store.dropboxPath == nil {
-                            Button { browsing = true } label: {
-                                Text("Choose your plan in Dropbox").font(.headline).frame(maxWidth: .infinity, minHeight: 46)
-                            }
-                            .buttonStyle(.borderedProminent).tint(Theme.today)
+                            Button("Choose your plan in Dropbox") { browsing = true }
+                                .settingsButton(tint: Theme.today, filled: true)
                         } else {
                             // Quiet, and under the Change button: the app reads the
                             // plan by itself, so this is only for the impatient minute
@@ -51,12 +49,11 @@ struct SettingsView: View {
                     } else {
                         SettingsRow(title: "Not connected to Dropbox",
                                     sub: "Connect, and the app reads your plan from Dropbox and writes your logging into it.")
-                        Button { Task { await connect() } } label: {
-                            Text(connecting ? "Connecting…" : "Connect Dropbox").font(.headline).frame(maxWidth: .infinity, minHeight: 46)
-                        }
-                        .buttonStyle(.borderedProminent).tint(Theme.today).disabled(connecting)
+                        Button(connecting ? "Connecting…" : "Connect Dropbox") { Task { await connect() } }
+                            .settingsButton(tint: Theme.today, filled: true)
+                            .disabled(connecting)
                         Button("Or open a copy from Files, read only") { picking = true }
-                            .font(.subheadline).tint(Theme.secondary)
+                            .settingsButton(tint: Theme.secondary)
                         if !store.fileName.isEmpty {
                             SettingsRow(title: store.fileName, sub: "Read only · " + readLine)
                         }
@@ -77,7 +74,8 @@ struct SettingsView: View {
                                             action: ("Discard", { store.discard(q.id) }))
                             }
                             Button(store.syncing ? "Sending…" : "Send now") { store.syncNow() }
-                                .font(.subheadline.weight(.semibold)).tint(Theme.today).disabled(store.syncing)
+                                .settingsButton(tint: Theme.today)
+                                .disabled(store.syncing)
                         }
                     }
 
@@ -220,6 +218,35 @@ struct SettingsView: View {
     }
 }
 
+/*
+ * One size for every button on this screen, and it is the smallest of the
+ * three he had: the photo buttons' size. He asked twice — first that they all
+ * match, then that they all be the small one. Nothing here decides its own
+ * size any more.
+ */
+extension View {
+    func settingsButton(tint: Color, filled: Bool = false) -> some View {
+        font(.caption.weight(.semibold))
+            .buttonStyle(.bordered)
+            .controlSize(.mini)
+            .tint(tint)
+            .modifier(FilledSettingsButton(on: filled, tint: tint))
+    }
+}
+
+/* The one or two that start something carry their colour; the size is the same. */
+struct FilledSettingsButton: ViewModifier {
+    let on: Bool
+    let tint: Color
+    func body(content: Content) -> some View {
+        if on {
+            content.buttonStyle(.borderedProminent).controlSize(.mini).tint(tint)
+        } else {
+            content
+        }
+    }
+}
+
 /* A row with a title, a grey line under it and, at most, one small button on the right. */
 struct SettingsRow: View {
     /* Buttons that take something away are red; every other one is green. */
@@ -239,9 +266,7 @@ struct SettingsRow: View {
             Spacer(minLength: 0)
             if let action {
                 Button(action.0, action: action.1)
-                    .font(.subheadline.weight(.semibold))
-                    .buttonStyle(.bordered).controlSize(.small)
-                    .tint(SettingsRow.takesAway.contains(action.0) ? Theme.danger : Theme.today)
+                    .settingsButton(tint: SettingsRow.takesAway.contains(action.0) ? Theme.danger : Theme.today)
             }
             if chevron {
                 Text("›").font(.title2).foregroundStyle(Theme.secondary)
@@ -290,7 +315,7 @@ struct HealthSettings: View {
             Button("Open the Health app") {
                 if let url = URL(string: "x-apple-health://") { UIApplication.shared.open(url) }
             }
-            .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+            .settingsButton(tint: Theme.today)
         case .asked:
             SettingsRow(title: "Not in use",
                         sub: "The app does not read Health. The permission may still be granted in the Health app.",
@@ -320,19 +345,32 @@ struct CalendarSettings: View {
             SettingsRow(title: "\(cal.count) sessions and rest days in your Training calendar",
                         sub: updatedLine,
                         action: ("Take them out", { cal.disable() }))
-            HStack {
-                Text("The day’s first session starts at").font(.subheadline).foregroundStyle(Theme.text)
-                Spacer()
-                DatePicker("", selection: $start, displayedComponents: .hourAndMinute).labelsHidden().tint(Theme.today)
+            VStack(alignment: .leading, spacing: 10) {
+                Picker("How", selection: Binding(get: { cal.allDay }, set: { cal.allDay = $0; store.calendarChanged() })) {
+                    Text("At a time").tag(false)
+                    Text("All day").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("calendar-kind")
+                if !cal.allDay {
+                    HStack {
+                        Text("The day’s first session starts at").font(.subheadline).foregroundStyle(Theme.text)
+                        Spacer()
+                        DatePicker("", selection: $start, displayedComponents: .hourAndMinute).labelsHidden().tint(Theme.today)
+                    }
+                }
             }
             .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
             .onAppear { start = Self.date(minutes: cal.startMinutes); cal.refreshStatus() }
             .onChange(of: start) { _, d in
                 let m = Self.minutes(d)
                 if m != cal.startMinutes { cal.startMinutes = m; store.calendarChanged() }
             }
-            Text("Every session from today to the end of the plan, each as long as it is planned, one after the other on a day with two; a rest day is an all-day event. Six in the morning stays six in the morning wherever the phone is. The Training calendar is the app’s own: from today onwards it holds the plan and nothing else, and Take them out removes the calendar.")
+            Text(cal.allDay
+                 ? "Every session from today to the end of the plan, as an all-day event on its day — the heading carries the sport and its length. The Training calendar is the app’s own: from today onwards it holds the plan and nothing else, and Take them out removes the calendar."
+                 : "Every session from today to the end of the plan, each as long as it is planned, one after the other on a day with two; a rest day is an all-day event. Six in the morning stays six in the morning wherever the phone is. The Training calendar is the app’s own: from today onwards it holds the plan and nothing else, and Take them out removes the calendar.")
                 .font(.caption).foregroundStyle(Theme.secondary)
         } else if cal.status == .denied {
             SettingsRow(title: "Not allowed",
@@ -340,7 +378,7 @@ struct CalendarSettings: View {
             Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
             }
-            .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+            .settingsButton(tint: Theme.today)
         } else {
             SettingsRow(title: "Not in your calendar",
                         sub: "Put every session from today onwards into a Training calendar at 06:00, each as long as it is planned, and keep them right when sessions move.",

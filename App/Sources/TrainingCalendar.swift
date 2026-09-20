@@ -33,6 +33,8 @@ final class TrainingCalendar: ObservableObject {
 
     @Published var enabled: Bool { didSet { UserDefaults.standard.set(enabled, forKey: "calendar.enabled") } }
     @Published var startMinutes: Int { didSet { UserDefaults.standard.set(startMinutes, forKey: "calendar.start") } }
+    /* Sessions as all-day events instead of an hour: the plan says what to do, not when. */
+    @Published var allDay: Bool { didSet { UserDefaults.standard.set(allDay, forKey: "calendar.allDay") } }
     @Published private(set) var status: Status
     @Published private(set) var count: Int = UserDefaults.standard.integer(forKey: "calendar.count")
     @Published private(set) var lastSync: Date? = UserDefaults.standard.object(forKey: "calendar.lastSync") as? Date
@@ -54,6 +56,7 @@ final class TrainingCalendar: ObservableObject {
     init() {
         enabled = UserDefaults.standard.bool(forKey: "calendar.enabled")
         startMinutes = UserDefaults.standard.object(forKey: "calendar.start") as? Int ?? 6 * 60
+        allDay = UserDefaults.standard.bool(forKey: "calendar.allDay")
         status = Self.currentStatus()
         map = (try? JSONDecoder().decode([String: Entry].self, from: UserDefaults.standard.data(forKey: "calendar.events") ?? Data())) ?? [:]
         #if DEBUG
@@ -110,12 +113,19 @@ final class TrainingCalendar: ObservableObject {
         if busy { queued = (workouts, mapping, today); return }
         busy = true
         problem = nil
-        let desired = Self.desired(workouts, mapping, today: today, startMinutes: startMinutes)
+        let desired = Self.desired(workouts, mapping, today: today,
+                                   startMinutes: allDay ? nil : startMinutes)
         let previous = map
         let store = self.store
         let calendarId = UserDefaults.standard.string(forKey: "calendar.id")
         Task.detached(priority: .utility) {
-            let outcome = Self.apply(store, calendarId: calendarId, desired: desired, previous: previous, today: today)
+            var outcome = Self.apply(store, calendarId: calendarId, desired: desired, previous: previous, today: today)
+            if case .failure = outcome {
+                // Start again from nothing remembered: a calendar deleted in the
+                // Calendar app leaves every identifier here pointing at a ghost.
+                store.reset()
+                outcome = Self.apply(store, calendarId: nil, desired: desired, previous: [:], today: today)
+            }
             await MainActor.run {
                 switch outcome {
                 case .success(let (newMap, calId)):
@@ -141,7 +151,8 @@ final class TrainingCalendar: ObservableObject {
 
     // MARK: what the calendar should hold
 
-    static func desired(_ workouts: [Workout], _ mapping: Mapping, today: String, startMinutes: Int) -> [Desired] {
+    /* `startMinutes` nil means the day has no hours: every session is all-day. */
+    static func desired(_ workouts: [Workout], _ mapping: Mapping, today: String, startMinutes: Int?) -> [Desired] {
         var days: [String] = []
         var byDay: [String: [Workout]] = [:]
         for w in workouts where w.dayKey >= today {
@@ -150,7 +161,7 @@ final class TrainingCalendar: ObservableObject {
         }
         var out: [Desired] = []
         for day in days {
-            var at = startMinutes * 60
+            var at = (startMinutes ?? 0) * 60
             for w in byDay[day] ?? [] {
                 if w.discipline.id == "rest" {
                     out.append(Desired(key: w.key, day: day, title: "Rest day", notes: w.title, start: nil, seconds: 0))
@@ -175,9 +186,10 @@ final class TrainingCalendar: ObservableObject {
                 if !purpose.isEmpty { add("Purpose: " + purpose) }
                 for s in w.sections where purpose.isEmpty || s.text != purpose { add(s.label + ": " + s.text) }
 
+                let timed = startMinutes != nil && seconds > 0
                 out.append(Desired(key: w.key, day: day, title: summary, notes: notes.joined(separator: "\n"),
-                                   start: seconds > 0 ? at : nil, seconds: seconds))
-                if seconds > 0 { at += seconds }
+                                   start: timed ? at : nil, seconds: seconds))
+                if timed { at += seconds }
             }
         }
         return out
@@ -219,14 +231,28 @@ final class TrainingCalendar: ObservableObject {
             let wanted = Set(desired.map(\.key))
             for d in desired {
                 if let e = map[d.key], e.hash == d.hash, existing[e.id] != nil { newMap[d.key] = e; continue }
-                let ev = map[d.key].flatMap { existing[$0.id] } ?? EKEvent(eventStore: store)
+                let known = map[d.key].flatMap { existing[$0.id] }
+                let ev = known ?? EKEvent(eventStore: store)
                 fill(ev, d, cal)
-                try store.save(ev, span: .thisEvent, commit: false)
+                do {
+                    try store.save(ev, span: .thisEvent, commit: false)
+                } catch {
+                    // The event we remembered is gone from the calendar, or the
+                    // calendar itself was replaced. Neither is a reason to give
+                    // up on the other four hundred: write a fresh one instead.
+                    guard known != nil else { throw error }
+                    let fresh = EKEvent(eventStore: store)
+                    fill(fresh, d, cal)
+                    try store.save(fresh, span: .thisEvent, commit: false)
+                    saved.append((d.key, fresh, d))
+                    continue
+                }
                 saved.append((d.key, ev, d))
             }
             for (key, e) in map where !wanted.contains(key) {
                 if e.day >= today {
-                    if let ev = existing[e.id] { try store.remove(ev, span: .thisEvent, commit: false) }
+                    // An event already deleted by hand is one less to delete.
+                    if let ev = existing[e.id] { try? store.remove(ev, span: .thisEvent, commit: false) }
                 } else {
                     newMap[key] = e
                 }

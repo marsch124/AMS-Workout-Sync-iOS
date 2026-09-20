@@ -224,13 +224,13 @@ struct PhotoSettings: View {
                 try? photos.exportZip().write(to: url)
                 exportURL = url
             }
-            .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
+            .settingsButton(tint: Theme.today)
             .disabled(photos.index.isEmpty)
             Button("Bring in a zip") { importing = true }
-                .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
+                .settingsButton(tint: Theme.today)
             if !photos.index.isEmpty {
                 Button("Delete all") { confirmDeleteAll = true }
-                    .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.danger)
+                    .settingsButton(tint: Theme.danger)
             }
             Spacer(minLength: 0)
         }
