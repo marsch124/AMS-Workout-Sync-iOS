@@ -18,15 +18,36 @@ final class WorkoutSyncUITests: XCTestCase {
     }
 
     /* Every test starts clean: nothing waiting to sync, nothing remembered. */
-    private func launch(canLog: Bool = false) -> XCUIApplication {
+    private func launch(canLog: Bool = false, garmin: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
         app.launchEnvironment["AMSWS_FILE"] = plan.path
         app.launchEnvironment["AMSWS_TODAY"] = "2026-09-16"
         app.launchEnvironment["AMSWS_RESET"] = "1"
         if canLog { app.launchEnvironment["AMSWS_SHOW_BUTTONS"] = "1" }
+        // Pretend Health: a ride, a walk, and his pool swim of 21 September —
+        // 46.5 minutes in all, 1,275 m, of which 24.7 minutes swimming.
+        if garmin { app.launchEnvironment["AMSWS_FAKE_HEALTH"] = "1" }
         app.launch()
         return app
+    }
+
+    /* 5. A pool swim's pace counts the swimming, not the rest at the wall: 1:56, never 3:39. */
+    func testSwimPaceFromGarminCountsOnlySwimming() {
+        let app = launch(canLog: true, garmin: true)
+        let swim = app.buttons["today-session-2026-09-14-swim"]
+        XCTAssertTrue(swim.waitForExistence(timeout: 15), "the swim behind today is not on Today")
+        swim.tap()
+        let details = app.buttons["session-log-details"]
+        XCTAssertTrue(details.waitForExistence(timeout: 5))
+        details.tap()
+
+        let use = app.buttons["health-use-swim"]
+        XCTAssertTrue(use.waitForExistence(timeout: 5), "the form does not offer the pool swim from Health")
+        use.tap()
+        let pace = app.textFields["field-avgPace"]
+        XCTAssertTrue(pace.waitForExistence(timeout: 3))
+        XCTAssertEqual(pace.value as? String, "1:56", "swim pace must be swimming time over distance, as Garmin shows it")
     }
 
     /* 4. Once a session is logged, Missed and Move are gone and only a small Adjust stays. */

@@ -101,6 +101,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (31)", date: "21 September 2026", headline: "Swim pace as Garmin shows it", items: [
+            "The swim pace filled in from Apple Health counted the rest between sets as swimming: a 1:56 swim came out as 3:39. It now uses only the time you were actually swimming — the lengths, or failing those the watch's laps and pauses — as Garmin does.",
+            "A swim already saved with the wrong pace: open it, press Adjust, then Use on the Garmin swim, and Save — only the pace changes."
+        ]),
         Release(version: "1.1 (30)", date: "21 September 2026", headline: "A logged session stops asking", items: [
             "Once a session is logged, Missed and Move are gone: they no longer apply. A small grey Adjust stays for fixing a typo.",
             "Logged with one tap and your Garmin workout is in Apple Health? A small Fill from Garmin stays until the watch's numbers are in, then it goes too. The app knows they are in when you used them in the form, or when the recorded time and distance match the watch's.",

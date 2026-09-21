@@ -177,6 +177,7 @@ struct FieldBox: View {
                     .autocorrectionDisabled()
                     .padding(12)
                     .background(box)
+                    .accessibilityIdentifier("field-" + field.id)
             }
             if !field.hint.isEmpty {
                 Text(field.hint).font(.caption).foregroundStyle(Theme.secondary)
@@ -211,6 +212,7 @@ struct HealthSuggestions: View {
                     }
                     Spacer()
                     Button("Use") { use(w) }
+                        .accessibilityIdentifier("health-use-" + w.sport)
                         .buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.today)
                 }
                 .padding(12)

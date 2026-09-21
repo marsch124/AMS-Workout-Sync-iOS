@@ -17,6 +17,14 @@ struct HealthWorkout: Identifiable, Equatable {
     let typeName: String
     let start: Date
     let seconds: Double
+    /*
+     * The time actually spent swimming: the lengths themselves, without the
+     * rest between sets. A pool session's pace is worked out from this, as
+     * Garmin does — dividing the whole workout by the distance counted every
+     * pause at the wall as swimming, and a 1:56 swim came out as 3:39
+     * (2026-09-21). Nil when Health holds nothing finer than the workout.
+     */
+    var movingSeconds: Double? = nil
     let metres: Double?
     let avgHr: Double?
     let source: String
@@ -121,10 +129,69 @@ final class HealthImport: ObservableObject {
             let metres = w.statistics(for: HKQuantityType(.distanceWalkingRunning))?.sumQuantity()?.doubleValue(for: .meter())
                 ?? w.statistics(for: HKQuantityType(.distanceCycling))?.sumQuantity()?.doubleValue(for: .meter())
                 ?? w.statistics(for: HKQuantityType(.distanceSwimming))?.sumQuantity()?.doubleValue(for: .meter())
-            out.append(HealthWorkout(id: w.uuid, sport: Self.sport(of: w.workoutActivityType), typeName: Self.name(of: w.workoutActivityType),
-                                     start: w.startDate, seconds: w.duration, metres: metres, avgHr: hr, source: w.sourceRevision.source.name))
+            let sport = Self.sport(of: w.workoutActivityType)
+            let moving = sport == "swim" ? await swimmingSeconds(in: w) : nil
+            out.append(HealthWorkout(id: w.uuid, sport: sport, typeName: Self.name(of: w.workoutActivityType),
+                                     start: w.startDate, seconds: w.duration, movingSeconds: moving,
+                                     metres: metres, avgHr: hr, source: w.sourceRevision.source.name))
         }
         return out
+    }
+
+    /*
+     * Seconds spent swimming: the union of the swim-distance samples the same
+     * app wrote inside this workout. Each sample is a length or a set; the
+     * gaps between them are the rest. A single sample spanning the whole
+     * workout gives the whole workout back, which is no worse than before.
+     */
+    private func swimmingSeconds(in workout: HKWorkout) async -> Double? {
+        let type = HKQuantityType(.distanceSwimming)
+        let window = HKQuery.predicateForSamples(withStart: workout.startDate, end: workout.endDate, options: [])
+        let sameApp = HKQuery.predicateForObjects(from: workout.sourceRevision.source)
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [window, sameApp])
+        let samples: [HKQuantitySample] = await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit,
+                                      sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)]) { _, results, _ in
+                continuation.resume(returning: (results as? [HKQuantitySample]) ?? [])
+            }
+            store.execute(query)
+        }
+        if let fromLengths = Self.unionSeconds(samples.map { ($0.startDate, $0.endDate) }, total: workout.duration) {
+            return fromLengths
+        }
+        // No lengths in Health: the watch's laps or segments, if it wrote any.
+        let events = workout.workoutEvents ?? []
+        let laps = events.filter { $0.type == .lap || $0.type == .segment }.map { ($0.dateInterval.start, $0.dateInterval.end) }
+        if let fromLaps = Self.unionSeconds(laps, total: workout.duration) { return fromLaps }
+        // Or at least its pauses: whatever was paused was not swimming.
+        var paused = 0.0
+        var pausedAt: Date?
+        for e in events.sorted(by: { $0.dateInterval.start < $1.dateInterval.start }) {
+            switch e.type {
+            case .pause, .motionPaused: pausedAt = pausedAt ?? e.dateInterval.start
+            case .resume, .motionResumed:
+                if let p = pausedAt { paused += e.dateInterval.start.timeIntervalSince(p); pausedAt = nil }
+            default: break
+            }
+        }
+        let moving = workout.duration - paused
+        return paused > 0 && moving >= workout.duration * 0.2 ? moving : nil
+    }
+
+    /* Overlapping intervals counted once; nil when the answer would not be believable. */
+    nonisolated static func unionSeconds(_ spans: [(Date, Date)], total: Double) -> Double? {
+        let sorted = spans.filter { $0.1 > $0.0 }.sorted { $0.0 < $1.0 }
+        guard !sorted.isEmpty else { return nil }
+        var sum = 0.0
+        var (from, to) = sorted[0]
+        for (a, b) in sorted.dropFirst() {
+            if a <= to { to = max(to, b) } else { sum += to.timeIntervalSince(from); from = a; to = b }
+        }
+        sum += to.timeIntervalSince(from)
+        // Swimming for less than a fifth of the session, or longer than it lasted,
+        // means the samples are not lengths: keep the whole workout instead.
+        guard sum > 0, sum <= total + 1, sum >= total * 0.2 else { return nil }
+        return sum
     }
 
     private func averageHeartRate(from: Date, to: Date) async -> Double? {
@@ -146,7 +213,11 @@ final class HealthImport: ObservableObject {
             HealthWorkout(id: UUID(), sport: "bike", typeName: "Ride", start: day.addingTimeInterval(7 * 3600), seconds: 4210,
                           metres: 32_450, avgHr: 148, source: "Garmin Connect"),
             HealthWorkout(id: UUID(), sport: "walk", typeName: "Walk", start: day.addingTimeInterval(12 * 3600), seconds: 2100,
-                          metres: 2_900, avgHr: 92, source: "Garmin Connect")
+                          metres: 2_900, avgHr: 92, source: "Garmin Connect"),
+            // His pool swim of 21 September: 47 minutes in all, 1,275 m, and
+            // Garmin's 1:56 per 100 m — about 24.7 minutes actually swimming.
+            HealthWorkout(id: UUID(), sport: "swim", typeName: "Pool swim", start: day.addingTimeInterval(6 * 3600), seconds: 2790,
+                          movingSeconds: 1479, metres: 1_275, avgHr: 100, source: "Garmin Connect")
         ]
     }
     #endif
@@ -170,7 +241,7 @@ extension HealthWorkout {
                 case "bike", "brick":
                     v["avgPace"] = jsNumberString((km / (seconds / 3600) * 10).rounded() / 10)
                 case "swim":
-                    let per100 = seconds / (metres / 100)
+                    let per100 = (movingSeconds ?? seconds) / (metres / 100)
                     v["avgPace"] = clock(per100)
                 default:
                     v["avgPace"] = clock(seconds / km)
