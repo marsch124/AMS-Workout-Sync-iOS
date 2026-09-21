@@ -238,8 +238,12 @@ struct WeekCard: View {
                                 } else {
                                     ForEach(day.training) { w in
                                         let seconds = Plan.plannedSeconds(w, view.mapping) ?? 0
+                                        let barHeight = max(9, geo.size.height * seconds / tallest - 3)
                                         StateFill(sport: w.discipline.id, state: w.state)
-                                            .frame(height: max(9, geo.size.height * seconds / tallest - 3))
+                                            .frame(height: barHeight)
+                                            .overlay(alignment: .topTrailing) {
+                                                if w.state == .done { DoneMarkView(small: barHeight < 16).padding(2.5) }
+                                            }
                                     }
                                     ForEach(day.extras) { x in
                                         DottedFill(colorId: Extras.activity(x.activity).colorId)
@@ -373,5 +377,27 @@ struct WeekProgress: View {
             }
         }
         .frame(width: 96, height: 4)
+    }
+}
+
+
+/*
+ * The tick on a done bar in the week strip: the same green circle and white
+ * tick as a done session card, in miniature (his pick, B, "a bit smaller").
+ * A thin ring of the card's own colour keeps it apart from a green run bar.
+ */
+struct DoneMarkView: View {
+    var small = false
+
+    var body: some View {
+        let size: CGFloat = small ? 7 : 10
+        ZStack {
+            Circle().fill(Theme.today)
+            Glyph(name: "icon-check", size: size * 0.62).foregroundStyle(Color.white)
+        }
+        .frame(width: size, height: size)
+        .padding(1.2)
+        .background(Circle().fill(Theme.surface))
+        .accessibilityHidden(true)
     }
 }

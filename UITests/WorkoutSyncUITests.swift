@@ -32,8 +32,8 @@ final class WorkoutSyncUITests: XCTestCase {
         return app
     }
 
-    /* 5. A pool swim's pace counts the swimming, not the rest at the wall: 1:56, never 3:39. */
-    func testSwimPaceFromGarminCountsOnlySwimming() {
+    /* 5. The app never works out a pace: Use fills time, distance and heart rate, and the pace stays his. */
+    func testUseFromGarminLeavesThePaceAlone() {
         let app = launch(canLog: true, garmin: true)
         let swim = app.buttons["today-session-2026-09-14-swim"]
         XCTAssertTrue(swim.waitForExistence(timeout: 15), "the swim behind today is not on Today")
@@ -42,12 +42,19 @@ final class WorkoutSyncUITests: XCTestCase {
         XCTAssertTrue(details.waitForExistence(timeout: 5))
         details.tap()
 
+        let pace = app.textFields["field-avgPace"]
+        let duration = app.textFields["field-actualDuration"]
+        XCTAssertTrue(pace.waitForExistence(timeout: 5), "the swim form has no pace box")
+        let paceBefore = pace.value as? String
+        let durationBefore = duration.value as? String
+
         let use = app.buttons["health-use-swim"]
         XCTAssertTrue(use.waitForExistence(timeout: 5), "the form does not offer the pool swim from Health")
         use.tap()
-        let pace = app.textFields["field-avgPace"]
-        XCTAssertTrue(pace.waitForExistence(timeout: 3))
-        XCTAssertEqual(pace.value as? String, "1:56", "swim pace must be swimming time over distance, as Garmin shows it")
+
+        XCTAssertNotEqual(duration.value as? String, durationBefore, "Use should fill the time")
+        XCTAssertEqual(duration.value as? String, "47")
+        XCTAssertEqual(pace.value as? String, paceBefore, "the pace must be left for him — never 3:39, never any sum")
     }
 
     /* 4. Once a session is logged, Missed and Move are gone and only a small Adjust stays. */

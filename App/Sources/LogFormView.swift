@@ -218,7 +218,7 @@ struct HealthSuggestions: View {
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
             }
-            Text("Fills the boxes; nothing is saved until you press Save.").font(.caption).foregroundStyle(Theme.secondary)
+            Text("Fills time, distance and heart rate. Type the pace from Garmin. Nothing is saved until you press Save.").font(.caption).foregroundStyle(Theme.secondary)
         }
     }
 }

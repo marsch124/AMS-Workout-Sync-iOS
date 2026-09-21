@@ -25,7 +25,7 @@ struct GuideView: View {
             "Done as planned writes the planned length and the done mark, nothing else — for the sessions that went as planned.",
             "Log details opens the form: duration, distance, pace or speed, heart rate, effort, notes. A bare number in Duration means minutes; 1:15, 1h20 and 90min work too. A decimal comma is fine.",
             "On a session already recorded, a small grey Adjust opens the form filled in. Only the boxes you change are written — the button counts them. Missed and Move are gone by then; they no longer apply.",
-            "From Apple Health: if Health holds a workout for that day and sport (your Garmin sends them there), it is offered at the top of the form. Use fills the boxes. Nothing is saved until you press Save. Optional — Settings → Apple Health → Stop switches it off."
+            "From Apple Health: if Health holds a workout for that day and sport (your Garmin sends them there), it is offered at the top of the form. Use fills the time, the distance and the heart rate; the pace is yours to type from Garmin Connect, because Garmin does not pass it to Health. Nothing is saved until you press Save. Optional — Settings → Apple Health → Stop switches it off."
         ]),
         Part(id: "Missed, Move, Swap", body: [
             "Missed writes the missed mark and an optional note. You can still log the session later if you did it after all.",
@@ -101,6 +101,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (32)", date: "21 September 2026", headline: "The pace is yours; done bars carry a tick", items: [
+            "Use from Apple Health fills time, distance and heart rate, and no longer works out a pace or a speed. Garmin's own pace is not in Apple Health, and a sum from the whole session was wrong for any workout with rest in it: a 1:56 swim came out as 3:39. Type the pace from Garmin Connect.",
+            "Each done session in the week strip carries a small green tick, the same sign as on a done session card."
+        ]),
         Release(version: "1.1 (31)", date: "21 September 2026", headline: "Swim pace as Garmin shows it", items: [
             "The swim pace filled in from Apple Health counted the rest between sets as swimming: a 1:56 swim came out as 3:39. It now uses only the time you were actually swimming — the lengths, or failing those the watch's laps and pauses — as Garmin does.",
             "A swim already saved with the wrong pace: open it, press Adjust, then Use on the Garmin swim, and Save — only the pace changes."
