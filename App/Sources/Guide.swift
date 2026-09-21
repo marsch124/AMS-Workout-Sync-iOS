@@ -34,7 +34,7 @@ struct GuideView: View {
         ]),
         Part(id: "Extra activities", body: [
             "Walks, yoga, breathing, a run the plan did not ask for: these go on the Extras sheet, never into the plan, so the plan's own compliance arithmetic stays honest. Counts as training is yours to set.",
-            "They show on Today and in the week strip, dotted, and all of them under Settings → Extra activities."
+            "Add one with the small Extra activity pill at the end of the Tomorrow line on Today. They show on Today and in the week strip, dotted, and all of them under Settings → Extra activities."
         ]),
         Part(id: "How syncing keeps your plan safe", body: [
             "Everything you log is saved on the phone first and sent to Dropbox straight away. Until Dropbox has confirmed, it shows as waiting — in Settings and at the top of Today.",
@@ -101,6 +101,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (33)", date: "21 September 2026", headline: "Extra activity on the Tomorrow line", items: [
+            "The Extra activity button is a small pill on the Tomorrow line, beside the blue Tomorrow tab on the page's own ground, instead of a full-width row of its own. On a day with no Tomorrow block it sits alone on the right."
+        ]),
         Release(version: "1.1 (32)", date: "21 September 2026", headline: "The pace is yours; done bars carry a tick", items: [
             "Use from Apple Health fills time, distance and heart rate, and no longer works out a pace or a speed. Garmin's own pace is not in Apple Health, and a sum from the whole session was wrong for any workout with rest in it: a 1:56 swim came out as 3:39. Type the pace from Garmin Connect.",
             "Each done session in the week strip carries a small green tick, the same sign as on a done session card."

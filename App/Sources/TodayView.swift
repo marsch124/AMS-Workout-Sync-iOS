@@ -60,15 +60,9 @@ struct TodayView: View {
                     Button { openExtra = x } label: { ExtraCard(extra: x) }.buttonStyle(.plain)
                 }
             }
-            if store.canLog {
-                Button { addingExtra = true } label: {
-                    HStack(spacing: 8) {
-                        Glyph(name: "icon-plus", size: 18)
-                        Text("Extra activity")
-                    }
-                    .font(.headline).frame(maxWidth: .infinity, minHeight: 46)
-                }
-                .buttonStyle(.bordered).tint(Theme.today)
+            // No Tomorrow block (the plan's last day): the pill stands alone on the right.
+            if store.canLog && tomorrow.isEmpty {
+                HStack { Spacer(); extraButton }
             }
 
             if !behind.isEmpty {
@@ -84,25 +78,54 @@ struct TodayView: View {
             // week — and on its own pale blue ground, so the eye knows at once
             // that everything below the line is no longer today.
             if !tomorrow.isEmpty {
-                VStack(alignment: .leading, spacing: 14) {
-                    SectionHeading(text: "Tomorrow")
-                    if tomorrow.allSatisfy({ $0.discipline.id == "rest" }) {
-                        RestCard(text: tomorrow[0].title)
-                    } else {
-                        ForEach(tomorrow.filter { $0.discipline.id != "rest" }) { w in
-                            NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
-                            .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
-                                .buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: 0) {
+                    // TOMORROW on a blue tab; the extra-activity pill beside it on
+                    // the page's own ground — same line, not part of tomorrow
+                    // (his sketch, 2026-09-21: "make this white so that it is not
+                    // connected to TOMORROW").
+                    HStack(alignment: .center, spacing: 8) {
+                        Text("TOMORROW")
+                            .font(.caption.weight(.bold)).tracking(0.8)
+                            .foregroundStyle(Theme.secondary)
+                            .padding(.horizontal, 12).padding(.top, 10).padding(.bottom, 8)
+                            .background(UnevenRoundedRectangle(topLeadingRadius: 16, topTrailingRadius: 12, style: .continuous)
+                                .fill(Theme.tomorrow))
+                        Spacer(minLength: 8)
+                        if store.canLog { extraButton.padding(.trailing, 12) }
+                    }
+                    VStack(alignment: .leading, spacing: 14) {
+                        if tomorrow.allSatisfy({ $0.discipline.id == "rest" }) {
+                            RestCard(text: tomorrow[0].title)
+                        } else {
+                            ForEach(tomorrow.filter { $0.discipline.id != "rest" }) { w in
+                                NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                                .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
+                                    .buttonStyle(.plain)
+                            }
                         }
                     }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: 16,
+                                                       bottomTrailingRadius: 16, topTrailingRadius: 16, style: .continuous)
+                        .fill(Theme.tomorrow))
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.tomorrow))
                 .padding(.horizontal, -12)
             }
         }
+    }
+
+    /* A small pill, the size of the week card's Key button: an extra is today's, not a plan. */
+    private var extraButton: some View {
+        Button { addingExtra = true } label: {
+            HStack(spacing: 4) {
+                Glyph(name: "icon-plus", size: 11)
+                Text("Extra activity")
+            }
+        }
+        .font(.caption.weight(.semibold))
+        .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+        .accessibilityIdentifier("today-add-extra")
     }
 
     /* No date here: it is always today, and he would rather have the room (v1.0 (18)). */
