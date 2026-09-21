@@ -108,6 +108,13 @@ final class Store: ObservableObject {
     }
 
     init() {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_RESET"] != nil {
+            try? FileManager.default.removeItem(at: queueURL)
+            UserDefaults.standard.removeObject(forKey: "moveLog")
+            HealthMark.forgetAll()
+        }
+        #endif
         if let data = try? Data(contentsOf: queueURL), let saved = try? JSONDecoder().decode([QueuedEntry].self, from: data) {
             queue = saved
         }

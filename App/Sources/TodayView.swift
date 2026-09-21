@@ -201,8 +201,12 @@ struct WeekCard: View {
         // a bar taller than the column it sits in.
         let tallest = max(days.map { $0.plannedSeconds + $0.extraSeconds }.max() ?? 0, 1)
         let planned = days.reduce(0) { $0 + $1.plannedSeconds }
+        // The time actually recorded, as Progress counts it — the planned length
+        // only where a session was marked done without a time. It used to add up
+        // the planned lengths, so a 47-minute swim counted as its planned 45 and a
+        // fully done week read "6h 32m of 6h 32m" whatever the watch said.
         let done = days.flatMap(\.training).filter { $0.state == .done }
-            .reduce(0.0) { $0 + (Plan.plannedSeconds($1, view.mapping) ?? 0) }
+            .reduce(0.0) { $0 + (Stats.actualSeconds($1, view.mapping) ?? Plan.plannedSeconds($1, view.mapping) ?? 0) }
 
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -214,6 +218,8 @@ struct WeekCard: View {
                     Text(done > 0 ? "\(formatDuration(done)) of \(formatDuration(planned))" : "\(formatDuration(planned)) planned")
                         .font(.subheadline.weight(.semibold).monospacedDigit())
                         .foregroundStyle(Theme.secondary)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
                     if planned > 0 {
                         WeekProgress(done: done, planned: planned,
                                      dueByToday: days.filter { $0.dayKey <= today }.reduce(0) { $0 + $1.plannedSeconds })

@@ -8,7 +8,8 @@ struct SessionView: View {
     @State private var moving = false
     @State private var askingMissed = false
     @State private var missedNote = ""
-    @State private var fromHealth = 0
+    /* The day's workouts in Apple Health that could be this session. */
+    @State private var healthMatches: [HealthWorkout] = []
     @State private var zoneAsk: ZoneAsk?
     @State private var sharing = false
     @State private var payload: SharePayload?
@@ -65,55 +66,67 @@ struct SessionView: View {
                         Text("Logged on this phone · " + label.lowercased()).font(.headline).foregroundStyle(Theme.today)
                     }
                     if store.canLog, w.discipline.id != "rest" {
-                        VStack(spacing: 10) {
-                            if !w.logged || w.missed, let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
-                                Button {
-                                    store.logAsPlanned(w)
-                                } label: {
-                                    HStack(spacing: 10) {
-                                        Glyph(name: "icon-check", size: 22)
-                                        Text("Done as planned · \(formatDuration(planned))")
-                                    }
-                                    .font(.title3.weight(.bold))
-                                    .frame(maxWidth: .infinity, minHeight: 60)
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .tint(Theme.today)
-                            }
-                            Button {
-                                logging = true
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Text(w.logged && !w.missed ? "Adjust logged data" : "Log details")
-                                    if fromHealth > 0 {
-                                        // Health has this day's workout: the numbers are one tap away inside.
-                                        Glyph(name: "icon-heart", size: 18)
-                                        Text("Garmin").font(.subheadline.weight(.semibold))
-                                    }
-                                }
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, minHeight: 48)
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(Theme.today)
+                        if w.state == .done {
+                            // Logged: the session is finished. Missed and Move no
+                            // longer apply; a small grey Adjust stays for a typo,
+                            // and the Garmin numbers are offered only until they
+                            // are in (his answers, 2026-09-21).
                             HStack(spacing: 10) {
-                                if !w.missed {
-                                    Button {
-                                        missedNote = ""
-                                        askingMissed = true
-                                    } label: {
-                                        Text("Missed").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                                if !garminIn(w, mapping) && !healthMatches.isEmpty {
+                                    Button { logging = true } label: {
+                                        HStack(spacing: 5) {
+                                            Glyph(name: "icon-heart", size: 13)
+                                            Text("Fill from Garmin")
+                                        }
                                     }
-                                    .buttonStyle(.bordered)
-                                    .tint(Theme.danger)
+                                    .settingsButton(tint: Theme.today)
+                                    .accessibilityIdentifier("session-fill-from-garmin")
                                 }
-                                Button {
-                                    moving = true
-                                } label: {
-                                    Text("Move").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                                Spacer(minLength: 0)
+                                Button("Adjust") { logging = true }
+                                    .font(.caption).buttonStyle(.plain).foregroundStyle(Theme.secondary)
+                                    .accessibilityIdentifier("session-adjust")
+                            }
+                        } else {
+                            VStack(alignment: .leading, spacing: 12) {
+                                if let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
+                                    // The one big button: the session went as planned.
+                                    Button {
+                                        store.logAsPlanned(w)
+                                    } label: {
+                                        HStack(spacing: 10) {
+                                            Glyph(name: "icon-check", size: 22)
+                                            Text("Done as planned · \(formatDuration(planned))")
+                                        }
+                                        .font(.title3.weight(.bold))
+                                        .frame(maxWidth: .infinity, minHeight: 60)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(Theme.today)
+                                    .accessibilityIdentifier("session-done-as-planned")
                                 }
-                                .buttonStyle(.bordered)
-                                .tint(Theme.plan)
+                                // Everything else is small, in one row.
+                                HStack(spacing: 8) {
+                                    Button { logging = true } label: {
+                                        HStack(spacing: 5) {
+                                            if !healthMatches.isEmpty { Glyph(name: "icon-heart", size: 13) }
+                                            Text(w.missed ? "Log it after all" : "Log details")
+                                        }
+                                    }
+                                    .settingsButton(tint: Theme.today)
+                                    .accessibilityIdentifier("session-log-details")
+                                    if !w.missed {
+                                        Button("Missed") {
+                                            missedNote = ""
+                                            askingMissed = true
+                                        }
+                                        .settingsButton(tint: Theme.danger)
+                                        .accessibilityIdentifier("session-missed")
+                                    }
+                                    Button("Move") { moving = true }
+                                        .settingsButton(tint: Theme.plan)
+                                        .accessibilityIdentifier("session-move")
+                                }
                             }
                         }
                     }
@@ -180,7 +193,7 @@ struct SessionView: View {
                   HealthImport.shared.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
             let all = await HealthImport.shared.workouts(on: w.dayKey)
             let sport = w.discipline.id
-            fromHealth = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }.count
+            healthMatches = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }
         }
         .sheet(isPresented: $logging) {
             if let w = store.workout(key), let mapping = store.mapping {
@@ -209,6 +222,37 @@ struct SessionView: View {
             if ProcessInfo.processInfo.environment["AMSWS_SHARE"] != nil { sharing = true }
         }
         #endif
+    }
+
+    /*
+     * Are the Garmin numbers in? Yes if this phone saw them used in the form,
+     * or — so it also holds on a new phone, or after logging in Excel — if the
+     * recorded time matches a workout from Health within a minute and, where
+     * the watch measured a distance, the recorded distance matches it too.
+     */
+    private func garminIn(_ w: Workout, _ mapping: Mapping) -> Bool {
+        if HealthMark.used(w) { return true }
+        guard let seconds = ShareText.actualSeconds(w, mapping) else { return false }
+        let minutes = Int((seconds / 60).rounded())
+        let km = Self.loggedKm(w, mapping)
+        return healthMatches.contains { h in
+            guard abs(Int((h.seconds / 60).rounded()) - minutes) <= 1 else { return false }
+            guard let metres = h.metres, metres > 0 else { return true }
+            guard let km else { return false }
+            let watch = metres / 1000
+            return abs(km - watch) <= max(0.02, watch * 0.02)
+        }
+    }
+
+    /* The recorded distance in kilometres: the waiting log first, then the sheet. */
+    static func loggedKm(_ w: Workout, _ mapping: Mapping) -> Double? {
+        if let p = w.pending {
+            guard let raw = p.actualDistance,
+                  let v = Double(raw.replacingOccurrences(of: ",", with: ".").trimmingCharacters(in: .whitespaces)) else { return nil }
+            return p.distanceUnit == "m" ? v / 1000 : v
+        }
+        guard let v = w.results["actualDistance"]?.number else { return nil }
+        return mapping.units.distance == "m" ? v / 1000 : v
     }
 
     /* The recorded numbers, each in its own unit, only where the sheet holds one. */

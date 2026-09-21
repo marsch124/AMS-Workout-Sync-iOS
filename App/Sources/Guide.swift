@@ -24,7 +24,7 @@ struct GuideView: View {
         Part(id: "Logging a session", body: [
             "Done as planned writes the planned length and the done mark, nothing else — for the sessions that went as planned.",
             "Log details opens the form: duration, distance, pace or speed, heart rate, effort, notes. A bare number in Duration means minutes; 1:15, 1h20 and 90min work too. A decimal comma is fine.",
-            "On a session already recorded the same button says Adjust logged data and the form opens filled in. Only the boxes you change are written — the button counts them.",
+            "On a session already recorded, a small grey Adjust opens the form filled in. Only the boxes you change are written — the button counts them. Missed and Move are gone by then; they no longer apply.",
             "From Apple Health: if Health holds a workout for that day and sport (your Garmin sends them there), it is offered at the top of the form. Use fills the boxes. Nothing is saved until you press Save. Optional — Settings → Apple Health → Stop switches it off."
         ]),
         Part(id: "Missed, Move, Swap", body: [
@@ -101,6 +101,12 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (30)", date: "21 September 2026", headline: "A logged session stops asking", items: [
+            "Once a session is logged, Missed and Move are gone: they no longer apply. A small grey Adjust stays for fixing a typo.",
+            "Logged with one tap and your Garmin workout is in Apple Health? A small Fill from Garmin stays until the watch's numbers are in, then it goes too. The app knows they are in when you used them in the form, or when the recorded time and distance match the watch's.",
+            "On a session still to do, Done as planned stays the one big button; Log details, Missed and Move are small, in one row.",
+            "The week's hours on Today now add up the time you actually recorded — a 47-minute swim counts 47 — instead of each done session's planned length. Only a session marked done without a time still counts as planned."
+        ]),
         Release(version: "1.1 (29)", date: "20 September 2026", headline: "The four disciplines along the bottom", items: [
             "The tab bar now carries the sports: swim for Today, bike for Sessions, run for Progress, strength for Settings. The words are unchanged, and each icon still takes its page's colour."
         ]),

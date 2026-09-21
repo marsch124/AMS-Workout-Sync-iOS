@@ -17,13 +17,35 @@ final class WorkoutSyncUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    private func launch() -> XCUIApplication {
+    /* Every test starts clean: nothing waiting to sync, nothing remembered. */
+    private func launch(canLog: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
         app.launchEnvironment["AMSWS_FILE"] = plan.path
         app.launchEnvironment["AMSWS_TODAY"] = "2026-09-16"
+        app.launchEnvironment["AMSWS_RESET"] = "1"
+        if canLog { app.launchEnvironment["AMSWS_SHOW_BUTTONS"] = "1" }
         app.launch()
         return app
+    }
+
+    /* 4. Once a session is logged, Missed and Move are gone and only a small Adjust stays. */
+    func testLoggingLeavesOnlyAdjust() {
+        let app = launch(canLog: true)
+        let run = app.buttons["today-session-2026-09-16-run"]
+        XCTAssertTrue(run.waitForExistence(timeout: 15))
+        run.tap()
+
+        XCTAssertTrue(app.buttons["session-missed"].waitForExistence(timeout: 5), "a session to do offers Missed")
+        XCTAssertTrue(app.buttons["session-move"].exists, "a session to do offers Move")
+        XCTAssertFalse(app.buttons["session-adjust"].exists, "Adjust is for a session already logged")
+
+        app.buttons["session-done-as-planned"].tap()
+
+        XCTAssertTrue(app.buttons["session-adjust"].waitForExistence(timeout: 5), "a logged session keeps a way to fix a typo")
+        XCTAssertFalse(app.buttons["session-missed"].exists, "Missed makes no sense on a logged session")
+        XCTAssertFalse(app.buttons["session-move"].exists, "Move makes no sense on a logged session")
+        XCTAssertFalse(app.buttons["session-done-as-planned"].exists)
     }
 
     /* 1. It opens on Today with today's session, and Settings carries the version. */

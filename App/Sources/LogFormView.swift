@@ -11,6 +11,9 @@ import WorkoutCore
  * while that number is nought.
  */
 struct LogFormView: View {
+    /* Set when a workout from Health filled the boxes, so the session can stop offering it. */
+    @State private var usedHealth = false
+
     @EnvironmentObject var store: Store
     @Environment(\.dismiss) private var dismiss
     let workout: Workout
@@ -48,6 +51,7 @@ struct LogFormView: View {
 
                     if !healthWorkouts.isEmpty {
                         HealthSuggestions(workouts: healthWorkouts, disciplineId: workout.discipline.id) { picked in
+                            usedHealth = true
                             for (id, value) in picked.formValues(for: workout.discipline.id) { values[id] = value }
                             if workout.discipline.id == "swim" { distanceUnit = "m" }
                         }
@@ -123,6 +127,7 @@ struct LogFormView: View {
     }
 
     private func save() {
+        if usedHealth { HealthMark.remember(workout) }
         let entry = LogForm.entry(from: changes, distanceUnit: distanceUnit)
         store.log(workout, entry)
         dismiss()

@@ -16,6 +16,7 @@
 		5CCB2FFB5FB33334D047E2F2 /* Health.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CDFC67F6D3D022CEEC7F7CC /* Health.swift */; };
 		626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E3DEEE01504BE66D135FE3 /* Theme.swift */; };
 		6951774C8A2ED04539AE4CAC /* plan.xlsx in Resources */ = {isa = PBXBuildFile; fileRef = 727F13AC6FACE0F75894E10A /* plan.xlsx */; };
+		6FBB6AE874DF51D5DCB6B6F1 /* HealthMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D792EDD85C5F7F7301F60490 /* HealthMark.swift */; };
 		7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70231C046226474A30263864 /* SettingsView.swift */; };
 		860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201A884ED7294E23A8047706 /* Components.swift */; };
 		8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */; };
@@ -69,6 +70,7 @@
 		ADB40EE4205D1E5B3E2587DE /* AMSWorkoutSync.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AMSWorkoutSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4D1347269B601D5C3B5B64A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D6E3DEEE01504BE66D135FE3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		D792EDD85C5F7F7301F60490 /* HealthMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMark.swift; sourceTree = "<group>"; };
 		E7A03855A2195F5FD77B7F7C /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 		E8B0778365FA2EAD6A05938A /* ExtraViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraViews.swift; sourceTree = "<group>"; };
 		E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 				E8B0778365FA2EAD6A05938A /* ExtraViews.swift */,
 				874D363C030B897E786F6F58 /* Guide.swift */,
 				8CDFC67F6D3D022CEEC7F7CC /* Health.swift */,
+				D792EDD85C5F7F7301F60490 /* HealthMark.swift */,
 				3BFFF43913961BBC438C16AF /* LogFormView.swift */,
 				E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */,
 				0C2CB3C689413A3D9CB97FA7 /* Photos.swift */,
@@ -291,6 +294,7 @@
 				DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */,
 				A8D54A1892111BFD679F82AF /* Guide.swift in Sources */,
 				5CCB2FFB5FB33334D047E2F2 /* Health.swift in Sources */,
+				6FBB6AE874DF51D5DCB6B6F1 /* HealthMark.swift in Sources */,
 				89CDC9463998F4995477427E /* LogFormView.swift in Sources */,
 				24DD67DD79E07FEC82557AFF /* MoveView.swift in Sources */,
 				4C92AF2407F8B9021267FA3C /* PhotoViews.swift in Sources */,
@@ -362,7 +366,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -422,7 +426,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 30;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
