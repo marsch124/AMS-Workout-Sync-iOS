@@ -60,24 +60,94 @@ final class Store: ObservableObject {
     /* The Test Results & Zones sheet, for what a session's Z2 means. */
     @Published private(set) var zones: Zones?
 
-    /* Waiting on this phone first, then the sheet's rows — newest first. */
+    /*
+     * Waiting on this phone first, then the sheet's rows — newest first.
+     *
+     * A correction still waiting is not a row of its own: it is laid over the
+     * row it corrects, the way the queue is laid over the plan, so the screen
+     * shows what was just typed rather than what the sheet still says — and
+     * shows it once rather than twice.
+     */
     var allExtras: [ExtraSummary] {
+        let corrections = queue.compactMap { q -> ExtraEntry? in
+            guard let x = q.extra, x.editing != nil else { return nil }
+            return x
+        }
         let waiting = queue.compactMap { q -> ExtraSummary? in
-            guard let x = q.extra else { return nil }
-            return ExtraSummary(id: q.id, dayKey: x.date, activity: x.activity, label: Extras.activity(x.activity).label,
-                                what: x.what, minutes: x.minutes, isTraining: x.isTraining, pending: true)
+            guard let x = q.extra, x.editing == nil else { return nil }
+            return Store.summary(id: q.id, of: x, pending: true)
         }.reversed()
-        let saved = extras.map { r in
-            ExtraSummary(id: r.id, dayKey: r.date, activity: r.activity, label: r.label, what: r.what,
-                         minutes: r.minutes, isTraining: r.isTraining, pending: false)
+        let saved = extras.map { r -> ExtraSummary in
+            // The queue is replayed in order, so the last correction is the one
+            // the sheet will end up carrying.
+            if let corrected = corrections.last(where: { $0.editing?.id == r.id }) {
+                return Store.summary(id: r.id, of: corrected, pending: true)
+            }
+            return ExtraSummary(id: r.id, dayKey: r.date, activity: r.activity, label: r.label, what: r.what,
+                                minutes: r.minutes, isTraining: r.isTraining, pending: false,
+                                distance: r.distance, avgHr: r.avgHr, effort: r.effort, notes: r.notes, ref: r.ref)
         }
         return waiting + saved
+    }
+
+    /* A queued extra as the screens see it; a number reads as the sheet would hold it. */
+    private static func summary(id: String, of x: ExtraEntry, pending: Bool) -> ExtraSummary {
+        func text(_ n: Double?) -> String { n.map(jsNumberString) ?? "" }
+        return ExtraSummary(id: id, dayKey: x.date, activity: x.activity, label: Extras.activity(x.activity).label,
+                            what: x.what, minutes: x.minutes, isTraining: x.isTraining, pending: pending,
+                            distance: text(x.distance), avgHr: text(x.avgHr), effort: text(x.effort),
+                            notes: x.notes, ref: x.ref)
     }
 
     func logExtra(_ entry: ExtraEntry) {
         guard canLog else { return }
         queue.append(QueuedEntry(extra: entry))
         saveQueue()
+        syncNow()
+    }
+
+    /*
+     * Changing an extra that is already saved.
+     *
+     * Where it goes depends on where the extra is. One still waiting on this
+     * phone has not been written anywhere, so the waiting entry simply becomes
+     * what it now says — there is no row yet to correct, and queueing a
+     * correction behind it would write the first version and then mend it. One
+     * already on the Extras sheet gets a correction of its own, naming its row
+     * and the columns that changed.
+     *
+     * A second correction to the same row replaces the first rather than
+     * joining the queue behind it: both would find that row by what it says,
+     * and the first write is about to change exactly that.
+     *
+     * Photographs hang on the day, the activity and the length (invariant 9),
+     * so any of those three moving takes the key they hang on with it. They
+     * are carried over here, in the same step, or correcting a walk would
+     * quietly leave its pictures behind.
+     */
+    func editExtra(_ original: ExtraSummary, _ entry: ExtraEntry, fields: [String]) {
+        guard canLog, !fields.isEmpty else { return }
+        let was = PhotoOwner(extra: original)
+        var entry = entry
+
+        if let i = queue.firstIndex(where: { $0.id == original.id && $0.extra?.editing == nil }) {
+            entry.ref = queue[i].extra?.ref ?? entry.ref
+            entry.editing = nil
+            queue[i].extra = entry
+        } else if let i = queue.firstIndex(where: { $0.extra?.editing?.id == original.id }),
+                  var target = queue[i].extra?.editing {
+            target.fields = Array(Set(target.fields).union(fields))
+            entry.ref = queue[i].extra?.ref ?? entry.ref
+            entry.editing = target
+            queue[i].extra = entry
+        } else {
+            if !original.ref.isEmpty { entry.ref = original.ref }
+            entry.editing = ExtraTarget(id: original.id, ref: original.ref, date: original.dayKey,
+                                        label: original.label, minutes: original.minutes, fields: fields)
+            queue.append(QueuedEntry(extra: entry))
+        }
+        saveQueue()
+        PhotoStore.shared.reassign(from: was, to: PhotoOwner(extra: Store.summary(id: original.id, of: entry, pending: true)))
         syncNow()
     }
 

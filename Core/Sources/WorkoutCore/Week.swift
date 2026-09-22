@@ -5,7 +5,15 @@ import Foundation
  * looks like, what is still to come. Ported from js/sync.js.
  */
 
-/* One extra as the drawings need it: which day, which activity, how long. */
+/*
+ * One extra as the screens need it: which day, which activity, how long.
+ *
+ * The rest of the row — what was covered, the heart rate, the effort, the
+ * notes, and the reference the row carries — travels with it too, because the
+ * form that corrects an extra opens filled in, and it has nowhere else to read
+ * those from. They are the sheet's own text rather than numbers: a box shows
+ * what the cell says, and only a box the person alters is written back.
+ */
 public struct ExtraSummary: Identifiable, Equatable {
     public let id: String
     public let dayKey: String
@@ -15,11 +23,19 @@ public struct ExtraSummary: Identifiable, Equatable {
     public let minutes: Double?
     public let isTraining: Bool
     public let pending: Bool
+    public let distance: String
+    public let avgHr: String
+    public let effort: String
+    public let notes: String
+    public let ref: String
     public var seconds: Double { (minutes ?? 0) * 60 }
 
-    public init(id: String, dayKey: String, activity: String, label: String, what: String, minutes: Double?, isTraining: Bool, pending: Bool) {
+    public init(id: String, dayKey: String, activity: String, label: String, what: String, minutes: Double?,
+                isTraining: Bool, pending: Bool, distance: String = "", avgHr: String = "", effort: String = "",
+                notes: String = "", ref: String = "") {
         self.id = id; self.dayKey = dayKey; self.activity = activity; self.label = label; self.what = what
         self.minutes = minutes; self.isTraining = isTraining; self.pending = pending
+        self.distance = distance; self.avgHr = avgHr; self.effort = effort; self.notes = notes; self.ref = ref
     }
 }
 

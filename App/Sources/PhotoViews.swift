@@ -180,14 +180,29 @@ struct PhotoCountPill: View {
 
 /* An extra opened on its own: what it was, and its photographs. */
 struct ExtraDetailView: View {
+    @EnvironmentObject var store: Store
     @Environment(\.dismiss) private var dismiss
     let extra: ExtraSummary
+    @State private var adjusting = false
+    @State private var corrected = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     ExtraCard(extra: extra)
+                    /*
+                     * The same words as on a session already recorded, because
+                     * it is the same thing to do — and "Log again", which this
+                     * was called in the web app, read to him as logging another
+                     * one (web app v1.61.0).
+                     */
+                    if store.canLog {
+                        Button("Adjust logged data") { adjusting = true }
+                            .font(.subheadline.weight(.semibold))
+                            .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+                            .accessibilityIdentifier("extra-adjust")
+                    }
                     PhotoStrip(owner: PhotoOwner(extra: extra))
                 }
                 .padding(16)
@@ -196,6 +211,15 @@ struct ExtraDetailView: View {
             .navigationTitle("Extra activity")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
+            /*
+             * Once it is corrected this screen is holding the old reading of
+             * it, so it steps aside and the list behind shows the new one —
+             * after the form has closed, rather than pulling it down mid-flight.
+             */
+            .sheet(isPresented: $adjusting, onDismiss: { if corrected { dismiss() } }) {
+                ExtraFormView(day: extra.dayKey, editing: extra, onSaved: { corrected = true })
+                    .environmentObject(store)
+            }
         }
     }
 }

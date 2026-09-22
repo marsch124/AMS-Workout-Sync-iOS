@@ -6,26 +6,49 @@ import WorkoutCore
  * the plan, and "Counts as training" starts from the activity's kind — a walk
  * does not, a run does — but stays yours to override: a four-hour hike is
  * load whatever the list says.
+ *
+ * The same form corrects one already saved. It opens filled in with what the
+ * sheet holds, and only the boxes that were altered are written — the row was
+ * read before whatever was last done to the file in Excel, so writing all of
+ * it back would put stale values over newer ones. The Save button says how
+ * many changes it is about to make, as the log form's does.
  */
 struct ExtraFormView: View {
     @EnvironmentObject var store: Store
     @Environment(\.dismiss) private var dismiss
     let day: String
+    /* Set when this is correcting an extra already saved rather than adding one. */
+    var editing: ExtraSummary?
+    /* Told once the correction is queued, so the screen behind can step out of the way. */
+    var onSaved: (() -> Void)?
 
     @State private var date: Date
-    @State private var activity = "walk"
-    @State private var what = ""
-    @State private var duration = ""
-    @State private var distance = ""
-    @State private var avgHr = ""
-    @State private var effort = ""
-    @State private var notes = ""
-    @State private var isTraining: Bool? = nil
+    @State private var activity: String
+    @State private var what: String
+    @State private var duration: String
+    @State private var distance: String
+    @State private var avgHr: String
+    @State private var effort: String
+    @State private var notes: String
+    @State private var isTraining: Bool?
     @State private var problem: String?
+    /* What the boxes held when the form opened. Only what differs from this is written. */
+    @State private var openedWith: [String: String] = [:]
+    @State private var loaded = false
 
-    init(day: String) {
+    init(day: String, editing: ExtraSummary? = nil, onSaved: (() -> Void)? = nil) {
         self.day = day
-        _date = State(initialValue: parseDayKey(day) ?? Date())
+        self.editing = editing
+        self.onSaved = onSaved
+        _date = State(initialValue: parseDayKey(editing?.dayKey ?? day) ?? Date())
+        _activity = State(initialValue: editing?.activity ?? "walk")
+        _what = State(initialValue: editing?.what ?? "")
+        _duration = State(initialValue: editing?.minutes.map(jsNumberString) ?? "")
+        _distance = State(initialValue: editing?.distance ?? "")
+        _avgHr = State(initialValue: editing?.avgHr ?? "")
+        _effort = State(initialValue: editing?.effort ?? "")
+        _notes = State(initialValue: editing?.notes ?? "")
+        _isTraining = State(initialValue: editing?.isTraining)
     }
 
     private var chosen: Activity { Extras.activity(activity) }
@@ -33,6 +56,28 @@ struct ExtraFormView: View {
     private var canSave: Bool {
         parseDuration(duration) != nil || !what.trimmingCharacters(in: .whitespaces).isEmpty
             || !notes.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /*
+     * The boxes as the sheet would hold them, so that typing 1:15 over 75 is
+     * not a change and neither is 4,2 over 4.2: what counts as changed is what
+     * would reach a different cell value.
+     */
+    private var values: [String: String] {
+        [ExtraField.date: dayKey(date) ?? "",
+         ExtraField.activity: activity,
+         ExtraField.what: trimmed(what),
+         ExtraField.duration: parseDuration(duration).map { jsNumberString(jsRound($0 / 60)) } ?? "",
+         ExtraField.distance: number(distance).map(jsNumberString) ?? "",
+         ExtraField.avgHr: number(avgHr).map(jsNumberString) ?? "",
+         ExtraField.effort: number(effort).map(jsNumberString) ?? "",
+         ExtraField.isTraining: training ? "Yes" : "No",
+         ExtraField.notes: trimmed(notes)]
+    }
+
+    private var changes: [String] {
+        guard editing != nil, !openedWith.isEmpty else { return [] }
+        return values.filter { openedWith[$0.key] != $0.value }.map(\.key).sorted()
     }
 
     var body: some View {
@@ -51,13 +96,13 @@ struct ExtraFormView: View {
                         .pickerStyle(.menu).tint(Theme.today)
                         .onChange(of: activity) { _, _ in isTraining = nil }
                     }
-                    field("What it was", text: $what, placeholder: "e.g. Dog walk along the river", keys: .default)
-                    field("Duration", text: $duration, placeholder: "e.g. 35", keys: .default,
+                    field("What it was", id: ExtraField.what, text: $what, placeholder: "e.g. Dog walk along the river", keys: .default)
+                    field("Duration", id: ExtraField.duration, text: $duration, placeholder: "e.g. 35", keys: .default,
                           hint: "Just a number means minutes. Or 1:15, 1h20, 90min.")
                     if Extras.wantsMetrics(activity) {
-                        field("Distance (km)", text: $distance, placeholder: "e.g. 4.2", keys: .decimalPad)
-                        field("Average heart rate (bpm)", text: $avgHr, placeholder: "", keys: .numberPad)
-                        field("Effort (1–10)", text: $effort, placeholder: "1 easy — 10 all out", keys: .numberPad)
+                        field("Distance (km)", id: ExtraField.distance, text: $distance, placeholder: "e.g. 4.2", keys: .decimalPad)
+                        field("Average heart rate (bpm)", id: ExtraField.avgHr, text: $avgHr, placeholder: "", keys: .numberPad)
+                        field("Effort (1–10)", id: ExtraField.effort, text: $effort, placeholder: "1 easy — 10 all out", keys: .numberPad)
                     }
                     labelled("Counts as training?") {
                         Picker("Counts as training", selection: Binding(get: { training }, set: { isTraining = $0 })) {
@@ -68,42 +113,68 @@ struct ExtraFormView: View {
                     }
                     labelled("Notes") {
                         TextField("Anything worth remembering", text: $notes, axis: .vertical)
-                            .lineLimit(3...6).padding(12).background(box)
+                            .lineLimit(3...6).padding(12).background(box(changed: changes.contains(ExtraField.notes)))
                     }
                     if let problem { Text(problem).font(.footnote).foregroundStyle(Theme.danger) }
                 }
                 .padding(16).padding(.bottom, 90)
             }
             .background(Theme.bg.ignoresSafeArea())
-            .navigationTitle("Extra activity")
+            .navigationTitle(editing == nil ? "Extra activity" : "Adjust logged data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .onAppear {
+                guard !loaded else { return }
+                loaded = true
+                openedWith = values
+            }
             .safeAreaInset(edge: .bottom) {
                 Button(action: save) {
-                    Text("Save it").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
+                    Text(saveLabel).font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                 }
                 .buttonStyle(.borderedProminent).tint(Theme.today)
-                .disabled(!canSave)
+                .disabled(editing == nil ? !canSave : changes.isEmpty)
+                .accessibilityIdentifier("extra-save")
                 .padding(16).background(Theme.bg)
             }
         }
     }
 
+    private var saveLabel: String {
+        guard editing != nil else { return "Save it" }
+        let n = changes.count
+        return n == 0 ? "Nothing changed yet" : "Save \(n) change\(n == 1 ? "" : "s")"
+    }
+
     private func save() {
-        guard let dayKey = dayKey(date) else { return }
-        let seconds = parseDuration(duration)
+        guard let key = dayKey(date) else { return }
+        if let original = editing {
+            let fields = changes
+            guard !fields.isEmpty else { return }
+            store.editExtra(original, entry(on: key, ref: original.ref), fields: fields)
+            onSaved?()
+            dismiss()
+            return
+        }
         guard canSave else { problem = "Give it at least a duration or a description."; return }
-        var entry = ExtraEntry(date: dayKey, activity: activity)
-        entry.what = what.trimmingCharacters(in: .whitespacesAndNewlines)
-        entry.minutes = seconds.map { jsRound($0 / 60) }
+        store.logExtra(entry(on: key, ref: ""))
+        dismiss()
+    }
+
+    private func entry(on key: String, ref: String) -> ExtraEntry {
+        var entry = ref.isEmpty ? ExtraEntry(date: key, activity: activity)
+                                : ExtraEntry(date: key, activity: activity, ref: ref)
+        entry.what = trimmed(what)
+        entry.minutes = parseDuration(duration).map { jsRound($0 / 60) }
         entry.distance = number(distance)
         entry.avgHr = number(avgHr)
         entry.effort = number(effort)
         entry.isTraining = training
-        entry.notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        store.logExtra(entry)
-        dismiss()
+        entry.notes = trimmed(notes)
+        return entry
     }
+
+    private func trimmed(_ text: String) -> String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     /* parseFloat with a decimal comma allowed, as the web app's toNumber. */
     private func number(_ text: String) -> Double? {
@@ -120,16 +191,21 @@ struct ExtraFormView: View {
         }
     }
 
-    private func field(_ label: String, text: Binding<String>, placeholder: String, keys: UIKeyboardType, hint: String = "") -> some View {
+    private func field(_ label: String, id: String, text: Binding<String>, placeholder: String,
+                       keys: UIKeyboardType, hint: String = "") -> some View {
         labelled(label) {
-            TextField(placeholder, text: text).keyboardType(keys).autocorrectionDisabled().padding(12).background(box)
+            TextField(placeholder, text: text).keyboardType(keys).autocorrectionDisabled()
+                .padding(12).background(box(changed: changes.contains(id)))
+                .accessibilityIdentifier("extra-field-" + id)
             if !hint.isEmpty { Text(hint).font(.caption).foregroundStyle(Theme.secondary) }
         }
     }
 
-    private var box: some View {
+    /* A box you have altered is edged in the app's green, as the log form's is. */
+    private func box(changed: Bool) -> some View {
         RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Theme.border))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(changed ? Theme.today : Theme.border, lineWidth: changed ? 2 : 1))
     }
 }
 
@@ -164,7 +240,7 @@ struct ExtrasListView: View {
             }
         }
         .sheet(isPresented: $adding) { ExtraFormView(day: store.today).environmentObject(store) }
-        .sheet(item: $open) { x in ExtraDetailView(extra: x) }
+        .sheet(item: $open) { x in ExtraDetailView(extra: x).environmentObject(store) }
     }
 
     private func grouped(_ list: [ExtraSummary]) -> [(String, [ExtraSummary])] {

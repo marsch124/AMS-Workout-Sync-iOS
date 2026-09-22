@@ -107,6 +107,7 @@ public protocol Remote {
 
 public enum SyncError: LocalizedError {
     case noLayout, unreadable(String), noSheets, sessionsLost(Int, Int), noSession(String), nothingToWrite, extrasSheetTaken
+    case noExtraRow(String)
 
     public var errorDescription: String? {
         switch self {
@@ -124,6 +125,8 @@ public enum SyncError: LocalizedError {
             return "This entry had nothing that could be written to the Extras sheet."
         case .extrasSheetTaken:
             return "There is already a sheet called \"Extras\" that is not this app’s, and no free name to use instead."
+        case .noExtraRow(let label):
+            return "The \(label.lowercased()) you adjusted is no longer on the Extras sheet — its row may have been removed or rewritten in Excel. Nothing was written; the correction is still waiting."
         }
     }
 }
@@ -276,6 +279,27 @@ public enum Sync {
         for queued in queue {
             do {
                 if let extra = queued.extra {
+                    /*
+                     * A correction to an extra already written goes into its own
+                     * row, found by its reference: never appended, or adjusting a
+                     * walk would leave two of it. The sheet is not created here —
+                     * if there is none, the row this names is gone and saying so
+                     * is better than writing the correction somewhere new.
+                     */
+                    if let target = extra.editing {
+                        let name = try Extras.sheetName(for: workbook)
+                        guard workbook.findSheet(name) != nil,
+                              let sheet = try? workbook.readSheet(name),
+                              let row = Extras.findRow(sheet, target) else {
+                            throw SyncError.noExtraRow(Extras.activity(extra.activity).label)
+                        }
+                        let names = (try? learnWeekdayNames(try workbook.readSheet(mapping.sheets[0]), mapping)) ?? [:]
+                        let edits = Extras.buildEdits(sheet, extra, row: row, weekdayNames: names)
+                        if edits.isEmpty { result.dropped.append(queued.id); continue }
+                        try workbook.writeCells(name, edits)
+                        result.written.append(queued.id)
+                        continue
+                    }
                     // Appending is not idempotent the way writing to a known row
                     // is, so a replay must not add the same thing twice.
                     let name = try Extras.ensureSheet(workbook)

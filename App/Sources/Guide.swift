@@ -18,6 +18,7 @@ struct GuideView: View {
         ]),
         Part(id: "Today", body: [
             "The week strip is one column a day, one bar a session. Solid is recorded, hollow is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
+            "A done session carries a small green tick in the corner of its bar. An extra carries the same tick in a paler green: it is something you did, and it is not part of the plan.",
             "Beside the hours, a hairline: how much of the week's planned time is recorded, and a faint notch marking where the week stands once tonight is done.",
             "Below it: today's sessions, anything behind you that was never recorded, and tomorrow on its own pale blue ground. Tap a session to open it."
         ]),
@@ -34,7 +35,9 @@ struct GuideView: View {
         ]),
         Part(id: "Extra activities", body: [
             "Walks, yoga, breathing, a run the plan did not ask for: these go on the Extras sheet, never into the plan, so the plan's own compliance arithmetic stays honest. Counts as training is yours to set.",
-            "Add one with the small Extra activity pill at the end of the Tomorrow line on Today. They show on Today and in the week strip, dotted, and all of them under Settings → Extra activities."
+            "Add one with the small Extra activity pill at the end of the Tomorrow line on Today. They show on Today and in the week strip, dotted, on the Sessions tab under Done and All, and all of them together under Settings → Extra activities.",
+            "Tap one and press Adjust logged data to change it. Only the boxes you alter are written back into its row, so correcting the length leaves everything else exactly as it was, and emptying a box empties the cell. Until it reaches Dropbox it reads as waiting to sync, like anything else you log.",
+            "Photographs follow an extra when you change it, even when you change the day, the activity or the length it is known by."
         ]),
         Part(id: "How syncing keeps your plan safe", body: [
             "Everything you log is saved on the phone first and sent to Dropbox straight away. Until Dropbox has confirmed, it shows as waiting — in Settings and at the top of Today.",
@@ -101,6 +104,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (34)", date: "22 September 2026", headline: "Extras: corrected, listed under Done, ticked", items: [
+            "An extra activity can be changed after it is saved. Open it — from Today, from Sessions under Done, or from Settings → Extra activities — and press Adjust logged data. The form opens filled in with what the sheet holds, and only the boxes you change are written into its own row; the button counts them before you press it. A box you empty empties the cell.",
+            "Extras are now listed on the Sessions tab under Done and under All, in the day they happened, beside that day's sessions. They used to be on Today for a day and after that only under Settings.",
+            "Each extra in the week strip carries the same small tick as a done session, in a paler green — it is something you did, and it is still not part of the plan."
+        ]),
         Release(version: "1.1 (33)", date: "21 September 2026", headline: "Extra activity on the Tomorrow line", items: [
             "The Extra activity button is a small pill on the Tomorrow line, beside the blue Tomorrow tab on the page's own ground, instead of a full-width row of its own. On a day with no Tomorrow block it sits alone on the right."
         ]),

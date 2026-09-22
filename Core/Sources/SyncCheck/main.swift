@@ -308,6 +308,73 @@ do {
     check(plan.plan.first { $0.key == todo[1].key }!.loggedInSheet, "the one-tap alongside the extras did not land")
 }
 
+// 11 -----------------------------------------------------------------
+print("\nAN EXTRA CORRECTED: ITS OWN ROW, ONLY WHAT CHANGED")
+do {
+    let url = try fresh("extras-corrected")
+    let remote = FileRemote(url)
+    var walk = ExtraEntry(date: todo[0].dayKey, activity: "walk", ref: "xfix00001")
+    walk.what = "Dog walk"; walk.minutes = 35; walk.distance = 3; walk.notes = "along the river"
+    // One written the way his sheet carries them from before references existed.
+    var yoga = ExtraEntry(date: todo[0].dayKey, activity: "yoga", ref: "")
+    yoga.minutes = 20
+    _ = try await Sync.run([QueuedEntry(extra: walk, now: now), QueuedEntry(extra: yoga, now: now)],
+                           path: "/test", remote: remote, now: now)
+
+    let written = Extras.read(try Workbook(data: try Data(contentsOf: url)))
+    guard let walkRow = written.first(where: { $0.ref == "xfix00001" }),
+          let yogaRow = written.first(where: { $0.ref.isEmpty && normalise($0.label) == "yoga"
+                                               && $0.date == todo[0].dayKey && $0.minutes == 20 }) else {
+        errors.append("the two extras to correct were not written"); exit(1)
+    }
+
+    // The walk: half an hour longer, and the note taken off. Nothing else named.
+    var fix = ExtraEntry(date: walkRow.date, activity: "walk", ref: walkRow.ref)
+    fix.what = walkRow.what; fix.minutes = 65; fix.distance = 3; fix.notes = ""
+    fix.editing = ExtraTarget(id: walkRow.id, ref: walkRow.ref, date: walkRow.date, label: walkRow.label,
+                              minutes: walkRow.minutes, fields: [ExtraField.duration, ExtraField.notes])
+    // The yoga: a different activity and a different length, on a row with no
+    // reference — found by what it said, and given one on the way past.
+    var fixYoga = ExtraEntry(date: yogaRow.date, activity: "mobility", ref: "xfix00002")
+    fixYoga.minutes = 25
+    fixYoga.editing = ExtraTarget(id: yogaRow.id, ref: "", date: yogaRow.date, label: yogaRow.label,
+                                  minutes: yogaRow.minutes, fields: [ExtraField.activity, ExtraField.duration])
+    // And one naming a row that is not there: it must never fall back to adding one.
+    var lost = ExtraEntry(date: walkRow.date, activity: "walk", ref: "xgone0001")
+    lost.minutes = 10
+    lost.editing = ExtraTarget(id: "xgone0001", ref: "xgone0001", date: "1999-01-01", label: "Walk",
+                               minutes: 10, fields: [ExtraField.duration])
+
+    let corrections = [QueuedEntry(extra: fix, now: now), QueuedEntry(extra: fix, now: now),
+                       QueuedEntry(extra: fixYoga, now: now), QueuedEntry(extra: lost, now: now)]
+    let result = try await Sync.run(corrections, path: "/test", remote: remote, now: now)
+    let after = Extras.read(try Workbook(data: try Data(contentsOf: url)))
+    let walkNow = after.first { $0.ref == "xfix00001" }
+    let yogaNow = after.first { $0.ref == "xfix00002" }
+
+    line("written / failed", "\(result.written.count) / \(result.failed.count)")
+    line("rows before / after the corrections", "\(written.count) / \(after.count)")
+    line("the walk: minutes / what / distance / notes",
+         "\(walkNow?.minutes.map(jsNumberString) ?? "-") / \(walkNow?.what ?? "-") / \(walkNow?.distance ?? "-") / \"\(walkNow?.notes ?? "-")\"")
+    line("the yoga row now reads", "\(yogaNow?.label ?? "-") \(yogaNow?.minutes.map(jsNumberString) ?? "-") ref \(yogaNow?.ref ?? "-")")
+    line("the one naming a missing row", result.failed.values.first ?? "(not refused)")
+
+    check(after.count == written.count, "a correction must change a row, never add one")
+    check(walkNow?.minutes == 65, "the corrected length did not land")
+    check(walkNow?.notes.isEmpty == true, "a box emptied must empty the cell")
+    check(walkNow?.what == "Dog walk", "a column nobody changed must be left exactly as it was")
+    check(walkNow?.distance == walkRow.distance, "a column nobody changed must be left exactly as it was")
+    check(result.written.count == 3, "the replayed correction must be reported written, not failed")
+    check(normalise(yogaNow?.label ?? "") == "mobility" && yogaNow?.minutes == 25,
+          "a row from before references existed must still be found and corrected")
+    check(yogaNow?.row == yogaRow.row, "the correction must land on the row that was already there")
+    check(result.failed.count == 1, "a correction whose row is gone must be kept and reported, not appended")
+
+    // The sessions are untouched by all of this.
+    let plan = try planOf(try Data(contentsOf: url))
+    check(plan.plan.count == base.plan.count, "the plan must keep every session")
+}
+
 let json = try JSONSerialization.data(withJSONObject: scenarios, options: [.prettyPrinted])
 try json.write(to: work.appendingPathComponent("sync-scenarios.json"))
 print("\nerrors:", errors.isEmpty ? "none" : "\n - " + errors.joined(separator: "\n - "))

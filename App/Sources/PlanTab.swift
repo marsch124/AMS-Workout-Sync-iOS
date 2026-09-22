@@ -4,6 +4,34 @@ import WorkoutCore
 struct PlanTab: View {
     @EnvironmentObject var store: Store
     @State private var range: Range = .upcoming
+    @State private var openExtra: ExtraSummary?
+
+    /*
+     * A day's work, whether or not the plan asked for it.
+     *
+     * He went looking for Wednesday's walk under Done and it was not there:
+     * this tab had only ever listed the workbook's own rows, so an extra lived
+     * on Today for one day and after that only on its own screen — which is a
+     * reasonable place for it and not the place anybody looks for "what have I
+     * done". (The web app answered the same report in v1.69.0.)
+     */
+    enum Row: Identifiable {
+        case session(Workout)
+        case extra(ExtraSummary)
+
+        var id: String {
+            switch self {
+            case .session(let w): return "s:" + w.key
+            case .extra(let x): return "x:" + x.id
+            }
+        }
+        var dayKey: String {
+            switch self {
+            case .session(let w): return w.dayKey
+            case .extra(let x): return x.dayKey
+            }
+        }
+    }
 
     enum Range: String, CaseIterable, Identifiable {
         case upcoming = "Upcoming", done = "Done", missed = "Missed", all = "All"
@@ -27,7 +55,7 @@ struct PlanTab: View {
                                 Button { withAnimation(.easeInOut(duration: 0.12)) { range = r } } label: {
                                     VStack(spacing: 1) {
                                         Text(r.rawValue).font(.caption.weight(.semibold))
-                                        Text("\(list(r, view).count)").font(.title3.weight(.bold).monospacedDigit())
+                                        Text("\(rows(r, view).count)").font(.title3.weight(.bold).monospacedDigit())
                                     }
                                     .frame(maxWidth: .infinity, minHeight: 50)
                                     .foregroundStyle(chosen ? Theme.plan : Theme.secondary)
@@ -39,16 +67,23 @@ struct PlanTab: View {
                             }
                         }
 
-                        let days = grouped(workouts(view))
+                        let days = grouped(shown(view), newestFirst: newestFirst)
                         if days.isEmpty {
                             Text(emptyText).font(.callout).foregroundStyle(Theme.secondary).padding(.top, 24)
                         }
                         ForEach(days, id: \.0) { day, list in
                             SectionHeading(text: Dates.long(day))
-                            ForEach(list) { w in
-                                NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
-                                    .accessibilityIdentifier("sessions-session-\(w.dayKey)-\(w.discipline.id)")
-                                    .buttonStyle(.plain)
+                            ForEach(list) { row in
+                                switch row {
+                                case .session(let w):
+                                    NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                                        .accessibilityIdentifier("sessions-session-\(w.dayKey)-\(w.discipline.id)")
+                                        .buttonStyle(.plain)
+                                case .extra(let x):
+                                    Button { openExtra = x } label: { ExtraCard(extra: x) }
+                                        .accessibilityIdentifier("sessions-extra-\(x.dayKey)-\(x.activity)")
+                                        .buttonStyle(.plain)
+                                }
                             }
                         }
                     }
@@ -61,6 +96,7 @@ struct PlanTab: View {
             .background(Theme.bg.ignoresSafeArea())
             .refreshable { store.refresh() }
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
+            .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
             .toolbar(.hidden, for: .navigationBar)
         }
     }
@@ -95,21 +131,45 @@ struct PlanTab: View {
         }
     }
 
+    /*
+     * Done is the one segment whose question an extra answers, and All has to
+     * hold them or it would hold less than Done does. Upcoming and Missed are
+     * about the plan, which an extra is never part of: it is logged at the
+     * moment it is made.
+     */
+    private func rows(_ range: Range, _ view: PlanView) -> [Row] {
+        let sessions = list(range, view).map(Row.session)
+        guard range == .done || range == .all else { return sessions }
+        return sessions + view.extras.map(Row.extra)
+    }
+
     /* The list as shown. Only the length of Upcoming is capped, never its count. */
-    private func workouts(_ view: PlanView) -> [Workout] {
-        let all = list(range, view)
+    private func shown(_ view: PlanView) -> [Row] {
+        let all = rows(range, view)
         return range == .upcoming ? Array(all.prefix(120)) : all
     }
 
-    private func grouped(_ list: [Workout]) -> [(String, [Workout])] {
-        var out: [(String, [Workout])] = []
-        for w in list {
-            if let last = out.last, last.0 == w.dayKey {
-                out[out.count - 1].1.append(w)
+    /* Done and Missed are read backwards from now; the other two read forwards. */
+    private var newestFirst: Bool { range == .done || range == .missed }
+
+    /*
+     * A day at a time, in the segment's own direction. The extras arrive after
+     * the sessions, so they sit under the day's own work; a day that holds
+     * nothing but an extra makes a group of its own, which is why the days are
+     * put back in order afterwards rather than left where they were appended.
+     */
+    private func grouped(_ list: [Row], newestFirst: Bool) -> [(String, [Row])] {
+        var out: [(String, [Row])] = []
+        var seen: [String: Int] = [:]
+        for row in list {
+            if let i = seen[row.dayKey] {
+                out[i].1.append(row)
             } else {
-                out.append((w.dayKey, [w]))
+                seen[row.dayKey] = out.count
+                out.append((row.dayKey, [row]))
             }
         }
+        out.sort { newestFirst ? $0.0 > $1.0 : $0.0 < $1.0 }
         return out
     }
 }

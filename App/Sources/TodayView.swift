@@ -22,7 +22,7 @@ struct TodayView: View {
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $addingExtra) { ExtraFormView(day: store.today).environmentObject(store) }
-            .sheet(item: $openExtra) { x in ExtraDetailView(extra: x) }
+            .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
             #if DEBUG
             .onAppear { if ProcessInfo.processInfo.environment["AMSWS_EXTRAFORM"] != nil { addingExtra = true } }
             #endif
@@ -269,8 +269,12 @@ struct WeekCard: View {
                                             }
                                     }
                                     ForEach(day.extras) { x in
+                                        let barHeight = max(9, geo.size.height * x.seconds / tallest - 3)
                                         DottedFill(colorId: Extras.activity(x.activity).colorId)
-                                            .frame(height: max(9, geo.size.height * x.seconds / tallest - 3))
+                                            .frame(height: barHeight)
+                                            .overlay(alignment: .topTrailing) {
+                                                DoneMarkView(small: barHeight < 16, washed: true).padding(2.5)
+                                            }
                                     }
                                 }
                             }
@@ -411,11 +415,19 @@ struct WeekProgress: View {
  */
 struct DoneMarkView: View {
     var small = false
+    /*
+     * An extra carries the same mark, quieter. Every extra is something you
+     * did, so it belongs on one; but a bar outside the plan saying it as
+     * loudly as the plan's own sessions would make the week read as though
+     * the walk were part of it. His words: the same icon, "washed out a bit
+     * colour-wise".
+     */
+    var washed = false
 
     var body: some View {
         let size: CGFloat = small ? 7 : 10
         ZStack {
-            Circle().fill(Theme.today)
+            Circle().fill(washed ? Theme.today.opacity(0.6) : Theme.today)
             Glyph(name: "icon-check", size: size * 0.62).foregroundStyle(Color.white)
         }
         .frame(width: size, height: size)

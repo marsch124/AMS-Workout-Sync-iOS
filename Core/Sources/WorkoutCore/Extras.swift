@@ -18,6 +18,56 @@ public struct Activity: Identifiable, Equatable {
     public let colorId: String    // a sport id for the palette, or "rest" for grey
 }
 
+/*
+ * An extra already written, and what an adjustment to it may change.
+ *
+ * An extra is appended rather than written to a row the app knows, so
+ * correcting one means finding its row again at sync time: by the reference
+ * the phone gave it, and — for the rows his sheet carries from before
+ * references existed — by the day, activity and length that identified one
+ * then. That is alreadyRecorded's own fallback, and the rule holds here too:
+ * anything that points at an extra points at it the way the writer does.
+ *
+ * `fields` names the columns the person actually altered. The whole record
+ * travels with the entry, but only those columns are written. The phone's
+ * copy of the row was read before whatever was last done to the file in
+ * Excel, so writing all eleven cells back would put stale values over newer
+ * ones — the log form's changedOnly rule, for the same reason.
+ *
+ * `id` is the record this was made from, for pairing an edit waiting on the
+ * phone with the row it belongs to on screen. It is never written anywhere.
+ */
+public struct ExtraTarget: Codable, Equatable {
+    public var id: String
+    public var ref: String
+    public var date: String
+    public var label: String
+    public var minutes: Double?
+    public var fields: [String]
+
+    public init(id: String, ref: String, date: String, label: String, minutes: Double?, fields: [String]) {
+        self.id = id
+        self.ref = ref
+        self.date = date
+        self.label = label
+        self.minutes = minutes
+        self.fields = fields
+    }
+}
+
+/* The columns an adjustment may name. The date carries the weekday beside it. */
+public enum ExtraField {
+    public static let date = "date"
+    public static let activity = "activity"
+    public static let what = "what"
+    public static let duration = "duration"
+    public static let distance = "distance"
+    public static let avgHr = "avgHr"
+    public static let effort = "effort"
+    public static let isTraining = "isTraining"
+    public static let notes = "notes"
+}
+
 public struct ExtraEntry: Codable, Equatable {
     public var date: String
     public var activity: String
@@ -29,6 +79,8 @@ public struct ExtraEntry: Codable, Equatable {
     public var isTraining: Bool = false
     public var notes: String = ""
     public var ref: String
+    /* Set when this corrects a row already on the sheet rather than adding one. */
+    public var editing: ExtraTarget?
 
     public init(date: String, activity: String, ref: String = Extras.newRef()) {
         self.date = date
@@ -193,6 +245,77 @@ public enum Extras {
             edits.append(CellEdit(ref: makeRef(Col.ref, 1), value: .text("Ref"), field: "extra"))
         }
         return (row, edits)
+    }
+
+    /*
+     * The row an adjustment belongs to, in a sheet that may have been edited
+     * since the phone last read it.
+     *
+     * The reference first, because it is the one thing about a row that does
+     * not change when its cells do. A row written before references existed
+     * has only the identity it had then, so the old triple stands in — and
+     * only for rows that still carry no reference, or a second walk of the
+     * same length on the same day would answer for the first.
+     */
+    public static func findRow(_ sheet: Sheet, _ target: ExtraTarget) -> Int? {
+        guard sheet.maxRow >= 2 else { return nil }
+        if !target.ref.isEmpty {
+            for row in 2...sheet.maxRow where sheet.textAt(row, Col.ref) == target.ref { return row }
+        }
+        for row in 2...sheet.maxRow {
+            if !sheet.textAt(row, Col.ref).isEmpty { continue }
+            if sheet.textAt(row, Col.date) != target.date { continue }
+            if normalise(sheet.textAt(row, Col.activity)) != normalise(target.label) { continue }
+            if sheet.cell(row, Col.duration)?.number != target.minutes { continue }
+            return row
+        }
+        return nil
+    }
+
+    /*
+     * The cells for an adjustment, on the row it names: only the columns the
+     * person changed, and a box he emptied is emptied in the sheet — an extra
+     * is this app's own row, so there is no plan value underneath to protect.
+     */
+    public static func buildEdits(_ sheet: Sheet, _ entry: ExtraEntry, row: Int, weekdayNames: [Int: String]) -> [CellEdit] {
+        guard let target = entry.editing else { return [] }
+        let changed = Set(target.fields)
+        var edits: [CellEdit] = []
+        func put(_ col: Int, _ value: EditValue) {
+            edits.append(CellEdit(ref: makeRef(col, row), value: value, field: "extra"))
+        }
+        func text(_ col: Int, _ value: String) { put(col, value.isEmpty ? .blank : .text(value)) }
+        func number(_ col: Int, _ value: Double?) { put(col, value.map { EditValue.number($0) } ?? .blank) }
+
+        if changed.contains(ExtraField.date) {
+            text(Col.date, entry.date)
+            if let date = parseDayKey(entry.date) {
+                let index = utc.component(.weekday, from: date) - 1
+                text(Col.weekday, weekdayNames[index] ?? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][index])
+            } else {
+                put(Col.weekday, .blank)
+            }
+        }
+        if changed.contains(ExtraField.activity) { text(Col.activity, activity(entry.activity).label) }
+        if changed.contains(ExtraField.what) { text(Col.what, entry.what) }
+        if changed.contains(ExtraField.duration) { number(Col.duration, entry.minutes) }
+        if changed.contains(ExtraField.distance) { number(Col.distance, entry.distance) }
+        if changed.contains(ExtraField.avgHr) { number(Col.avgHr, entry.avgHr) }
+        if changed.contains(ExtraField.effort) { number(Col.effort, entry.effort) }
+        if changed.contains(ExtraField.isTraining) { text(Col.isTraining, entry.isTraining ? "Yes" : "No") }
+        if changed.contains(ExtraField.notes) { text(Col.notes, entry.notes) }
+        if edits.isEmpty { return [] }
+
+        // A row from before references existed gains one now, so the next
+        // correction finds it by name rather than by what it happens to say —
+        // which this very write may be about to change.
+        if !entry.ref.isEmpty && sheet.textAt(row, Col.ref).isEmpty {
+            put(Col.ref, .text(entry.ref))
+            if sheet.textAt(1, Col.ref).isEmpty {
+                edits.append(CellEdit(ref: makeRef(Col.ref, 1), value: .text("Ref"), field: "extra"))
+            }
+        }
+        return edits
     }
 
     private static let yes = Pattern("^y|^j|^1|^true", [.caseInsensitive])

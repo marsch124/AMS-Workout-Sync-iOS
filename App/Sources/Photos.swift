@@ -141,6 +141,28 @@ final class PhotoStore: ObservableObject {
         return meta
     }
 
+    /*
+     * A photograph follows its extra when the extra is corrected.
+     *
+     * An extra is named by its day, its activity and its length — the way the
+     * writer recognises one — so changing any of those three gives it a new
+     * name, and pictures left under the old one would belong to nothing. They
+     * are not lost when that happens (orphans are counted and exported), but
+     * "shown nowhere" is not good enough for a picture of the walk you took.
+     */
+    func reassign(from: PhotoOwner, to: PhotoOwner) {
+        guard !from.key.isEmpty, !to.key.isEmpty, from.key != to.key else { return }
+        var moved = false
+        index = index.map { photo in
+            guard belongsTo(photo, from) else { return photo }
+            moved = true
+            return PhotoMeta(id: photo.id, workoutKey: to.key, disciplineId: to.disciplineId, dayKey: to.dayKey,
+                             title: to.title, sheet: to.sheet, kind: photo.kind, addedAt: photo.addedAt,
+                             bytes: photo.bytes, type: photo.type, width: photo.width, height: photo.height)
+        }
+        if moved { saveIndex() }
+    }
+
     func remove(_ id: String) {
         try? FileManager.default.removeItem(at: url(id))
         index.removeAll { $0.id == id }

@@ -69,7 +69,8 @@ struct SettingsView: View {
                                         sub: store.syncing ? "Sending…" : "Everything logged on this phone is in Dropbox")
                         } else {
                             ForEach(store.queue) { q in
-                                SettingsRow(title: q.extra.map { Extras.activity($0.activity).label + " · extra" } ?? q.title,
+                                SettingsRow(title: q.extra.map { Extras.activity($0.activity).label
+                                                + ($0.editing == nil ? " · extra" : " · extra, adjusted") } ?? q.title,
                                             sub: Dates.short(q.dayKey) + " · " + (q.lastError ?? "waiting"),
                                             action: ("Discard", { store.discard(q.id) }))
                             }
