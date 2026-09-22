@@ -88,46 +88,58 @@ struct SessionView: View {
                                     .accessibilityIdentifier("session-adjust")
                             }
                         } else {
-                            VStack(alignment: .leading, spacing: 12) {
+                            /*
+                             * All four on one line, at one size — his screenshot of
+                             * 22 September, the green button ringed and an arrow
+                             * down to the row beneath it. A full-width button 60
+                             * points tall took the whole screen's attention and
+                             * left the other three reading as an afterthought.
+                             *
+                             * It keeps its colour, filled where the others are
+                             * outlined, because it is still the one that finishes
+                             * the session: same size is what he asked for, not the
+                             * same weight. The planned length stays on it — that
+                             * number is the promise that nothing is invented, and
+                             * it is the whole reason one tap is safe. "Done as
+                             * planned" shortens to "Done" only so that all four
+                             * fit a 390-point screen without shrinking.
+                             */
+                            HStack(spacing: 6) {
                                 if let planned = Plan.plannedSeconds(w, mapping), planned > 0 {
-                                    // The one big button: the session went as planned.
                                     Button {
                                         store.logAsPlanned(w)
                                     } label: {
-                                        HStack(spacing: 10) {
-                                            Glyph(name: "icon-check", size: 22)
-                                            Text("Done as planned · \(formatDuration(planned))")
+                                        HStack(spacing: 4) {
+                                            Glyph(name: "icon-check", size: 12)
+                                            Text("Done · \(formatDuration(planned))")
                                         }
-                                        .font(.title3.weight(.bold))
-                                        .frame(maxWidth: .infinity, minHeight: 60)
                                     }
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(Theme.today)
+                                    .settingsButton(tint: Theme.today, filled: true)
                                     .accessibilityIdentifier("session-done-as-planned")
                                 }
-                                // Everything else is small, in one row.
-                                HStack(spacing: 8) {
-                                    Button { logging = true } label: {
-                                        HStack(spacing: 5) {
-                                            if !healthMatches.isEmpty { Glyph(name: "icon-heart", size: 13) }
-                                            Text(w.missed ? "Log it after all" : "Log details")
-                                        }
+                                Button { logging = true } label: {
+                                    HStack(spacing: 5) {
+                                        if !healthMatches.isEmpty { Glyph(name: "icon-heart", size: 13) }
+                                        Text(w.missed ? "Log it after all" : "Log details")
                                     }
-                                    .settingsButton(tint: Theme.today)
-                                    .accessibilityIdentifier("session-log-details")
-                                    if !w.missed {
-                                        Button("Missed") {
-                                            missedNote = ""
-                                            askingMissed = true
-                                        }
-                                        .settingsButton(tint: Theme.danger)
-                                        .accessibilityIdentifier("session-missed")
-                                    }
-                                    Button("Move") { moving = true }
-                                        .settingsButton(tint: Theme.plan)
-                                        .accessibilityIdentifier("session-move")
                                 }
+                                .settingsButton(tint: Theme.today)
+                                .accessibilityIdentifier("session-log-details")
+                                if !w.missed {
+                                    Button("Missed") {
+                                        missedNote = ""
+                                        askingMissed = true
+                                    }
+                                    .settingsButton(tint: Theme.danger)
+                                    .accessibilityIdentifier("session-missed")
+                                }
+                                Button("Move") { moving = true }
+                                    .settingsButton(tint: Theme.plan)
+                                    .accessibilityIdentifier("session-move")
+                                Spacer(minLength: 0)
                             }
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
                         }
                     }
 
@@ -150,14 +162,21 @@ struct SessionView: View {
                             }
                         }
                     }
-                    PhotoStrip(owner: PhotoOwner(w))
-
+                    /*
+                     * What he wrote sits with what he did, above the pictures —
+                     * his arrow, same screenshot. Under the photographs it came
+                     * after the strip, the two buttons and the line about where
+                     * pictures are kept, which put three unrelated things between
+                     * the session's numbers and his own words about them.
+                     */
                     if let notes = w.results["notes"]?.text, !notes.isEmpty {
                         Text(notes).font(.body).foregroundStyle(Theme.text)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(14)
                             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                     }
+
+                    PhotoStrip(owner: PhotoOwner(w))
                 }
                 .padding(16)
             } else {

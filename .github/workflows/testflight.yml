@@ -1,0 +1,99 @@
+name: TestFlight
+
+# Archive the app and send it to TestFlight, from GitHub's own Mac rather than
+# from his. Run by hand: Actions → TestFlight → Run workflow, or by anything
+# that can reach this repository.
+#
+# Signing is done by an App Store Connect API key held as three repository
+# secrets. Nothing about the certificate is in this file, and the key is
+# written to the runner and thrown away with it. Without the secrets the run
+# stops at the first step and says what is missing rather than failing deep
+# inside xcodebuild.
+#
+# The build number comes from project.yml (CURRENT_PROJECT_VERSION). App Store
+# Connect refuses a build number it already has, so bump it before running.
+on:
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the three secrets are there
+        run: |
+          missing=""
+          [ -n "$ASC_KEY_ID" ]    || missing="$missing ASC_KEY_ID"
+          [ -n "$ASC_ISSUER_ID" ] || missing="$missing ASC_ISSUER_ID"
+          [ -n "$ASC_KEY_P8" ]    || missing="$missing ASC_KEY_P8"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing:$missing — add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Put the key where xcodebuild looks for it
+        run: |
+          mkdir -p "$HOME/private_keys"
+          printf '%s' "$ASC_KEY_P8" > "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8"
+          chmod 600 "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8"
+
+      - name: Which build this is
+        run: |
+          BUILD=$(grep CURRENT_PROJECT_VERSION project.yml | head -1 | tr -dc '0-9')
+          VERSION=$(grep MARKETING_VERSION project.yml | head -1 | cut -d'"' -f2)
+          echo "Building $VERSION ($BUILD) from ${GITHUB_REF_NAME} @ ${GITHUB_SHA:0:7}"
+          echo "BUILD=$BUILD" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the project
+        run: xcodegen generate
+
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -project AMSWorkoutSync.xcodeproj \
+            -scheme AMSWorkoutSync \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/AMSWorkoutSync.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      # tools/ExportOptions.plist carries destination=upload, so this step is
+      # the upload: the same plist he exports with by hand on the Mac.
+      - name: Export and send it to TestFlight
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/AMSWorkoutSync.xcarchive \
+            -exportOptionsPlist tools/ExportOptions.plist \
+            -exportPath build/export \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          echo "$VERSION ($BUILD) is on its way to TestFlight. Apple takes a few minutes to process it."
+
+      - name: Keep the log when it goes red
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflight-build
+          path: |
+            build/export
+            ~/Library/Logs/gym
+          if-no-files-found: ignore
+          retention-days: 5

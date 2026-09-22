@@ -23,9 +23,9 @@ struct GuideView: View {
             "Below it: today's sessions, anything behind you that was never recorded, and tomorrow on its own pale blue ground. Tap a session to open it."
         ]),
         Part(id: "Logging a session", body: [
-            "Done as planned writes the planned length and the done mark, nothing else — for the sessions that went as planned.",
+            "The green Done button carries the planned length — Done · 1h 05m — and writes that length and the done mark, nothing else, for a session that went as planned. It sits in one row with Log details, Missed and Move, all the same size.",
             "Log details opens the form: duration, distance, pace or speed, heart rate, effort, notes. A bare number in Duration means minutes; 1:15, 1h20 and 90min work too. A decimal comma is fine.",
-            "On a session already recorded, a small grey Adjust opens the form filled in. Only the boxes you change are written — the button counts them. Missed and Move are gone by then; they no longer apply.",
+            "On a session already recorded, a small grey Adjust opens the form filled in. Only the boxes you change are written — the button counts them. Missed and Move are gone by then; they no longer apply. What you wrote in Notes is shown under the session's figures, above the photographs.",
             "From Apple Health: if Health holds a workout for that day and sport (your Garmin sends them there), it is offered at the top of the form. Use fills the time, the distance and the heart rate; the pace is yours to type from Garmin Connect, because Garmin does not pass it to Health. Nothing is saved until you press Save. Optional — Settings → Apple Health → Stop switches it off."
         ]),
         Part(id: "Missed, Move, Swap", body: [
@@ -104,6 +104,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (36)", date: "22 September 2026", headline: "One row of buttons, and your words further up", items: [
+            "On a session still to do, all four buttons are now one row at one size: Done (with the planned length on it), Log details, Missed, Move. Done keeps its green fill — it is still the one that finishes the session — but it no longer takes the whole screen.",
+            "On a session you have logged, your note is shown directly under the figures, above the photographs, instead of below everything."
+        ]),
         Release(version: "1.1 (35)", date: "22 September 2026", headline: "Garmin for extras too", items: [
             "An extra activity's form now offers the day's workouts from Apple Health, as a session's form does — for a new extra and when you adjust a saved one. Use fills the time, the distance and the heart rate; a new extra also takes the workout's kind. Nothing is saved until you press Save.",
             "An extra's card carries the done tick everywhere it appears — Today, Sessions under Done and All, Settings, its own screen — in the paler green the week strip gives extras.",
