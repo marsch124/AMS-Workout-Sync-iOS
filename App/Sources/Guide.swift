@@ -13,7 +13,7 @@ struct GuideView: View {
 
     static let parts: [Part] = [
         Part(id: "What this app is", body: [
-            "Your training plan lives in an Excel workbook in Dropbox. This app reads it, shows you the week and the day, and writes what you did back into the cells that are already there — the same cells, the same way, as the web app.",
+            "Your training plan lives in an Excel workbook in Dropbox. This app reads it, shows you the week and the day, and writes what you did back into the cells that are already there.",
             "It writes nothing anywhere else. Every other part of the workbook is copied through untouched."
         ]),
         Part(id: "Today", body: [
@@ -41,7 +41,7 @@ struct GuideView: View {
         ]),
         Part(id: "How syncing keeps your plan safe", body: [
             "Everything you log is saved on the phone first and sent to Dropbox straight away. Until Dropbox has confirmed, it shows as waiting — in Settings and at the top of Today.",
-            "Each send starts from the copy that is in Dropbox right now, writes into it, reads the result back to check it, and uploads it against the exact version it started from. If the file changed in between — the web app, Excel on the laptop — Dropbox refuses, and the app starts again from the newer copy. Nothing is ever overwritten, and nothing you logged is lost.",
+            "Each send starts from the copy that is in Dropbox right now, writes into it, reads the result back to check it, and uploads it against the exact version it started from. If the file changed in between — Excel on the laptop, or anything else that saved it — Dropbox refuses, and the app starts again from the newer copy. Nothing is ever overwritten, and nothing you logged is lost.",
             "A row is checked before it is written into. If the session was changed in Excel into something else, the log is kept waiting with the reason rather than written into the wrong place."
         ]),
         Part(id: "Photographs", body: [
@@ -67,7 +67,7 @@ struct GuideView: View {
             "The share button at the top of a session offers the whole session — the brief, for a training partner — and, once it is done, what you did: one sentence for the person at home, with the time and the distance. Photos on the session go along. Heart rate and effort never do."
         ]),
         Part(id: "Speaking instead of typing", body: [
-            "Any box takes dictation: the microphone on the keyboard. The web app's spoken logging is not needed here."
+            "Any box takes dictation: the microphone on the keyboard."
         ])
     ]
 

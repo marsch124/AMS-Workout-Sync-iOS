@@ -3,8 +3,10 @@
 The native iPhone app for Martin's training plan — a SwiftUI app around
 `Core/`, a Swift package that is a line-for-line port of the web app's reader
 and writer (`../AMS Workout Sync`). Since 1.0 (15 September 2026) it is the
-primary Workout Sync; the web app remains for the Progress tab, spoken logging
-and the Mac.
+primary Workout Sync, and since 22 September 2026 the only one: Martin said
+plainly that he no longer uses the web app, so work he asks for belongs here
+even when he names neither app. The web app stays as the reference
+implementation the parity harness checks against.
 
 - `Core/Sources/WorkoutCore` — zip, xlsx, mapping detection, plan, writer,
   edits, extras, sync engine, form logic. `plan-dump`, `write-dump`,
