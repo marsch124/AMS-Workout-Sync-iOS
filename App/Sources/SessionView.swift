@@ -170,7 +170,10 @@ struct SessionView: View {
                      * the session's numbers and his own words about them.
                      */
                     if let notes = w.results["notes"]?.text, !notes.isEmpty {
+                        // Always in full: without fixedSize the last line of a long
+                        // note was cut to "It was ver…" (screen walk, 2026-09-22).
                         Text(notes).font(.body).foregroundStyle(Theme.text)
+                            .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(14)
                             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))

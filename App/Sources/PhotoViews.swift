@@ -42,6 +42,7 @@ struct PhotoStrip: View {
             }
             Text("Kept on this phone only — not in the workbook, not in Dropbox. Save them out from Settings → Photos.")
                 .font(.caption).foregroundStyle(Theme.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .onChange(of: picked) { _, items in
             guard !items.isEmpty else { return }

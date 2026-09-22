@@ -58,7 +58,9 @@ enum Theme {
     /* Readable as text: the same hue, darker by day. */
     static func sportInk(_ id: String) -> Color {
         let hex = sportHex(id)
-        let dark = Color(hex: hex)
+        // At night the slate of rest, breathing and meditation is too dim to read
+        // on the dark cards (2.8:1); it gets a lighter slate there, and only there.
+        let dark = Color(hex: id == "rest" ? 0xA3B1C2 : hex)
         let r = Double((hex >> 16) & 0xff) / 255 * 0.55
         let g = Double((hex >> 8) & 0xff) / 255 * 0.55
         let b = Double(hex & 0xff) / 255 * 0.55

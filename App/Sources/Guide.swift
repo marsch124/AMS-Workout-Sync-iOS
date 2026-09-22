@@ -104,9 +104,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
-        Release(version: "1.1 (36)", date: "22 September 2026", headline: "One row of buttons, and your words further up", items: [
+        Release(version: "1.1 (36)", date: "22 September 2026", headline: "One row of buttons, your words further up, and marks for breathing and meditation", items: [
             "On a session still to do, all four buttons are now one row at one size: Done (with the planned length on it), Log details, Missed, Move. Done keeps its green fill — it is still the one that finishes the session — but it no longer takes the whole screen.",
-            "On a session you have logged, your note is shown directly under the figures, above the photographs, instead of below everything."
+            "On a session you have logged, your note is shown directly under the figures, above the photographs, instead of below everything.",
+            "Breathing extras carry a pair of lungs and meditation extras a lotus, both hand-drawn, instead of a tick — which, beside the done tick every extra now carries, made two ticks on one card.",
+            "A long note on a logged session is shown in full; its last line used to be cut off. And at night the grey of breathing, meditation and rest is lighter, so their names and marks can be read."
         ]),
         Release(version: "1.1 (35)", date: "22 September 2026", headline: "Garmin for extras too", items: [
             "An extra activity's form now offers the day's workouts from Apple Health, as a session's form does — for a new extra and when you adjust a saved one. Use fills the time, the distance and the heart rate; a new extra also takes the workout's kind. Nothing is saved until you press Save.",
