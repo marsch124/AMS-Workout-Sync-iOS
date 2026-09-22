@@ -49,9 +49,11 @@ struct StateFill: View {
 }
 
 struct DoneTick: View {
+    /* An extra's tick: the same sign in the paler green the week strip gives extras. */
+    var washed = false
     var body: some View {
         ZStack {
-            Circle().fill(Theme.today)
+            Circle().fill(washed ? Theme.today.opacity(0.6) : Theme.today)
             Glyph(name: "icon-check", size: 15).foregroundStyle(Color.white)
         }
         .frame(width: 26, height: 26)
@@ -170,6 +172,10 @@ struct ExtraCard: View {
                 }
             }
             Spacer(minLength: 0)
+            // An extra is something done, so it carries the done tick wherever the
+            // card appears — Today, Sessions, Settings, its own screen. Missing from
+            // build 34's Done list; he found it (2026-09-22).
+            DoneTick(washed: true)
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))

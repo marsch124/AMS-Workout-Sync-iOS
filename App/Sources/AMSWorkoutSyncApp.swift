@@ -20,6 +20,7 @@ struct AMSWorkoutSyncApp: App {
 }
 
 struct RootView: View {
+    @EnvironmentObject var store: Store
     @State private var tab: String = {
         #if DEBUG
         return ProcessInfo.processInfo.environment["AMSWS_TAB"] ?? "today"
@@ -50,6 +51,13 @@ struct RootView: View {
             }
             if ProcessInfo.processInfo.environment["AMSWS_ZONES"] != nil {
                 NavigationStack { ZonesView() }
+            }
+            // Screen walks: Settings → Extra activities, or the first extra's own screen.
+            if ProcessInfo.processInfo.environment["AMSWS_EXTRAS"] != nil {
+                NavigationStack { ExtrasListView() }
+            }
+            if ProcessInfo.processInfo.environment["AMSWS_EXTRA_DETAIL"] != nil, let x = store.allExtras.first(where: { $0.dayKey == store.today }) ?? store.allExtras.first {
+                ExtraDetailView(extra: x).environmentObject(store)
             }
         }
         #endif

@@ -18,7 +18,7 @@ final class WorkoutSyncUITests: XCTestCase {
     }
 
     /* Every test starts clean: nothing waiting to sync, nothing remembered. */
-    private func launch(canLog: Bool = false, garmin: Bool = false) -> XCUIApplication {
+    private func launch(canLog: Bool = false, garmin: Bool = false, extraForm: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
         app.launchEnvironment["AMSWS_FILE"] = plan.path
@@ -28,8 +28,33 @@ final class WorkoutSyncUITests: XCTestCase {
         // Pretend Health: a ride, a walk, and his pool swim of 21 September —
         // 46.5 minutes in all, 1,275 m, of which 24.7 minutes swimming.
         if garmin { app.launchEnvironment["AMSWS_FAKE_HEALTH"] = "1" }
+        if extraForm { app.launchEnvironment["AMSWS_EXTRAFORM"] = "1" }
         app.launch()
         return app
+    }
+
+    /* 7. An extra listed under Sessions → Done carries the done tick, as a done session does. */
+    func testExtrasUnderDoneCarryTheTick() {
+        let app = launch()
+        XCTAssertTrue(app.buttons["tab-plan"].waitForExistence(timeout: 15))
+        app.buttons["tab-plan"].tap()
+        let done = app.buttons["sessions-filter-done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        done.tap()
+        let walk = app.buttons["sessions-extra-2026-09-15-walk"]
+        XCTAssertTrue(walk.waitForExistence(timeout: 5), "the extra walk of 15 September is not under Done")
+        XCTAssertTrue(walk.label.contains("Done"), "the extra carries no done tick: \(walk.label)")
+    }
+
+    /* 6. An extra's form offers what Garmin sent to Apple Health, as a session's does. */
+    func testExtraFormOffersGarminFromHealth() {
+        let app = launch(canLog: true, garmin: true, extraForm: true)
+        let use = app.buttons["health-use-walk"]
+        XCTAssertTrue(use.waitForExistence(timeout: 15), "the extra's form does not offer the walk from Health")
+        let minutes = app.textFields["extra-field-duration"]
+        XCTAssertTrue(minutes.waitForExistence(timeout: 5))
+        use.tap()
+        XCTAssertEqual(minutes.value as? String, "35", "Use should fill the walk's 35 minutes")
     }
 
     /* 5. The app never works out a pace: Use fills time, distance and heart rate, and the pace stays his. */

@@ -192,16 +192,17 @@ struct ExtraDetailView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ExtraCard(extra: extra)
                     /*
-                     * The same words as on a session already recorded, because
-                     * it is the same thing to do — and "Log again", which this
-                     * was called in the web app, read to him as logging another
-                     * one (web app v1.61.0).
+                     * Exactly what a logged session shows: a small grey Adjust on
+                     * the right (his choice for sessions, 2026-09-21). An extra is
+                     * logged by definition, so it is the only thing offered.
                      */
                     if store.canLog {
-                        Button("Adjust logged data") { adjusting = true }
-                            .font(.subheadline.weight(.semibold))
-                            .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
-                            .accessibilityIdentifier("extra-adjust")
+                        HStack {
+                            Spacer(minLength: 0)
+                            Button("Adjust") { adjusting = true }
+                                .font(.caption).buttonStyle(.plain).foregroundStyle(Theme.secondary)
+                                .accessibilityIdentifier("extra-adjust")
+                        }
                     }
                     PhotoStrip(owner: PhotoOwner(extra: extra))
                 }

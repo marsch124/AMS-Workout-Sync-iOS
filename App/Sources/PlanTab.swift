@@ -3,7 +3,13 @@ import WorkoutCore
 
 struct PlanTab: View {
     @EnvironmentObject var store: Store
-    @State private var range: Range = .upcoming
+    @State private var range: Range = {
+        #if DEBUG
+        // A screen walk can open a given list: AMSWS_LIST=Done.
+        if let name = ProcessInfo.processInfo.environment["AMSWS_LIST"], let r = Range(rawValue: name) { return r }
+        #endif
+        return .upcoming
+    }()
     @State private var openExtra: ExtraSummary?
 
     /*
@@ -81,6 +87,7 @@ struct PlanTab: View {
                                         .buttonStyle(.plain)
                                 case .extra(let x):
                                     Button { openExtra = x } label: { ExtraCard(extra: x) }
+                                        .accessibilityIdentifier("sessions-extra-\(x.dayKey)-\(x.activity)")
                                         .accessibilityIdentifier("sessions-extra-\(x.dayKey)-\(x.activity)")
                                         .buttonStyle(.plain)
                                 }

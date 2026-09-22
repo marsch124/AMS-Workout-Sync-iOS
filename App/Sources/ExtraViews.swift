@@ -34,6 +34,9 @@ struct ExtraFormView: View {
     @State private var problem: String?
     /* What the boxes held when the form opened. Only what differs from this is written. */
     @State private var openedWith: [String: String] = [:]
+    /* The day's workouts from Apple Health — what Garmin sent — offered as for a session. */
+    @State private var healthWorkouts: [HealthWorkout] = []
+    @State private var healthChecked = false
     @State private var loaded = false
 
     init(day: String, editing: ExtraSummary? = nil, onSaved: (() -> Void)? = nil) {
@@ -89,6 +92,16 @@ struct ExtraFormView: View {
                             .labelsHidden()
                             .environment(\.timeZone, TimeZone(identifier: "UTC")!)
                     }
+                    // From Apple Health, as on a session's form: Use fills time, distance
+                    // and heart rate — never a pace — and nothing is saved until Save.
+                    if !healthWorkouts.isEmpty {
+                        HealthSuggestions(workouts: healthWorkouts, disciplineId: activity,
+                                          note: "Fills time, distance and heart rate. Nothing is saved until you press Save.") { picked in
+                            useHealth(picked)
+                        }
+                    } else if healthChecked && HealthImport.shared.inUse {
+                        Text("Nothing in Apple Health for this day.").font(.caption).foregroundStyle(Theme.secondary)
+                    }
                     labelled("What kind of thing") {
                         Picker("Activity", selection: $activity) {
                             ForEach(Extras.defaultActivities) { Text($0.label).tag($0.id) }
@@ -120,6 +133,7 @@ struct ExtraFormView: View {
                 .padding(16).padding(.bottom, 90)
             }
             .background(Theme.bg.ignoresSafeArea())
+            .task(id: dayKey(date) ?? "") { await loadHealth() }
             .navigationTitle(editing == nil ? "Extra activity" : "Adjust logged data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
@@ -144,6 +158,45 @@ struct ExtraFormView: View {
         guard editing != nil else { return "Save it" }
         let n = changes.count
         return n == 0 ? "Nothing changed yet" : "Save \(n) change\(n == 1 ? "" : "s")"
+    }
+
+    /* The chosen day's workouts, the ones of this activity's kind first. */
+    private func loadHealth() async {
+        guard HealthImport.shared.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil,
+              let key = dayKey(date) else { return }
+        let all = await HealthImport.shared.workouts(on: key)
+        let mine = Self.healthSport(for: activity)
+        healthWorkouts = all.filter { $0.sport == mine } + all.filter { $0.sport != mine }
+        healthChecked = true
+    }
+
+    /* The Health sport an extra's activity would show up as. */
+    static func healthSport(for activity: String) -> String {
+        switch activity {
+        case "swim", "bike", "run", "strength": return activity
+        case "mobility", "yoga": return "mobility"
+        case "walk", "hike": return "walk"
+        default: return "other"
+        }
+    }
+
+    /*
+     * Fill the boxes from what Garmin sent. A new extra also takes the workout's
+     * kind when Health knows it; a saved one keeps the kind it has. Distance and
+     * heart rate only where this kind of activity has those boxes.
+     */
+    private func useHealth(_ w: HealthWorkout) {
+        if editing == nil {
+            switch w.sport {
+            case "swim", "bike", "run", "strength", "mobility", "walk": activity = w.sport
+            default: break
+            }
+        }
+        duration = String(Int((w.seconds / 60).rounded()))
+        if Extras.wantsMetrics(activity) {
+            if let metres = w.metres, metres > 0 { distance = jsNumberString((metres / 1000 * 100).rounded() / 100) }
+            if let hr = w.avgHr { avgHr = String(Int(hr.rounded())) }
+        }
     }
 
     private func save() {

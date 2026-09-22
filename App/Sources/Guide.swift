@@ -104,8 +104,13 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (35)", date: "22 September 2026", headline: "Garmin for extras too", items: [
+            "An extra activity's form now offers the day's workouts from Apple Health, as a session's form does — for a new extra and when you adjust a saved one. Use fills the time, the distance and the heart rate; a new extra also takes the workout's kind. Nothing is saved until you press Save.",
+            "An extra's card carries the done tick everywhere it appears — Today, Sessions under Done and All, Settings, its own screen — in the paler green the week strip gives extras.",
+            "An extra's own screen shows the same small grey Adjust as a logged session, instead of a green button."
+        ]),
         Release(version: "1.1 (34)", date: "22 September 2026", headline: "Extras: corrected, listed under Done, ticked", items: [
-            "An extra activity can be changed after it is saved. Open it — from Today, from Sessions under Done, or from Settings → Extra activities — and press Adjust logged data. The form opens filled in with what the sheet holds, and only the boxes you change are written into its own row; the button counts them before you press it. A box you empty empties the cell.",
+            "An extra activity can be changed after it is saved. Open it — from Today, from Sessions under Done, or from Settings → Extra activities — and press Adjust. The form opens filled in with what the sheet holds, and only the boxes you change are written into its own row; the button counts them before you press it. A box you empty empties the cell.",
             "Extras are now listed on the Sessions tab under Done and under All, in the day they happened, beside that day's sessions. They used to be on Today for a day and after that only under Settings.",
             "Each extra in the week strip carries the same small tick as a done session, in a paler green — it is something you did, and it is still not part of the plan."
         ]),

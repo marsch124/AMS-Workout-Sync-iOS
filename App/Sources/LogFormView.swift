@@ -198,6 +198,7 @@ struct FieldBox: View {
 struct HealthSuggestions: View {
     let workouts: [HealthWorkout]
     let disciplineId: String
+    var note = "Fills time, distance and heart rate. Type the pace from Garmin. Nothing is saved until you press Save."
     let use: (HealthWorkout) -> Void
 
     var body: some View {
@@ -218,7 +219,7 @@ struct HealthSuggestions: View {
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
             }
-            Text("Fills time, distance and heart rate. Type the pace from Garmin. Nothing is saved until you press Save.").font(.caption).foregroundStyle(Theme.secondary)
+            Text(note).font(.caption).foregroundStyle(Theme.secondary)
         }
     }
 }
