@@ -17,7 +17,9 @@ on:
 
 jobs:
   upload:
-    runs-on: macos-15
+    # Apple refuses anything built with an older SDK than iOS 26, and GitHub's
+    # macos-15 image carries Xcode 16.4 (iOS 18.5). This image has Xcode 26.
+    runs-on: macos-26
     timeout-minutes: 60
 
     env:
@@ -44,6 +46,15 @@ jobs:
           mkdir -p "$HOME/private_keys"
           printf '%s' "$ASC_KEY_P8" > "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8"
           chmod 600 "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8"
+
+      - name: Use the newest Xcode on this runner
+        run: |
+          ls -d /Applications/Xcode*.app
+          NEWEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$NEWEST/Contents/Developer"
+          xcodebuild -version
+          # The SDK Apple checks: it must say iOS 26.x or later.
+          xcodebuild -showsdks | grep -i "iOS" | head -3
 
       - name: Which build this is
         run: |
