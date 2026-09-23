@@ -104,6 +104,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (38)", date: "23 September 2026", headline: "A pen instead of the word", items: [
+            "Adjust is a small grey button carrying a hand-drawn pen, with no word on it, on a logged session and on an extra. It still says Adjust logged data aloud for VoiceOver."
+        ]),
         Release(version: "1.1 (37)", date: "23 September 2026", headline: "The same app, sent a new way", items: [
             "Nothing in the app itself changed. This build was sent to TestFlight by GitHub rather than from the Mac, to prove that path works — so a change made while the Mac is off can still reach your phone."
         ]),

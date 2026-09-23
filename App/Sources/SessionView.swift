@@ -83,9 +83,12 @@ struct SessionView: View {
                                     .accessibilityIdentifier("session-fill-from-garmin")
                                 }
                                 Spacer(minLength: 0)
-                                Button("Adjust") { logging = true }
-                                    .font(.caption).buttonStyle(.plain).foregroundStyle(Theme.secondary)
+                                // A button that looks like one, in the quiet grey:
+                                // it is a correction, not the day's work (his ask, 2026-09-23).
+                                Button { logging = true } label: { Glyph(name: "icon-pen", size: 14) }
+                                    .settingsButton(tint: Theme.secondary)
                                     .accessibilityIdentifier("session-adjust")
+                                    .accessibilityLabel("Adjust logged data")
                             }
                         } else {
                             /*

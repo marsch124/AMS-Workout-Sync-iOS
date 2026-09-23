@@ -200,9 +200,10 @@ struct ExtraDetailView: View {
                     if store.canLog {
                         HStack {
                             Spacer(minLength: 0)
-                            Button("Adjust") { adjusting = true }
-                                .font(.caption).buttonStyle(.plain).foregroundStyle(Theme.secondary)
+                            Button { adjusting = true } label: { Glyph(name: "icon-pen", size: 14) }
+                                .settingsButton(tint: Theme.secondary)
                                 .accessibilityIdentifier("extra-adjust")
+                                .accessibilityLabel("Adjust logged data")
                         }
                     }
                     PhotoStrip(owner: PhotoOwner(extra: extra))
