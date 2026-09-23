@@ -79,24 +79,22 @@ jobs:
 
       - name: Archive
         run: |
-          # Sign the archive as a DISTRIBUTION build. Left to itself Xcode asks
-          # Apple for an "Apple Development" certificate and a development
-          # profile, one per machine — which is what filled his account and
-          # stopped build 38 ("maximum number of certificates"). With the
-          # distribution identity the runner uses the team's cloud-managed
-          # certificate instead of making one of its own.
+          # Archive WITHOUT signing. Signing it here made Xcode ask Apple for an
+          # "Apple Development" certificate — one per machine, and runners are
+          # new every time — which filled his account and stopped build 38.
+          # Nothing needs a signature until the export below, which signs for
+          # distribution with the App Store Connect key.
           xcodebuild archive \
             -project AMSWorkoutSync.xcodeproj \
             -scheme AMSWorkoutSync \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/AMSWorkoutSync.xcarchive \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            CODE_SIGN_STYLE=Automatic \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            EXPANDED_CODE_SIGN_IDENTITY="" 
 
       # tools/ExportOptions.plist carries destination=upload, so this step is
       # the upload: the same plist he exports with by hand on the Mac.
