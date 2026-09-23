@@ -12,6 +12,12 @@ name: TestFlight
 #
 # The build number comes from project.yml (CURRENT_PROJECT_VERSION). App Store
 # Connect refuses a build number it already has, so bump it before running.
+#
+# 2026-09-23: build 37 went up this way. Build 38 could not: Apple answered
+# "Your account has reached the maximum number of certificates", because each
+# machine that signs makes one and the account is full. Revoke an unused
+# certificate at https://developer.apple.com/account/resources/certificates
+# and the cloud can sign again; until then uploads come from the Mac.
 on:
   workflow_dispatch:
 
