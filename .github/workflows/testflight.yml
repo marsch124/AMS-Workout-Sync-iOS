@@ -79,12 +79,20 @@ jobs:
 
       - name: Archive
         run: |
+          # Sign the archive as a DISTRIBUTION build. Left to itself Xcode asks
+          # Apple for an "Apple Development" certificate and a development
+          # profile, one per machine — which is what filled his account and
+          # stopped build 38 ("maximum number of certificates"). With the
+          # distribution identity the runner uses the team's cloud-managed
+          # certificate instead of making one of its own.
           xcodebuild archive \
             -project AMSWorkoutSync.xcodeproj \
             -scheme AMSWorkoutSync \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/AMSWorkoutSync.xcarchive \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE=Automatic \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$HOME/private_keys/AuthKey_$ASC_KEY_ID.p8" \
             -authenticationKeyID "$ASC_KEY_ID" \

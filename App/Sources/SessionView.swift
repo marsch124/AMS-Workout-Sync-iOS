@@ -85,10 +85,10 @@ struct SessionView: View {
                                 Spacer(minLength: 0)
                                 // A button that looks like one, in the quiet grey:
                                 // it is a correction, not the day's work (his ask, 2026-09-23).
-                                Button { logging = true } label: { Glyph(name: "icon-pen", size: 14) }
-                                    .settingsButton(tint: Theme.secondary)
-                                    .accessibilityIdentifier("session-adjust")
-                                    .accessibilityLabel("Adjust logged data")
+                                // The pen lives on the What you did line (his pick). A session
+                                // logged a moment ago has no figures yet — nothing to sit on —
+                                // so there it stays here, and is never out of reach.
+                                if Self.figures(w, mapping).isEmpty { penButton }
                             }
                         } else {
                             /*
@@ -152,7 +152,10 @@ struct SessionView: View {
 
                     let figures = Self.figures(w, mapping)
                     if !figures.isEmpty {
-                        SectionHeading(text: "What you did")
+                        HStack(alignment: .center, spacing: 8) {
+                            SectionHeading(text: "What you did")
+                            if store.canLog, w.state == .done { penButton }
+                        }
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                             ForEach(figures, id: \.0) { label, value in
                                 VStack(alignment: .leading, spacing: 4) {
@@ -247,6 +250,14 @@ struct SessionView: View {
             if ProcessInfo.processInfo.environment["AMSWS_SHARE"] != nil { sharing = true }
         }
         #endif
+    }
+
+    /* The pen: one button, wherever it is shown. */
+    private var penButton: some View {
+        Button { logging = true } label: { Glyph(name: "icon-pen", size: 14) }
+            .settingsButton(tint: Theme.secondary)
+            .accessibilityIdentifier("session-adjust")
+            .accessibilityLabel("Adjust logged data")
     }
 
     /*

@@ -104,6 +104,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (40)", date: "23 September 2026", headline: "The pen sits with the numbers", items: [
+            "The pen is on the What you did line, beside the figures it edits. On a session logged a moment ago, which has no figures until it syncs, it stays under the card so it is never out of reach."
+        ]),
         Release(version: "1.1 (38)", date: "23 September 2026", headline: "A pen instead of the word", items: [
             "Adjust is a small grey button carrying a hand-drawn pen, with no word on it, on a logged session and on an extra. It still says Adjust logged data aloud for VoiceOver."
         ]),
