@@ -104,6 +104,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (37)", date: "23 September 2026", headline: "The same app, sent a new way", items: [
+            "Nothing in the app itself changed. This build was sent to TestFlight by GitHub rather than from the Mac, to prove that path works — so a change made while the Mac is off can still reach your phone."
+        ]),
         Release(version: "1.1 (36)", date: "22 September 2026", headline: "One row of buttons, your words further up, and marks for breathing and meditation", items: [
             "On a session still to do, all four buttons are now one row at one size: Done (with the planned length on it), Log details, Missed, Move. Done keeps its green fill — it is still the one that finishes the session — but it no longer takes the whole screen.",
             "On a session you have logged, your note is shown directly under the figures, above the photographs, instead of below everything.",
