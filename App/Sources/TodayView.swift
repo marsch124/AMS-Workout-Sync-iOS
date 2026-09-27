@@ -244,8 +244,12 @@ struct WeekCard: View {
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                     if planned > 0 {
+                        // Extras that count as training: their own time, beside the plan's
+                        // and never inside it (his ask, 2026-09-27).
+                        let extra = days.flatMap(\.extras).filter(\.isTraining).reduce(0.0) { $0 + $1.seconds }
                         WeekProgress(done: done, planned: planned,
-                                     dueByToday: days.filter { $0.dayKey <= today }.reduce(0) { $0 + $1.plannedSeconds })
+                                     dueByToday: days.filter { $0.dayKey <= today }.reduce(0) { $0 + $1.plannedSeconds },
+                                     extra: extra)
                     }
                 }
             }
@@ -387,23 +391,48 @@ struct WeekProgress: View {
     let done: Double
     let planned: Double
     let dueByToday: Double
+    /* Extra activities of this week that count as training. */
+    var extra: Double = 0
+
+    /* One block a quarter of an hour, every fourth yellow: each yellow block is an hour done. */
+    private static let blockWidth: CGFloat = 5
+    private static let blockGap: CGFloat = 2
+    private static let maxBlocks = 13
 
     var body: some View {
         let share = planned > 0 ? min(max(done / planned, 0), 1) : 0
         let pace = planned > 0 ? min(max(dueByToday / planned, 0), 1) : 0
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Theme.surface2)
-                Capsule().fill(Theme.today).frame(width: max(geo.size.width * share, share > 0 ? 3 : 0))
-                if pace > 0.02, pace < 0.98 {
-                    // Where tonight's session leaves the week, if nothing slips.
-                    Capsule().fill(Theme.secondary.opacity(0.7))
-                        .frame(width: 1.5, height: geo.size.height + 4)
-                        .offset(x: geo.size.width * pace - 0.75)
+        let blocks = min(Int((extra / 900).rounded()), Self.maxBlocks)
+        VStack(alignment: .leading, spacing: 3) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.surface2)
+                    Capsule().fill(Theme.today).frame(width: max(geo.size.width * share, share > 0 ? 3 : 0))
+                    if pace > 0.02, pace < 0.98 {
+                        // Where tonight's session leaves the week, if nothing slips.
+                        Capsule().fill(Theme.secondary.opacity(0.7))
+                            .frame(width: 1.5, height: geo.size.height + 4)
+                            .offset(x: geo.size.width * pace - 0.75)
+                    }
                 }
             }
+            .frame(width: 96, height: 4)
+
+            // The extras, beside the plan and never inside it: no number, just
+            // the blocks (his choice, 2026-09-27).
+            if blocks > 0 {
+                HStack(spacing: Self.blockGap) {
+                    ForEach(0..<blocks, id: \.self) { i in
+                        RoundedRectangle(cornerRadius: 1, style: .continuous)
+                            .fill((i + 1) % 4 == 0 ? Theme.extraHour : Theme.today.opacity(0.75))
+                            .frame(width: Self.blockWidth)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .frame(width: 96, height: 4)
+                .accessibilityLabel("Extra activities this week: " + formatDuration(extra))
+            }
         }
-        .frame(width: 96, height: 4)
     }
 }
 

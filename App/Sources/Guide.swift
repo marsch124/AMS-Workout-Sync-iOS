@@ -20,6 +20,7 @@ struct GuideView: View {
             "The week strip is one column a day, one bar a session. Solid is recorded, hollow is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
             "A done session carries a small green tick in the corner of its bar. An extra carries the same tick in a paler green: it is something you did, and it is not part of the plan.",
             "Beside the hours, a hairline: how much of the week's planned time is recorded, and a faint notch marking where the week stands once tonight is done.",
+            "Under it, one block for every quarter hour of extra activity that counts as training, every fourth in amber — an hour a yellow block. Extras are never counted in the week's hours.",
             "Below it: today's sessions, anything behind you that was never recorded, and tomorrow on its own pale blue ground. Tap a session to open it."
         ]),
         Part(id: "Logging a session", body: [
@@ -104,6 +105,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (41)", date: "27 September 2026", headline: "Extra activities have their own bar", items: [
+            "Under the week's hairline on Today there is now a second row: one block for each quarter hour of extra activity that counts as training, every fourth block in amber, so a yellow block is an hour done. Extras stay out of the week's figures, as before — this is beside the plan, never inside it.",
+            "An extra marked as not training load adds nothing to it."
+        ]),
         Release(version: "1.1 (40)", date: "23 September 2026", headline: "The pen sits with the numbers", items: [
             "The pen is on the What you did line, beside the figures it edits. On a session logged a moment ago, which has no figures until it syncs, it stays under the card so it is never out of reach."
         ]),
