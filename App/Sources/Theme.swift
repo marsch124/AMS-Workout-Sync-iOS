@@ -50,6 +50,7 @@ enum Theme {
         case "bike", "brick": return 0xffd60a
         case "run": return 0x85ce6c
         case "strength": return 0xff8c1a
+        case "rowing": return 0x0d9488
         case "mobility": return 0x8650fe
         case "race": return 0xef4444
         case "rest": return 0x64748b

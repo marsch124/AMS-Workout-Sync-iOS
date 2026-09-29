@@ -18,7 +18,7 @@ final class WorkoutSyncUITests: XCTestCase {
     }
 
     /* Every test starts clean: nothing waiting to sync, nothing remembered. */
-    private func launch(canLog: Bool = false, garmin: Bool = false, extraForm: Bool = false) -> XCUIApplication {
+    private func launch(canLog: Bool = false, garmin: Bool = false, extraForm: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
         app.launchEnvironment["AMSWS_FILE"] = plan.path
@@ -28,9 +28,75 @@ final class WorkoutSyncUITests: XCTestCase {
         // Pretend Health: a ride, a walk, and his pool swim of 21 September —
         // 46.5 minutes in all, 1,275 m, of which 24.7 minutes swimming.
         if garmin { app.launchEnvironment["AMSWS_FAKE_HEALTH"] = "1" }
-        if extraForm { app.launchEnvironment["AMSWS_EXTRAFORM"] = "1" }
+        // "1" opens the extra form on today; a day key opens it on that day.
+        if let extraForm { app.launchEnvironment["AMSWS_EXTRAFORM"] = extraForm }
         app.launch()
         return app
+    }
+
+    /* 11. With Apple Health off, the form says so and offers to put it back on. */
+    func testTheFormSaysWhenAppleHealthIsOff() {
+        let app = launch(canLog: true, extraForm: "1")
+        let turnOn = app.buttons["health-turn-on"]
+        XCTAssertTrue(turnOn.waitForExistence(timeout: 15),
+                      "with Health off the form says nothing about it, and the missing suggestions look like a fault")
+    }
+
+    /* 10. Save is never a dead grey button: pressed early it says what is missing. */
+    func testTheExtraFormNeverGoesDead() {
+        let app = launch(canLog: true, extraForm: "1")
+        let save = app.buttons["extra-save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 15))
+        XCTAssertTrue(save.isEnabled, "the main button must never be grey")
+        save.tap()
+        XCTAssertTrue(app.staticTexts["extra-problem"].waitForExistence(timeout: 3),
+                      "pressed with nothing typed, Save must say what it wants")
+        XCTAssertTrue(app.textFields["extra-field-duration"].exists, "the form closed without saving anything")
+    }
+
+    /* 9. An extra done yesterday, marked as counting, is in the week's blocks today. */
+    func testAnExtraDoneYesterdayCountsInThisWeek() {
+        let app = launch(canLog: true, extraForm: "2026-09-15")
+        let minutes = app.textFields["extra-field-duration"]
+        XCTAssertTrue(minutes.waitForExistence(timeout: 15))
+        // Rowing, so this row cannot be confused with the fixture's walk of the same day.
+        app.buttons["extra-activity"].tap()
+        let rowing = app.buttons["extra-activity-rowing"]
+        XCTAssertTrue(rowing.waitForExistence(timeout: 5), "Rowing is not among the activities")
+        rowing.tap()
+        minutes.tap()
+        minutes.typeText("40")
+        app.buttons["extra-counts-yes"].tap()
+        app.buttons["extra-save"].tap()
+
+        let blocks = app.otherElements["week-extra-blocks"]
+        XCTAssertTrue(blocks.waitForExistence(timeout: 5), "yesterday's extra is not under this week's bar")
+        XCTAssertTrue(blocks.label.contains("40m"), "the week does not count it: \(blocks.label)")
+
+        app.buttons["tab-plan"].tap()
+        app.buttons["sessions-filter-done"].tap()
+        XCTAssertTrue(app.buttons["sessions-extra-2026-09-15-rowing"].waitForExistence(timeout: 5),
+                      "the extra was not kept on the day it was done")
+    }
+
+    /* 8. The four lists stay under the thumb: the filter row does not scroll away. */
+    func testTheSessionsFiltersStayWhileScrolling() {
+        let app = launch()
+        XCTAssertTrue(app.buttons["tab-plan"].waitForExistence(timeout: 15))
+        app.buttons["tab-plan"].tap()
+
+        let all = app.buttons["sessions-filter-all"]
+        XCTAssertTrue(all.waitForExistence(timeout: 5))
+        all.tap()
+
+        let title = app.staticTexts["sessions-title"]
+        let done = app.buttons["sessions-filter-done"]
+        XCTAssertTrue(done.isHittable, "the filter row is not on screen to begin with")
+        let list = app.scrollViews.firstMatch
+        for _ in 0..<4 { list.swipeUp(velocity: .fast) }
+
+        XCTAssertFalse(title.isHittable, "the list did not scroll at all")
+        XCTAssertTrue(done.isHittable, "the filter buttons scrolled away with the list")
     }
 
     /* 7. An extra listed under Sessions → Done carries the done tick, as a done session does. */
@@ -48,7 +114,7 @@ final class WorkoutSyncUITests: XCTestCase {
 
     /* 6. An extra's form offers what Garmin sent to Apple Health, as a session's does. */
     func testExtraFormOffersGarminFromHealth() {
-        let app = launch(canLog: true, garmin: true, extraForm: true)
+        let app = launch(canLog: true, garmin: true, extraForm: "1")
         let use = app.buttons["health-use-walk"]
         XCTAssertTrue(use.waitForExistence(timeout: 15), "the extra's form does not offer the walk from Health")
         let minutes = app.textFields["extra-field-duration"]

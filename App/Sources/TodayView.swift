@@ -1,9 +1,17 @@
 import SwiftUI
 import WorkoutCore
 
+/* A day to add an extra for, so .sheet(item:) builds the form from it. */
+struct ExtraDay: Identifiable, Equatable {
+    let key: String
+    var id: String { key }
+}
+
 struct TodayView: View {
     @EnvironmentObject var store: Store
-    @State private var addingExtra = false
+    /* The extra form and the day it is for, in one piece of state: two would
+       let the sheet be built with today's day and yesterday's flag. */
+    @State private var addingExtra: ExtraDay?
     @State private var openExtra: ExtraSummary?
 
     var body: some View {
@@ -21,10 +29,15 @@ struct TodayView: View {
             .refreshable { store.refresh() }
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .toolbar(.hidden, for: .navigationBar)
-            .sheet(isPresented: $addingExtra) { ExtraFormView(day: store.today).environmentObject(store) }
+            .sheet(item: $addingExtra) { day in ExtraFormView(day: day.key).environmentObject(store) }
             .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
             #if DEBUG
-            .onAppear { if ProcessInfo.processInfo.environment["AMSWS_EXTRAFORM"] != nil { addingExtra = true } }
+            .onAppear {
+                // AMSWS_EXTRAFORM=1 opens the form on today; a day key opens it on that day.
+                if let flag = ProcessInfo.processInfo.environment["AMSWS_EXTRAFORM"] {
+                    addingExtra = ExtraDay(key: parseDayKey(flag) != nil ? flag : store.today)
+                }
+            }
             #endif
         }
     }
@@ -117,7 +130,7 @@ struct TodayView: View {
 
     /* A small pill, the size of the week card's Key button: an extra is today's, not a plan. */
     private var extraButton: some View {
-        Button { addingExtra = true } label: {
+        Button { addingExtra = ExtraDay(key: store.today) } label: {
             HStack(spacing: 4) {
                 Glyph(name: "icon-plus", size: 11)
                 Text("Extra activity")
@@ -323,6 +336,19 @@ struct WeekKey: View {
                 keyItem(DottedFill(colorId: "walk"), "Extra, outside the plan")
                 keyItem(RoundedRectangle(cornerRadius: 2).fill(Theme.sport("rest")).frame(height: 3).frame(maxHeight: .infinity), "Rest day")
             }
+            // The blocks by the figures: only the extras marked as counting
+            // are in them, which the card cannot say for itself.
+            HStack(spacing: 8) {
+                HStack(spacing: 2) {
+                    ForEach(0..<4, id: \.self) { i in
+                        RoundedRectangle(cornerRadius: 1, style: .continuous)
+                            .fill(i == 3 ? Theme.extraHour : Theme.today.opacity(0.75))
+                            .frame(width: 5, height: 4)
+                    }
+                }
+                Text("Extra time that counts as training: a block a quarter hour, amber on the hour")
+                    .font(.caption).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+            }
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 6) {
                 ForEach(sports, id: \.0) { id, label in
                     HStack(spacing: 6) {
@@ -402,7 +428,7 @@ struct WeekProgress: View {
     var body: some View {
         let share = planned > 0 ? min(max(done / planned, 0), 1) : 0
         let pace = planned > 0 ? min(max(dueByToday / planned, 0), 1) : 0
-        let blocks = min(Int((extra / 900).rounded()), Self.maxBlocks)
+        let blocks = extra > 0 ? min(max(Int((extra / 900).rounded()), 1), Self.maxBlocks) : 0
         VStack(alignment: .leading, spacing: 3) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -430,6 +456,8 @@ struct WeekProgress: View {
                     Spacer(minLength: 0)
                 }
                 .frame(width: 96, height: 4)
+                .accessibilityElement()
+                .accessibilityIdentifier("week-extra-blocks")
                 .accessibilityLabel("Extra activities this week: " + formatDuration(extra))
             }
         }

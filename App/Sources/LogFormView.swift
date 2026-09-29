@@ -27,6 +27,8 @@ struct LogFormView: View {
     @State private var loaded = false
     @State private var healthWorkouts: [HealthWorkout] = []
     @State private var healthChecked = false
+    @State private var problem: String?
+    @ObservedObject private var health = HealthImport.shared
 
     init(workout: Workout, mapping: Mapping) {
         self.workout = workout
@@ -55,8 +57,10 @@ struct LogFormView: View {
                             for (id, value) in picked.formValues(for: workout.discipline.id) { values[id] = value }
                             if workout.discipline.id == "swim" { distanceUnit = "m" }
                         }
-                    } else if healthChecked && HealthImport.shared.inUse {
-                        Text("Nothing in Apple Health for this day and sport.").font(.caption).foregroundStyle(Theme.secondary)
+                    } else if health.inUse {
+                        if healthChecked { HealthEmptyNote(what: "this day and sport") }
+                    } else {
+                        HealthOffNote()
                     }
 
                     ForEach(shown) { field in
@@ -81,17 +85,27 @@ struct LogFormView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
             }
             .safeAreaInset(edge: .bottom) {
-                Button(action: save) {
-                    Text(saveLabel).font(.headline).frame(maxWidth: .infinity, minHeight: 52)
+                // Never grey: the button that does the thing is always the
+                // green one, and pressing it early says what is missing
+                // rather than going dead ("attempt after attempt", 2026-09-26).
+                VStack(spacing: 8) {
+                    if let problem {
+                        Text(problem).font(.footnote).foregroundStyle(Theme.danger)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityIdentifier("log-problem")
+                    }
+                    Button(action: save) {
+                        Text(saveLabel).font(.headline).frame(maxWidth: .infinity, minHeight: 52)
+                    }
+                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .accessibilityIdentifier("log-save")
                 }
-                .buttonStyle(.borderedProminent).tint(Theme.today)
-                .disabled(changes.isEmpty)
                 .padding(16)
                 .background(Theme.bg)
             }
             .onAppear(perform: load)
-            .task {
-                guard HealthImport.shared.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
+            .task(id: health.inUse) {
+                guard health.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
                 let all = await HealthImport.shared.workouts(on: workout.dayKey)
                 let sport = workout.discipline.id
                 healthWorkouts = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }
@@ -102,7 +116,7 @@ struct LogFormView: View {
 
     private var saveLabel: String {
         let n = changes.count
-        if n == 0 { return "Nothing changed yet" }
+        if n == 0 { return "Save" }
         return "Save \(n) change\(n == 1 ? "" : "s")"
     }
 
@@ -127,6 +141,10 @@ struct LogFormView: View {
     }
 
     private func save() {
+        guard !changes.isEmpty else {
+            problem = "Nothing has changed yet — fill in the time you did, or a number you want to correct."
+            return
+        }
         if usedHealth { HealthMark.remember(workout) }
         let entry = LogForm.entry(from: changes, distanceUnit: distanceUnit)
         store.log(workout, entry)
@@ -193,6 +211,55 @@ struct FieldBox: View {
     }
 }
 
+
+/*
+ * Why there is nothing from Health to offer.
+ *
+ * Off was invisible: the form simply showed no suggestions and the only way
+ * to find out was to go looking in Settings — "I have the impression that the
+ * health sync doesn't work anymore" (2026-09-29). It says which it is, and
+ * mends it where it stands.
+ */
+struct HealthOffNote: View {
+    @ObservedObject private var health = HealthImport.shared
+
+    var body: some View {
+        if health.isAvailable, health.status != .denied {
+            HStack(spacing: 8) {
+                Glyph(name: "icon-heart", size: 13).foregroundStyle(Theme.secondary)
+                Text(health.status == .asked ? "Apple Health is switched off, so nothing is offered here."
+                                             : "Apple Health is not connected, so nothing is offered here.")
+                    .font(.caption).foregroundStyle(Theme.secondary)
+                Spacer(minLength: 0)
+                Button(health.status == .asked ? "Use it" : "Connect") {
+                    if health.status == .asked {
+                        health.enabled = true
+                    } else {
+                        Task { await health.requestAccess(); health.enabled = true }
+                    }
+                }
+                .settingsButton(tint: Theme.today)
+                .accessibilityIdentifier("health-turn-on")
+            }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+        }
+    }
+}
+
+/* Health is on and had nothing — worth saying where the watch's workouts live. */
+struct HealthEmptyNote: View {
+    let what: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Nothing in Apple Health for \(what).").font(.caption).foregroundStyle(Theme.secondary)
+            Text("If your watch has it, look in Health → your picture → Apps → Workout Sync.")
+                .font(.caption2).foregroundStyle(Theme.secondary)
+        }
+        .accessibilityIdentifier("health-empty")
+    }
+}
 
 /* The day's workouts from Apple Health, one tap each to fill the boxes. */
 struct HealthSuggestions: View {

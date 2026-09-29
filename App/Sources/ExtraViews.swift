@@ -38,6 +38,7 @@ struct ExtraFormView: View {
     @State private var healthWorkouts: [HealthWorkout] = []
     @State private var healthChecked = false
     @State private var loaded = false
+    @ObservedObject private var health = HealthImport.shared
 
     init(day: String, editing: ExtraSummary? = nil, onSaved: (() -> Void)? = nil) {
         self.day = day
@@ -99,14 +100,19 @@ struct ExtraFormView: View {
                                           note: "Fills time, distance and heart rate. Nothing is saved until you press Save.") { picked in
                             useHealth(picked)
                         }
-                    } else if healthChecked && HealthImport.shared.inUse {
-                        Text("Nothing in Apple Health for this day.").font(.caption).foregroundStyle(Theme.secondary)
+                    } else if health.inUse {
+                        if healthChecked { HealthEmptyNote(what: "this day") }
+                    } else {
+                        HealthOffNote()
                     }
                     labelled("What kind of thing") {
                         Picker("Activity", selection: $activity) {
-                            ForEach(Extras.defaultActivities) { Text($0.label).tag($0.id) }
+                            ForEach(Extras.defaultActivities) {
+                                Text($0.label).tag($0.id).accessibilityIdentifier("extra-activity-" + $0.id)
+                            }
                         }
                         .pickerStyle(.menu).tint(Theme.today)
+                        .accessibilityIdentifier("extra-activity")
                         .onChange(of: activity) { _, _ in isTraining = nil }
                     }
                     field("What it was", id: ExtraField.what, text: $what, placeholder: "e.g. Dog walk along the river", keys: .default)
@@ -119,8 +125,8 @@ struct ExtraFormView: View {
                     }
                     labelled("Counts as training?") {
                         Picker("Counts as training", selection: Binding(get: { training }, set: { isTraining = $0 })) {
-                            Text("No — it does not add load").tag(false)
-                            Text("Yes — count it as training").tag(true)
+                            Text("No — it does not add load").tag(false).accessibilityIdentifier("extra-counts-no")
+                            Text("Yes — count it as training").tag(true).accessibilityIdentifier("extra-counts-yes")
                         }
                         .pickerStyle(.segmented)
                     }
@@ -128,12 +134,11 @@ struct ExtraFormView: View {
                         TextField("Anything worth remembering", text: $notes, axis: .vertical)
                             .lineLimit(3...6).padding(12).background(box(changed: changes.contains(ExtraField.notes)))
                     }
-                    if let problem { Text(problem).font(.footnote).foregroundStyle(Theme.danger) }
                 }
                 .padding(16).padding(.bottom, 90)
             }
             .background(Theme.bg.ignoresSafeArea())
-            .task(id: dayKey(date) ?? "") { await loadHealth() }
+            .task(id: (dayKey(date) ?? "") + (health.inUse ? " on" : " off")) { await loadHealth() }
             .navigationTitle(editing == nil ? "Extra activity" : "Adjust logged data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
@@ -143,12 +148,21 @@ struct ExtraFormView: View {
                 openedWith = values
             }
             .safeAreaInset(edge: .bottom) {
-                Button(action: save) {
-                    Text(saveLabel).font(.headline).frame(maxWidth: .infinity, minHeight: 52)
+                // Never grey. A grey Save it is a dead end: the form looks
+                // finished, the press does nothing, and the walk is simply
+                // gone — which is how one of his went missing (2026-09-29).
+                VStack(spacing: 8) {
+                    if let problem {
+                        Text(problem).font(.footnote).foregroundStyle(Theme.danger)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityIdentifier("extra-problem")
+                    }
+                    Button(action: save) {
+                        Text(saveLabel).font(.headline).frame(maxWidth: .infinity, minHeight: 52)
+                    }
+                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .accessibilityIdentifier("extra-save")
                 }
-                .buttonStyle(.borderedProminent).tint(Theme.today)
-                .disabled(editing == nil ? !canSave : changes.isEmpty)
-                .accessibilityIdentifier("extra-save")
                 .padding(16).background(Theme.bg)
             }
         }
@@ -157,12 +171,12 @@ struct ExtraFormView: View {
     private var saveLabel: String {
         guard editing != nil else { return "Save it" }
         let n = changes.count
-        return n == 0 ? "Nothing changed yet" : "Save \(n) change\(n == 1 ? "" : "s")"
+        return n == 0 ? "Save" : "Save \(n) change\(n == 1 ? "" : "s")"
     }
 
     /* The chosen day's workouts, the ones of this activity's kind first. */
     private func loadHealth() async {
-        guard HealthImport.shared.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil,
+        guard health.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil,
               let key = dayKey(date) else { return }
         let all = await HealthImport.shared.workouts(on: key)
         let mine = Self.healthSport(for: activity)
@@ -173,7 +187,7 @@ struct ExtraFormView: View {
     /* The Health sport an extra's activity would show up as. */
     static func healthSport(for activity: String) -> String {
         switch activity {
-        case "swim", "bike", "run", "strength": return activity
+        case "swim", "bike", "run", "strength", "rowing": return activity
         case "mobility", "yoga": return "mobility"
         case "walk", "hike": return "walk"
         default: return "other"
@@ -188,7 +202,7 @@ struct ExtraFormView: View {
     private func useHealth(_ w: HealthWorkout) {
         if editing == nil {
             switch w.sport {
-            case "swim", "bike", "run", "strength", "mobility", "walk": activity = w.sport
+            case "swim", "bike", "run", "strength", "rowing", "mobility", "walk": activity = w.sport
             default: break
             }
         }
@@ -203,13 +217,16 @@ struct ExtraFormView: View {
         guard let key = dayKey(date) else { return }
         if let original = editing {
             let fields = changes
-            guard !fields.isEmpty else { return }
+            guard !fields.isEmpty else {
+                problem = "Nothing has changed yet — alter a box and Save writes just that."
+                return
+            }
             store.editExtra(original, entry(on: key, ref: original.ref), fields: fields)
             onSaved?()
             dismiss()
             return
         }
-        guard canSave else { problem = "Give it at least a duration or a description."; return }
+        guard canSave else { problem = "Give it at least a duration — \"35\", or 1:15 — or a word about what it was."; return }
         store.logExtra(entry(on: key, ref: ""))
         dismiss()
     }

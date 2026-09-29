@@ -105,6 +105,14 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (42)", date: "29 September 2026", headline: "Rowing, and the four lists stay put", items: [
+            "Rowing is an extra activity of its own, after Strength, with its own oars and its own teal — and it counts as training unless you say otherwise. A rowing workout from Garmin fills its form like any other.",
+            "On Sessions, the four words — Upcoming, Done, Missed, All — stay at the top while the list scrolls under them.",
+            "Save is never a dead grey button. Pressed before there is anything to save, it says what it wants; it used to go quietly nowhere, which is how a walk could look saved and not be.",
+            "When Apple Health is switched off or not yet connected, the form says so and offers to put it back on. Before, it simply showed nothing and looked broken.",
+            "An extra that counts always draws at least one block under the week bar; under eight minutes it used to draw none.",
+            "The week's key explains the blocks: only extras marked as counting are in them."
+        ]),
         Release(version: "1.1 (41)", date: "27 September 2026", headline: "Extra activities have their own bar", items: [
             "Under the week's hairline on Today there is now a second row: one block for each quarter hour of extra activity that counts as training, every fourth block in amber, so a yellow block is an hour done. Extras stay out of the week's figures, as before — this is beside the plan, never inside it.",
             "An extra marked as not training load adds nothing to it."

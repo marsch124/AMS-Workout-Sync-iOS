@@ -48,54 +48,41 @@ struct PlanTab: View {
         NavigationStack {
             ScrollView {
                 if let view = store.view {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
+                    // The four words stay put while the list moves under them:
+                    // a pinned section header, so choosing another list never
+                    // means scrolling back to the top (his ask, 2026-09-29).
+                    LazyVStack(alignment: .leading, spacing: 12, pinnedViews: [.sectionHeaders]) {
+                        Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
+                            .padding(.top, 12).padding(.horizontal, 16)
                             .accessibilityIdentifier("sessions-title")
-                        // Four counts, each the length of the list its word opens —
-                        // counted from that same list, so the two cannot disagree.
-                        // A segmented control cut "Upcoming" short; the number
-                        // stands under the word instead.
-                        HStack(spacing: 6) {
-                            ForEach(Range.allCases) { r in
-                                let chosen = r == range
-                                Button { withAnimation(.easeInOut(duration: 0.12)) { range = r } } label: {
-                                    VStack(spacing: 1) {
-                                        Text(r.rawValue).font(.caption.weight(.semibold))
-                                        Text("\(rows(r, view).count)").font(.title3.weight(.bold).monospacedDigit())
+                        Section {
+                            let days = grouped(shown(view), newestFirst: newestFirst)
+                            VStack(alignment: .leading, spacing: 12) {
+                                if days.isEmpty {
+                                    Text(emptyText).font(.callout).foregroundStyle(Theme.secondary).padding(.top, 24)
+                                }
+                                ForEach(days, id: \.0) { day, list in
+                                    SectionHeading(text: Dates.long(day))
+                                    ForEach(list) { row in
+                                        switch row {
+                                        case .session(let w):
+                                            NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                                                .accessibilityIdentifier("sessions-session-\(w.dayKey)-\(w.discipline.id)")
+                                                .buttonStyle(.plain)
+                                        case .extra(let x):
+                                            Button { openExtra = x } label: { ExtraCard(extra: x) }
+                                                .accessibilityIdentifier("sessions-extra-\(x.dayKey)-\(x.activity)")
+                                                .buttonStyle(.plain)
+                                        }
                                     }
-                                    .frame(maxWidth: .infinity, minHeight: 50)
-                                    .foregroundStyle(chosen ? Theme.plan : Theme.secondary)
-                                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(chosen ? Theme.plan.opacity(0.16) : Theme.surface))
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityIdentifier("sessions-filter-\(r.rawValue.lowercased())")
-                            }
-                        }
-
-                        let days = grouped(shown(view), newestFirst: newestFirst)
-                        if days.isEmpty {
-                            Text(emptyText).font(.callout).foregroundStyle(Theme.secondary).padding(.top, 24)
-                        }
-                        ForEach(days, id: \.0) { day, list in
-                            SectionHeading(text: Dates.long(day))
-                            ForEach(list) { row in
-                                switch row {
-                                case .session(let w):
-                                    NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
-                                        .accessibilityIdentifier("sessions-session-\(w.dayKey)-\(w.discipline.id)")
-                                        .buttonStyle(.plain)
-                                case .extra(let x):
-                                    Button { openExtra = x } label: { ExtraCard(extra: x) }
-                                        .accessibilityIdentifier("sessions-extra-\(x.dayKey)-\(x.activity)")
-                                        .accessibilityIdentifier("sessions-extra-\(x.dayKey)-\(x.activity)")
-                                        .buttonStyle(.plain)
                                 }
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 32)
+                        } header: {
+                            filters(view)
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 32)
                 } else {
                     EmptyWorkbook()
                 }
@@ -105,6 +92,41 @@ struct PlanTab: View {
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
             .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    /*
+     * Four counts, each the length of the list its word opens — counted from
+     * that same list, so the two cannot disagree. A segmented control cut
+     * "Upcoming" short; the number stands under the word instead.
+     */
+    private func filters(_ view: PlanView) -> some View {
+        HStack(spacing: 6) {
+            ForEach(Range.allCases) { r in
+                let chosen = r == range
+                Button { withAnimation(.easeInOut(duration: 0.12)) { range = r } } label: {
+                    VStack(spacing: 1) {
+                        Text(r.rawValue).font(.caption.weight(.semibold))
+                        Text("\(rows(r, view).count)").font(.title3.weight(.bold).monospacedDigit())
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .foregroundStyle(chosen ? Theme.plan : Theme.secondary)
+                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(chosen ? Theme.plan.opacity(0.16) : Theme.surface))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("sessions-filter-\(r.rawValue.lowercased())")
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
+        .padding(.bottom, 10)
+        // Its own ground and a hairline under it: the cards pass beneath the
+        // row, and without the line they read as cut off rather than behind.
+        .background(alignment: .bottom) {
+            Theme.bg.overlay(alignment: .bottom) {
+                Rectangle().fill(Theme.border).frame(height: 0.5)
+            }
         }
     }
 

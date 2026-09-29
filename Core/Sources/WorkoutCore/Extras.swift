@@ -123,6 +123,7 @@ public enum Extras {
         Activity(id: "bike", label: "Bike", kind: "training", icon: "icon-bike", colorId: "bike"),
         Activity(id: "run", label: "Run", kind: "training", icon: "icon-run", colorId: "run"),
         Activity(id: "strength", label: "Strength", kind: "training", icon: "icon-strength", colorId: "strength"),
+        Activity(id: "rowing", label: "Rowing", kind: "training", icon: "icon-rowing", colorId: "rowing"),
         Activity(id: "mobility", label: "Mobility", kind: "restorative", icon: "icon-mobility", colorId: "mobility"),
         Activity(id: "yoga", label: "Yoga", kind: "restorative", icon: "icon-mobility", colorId: "mobility"),
         Activity(id: "meditation", label: "Meditation", kind: "restorative", icon: "icon-meditation", colorId: "rest"),
