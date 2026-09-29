@@ -107,8 +107,13 @@ struct LogFormView: View {
             .task(id: health.inUse) {
                 guard health.inUse || ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil else { return }
                 let all = await HealthImport.shared.workouts(on: workout.dayKey)
-                let sport = workout.discipline.id
-                healthWorkouts = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }
+                // Every workout Health has for that day, the sport that matches
+                // first. Dropping the rest hid a run Health had filed as
+                // something else, and the form then said there was nothing —
+                // "I checked in the Apple Health app, and there is run
+                // information" (2026-09-29). What it is, is his to judge.
+                let mine = Self.matches(workout.discipline.id)
+                healthWorkouts = all.filter(mine) + all.filter { !mine($0) }
                 healthChecked = true
             }
         }
@@ -138,6 +143,11 @@ struct LogFormView: View {
         // A session with values in the extra fields opens showing them.
         let primaryIds = Set(fields.primary.map(\.id))
         if fields.all.contains(where: { !primaryIds.contains($0.id) && !(filled[$0.id] ?? "").isEmpty }) { showAll = true }
+    }
+
+    /* The workouts that are this session's own sport. */
+    static func matches(_ sport: String) -> (HealthWorkout) -> Bool {
+        { h in sport == "other" || sport == "brick" || h.sport == sport || (sport == "run" && h.sport == "walk") }
     }
 
     private func save() {
@@ -265,7 +275,7 @@ struct HealthEmptyNote: View {
 struct HealthSuggestions: View {
     let workouts: [HealthWorkout]
     let disciplineId: String
-    var note = "Fills time, distance and heart rate. Type the pace from Garmin. Nothing is saved until you press Save."
+    var note = "Everything Health has for this day, the matching sport first. Use fills time, distance and heart rate; the pace is yours to type. Nothing is saved until you press Save."
     let use: (HealthWorkout) -> Void
 
     var body: some View {

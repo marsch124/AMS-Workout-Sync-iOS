@@ -34,6 +34,33 @@ final class WorkoutSyncUITests: XCTestCase {
         return app
     }
 
+    /* 13. Settings says what Health hands over, so a silent refusal is visible. */
+    func testSettingsSaysWhatHealthHasToday() {
+        let app = launch(garmin: true)
+        XCTAssertTrue(app.buttons["tab-settings"].waitForExistence(timeout: 15))
+        app.buttons["tab-settings"].tap()
+        let rows = app.descendants(matching: .any).matching(identifier: "health-today-row")
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10), "Settings does not say what Health has today")
+        XCTAssertEqual(rows.count, 3, "all of the day's workouts belong in the list")
+    }
+
+    /* 12. A session offers the day's workouts even when Health filed them
+           under another sport — his run of 29 September was in Health and the
+           form said there was none. */
+    func testTheFormOffersWorkoutsOfAnotherSport() {
+        let app = launch(canLog: true, garmin: true)
+        // The strength session of 13 September: behind him, and none of the
+        // day's Health workouts is a strength session.
+        let strength = app.buttons["today-session-2026-09-13-strength"]
+        XCTAssertTrue(strength.waitForExistence(timeout: 15), "the strength session behind today is not on Today")
+        strength.tap()
+        let details = app.buttons["session-log-details"]
+        XCTAssertTrue(details.waitForExistence(timeout: 5))
+        details.tap()
+        XCTAssertTrue(app.buttons["health-use-bike"].waitForExistence(timeout: 5),
+                      "the day's other workouts are not offered, so a mis-filed one cannot be used")
+    }
+
     /* 11. With Apple Health off, the form says so and offers to put it back on. */
     func testTheFormSaysWhenAppleHealthIsOff() {
         let app = launch(canLog: true, extraForm: "1")

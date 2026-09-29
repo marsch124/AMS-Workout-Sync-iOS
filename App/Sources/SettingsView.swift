@@ -304,6 +304,15 @@ struct HealthSettings: View {
     @ObservedObject private var health = HealthImport.shared
 
     var body: some View {
+        state
+        // What the app is actually given, in his own words rather than mine:
+        // when a run is in the Health app but the form says there is none,
+        // this line says which of the two is true (2026-09-29).
+        if health.inUse { HealthToday() }
+    }
+
+    @ViewBuilder
+    private var state: some View {
         switch health.status {
         case .unavailable:
             SettingsRow(title: "Not available on this device", sub: "Apple Health is iPhone only.")
@@ -328,6 +337,50 @@ struct HealthSettings: View {
                         sub: "Let the app read your workouts, heart rate and distances, and the log form can fill itself from what your Garmin sent to Health. Optional.",
                         action: ("Connect", { Task { await health.requestAccess(); health.enabled = true } }))
         }
+    }
+}
+
+/*
+ * What Health hands over today.
+ *
+ * iOS never tells an app whether reading was granted: a refused read looks
+ * exactly like an empty day. So the app shows what it was given, and the
+ * difference between "nothing there" and "nothing allowed" is one glance at
+ * the Health app away.
+ */
+struct HealthToday: View {
+    @EnvironmentObject var store: Store
+    @State private var workouts: [HealthWorkout]?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("WHAT HEALTH HAS TODAY").font(.caption.weight(.bold)).tracking(0.8)
+                .foregroundStyle(Theme.secondary)
+            if let workouts {
+                if workouts.isEmpty {
+                    Text("Nothing for today. If your watch has something, the app is not being given it: open Health → your picture → Apps → Workout Sync and switch the rows on.")
+                        .font(.caption).foregroundStyle(Theme.secondary)
+                        .accessibilityIdentifier("health-today-none")
+                } else {
+                    ForEach(workouts) { w in
+                        Text(w.typeName + " · " + w.summary + " · " + w.source)
+                            .font(.caption).foregroundStyle(Theme.text)
+                            .accessibilityIdentifier("health-today-row")
+                    }
+                }
+            } else {
+                Text("Asking Health…").font(.caption).foregroundStyle(Theme.secondary)
+            }
+            Button("Ask again") { Task { await load() } }
+                .settingsButton(tint: Theme.secondary)
+                .accessibilityIdentifier("health-today-again")
+        }
+        .padding(.top, 2)
+        .task(id: store.today) { await load() }
+    }
+
+    private func load() async {
+        workouts = await HealthImport.shared.workouts(on: store.today)
     }
 }
 

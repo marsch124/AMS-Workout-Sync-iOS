@@ -40,7 +40,12 @@ final class HealthImport: ObservableObject {
 
     enum Status: Equatable { case unavailable, unknown, asked, denied }
 
-    var inUse: Bool { status == .asked && enabled }
+    var inUse: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil { return true }
+        #endif
+        return status == .asked && enabled
+    }
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 

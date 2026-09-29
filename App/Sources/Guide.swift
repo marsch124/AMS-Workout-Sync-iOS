@@ -105,6 +105,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (43)", date: "29 September 2026", headline: "Health hands over everything it has", items: [
+            "A session's form now offers every workout Apple Health holds for that day, the matching sport first. It used to show only the ones whose sport agreed, and say there was nothing at all otherwise — so a run Health had filed as another kind of workout was invisible, and the day looked empty.",
+            "Settings → Apple Health lists what Health hands over for today. iOS never tells an app whether reading was allowed, so a refused read looks exactly like an empty day; this line tells the two apart. If it says nothing while your watch has something, open Health → your picture → Apps → Workout Sync and switch the rows on."
+        ]),
         Release(version: "1.1 (42)", date: "29 September 2026", headline: "Rowing, and the four lists stay put", items: [
             "Rowing is an extra activity of its own, after Strength, with its own oars and its own teal — and it counts as training unless you say otherwise. A rowing workout from Garmin fills its form like any other.",
             "On Sessions, the four words — Upcoming, Done, Missed, All — stay at the top while the list scrolls under them.",
