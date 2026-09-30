@@ -387,14 +387,20 @@ struct HealthToday: View {
                         .font(.caption).foregroundStyle(Theme.secondary)
                 }
                 HStack(spacing: 8) {
-                    Button("Ask again") { Task { await load() } }
+                    // Plain words: one re-reads the data, the other re-opens the
+                    // permission question — and the second only shows itself when
+                    // there is nothing coming through, which is the only time it
+                    // is any use ("why would I have that there permanently?").
+                    Button("Read Health again") { Task { await load() } }
                         .settingsButton(tint: Theme.secondary)
                         .accessibilityIdentifier("health-today-again")
-                    Button("Ask iOS again") {
-                        Task { await HealthImport.shared.requestAccess(); HealthImport.shared.enabled = true; await load() }
+                    if (today?.isEmpty ?? false) && (yesterday?.isEmpty ?? false) {
+                        Button("Ask iOS for access") {
+                            Task { await HealthImport.shared.requestAccess(); HealthImport.shared.enabled = true; await load() }
+                        }
+                        .settingsButton(tint: Theme.today)
+                        .accessibilityIdentifier("health-ask-ios")
                     }
-                    .settingsButton(tint: Theme.today)
-                    .accessibilityIdentifier("health-ask-ios")
                 }
             }
         }

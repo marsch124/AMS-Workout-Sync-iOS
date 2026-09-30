@@ -125,12 +125,12 @@ public enum Extras {
         Activity(id: "strength", label: "Strength", kind: "training", icon: "icon-strength", colorId: "strength"),
         Activity(id: "rowing", label: "Rowing", kind: "training", icon: "icon-rowing", colorId: "rowing"),
         Activity(id: "mobility", label: "Mobility", kind: "restorative", icon: "icon-mobility", colorId: "mobility"),
-        Activity(id: "yoga", label: "Yoga", kind: "restorative", icon: "icon-mobility", colorId: "mobility"),
+        Activity(id: "yoga", label: "Yoga", kind: "restorative", icon: "icon-yoga", colorId: "mobility"),
         Activity(id: "meditation", label: "Meditation", kind: "restorative", icon: "icon-meditation", colorId: "rest"),
         Activity(id: "breathing", label: "Breathing", kind: "restorative", icon: "icon-breathing", colorId: "rest"),
-        Activity(id: "walk", label: "Walk", kind: "everyday", icon: "icon-run", colorId: "rest"),
-        Activity(id: "hike", label: "Hike", kind: "everyday", icon: "icon-run", colorId: "rest"),
-        Activity(id: "ski", label: "Ski", kind: "everyday", icon: "icon-run", colorId: "rest"),
+        Activity(id: "walk", label: "Walk", kind: "everyday", icon: "icon-walk", colorId: "rest"),
+        Activity(id: "hike", label: "Hike", kind: "everyday", icon: "icon-hike", colorId: "rest"),
+        Activity(id: "ski", label: "Ski", kind: "everyday", icon: "icon-ski", colorId: "rest"),
         Activity(id: "other", label: "Something else", kind: "everyday", icon: "icon-other", colorId: "rest")
     ]
 

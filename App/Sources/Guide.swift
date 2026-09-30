@@ -105,6 +105,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (48)", date: "30 September 2026", headline: "Every extra activity has its own icon", items: [
+            "Yoga sits cross-legged, Walk walks, Hike carries a pack and a pole, Ski stands on its skis — drawn in the same hand as the swim, the bike, the run and the weight, and no longer borrowing them.",
+            "In Settings, Read Health again says what it does, and Ask iOS for access only appears when nothing at all is coming through — there is no reason for it the rest of the time."
+        ]),
         Release(version: "1.1 (47)", date: "30 September 2026", headline: "Health works again", items: [
             "Apple Health could not be read at all since build 40: the upload left out the app's HealthKit permission, so iOS refused every question and the app looked as if Health had nothing. It is back, and the upload now refuses to send a build that lacks it.",
             "The extra-activity blocks sit lower, clear of the week's hairline.",
