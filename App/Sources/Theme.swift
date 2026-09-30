@@ -111,6 +111,8 @@ struct Pill: View {
         Text(text)
             .font(.footnote.weight(.semibold))
             .foregroundStyle(tint)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(Capsule().fill(Theme.surface2))
     }

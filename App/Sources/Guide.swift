@@ -105,6 +105,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (47)", date: "30 September 2026", headline: "Health works again", items: [
+            "Apple Health could not be read at all since build 40: the upload left out the app's HealthKit permission, so iOS refused every question and the app looked as if Health had nothing. It is back, and the upload now refuses to send a build that lacks it.",
+            "The extra-activity blocks sit lower, clear of the week's hairline.",
+            "A card's small labels stay on one line each and take the next row when they run out of width. Three of them — a length, Counts as training and Waiting to sync — used to squeeze until \"Counts as training\" stood three words high."
+        ]),
         Release(version: "1.1 (46)", date: "30 September 2026", headline: "Rowing is a rowing machine", items: [
             "The Rowing icon is the machine itself — fan, rail, seat and the monitor on its arm — drawn by hand like the rest. The crossed oars are gone: shown at the size the app actually draws them, without a label, they said nothing.",
             "Chosen by looking: six candidates in the card they live in, no names, and the one that was recognised won."

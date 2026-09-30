@@ -79,22 +79,39 @@ jobs:
 
       - name: Archive
         run: |
-          # Archive WITHOUT signing. Signing it here made Xcode ask Apple for an
-          # "Apple Development" certificate — one per machine, and runners are
-          # new every time — which filled his account and stopped build 38.
-          # Nothing needs a signature until the export below, which signs for
-          # distribution with the App Store Connect key.
+          # Signed ad hoc ("-"), which needs no certificate: asking Apple for a
+          # real one here mints an "Apple Development" certificate per runner,
+          # and runners are new every time — that filled his account and stopped
+          # build 38. The export below re-signs for distribution with the App
+          # Store Connect key.
+          #
+          # 🚨 The entitlements file MUST stay. Blanking CODE_SIGN_ENTITLEMENTS
+          # along with the signing (23 September, build 40) shipped seven builds
+          # with no HealthKit entitlement, so every read of Health failed with
+          # "Missing com.apple.developer.healthkit entitlement" and the app
+          # looked as if Health had nothing. Ad-hoc signing embeds them.
           xcodebuild archive \
             -project AMSWorkoutSync.xcodeproj \
             -scheme AMSWorkoutSync \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/AMSWorkoutSync.xcarchive \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_ALLOWED=YES \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGN_ENTITLEMENTS="" \
-            EXPANDED_CODE_SIGN_IDENTITY="" 
+            CODE_SIGN_IDENTITY="-" \
+            EXPANDED_CODE_SIGN_IDENTITY="-"
+
+      # Never upload a build that cannot read Health again.
+      - name: The archive must carry the HealthKit entitlement
+        run: |
+          APP=build/AMSWorkoutSync.xcarchive/Products/Applications/AMSWorkoutSync.app
+          codesign -d --entitlements :- "$APP" > build/entitlements.txt 2>&1 || true
+          cat build/entitlements.txt
+          if ! grep -q "com.apple.developer.healthkit" build/entitlements.txt; then
+            echo "::error::the archived app has no HealthKit entitlement — it would ship unable to read Health"
+            exit 1
+          fi
+          echo "HealthKit entitlement present."
 
       # tools/ExportOptions.plist carries destination=upload, so this step is
       # the upload: the same plist he exports with by hand on the Mac.

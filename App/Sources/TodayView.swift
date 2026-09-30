@@ -429,7 +429,7 @@ struct WeekProgress: View {
         let share = planned > 0 ? min(max(done / planned, 0), 1) : 0
         let pace = planned > 0 ? min(max(dueByToday / planned, 0), 1) : 0
         let blocks = extra > 0 ? min(max(Int((extra / 900).rounded()), 1), Self.maxBlocks) : 0
-        VStack(alignment: .leading, spacing: 3) {
+        VStack(alignment: .leading, spacing: 8) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Theme.surface2)

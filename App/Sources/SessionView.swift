@@ -33,7 +33,7 @@ struct SessionView: View {
                     Text(w.title).font(.title2.weight(.bold)).foregroundStyle(Theme.text)
                         .accessibilityIdentifier("session-title")
 
-                    HStack(spacing: 6) {
+                    FlowRow(spacing: 6) {
                         if let s = Plan.plannedSeconds(w, mapping), s > 0 { Pill(text: formatDuration(s)) }
                         if let d = w.planned.distanceRaw { Pill(text: jsNumberString(d) + " " + mapping.units.distance) }
                         if !w.planned.intensity.isEmpty {

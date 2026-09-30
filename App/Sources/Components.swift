@@ -81,7 +81,7 @@ struct SessionCard: View {
                     .foregroundStyle(Theme.text)
                     .multilineTextAlignment(.leading)
                     .lineLimit(3)
-                HStack(spacing: 6) {
+                FlowRow(spacing: 6) {
                     if showDay { Pill(text: Dates.short(workout.dayKey)) }
                     if let seconds = Plan.plannedSeconds(workout, mapping), seconds > 0 {
                         Pill(text: formatDuration(seconds))
@@ -148,6 +148,45 @@ struct DottedFill: View {
     }
 }
 
+/*
+ * A row of small things that takes the next line when it runs out of width.
+ *
+ * An HStack squeezed them instead: three pills on an extra still waiting to
+ * sync turned "Counts as training" into three stacked words (2026-09-30).
+ */
+struct FlowRow: Layout {
+    var spacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let limit = proposal.width ?? .infinity
+        var x: CGFloat = 0, y: CGFloat = 0, line: CGFloat = 0, widest: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > limit {
+                widest = max(widest, x - spacing)
+                x = 0; y += line + spacing; line = 0
+            }
+            x += size.width + spacing
+            line = max(line, size.height)
+        }
+        widest = max(widest, x - spacing)
+        return CGSize(width: min(widest, limit), height: y + line)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX, y = bounds.minY, line: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > bounds.minX, x + size.width > bounds.maxX {
+                x = bounds.minX; y += line + spacing; line = 0
+            }
+            view.place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: ProposedViewSize(size))
+            x += size.width + spacing
+            line = max(line, size.height)
+        }
+    }
+}
+
 struct ExtraCard: View {
     let extra: ExtraSummary
     var body: some View {
@@ -164,7 +203,7 @@ struct ExtraCard: View {
                     .foregroundStyle(Theme.sportInk(activity.colorId))
                 Text(extra.what.isEmpty ? extra.label : extra.what)
                     .font(.headline).foregroundStyle(Theme.text).lineLimit(2)
-                HStack(spacing: 6) {
+                FlowRow(spacing: 6) {
                     if let m = extra.minutes { Pill(text: formatDuration(m * 60)) }
                     Pill(text: extra.isTraining ? "Counts as training" : "Not training load")
                     if extra.pending { Pill(text: "Waiting to sync", tint: Theme.today) }
