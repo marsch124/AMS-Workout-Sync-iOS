@@ -60,9 +60,23 @@ struct TodayView: View {
                 RestCard(text: sessions[0].title)
             } else {
                 ForEach(sessions) { w in
-                    NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                    // The pictures themselves in the corner, as in the Sessions
+                    // list — a camera and a number said nothing about the day
+                    // ("just the symbol of a camera. Not cool", 2026-09-30).
+                    let shots = Array(PhotoStore.shared.photos(for: PhotoOwner(w)).prefix(3))
+                    ZStack(alignment: .bottomTrailing) {
+                        NavigationLink(value: w.key) {
+                            SessionCard(workout: w, mapping: view.mapping,
+                                        cornerRoom: shots.isEmpty ? 0 : CGFloat(shots.count) * 36 + 4)
+                        }
                         .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
                         .buttonStyle(.plain)
+                        if !shots.isEmpty {
+                            HStack(spacing: 6) { ForEach(shots) { MicroThumb(id: $0.id) } }
+                                .padding(14)
+                                .allowsHitTesting(false)
+                        }
+                    }
                 }
             }
 
@@ -70,7 +84,18 @@ struct TodayView: View {
             if !todaysExtras.isEmpty {
                 SectionHeading(text: "Extra, outside the plan")
                 ForEach(todaysExtras) { x in
-                    Button { openExtra = x } label: { ExtraCard(extra: x) }.buttonStyle(.plain)
+                    let shots = Array(PhotoStore.shared.photos(for: PhotoOwner(extra: x)).prefix(3))
+                    ZStack(alignment: .bottomTrailing) {
+                        Button { openExtra = x } label: {
+                            ExtraCard(extra: x, cornerRoom: shots.isEmpty ? 0 : CGFloat(shots.count) * 36 + 4)
+                        }
+                        .buttonStyle(.plain)
+                        if !shots.isEmpty {
+                            HStack(spacing: 6) { ForEach(shots) { MicroThumb(id: $0.id) } }
+                                .padding(14)
+                                .allowsHitTesting(false)
+                        }
+                    }
                 }
             }
             // No Tomorrow block (the plan's last day): the pill stands alone on the right.
@@ -81,9 +106,20 @@ struct TodayView: View {
             if !behind.isEmpty {
                 SectionHeading(text: "Behind you, not recorded")
                 ForEach(behind) { w in
-                    NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping, showDay: true) }
+                    let shots = Array(PhotoStore.shared.photos(for: PhotoOwner(w)).prefix(3))
+                    ZStack(alignment: .bottomTrailing) {
+                        NavigationLink(value: w.key) {
+                            SessionCard(workout: w, mapping: view.mapping, showDay: true,
+                                        cornerRoom: shots.isEmpty ? 0 : CGFloat(shots.count) * 36 + 4)
+                        }
                         .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
                         .buttonStyle(.plain)
+                        if !shots.isEmpty {
+                            HStack(spacing: 6) { ForEach(shots) { MicroThumb(id: $0.id) } }
+                                .padding(14)
+                                .allowsHitTesting(false)
+                        }
+                    }
                 }
             }
 

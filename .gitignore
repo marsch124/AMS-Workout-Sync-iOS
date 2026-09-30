@@ -9,3 +9,4 @@ node_modules/
 *.xlsx
 # The UI tests' own invented workbook is the one spreadsheet that belongs here.
 !UITests/Fixtures/*.xlsx
+!Core/Tests/WorkoutCoreTests/Fixtures/*.xlsx
