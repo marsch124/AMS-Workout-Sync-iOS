@@ -32,6 +32,9 @@ struct ExtraFormView: View {
     @State private var notes: String
     @State private var isTraining: Bool?
     @State private var problem: String?
+    /* A photograph was added while this was open. It is already kept — the
+       workbook has nothing to write — so Save just closes (2026-09-30). */
+    @State private var addedPhoto = false
     /* What the boxes held when the form opened. Only what differs from this is written. */
     @State private var openedWith: [String: String] = [:]
     /* The day's workouts from Apple Health — what Garmin sent — offered as for a session. */
@@ -147,7 +150,7 @@ struct ExtraFormView: View {
                     }
                     // Photographs belong with the pen: this form is what it opens.
                     if let editing {
-                        PhotoStrip(owner: PhotoOwner(extra: editing), canAdd: true)
+                        PhotoStrip(owner: PhotoOwner(extra: editing), canAdd: true, onAdded: { addedPhoto = true })
                     }
                     labelled("Notes") {
                         TextField("Anything worth remembering", text: $notes, axis: .vertical)
@@ -158,7 +161,7 @@ struct ExtraFormView: View {
             }
             .background(Theme.bg.ignoresSafeArea())
             .task(id: (dayKey(date) ?? "") + (health.inUse ? " on" : " off")) { await loadHealth() }
-            .navigationTitle(editing == nil ? "Extra activity" : "Adjust logged data")
+            .navigationTitle(editing == nil ? "Extra workout" : "Adjust logged data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
             .onAppear {
@@ -190,7 +193,8 @@ struct ExtraFormView: View {
     private var saveLabel: String {
         guard editing != nil else { return "Save it" }
         let n = changes.count
-        return n == 0 ? "Save" : "Save \(n) change\(n == 1 ? "" : "s")"
+        if n == 0 { return addedPhoto ? "Done" : "Save" }
+        return "Save \(n) change\(n == 1 ? "" : "s")"
     }
 
     /* The chosen day's workouts, the ones of this activity's kind first. */
@@ -237,6 +241,9 @@ struct ExtraFormView: View {
         if let original = editing {
             let fields = changes
             guard !fields.isEmpty else {
+                // The photograph is already kept; there is simply nothing for
+                // the workbook to write.
+                if addedPhoto { dismiss(); return }
                 problem = "Nothing has changed yet — alter a box and Save writes just that."
                 return
             }
@@ -321,7 +328,7 @@ struct ExtrasListView: View {
             .padding(16).padding(.bottom, 32)
         }
         .background(Theme.bg.ignoresSafeArea())
-        .navigationTitle("Extra activities")
+        .navigationTitle("Extra workouts")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if store.canLog {

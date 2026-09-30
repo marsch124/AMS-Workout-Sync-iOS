@@ -133,7 +133,7 @@ struct TodayView: View {
         Button { addingExtra = ExtraDay(key: store.today) } label: {
             HStack(spacing: 4) {
                 Glyph(name: "icon-plus", size: 11)
-                Text("Extra activity")
+                Text("Extra workout")
             }
         }
         .font(.caption.weight(.semibold))

@@ -118,6 +118,20 @@ struct Pill: View {
     }
 }
 
+/* A pill carrying a mark instead of words, for what a phrase said twice over. */
+struct MarkPill: View {
+    let icon: String
+    let spoken: String
+    var tint: Color = Theme.secondary
+    var body: some View {
+        Glyph(name: icon, size: 15)
+            .foregroundStyle(tint)
+            .padding(.horizontal, 9).padding(.vertical, 5)
+            .background(Capsule().fill(Theme.surface2))
+            .accessibilityLabel(spoken)
+    }
+}
+
 enum Dates {
     static func formatter(_ format: String) -> DateFormatter {
         let f = DateFormatter()

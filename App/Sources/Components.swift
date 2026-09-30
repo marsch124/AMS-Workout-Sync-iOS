@@ -39,7 +39,10 @@ struct StateFill: View {
         case .done:
             shape.fill(colour)
         case .todo:
-            shape.fill(colour.opacity(0.26)).overlay(shape.strokeBorder(Theme.sportInk(sport), lineWidth: 1.5))
+            // A plain block of the sport's colour, lighter than a done one —
+            // the frame said nothing the colour was not already saying
+            // (his ask, 2026-09-30).
+            shape.fill(colour.opacity(0.34))
         case .missed:
             shape.fill(Color.clear)
                 .overlay(Hatch().stroke(colour, lineWidth: 1.4).clipShape(shape))
@@ -244,7 +247,12 @@ struct ExtraCard: View {
                     .font(.headline).foregroundStyle(Theme.text).lineLimit(2)
                 FlowRow(spacing: 6) {
                     if let m = extra.minutes { Pill(text: formatDuration(m * 60)) }
-                    Pill(text: extra.isTraining ? "Counts as training" : "Not training load")
+                    // The blocks of the week's own bar: this time is counted
+                    // there. One that does not count shows nothing (his pick
+                    // C1, 2026-09-30).
+                    if extra.isTraining {
+                        MarkPill(icon: "icon-counts", spoken: "Counts as training")
+                    }
                     if extra.pending { Pill(text: "Waiting to sync", tint: Theme.today) }
                     if cornerRoom == 0 {
                         PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(extra: extra)))

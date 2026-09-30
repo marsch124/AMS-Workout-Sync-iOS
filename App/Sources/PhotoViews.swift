@@ -10,6 +10,8 @@ struct PhotoStrip: View {
     /* Adding belongs to the pen: at rest a screen shows the pictures it has
        and nothing to press (his ask, 2026-09-30). */
     var canAdd = false
+    /* Told when one is added, so a form knows the screen was not idle. */
+    var onAdded: (() -> Void)?
     @State private var picked: [PhotosPickerItem] = []
     @State private var showCamera = false
     @State private var choosing = false
@@ -51,7 +53,7 @@ struct PhotoStrip: View {
                 .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
                 .accessibilityIdentifier("photo-add")
                 .photosPicker(isPresented: $choosing, selection: $picked, maxSelectionCount: 6, matching: .images)
-                Text("Kept on this phone only — not in the workbook, not in Dropbox. Save them out from Settings → Photos.")
+                Text("Kept as soon as you add one — on this phone only, not in the workbook, not in Dropbox. Save them out from Settings → Photos.")
                     .font(.caption).foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -60,13 +62,16 @@ struct PhotoStrip: View {
             guard !items.isEmpty else { return }
             Task {
                 for item in items {
-                    if let data = try? await item.loadTransferable(type: Data.self) { photos.add(data, to: owner) }
+                    if let data = try? await item.loadTransferable(type: Data.self) {
+                        photos.add(data, to: owner)
+                        onAdded?()
+                    }
                 }
                 picked = []
             }
         }
         .fullScreenCover(isPresented: $showCamera) {
-            CameraPicker { data in if let data { photos.add(data, to: owner) } }
+            CameraPicker { data in if let data { photos.add(data, to: owner); onAdded?() } }
                 .ignoresSafeArea()
         }
         .fullScreenCover(item: $viewing) { photo in
@@ -231,7 +236,7 @@ struct ExtraDetailView: View {
                 .padding(16)
             }
             .background(Theme.bg.ignoresSafeArea())
-            .navigationTitle("Extra activity")
+            .navigationTitle("Extra workout")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
             /*

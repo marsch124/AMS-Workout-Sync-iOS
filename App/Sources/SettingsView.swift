@@ -103,7 +103,7 @@ struct SettingsView: View {
                     .padding(14)
                     .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
 
-                    SectionHeading(text: "Extra activities")
+                    SectionHeading(text: "Extra workouts")
                     NavigationLink { ExtrasListView() } label: {
                         SettingsRow(title: "\(store.allExtras.count) recorded",
                                     sub: "Walks, yoga, breathing — everything outside the plan, newest first", chevron: true)

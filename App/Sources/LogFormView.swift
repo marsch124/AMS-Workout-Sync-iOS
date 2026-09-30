@@ -28,6 +28,8 @@ struct LogFormView: View {
     @State private var healthWorkouts: [HealthWorkout] = []
     @State private var healthChecked = false
     @State private var problem: String?
+    /* A photograph added here is already kept; Save has nothing to write. */
+    @State private var addedPhoto = false
     @ObservedObject private var health = HealthImport.shared
 
     init(workout: Workout, mapping: Mapping) {
@@ -72,7 +74,7 @@ struct LogFormView: View {
 
                     // The same for a session: its pictures are added here, behind
                     // the pen, rather than sitting on the session screen at rest.
-                    PhotoStrip(owner: PhotoOwner(workout), canAdd: true)
+                    PhotoStrip(owner: PhotoOwner(workout), canAdd: true, onAdded: { addedPhoto = true })
 
                     if !showAll && hiddenCount > 0 {
                         Button("Show \(hiddenCount) more field\(hiddenCount == 1 ? "" : "s")") { showAll = true }
@@ -125,7 +127,7 @@ struct LogFormView: View {
 
     private var saveLabel: String {
         let n = changes.count
-        if n == 0 { return "Save" }
+        if n == 0 { return addedPhoto ? "Done" : "Save" }
         return "Save \(n) change\(n == 1 ? "" : "s")"
     }
 
@@ -156,6 +158,7 @@ struct LogFormView: View {
 
     private func save() {
         guard !changes.isEmpty else {
+            if addedPhoto { dismiss(); return }
             problem = "Nothing has changed yet — fill in the time you did, or a number you want to correct."
             return
         }

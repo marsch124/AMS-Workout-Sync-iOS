@@ -17,7 +17,7 @@ struct GuideView: View {
             "It writes nothing anywhere else. Every other part of the workbook is copied through untouched."
         ]),
         Part(id: "Today", body: [
-            "The week strip is one column a day, one bar a session. Solid is recorded, hollow is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
+            "The week strip is one column a day, one bar a session. A solid block is recorded, a lighter block of the same colour is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
             "A done session carries a small green tick in the corner of its bar. An extra carries the same tick in a paler green: it is something you did, and it is not part of the plan.",
             "Beside the hours, a hairline: how much of the week's planned time is recorded, and a faint notch marking where the week stands once tonight is done.",
             "Under it, one block for every quarter hour of extra activity that counts as training, every fourth in amber — an hour a yellow block. Extras are never counted in the week's hours.",
@@ -26,18 +26,23 @@ struct GuideView: View {
         Part(id: "Logging a session", body: [
             "The green Done button carries the planned length — Done · 1h 05m — and writes that length and the done mark, nothing else, for a session that went as planned. It sits in one row with Log details, Missed and Move, all the same size.",
             "Log details opens the form: duration, distance, pace or speed, heart rate, effort, notes. A bare number in Duration means minutes; 1:15, 1h20 and 90min work too. A decimal comma is fine.",
-            "On a session already recorded, a small grey Adjust opens the form filled in. Only the boxes you change are written — the button counts them. Missed and Move are gone by then; they no longer apply. What you wrote in Notes is shown under the session's figures, above the photographs.",
-            "From Apple Health: if Health holds a workout for that day and sport (your Garmin sends them there), it is offered at the top of the form. Use fills the time, the distance and the heart rate; the pace is yours to type from Garmin Connect, because Garmin does not pass it to Health. Nothing is saved until you press Save. Optional — Settings → Apple Health → Stop switches it off."
+            "On a session already recorded, a small round pen opens the form filled in — on the session itself, beside the figures, and on its row in the Sessions list, so a typo is mended without opening anything. Only the boxes you change are written — the button counts them. Missed and Move are gone by then; they no longer apply. What you wrote in Notes is shown under the session's figures, above the photographs.",
+            "From Apple Health: every workout Health holds for that day is offered at the top of the form, the one matching the session's sport first — whatever Garmin filed it as, it is there to use. Use fills the time, the distance and the heart rate; the pace is yours to type from Garmin Connect, because Garmin does not pass it to Health. Nothing is saved until you press Save.",
+            "Settings → Apple Health says what Health is handing over today and yesterday. Both lists empty while your watch has something means the app is not being given it: open Health → your picture → Apps → Workout Sync and switch the rows on. Stop switches the whole thing off."
+        ]),
+        Part(id: "The Sessions tab", body: [
+            "Four lists — Upcoming, Done, Missed, All — each with the number of things in it. The words stay at the top while the list scrolls under them, so choosing another list never means scrolling back.",
+            "Sessions and extra workouts are listed together under Done and All, each on the day it happened."
         ]),
         Part(id: "Missed, Move, Swap", body: [
             "Missed writes the missed mark and an optional note. You can still log the session later if you did it after all.",
             "Move rewrites only the date and the weekday beside it. Your sheet totals by week number and sport, never by date, so the session keeps its place in every figure.",
             "Swap exchanges two sessions' days. Only sessions still to do are offered, nearest first — a done session is never swapped by accident."
         ]),
-        Part(id: "Extra activities", body: [
-            "Walks, yoga, breathing, a run the plan did not ask for: these go on the Extras sheet, never into the plan, so the plan's own compliance arithmetic stays honest. Counts as training is yours to set.",
-            "Add one with the small Extra activity pill at the end of the Tomorrow line on Today. They show on Today and in the week strip, dotted, on the Sessions tab under Done and All, and all of them together under Settings → Extra activities.",
-            "Tap one and press Adjust logged data to change it. Only the boxes you alter are written back into its row, so correcting the length leaves everything else exactly as it was, and emptying a box empties the cell. Until it reaches Dropbox it reads as waiting to sync, like anything else you log.",
+        Part(id: "Extra workouts", body: [
+            "Walks, yoga, rowing, breathing, a run the plan did not ask for: these go on the Extras sheet, never into the plan, so the plan's own compliance arithmetic stays honest. Counts as training is yours to set — a swim, bike, run, strength or rowing counts unless you say otherwise; a walk or a meditation does not unless you say it does.",
+            "Add one with the small Extra workout pill at the end of the Tomorrow line on Today. Each kind carries its own hand-drawn mark in its own colour. They show on Today and in the week strip, dotted, on the Sessions tab under Done and All, and all of them together under Settings → Extra workouts.",
+            "The round pen on its card opens it for changing — in the Sessions list or on its own screen. Only the boxes you alter are written back into its row, so correcting the length leaves everything else exactly as it was, and emptying a box empties the cell. Until it reaches Dropbox it reads as waiting to sync, like anything else you log.",
             "Photographs follow an extra when you change it, even when you change the day, the activity or the length it is known by."
         ]),
         Part(id: "How syncing keeps your plan safe", body: [
@@ -47,6 +52,7 @@ struct GuideView: View {
         ]),
         Part(id: "Photographs", body: [
             "A session or an extra can carry photographs. They live on this phone beside the plan, never inside it: the workbook stays the record, and the iPhone's own backup covers the pictures. Settings → Photos saves them all out, and brings in the web app's export.",
+            "Adding one happens behind the pen: open the form and press Add photo, which asks whether to take one now or pick from your photos. A picture is kept the moment you add it — there is nothing to save, and the Save button only ever writes the boxes you changed. In the Sessions list, the first three of a session's pictures sit in the corner of its row, beside the pen.",
             "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
         ]),
         Part(id: "Progress", body: [
@@ -105,6 +111,13 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (51)", date: "30 September 2026", headline: "Plainer week, plainer words", items: [
+            "A session still to do is a lighter block of its sport's colour in the week strip, with no frame around it.",
+            "Extra activity is Extra workout, everywhere the app says it.",
+            "Counts as training is a mark now instead of the words — the same little blocks the week bar draws that time in. A workout that does not count carries nothing.",
+            "A photograph added while the form is open no longer meets \"nothing has changed\": pictures are kept the moment you add one, so the button simply says Done and closes.",
+            "How this works has been brought up to date: the Sessions tab and its four lists, the pen on a row, photographs behind the pen, what Apple Health hands over, and the extra workouts' own marks."
+        ]),
         Release(version: "1.1 (50)", date: "30 September 2026", headline: "Mend it from the list", items: [
             "Every session and extra already done carries its pen in the list itself, so a typo is corrected without opening it first.",
             "Beside the pen, up to three of that session's photographs, pen-sized.",
