@@ -7,15 +7,21 @@ import WorkoutCore
 struct PhotoStrip: View {
     @ObservedObject private var photos = PhotoStore.shared
     let owner: PhotoOwner
+    /* Adding belongs to the pen: at rest a screen shows the pictures it has
+       and nothing to press (his ask, 2026-09-30). */
+    var canAdd = false
     @State private var picked: [PhotosPickerItem] = []
     @State private var showCamera = false
+    @State private var choosing = false
     @State private var viewing: PhotoMeta?
 
     private var mine: [PhotoMeta] { photos.photos(for: owner) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeading(text: mine.isEmpty ? "Photos" : "Photos · \(mine.count)")
+            if !mine.isEmpty || canAdd {
+                SectionHeading(text: mine.isEmpty ? "Photos" : "Photos · \(mine.count)")
+            }
             if !mine.isEmpty {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     ForEach(mine) { photo in
@@ -26,23 +32,29 @@ struct PhotoStrip: View {
                     }
                 }
             }
-            HStack(spacing: 10) {
-                PhotosPicker(selection: $picked, maxSelectionCount: 6, matching: .images) {
+            if canAdd {
+                // One button, not two: the camera is a choice inside it rather
+                // than a button of its own (his ask, 2026-09-30).
+                Menu {
+                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                        Button { showCamera = true } label: {
+                            Label { Text("Take one now") } icon: { Glyph(name: "icon-camera", size: 18) }
+                        }
+                    }
+                    Button { choosing = true } label: {
+                        Label { Text("From my photos") } icon: { Glyph(name: "icon-plus", size: 18) }
+                    }
+                } label: {
                     Label { Text("Add photo") } icon: { Glyph(name: "icon-plus", size: 18) }
                         .font(.subheadline.weight(.semibold))
                 }
                 .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
-                if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                    Button { showCamera = true } label: {
-                        Label { Text("Camera") } icon: { Glyph(name: "icon-camera", size: 18) }
-                            .font(.subheadline.weight(.semibold))
-                    }
-                    .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
-                }
+                .accessibilityIdentifier("photo-add")
+                .photosPicker(isPresented: $choosing, selection: $picked, maxSelectionCount: 6, matching: .images)
+                Text("Kept on this phone only — not in the workbook, not in Dropbox. Save them out from Settings → Photos.")
+                    .font(.caption).foregroundStyle(Theme.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Text("Kept on this phone only — not in the workbook, not in Dropbox. Save them out from Settings → Photos.")
-                .font(.caption).foregroundStyle(Theme.secondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .onChange(of: picked) { _, items in
             guard !items.isEmpty else { return }
@@ -76,6 +88,23 @@ struct Thumb: View {
         .frame(height: 96)
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+/* Pen-sized, for the corner of a row: a glance at what the day looked like. */
+struct MicroThumb: View {
+    let id: String
+    var body: some View {
+        Group {
+            if let image = PhotoStore.shared.image(id) {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                Theme.surface2
+            }
+        }
+        .frame(width: 30, height: 30)
+        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .accessibilityHidden(true)
     }
 }
 

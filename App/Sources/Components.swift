@@ -66,6 +66,8 @@ struct SessionCard: View {
     let workout: Workout
     let mapping: Mapping
     var showDay = false
+    /* A list draws the pen over the card's bottom corner; the pills keep clear of it. */
+    var cornerRoom: CGFloat = 0
 
     private var shown: SessionState { workout.state }
 
@@ -89,8 +91,11 @@ struct SessionCard: View {
                     if !workout.planned.intensity.isEmpty { Pill(text: workout.planned.intensity) }
                     if workout.missed { Pill(text: "Missed", tint: Theme.danger) }
                     if let label = workout.waitingLabel { Pill(text: label, tint: Theme.today) }
-                    PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(workout)))
+                    if cornerRoom == 0 {
+                        PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(workout)))
+                    }
                 }
+                .padding(.trailing, cornerRoom)
             }
             Spacer(minLength: 0)
             if shown == .done { DoneTick() }
@@ -191,12 +196,38 @@ struct FlowRow: Layout {
     }
 }
 
+/* A session's key, so a sheet can be raised from a list row. */
+struct SessionKey: Identifiable, Equatable {
+    let key: String
+    var id: String { key }
+}
+
+/* The pen: a round grey button, the tick's twin, sitting under it. */
+struct RoundPen: View {
+    let action: () -> Void
+    var name = "extra-adjust"
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle().fill(Theme.surface2)
+                Glyph(name: "icon-pen", size: 14).foregroundStyle(Theme.secondary)
+            }
+            .frame(width: 30, height: 30)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(name)
+        .accessibilityLabel("Adjust logged data")
+    }
+}
+
 struct ExtraCard: View {
     let extra: ExtraSummary
     /* Set on the extra's own screen: a round pen in the card's bottom corner,
        under the tick and in line with it (his ask, 2026-09-30). In a list the
        whole card is the tap target, so there is no pen there. */
     var adjust: (() -> Void)?
+    /* As on a session card: a list draws the pen over the corner, so the pills keep clear. */
+    var cornerRoom: CGFloat = 0
     var body: some View {
         let activity = Extras.activity(extra.activity)
         HStack(alignment: .top, spacing: 14) {
@@ -215,8 +246,11 @@ struct ExtraCard: View {
                     if let m = extra.minutes { Pill(text: formatDuration(m * 60)) }
                     Pill(text: extra.isTraining ? "Counts as training" : "Not training load")
                     if extra.pending { Pill(text: "Waiting to sync", tint: Theme.today) }
-                    PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(extra: extra)))
+                    if cornerRoom == 0 {
+                        PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(extra: extra)))
+                    }
                 }
+                .padding(.trailing, cornerRoom)
             }
             Spacer(minLength: 0)
             // An extra is something done, so it carries the done tick wherever
@@ -225,16 +259,7 @@ struct ExtraCard: View {
                 DoneTick(washed: true)
                 if let adjust {
                     Spacer(minLength: 14)
-                    Button(action: adjust) {
-                        ZStack {
-                            Circle().fill(Theme.surface2)
-                            Glyph(name: "icon-pen", size: 14).foregroundStyle(Theme.secondary)
-                        }
-                        .frame(width: 30, height: 30)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("extra-adjust")
-                    .accessibilityLabel("Adjust logged data")
+                    RoundPen(action: adjust)
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)

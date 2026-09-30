@@ -105,6 +105,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (50)", date: "30 September 2026", headline: "Mend it from the list", items: [
+            "Every session and extra already done carries its pen in the list itself, so a typo is corrected without opening it first.",
+            "Beside the pen, up to three of that session's photographs, pen-sized.",
+            "Photographs are added behind the pen now, not from the screen at rest — and by one button instead of two: Add photo asks whether to take one or pick from your photos."
+        ]),
         Release(version: "1.1 (49)", date: "30 September 2026", headline: "Three things he pointed at", items: [
             "Each tab keeps its own colour whether it is open or not, and the open one sits on a patch of that colour.",
             "What kind of thing is a proper box now, carrying the activity's own badge in its own colour instead of a bare green word.",

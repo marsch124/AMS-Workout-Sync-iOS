@@ -11,6 +11,10 @@ struct PlanTab: View {
         return .upcoming
     }()
     @State private var openExtra: ExtraSummary?
+    /* The session whose figures are being mended from the list. */
+    @State private var adjusting: SessionKey?
+    /* The extra being mended from the list. */
+    @State private var adjustingExtra: ExtraSummary?
 
     /*
      * A day's work, whether or not the plan asked for it.
@@ -66,13 +70,50 @@ struct PlanTab: View {
                                     ForEach(list) { row in
                                         switch row {
                                         case .session(let w):
-                                            NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
+                                            // A session already done carries its pen here, so a
+                                            // typo is mended from the list itself (his ask,
+                                            // 2026-09-30). The pen is drawn over the card rather
+                                            // than inside it: a button inside a link never gets
+                                            // its own taps.
+                                            let done = w.state == .done && store.canLog
+                                            // Its pictures, pen-sized, beside the pen.
+                                            let shots = Array(PhotoStore.shared.photos(for: PhotoOwner(w)).prefix(3))
+                                            ZStack(alignment: .bottomTrailing) {
+                                                NavigationLink(value: w.key) {
+                                                    SessionCard(workout: w, mapping: view.mapping,
+                                                                cornerRoom: corner(pen: done, shots: shots.count))
+                                                }
                                                 .accessibilityIdentifier("sessions-session-\(w.dayKey)-\(w.discipline.id)")
                                                 .buttonStyle(.plain)
+                                                HStack(spacing: 6) {
+                                                    ForEach(shots) { MicroThumb(id: $0.id) }
+                                                    if done {
+                                                        RoundPen(action: { adjusting = SessionKey(key: w.key) },
+                                                                 name: "sessions-adjust-\(w.dayKey)-\(w.discipline.id)")
+                                                    }
+                                                }
+                                                .padding(14)
+                                                .allowsHitTesting(done)
+                                            }
                                         case .extra(let x):
-                                            Button { openExtra = x } label: { ExtraCard(extra: x) }
+                                            // The same pen as the sessions beside it.
+                                            let xShots = Array(PhotoStore.shared.photos(for: PhotoOwner(extra: x)).prefix(3))
+                                            ZStack(alignment: .bottomTrailing) {
+                                                Button { openExtra = x } label: {
+                                                    ExtraCard(extra: x, cornerRoom: corner(pen: store.canLog, shots: xShots.count))
+                                                }
                                                 .accessibilityIdentifier("sessions-extra-\(x.dayKey)-\(x.activity)")
                                                 .buttonStyle(.plain)
+                                                HStack(spacing: 6) {
+                                                    ForEach(xShots) { MicroThumb(id: $0.id) }
+                                                    if store.canLog {
+                                                        RoundPen(action: { adjustingExtra = x },
+                                                                 name: "sessions-extra-adjust-\(x.dayKey)-\(x.activity)")
+                                                    }
+                                                }
+                                                .padding(14)
+                                                .allowsHitTesting(store.canLog)
+                                            }
                                         }
                                     }
                                 }
@@ -91,6 +132,14 @@ struct PlanTab: View {
             .refreshable { store.refresh() }
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
+            .sheet(item: $adjustingExtra) { x in
+                ExtraFormView(day: x.dayKey, editing: x).environmentObject(store)
+            }
+            .sheet(item: $adjusting) { item in
+                if let w = store.workout(item.key), let mapping = store.mapping {
+                    LogFormView(workout: w, mapping: mapping).environmentObject(store)
+                }
+            }
             .toolbar(.hidden, for: .navigationBar)
         }
     }
@@ -128,6 +177,12 @@ struct PlanTab: View {
                 Rectangle().fill(Theme.border).frame(height: 0.5)
             }
         }
+    }
+
+    /* How much of the row's bottom corner the pen and the thumbnails take. */
+    private func corner(pen: Bool, shots: Int) -> CGFloat {
+        let items = shots + (pen ? 1 : 0)
+        return items == 0 ? 0 : CGFloat(items) * 36 + 4
     }
 
     private var emptyText: String {

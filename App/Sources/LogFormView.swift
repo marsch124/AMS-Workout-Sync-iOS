@@ -70,6 +70,10 @@ struct LogFormView: View {
                                  unitPicker: field.id == "actualDistance" ? $distanceUnit : nil)
                     }
 
+                    // The same for a session: its pictures are added here, behind
+                    // the pen, rather than sitting on the session screen at rest.
+                    PhotoStrip(owner: PhotoOwner(workout), canAdd: true)
+
                     if !showAll && hiddenCount > 0 {
                         Button("Show \(hiddenCount) more field\(hiddenCount == 1 ? "" : "s")") { showAll = true }
                             .font(.subheadline.weight(.semibold)).tint(Theme.today)

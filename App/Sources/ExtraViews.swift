@@ -145,6 +145,10 @@ struct ExtraFormView: View {
                         }
                         .pickerStyle(.segmented)
                     }
+                    // Photographs belong with the pen: this form is what it opens.
+                    if let editing {
+                        PhotoStrip(owner: PhotoOwner(extra: editing), canAdd: true)
+                    }
                     labelled("Notes") {
                         TextField("Anything worth remembering", text: $notes, axis: .vertical)
                             .lineLimit(3...6).padding(12).background(box(changed: changes.contains(ExtraField.notes)))
