@@ -105,6 +105,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (45)", date: "30 September 2026", headline: "Health says why", items: [
+            "Under What Health hands over there is now a line saying when Health was last asked, how many workouts it gave for the last seven days, and whether it gives anything at all. If Health returned an error it is printed in red — the app used to throw that error away, which is why a refusal and an empty day looked the same.",
+            "Ask again always leaves something new on screen, and beside it Ask iOS again puts the permission question to iOS once more."
+        ]),
         Release(version: "1.1 (44)", date: "30 September 2026", headline: "Health, today and yesterday", items: [
             "Settings → Apple Health has a toggle, What Health hands over. It opens two lists: what Apple Health has today, and what Apple Health had yesterday — because yesterday is usually the day in question, and a list that knew only about today said \"nothing\" on a rest morning.",
             "Both lists empty while your watch has something means the app is not being given it: Health → your picture → Apps → Workout Sync, switch the rows on, then Ask again."

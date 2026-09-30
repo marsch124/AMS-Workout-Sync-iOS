@@ -356,6 +356,7 @@ struct HealthToday: View {
     @State private var open = false
     @State private var today: [HealthWorkout]?
     @State private var yesterday: [HealthWorkout]?
+    @State private var probe: HealthImport.Probe?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -368,13 +369,33 @@ struct HealthToday: View {
             if open {
                 day("WHAT APPLE HEALTH HAS TODAY", today, name: "health-today")
                 day("WHAT APPLE HEALTH HAD YESTERDAY", yesterday, name: "health-yesterday")
+                if let probe {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Asked at " + probe.at.formatted(date: .omitted, time: .standard)
+                             + " · last seven days: \(probe.lastWeek) · anything at all: \(probe.anyAtAll)")
+                            .font(.caption).foregroundStyle(Theme.secondary)
+                            .accessibilityIdentifier("health-probe")
+                        Text(probe.asked).font(.caption).foregroundStyle(Theme.secondary)
+                        if let error = probe.error {
+                            Text("Health said: " + error).font(.caption).foregroundStyle(Theme.danger)
+                                .accessibilityIdentifier("health-error")
+                        }
+                    }
+                }
                 if (today?.isEmpty ?? false) && (yesterday?.isEmpty ?? false) {
-                    Text("Both days empty while your watch has something means the app is not being given it: open Health → your picture → Apps → Workout Sync and switch the rows on.")
+                    Text("Nothing at all means the app is not being given your workouts. Switch the rows on in Health → your picture → Apps → Workout Sync — and if they are already on, press Ask iOS again.")
                         .font(.caption).foregroundStyle(Theme.secondary)
                 }
-                Button("Ask again") { Task { await load() } }
-                    .settingsButton(tint: Theme.secondary)
-                    .accessibilityIdentifier("health-today-again")
+                HStack(spacing: 8) {
+                    Button("Ask again") { Task { await load() } }
+                        .settingsButton(tint: Theme.secondary)
+                        .accessibilityIdentifier("health-today-again")
+                    Button("Ask iOS again") {
+                        Task { await HealthImport.shared.requestAccess(); HealthImport.shared.enabled = true; await load() }
+                    }
+                    .settingsButton(tint: Theme.today)
+                    .accessibilityIdentifier("health-ask-ios")
+                }
             }
         }
         .padding(.top, 2)
@@ -406,6 +427,7 @@ struct HealthToday: View {
     private func load() async {
         today = await HealthImport.shared.workouts(on: store.today)
         yesterday = await HealthImport.shared.workouts(on: PlanView.addDays(store.today, -1))
+        probe = await HealthImport.shared.probe()
     }
 }
 

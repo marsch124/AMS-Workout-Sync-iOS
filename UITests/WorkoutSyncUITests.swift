@@ -51,6 +51,8 @@ final class WorkoutSyncUITests: XCTestCase {
         XCTAssertEqual(today.count, 3, "all of today's workouts belong in the list")
         let yesterday = app.descendants(matching: .any).matching(identifier: "health-yesterday-row")
         XCTAssertEqual(yesterday.count, 3, "yesterday has a heading and a list of its own")
+        XCTAssertTrue(app.staticTexts["health-probe"].exists,
+                      "pressing Ask again must leave something on screen that says Health answered")
     }
 
     /* 12. A session offers the day's workouts even when Health filed them

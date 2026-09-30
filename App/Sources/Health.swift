@@ -40,6 +40,18 @@ final class HealthImport: ObservableObject {
 
     enum Status: Equatable { case unavailable, unknown, asked, denied }
 
+    /* What Health said when it was last asked — shown in Settings. */
+    struct Probe: Equatable {
+        var at: Date
+        var lastWeek: Int
+        var error: String?
+        var asked: String
+        var anyAtAll: Int
+    }
+
+    /* The last error from a day's query, if there was one. */
+    @Published private(set) var lastError: String?
+
     var inUse: Bool {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil { return true }
@@ -132,13 +144,9 @@ final class HealthImport: ObservableObject {
         guard let start = local.date(from: comps), let end = local.date(byAdding: .day, value: 1, to: start) else { return [] }
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
 
-        let samples: [HKWorkout] = await withCheckedContinuation { continuation in
-            let query = HKSampleQuery(sampleType: .workoutType(), predicate: predicate, limit: 50,
-                                      sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { _, results, _ in
-                continuation.resume(returning: (results as? [HKWorkout]) ?? [])
-            }
-            store.execute(query)
-        }
+        let answer = await ask(predicate, limit: 50)
+        lastError = answer.error
+        let samples = answer.samples
 
         var out: [HealthWorkout] = []
         for w in samples {
@@ -152,6 +160,51 @@ final class HealthImport: ObservableObject {
                                      metres: metres, avgHr: hr, source: w.sourceRevision.source.name))
         }
         return out
+    }
+
+    /*
+     * One workout query, and what Health said about it.
+     *
+     * The error used to be thrown away, so a refusal and an empty day looked
+     * the same — and there was nothing to show him when his run was in the
+     * Health app and not in ours (2026-09-30).
+     */
+    private func ask(_ predicate: NSPredicate?, limit: Int) async -> (samples: [HKWorkout], error: String?) {
+        await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(sampleType: .workoutType(), predicate: predicate, limit: limit,
+                                      sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { _, results, error in
+                continuation.resume(returning: ((results as? [HKWorkout]) ?? [], error?.localizedDescription))
+            }
+            store.execute(query)
+        }
+    }
+
+    /*
+     * What Health hands over when nothing is asked of a particular day: the
+     * last week, whatever iOS says about the app, and any error. Enough to
+     * tell "nothing there" from "nothing allowed" without me guessing.
+     */
+    func probe() async -> Probe {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil {
+            return Probe(at: Date(), lastWeek: 3, error: nil, asked: "iOS has been asked", anyAtAll: 3)
+        }
+        #endif
+        guard isAvailable else { return Probe(at: Date(), lastWeek: 0, error: "Health is not on this device", asked: "—", anyAtAll: 0) }
+        let end = Date()
+        let start = Calendar.current.date(byAdding: .day, value: -7, to: end) ?? end
+        let week = await ask(HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate), limit: 50)
+        // No dates at all: if this is empty too, nothing is reaching the app.
+        let ever = await ask(nil, limit: 5)
+        let asked: String
+        switch store.authorizationStatus(for: HKObjectType.workoutType()) {
+        case .notDetermined: asked = "iOS says this app has never asked"
+        case .sharingDenied: asked = "iOS has been asked"
+        case .sharingAuthorized: asked = "iOS has been asked"
+        @unknown default: asked = "iOS status unknown"
+        }
+        return Probe(at: Date(), lastWeek: week.samples.count, error: week.error ?? ever.error,
+                     asked: asked, anyAtAll: ever.samples.count)
     }
 
     private func averageHeartRate(from: Date, to: Date) async -> Double? {
