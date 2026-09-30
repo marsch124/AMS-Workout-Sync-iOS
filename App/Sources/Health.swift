@@ -58,6 +58,24 @@ final class HealthImport: ObservableObject {
     }
 
     init() {
+        #if DEBUG
+        // A test starts from nothing, whoever is built first: the Store clears
+        // these too, but this object can be made before the Store is.
+        if ProcessInfo.processInfo.environment["AMSWS_RESET"] != nil {
+            UserDefaults.standard.removeObject(forKey: "health.asked")
+            UserDefaults.standard.removeObject(forKey: "health.enabled")
+            enabled = true
+        }
+        // A screen walk with the fake Health sees the screens he sees: asked
+        // and in use. Never write that into a simulator's own preferences —
+        // `simctl spawn defaults write` lands in a domain the app cannot
+        // clear, and it stayed behind and reddened a test (2026-09-30).
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil {
+            status = .asked
+            enabled = true
+            return
+        }
+        #endif
         status = isAvailable ? (UserDefaults.standard.bool(forKey: "health.asked") ? .asked : .unknown) : .unavailable
     }
 

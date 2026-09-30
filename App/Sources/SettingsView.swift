@@ -341,49 +341,73 @@ struct HealthSettings: View {
 }
 
 /*
- * What Health hands over today.
+ * What Health hands over, behind a toggle: today under its own heading, then
+ * yesterday under its own (his ask, 2026-09-30).
  *
  * iOS never tells an app whether reading was granted: a refused read looks
  * exactly like an empty day. So the app shows what it was given, and the
  * difference between "nothing there" and "nothing allowed" is one glance at
- * the Health app away.
+ * the Health app away. Yesterday is here because that is usually the day in
+ * question — a line that knew only about today said "nothing" on a rest
+ * morning and taught him nothing.
  */
 struct HealthToday: View {
     @EnvironmentObject var store: Store
-    @State private var workouts: [HealthWorkout]?
+    @State private var open = false
+    @State private var today: [HealthWorkout]?
+    @State private var yesterday: [HealthWorkout]?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("WHAT HEALTH HAS TODAY").font(.caption.weight(.bold)).tracking(0.8)
-                .foregroundStyle(Theme.secondary)
-            if let workouts {
-                if workouts.isEmpty {
-                    Text("Nothing for today. If your watch has something, the app is not being given it: open Health → your picture → Apps → Workout Sync and switch the rows on.")
-                        .font(.caption).foregroundStyle(Theme.secondary)
-                        .accessibilityIdentifier("health-today-none")
-                } else {
-                    ForEach(workouts) { w in
-                        Text(w.typeName + " · " + w.summary + " · " + w.source)
-                            .font(.caption).foregroundStyle(Theme.text)
-                            .accessibilityIdentifier("health-today-row")
-                    }
-                }
-            } else {
-                Text("Asking Health…").font(.caption).foregroundStyle(Theme.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            Button(open ? "Hide" : "What Health hands over") {
+                withAnimation(.easeInOut(duration: 0.15)) { open.toggle() }
             }
-            Button("Ask again") { Task { await load() } }
-                .settingsButton(tint: Theme.secondary)
-                .accessibilityIdentifier("health-today-again")
+            .settingsButton(tint: Theme.today)
+            .accessibilityIdentifier("health-what")
+
+            if open {
+                day("WHAT APPLE HEALTH HAS TODAY", today, name: "health-today")
+                day("WHAT APPLE HEALTH HAD YESTERDAY", yesterday, name: "health-yesterday")
+                if (today?.isEmpty ?? false) && (yesterday?.isEmpty ?? false) {
+                    Text("Both days empty while your watch has something means the app is not being given it: open Health → your picture → Apps → Workout Sync and switch the rows on.")
+                        .font(.caption).foregroundStyle(Theme.secondary)
+                }
+                Button("Ask again") { Task { await load() } }
+                    .settingsButton(tint: Theme.secondary)
+                    .accessibilityIdentifier("health-today-again")
+            }
         }
         .padding(.top, 2)
         .task(id: store.today) { await load() }
     }
 
+    @ViewBuilder
+    private func day(_ heading: String, _ workouts: [HealthWorkout]?, name: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(heading).font(.caption.weight(.bold)).tracking(0.8).foregroundStyle(Theme.secondary)
+            if let workouts {
+                if workouts.isEmpty {
+                    Text("Nothing.").font(.caption).foregroundStyle(Theme.secondary)
+                        .accessibilityIdentifier(name + "-none")
+                } else {
+                    ForEach(workouts) { w in
+                        Text(w.typeName + " · " + w.summary + " · " + w.source)
+                            .font(.caption).foregroundStyle(Theme.text)
+                            .accessibilityIdentifier(name + "-row")
+                    }
+                }
+            } else {
+                Text("Asking Health…").font(.caption).foregroundStyle(Theme.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private func load() async {
-        workouts = await HealthImport.shared.workouts(on: store.today)
+        today = await HealthImport.shared.workouts(on: store.today)
+        yesterday = await HealthImport.shared.workouts(on: PlanView.addDays(store.today, -1))
     }
 }
-
 
 /*
  * The plan in the Calendar app. One button in, one button out; the hour the

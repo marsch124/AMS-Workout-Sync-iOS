@@ -34,14 +34,23 @@ final class WorkoutSyncUITests: XCTestCase {
         return app
     }
 
-    /* 13. Settings says what Health hands over, so a silent refusal is visible. */
-    func testSettingsSaysWhatHealthHasToday() {
+    /* 13. Settings says what Health hands over for today and for yesterday,
+           behind a toggle — so a silent refusal is visible. */
+    func testSettingsSaysWhatHealthHandsOver() {
         let app = launch(garmin: true)
         XCTAssertTrue(app.buttons["tab-settings"].waitForExistence(timeout: 15))
         app.buttons["tab-settings"].tap()
-        let rows = app.descendants(matching: .any).matching(identifier: "health-today-row")
-        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10), "Settings does not say what Health has today")
-        XCTAssertEqual(rows.count, 3, "all of the day's workouts belong in the list")
+
+        let toggle = app.buttons["health-what"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10), "Settings has no way to see what Health hands over")
+        let today = app.descendants(matching: .any).matching(identifier: "health-today-row")
+        XCTAssertEqual(today.count, 0, "the lists are behind the toggle until it is tapped")
+        toggle.tap()
+
+        XCTAssertTrue(today.firstMatch.waitForExistence(timeout: 10), "today is not listed")
+        XCTAssertEqual(today.count, 3, "all of today's workouts belong in the list")
+        let yesterday = app.descendants(matching: .any).matching(identifier: "health-yesterday-row")
+        XCTAssertEqual(yesterday.count, 3, "yesterday has a heading and a list of its own")
     }
 
     /* 12. A session offers the day's workouts even when Health filed them

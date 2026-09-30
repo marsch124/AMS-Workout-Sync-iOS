@@ -105,6 +105,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (44)", date: "30 September 2026", headline: "Health, today and yesterday", items: [
+            "Settings → Apple Health has a toggle, What Health hands over. It opens two lists: what Apple Health has today, and what Apple Health had yesterday — because yesterday is usually the day in question, and a list that knew only about today said \"nothing\" on a rest morning.",
+            "Both lists empty while your watch has something means the app is not being given it: Health → your picture → Apps → Workout Sync, switch the rows on, then Ask again."
+        ]),
         Release(version: "1.1 (43)", date: "29 September 2026", headline: "Health hands over everything it has", items: [
             "A session's form now offers every workout Apple Health holds for that day, the matching sport first. It used to show only the ones whose sport agreed, and say there was nothing at all otherwise — so a run Health had filed as another kind of workout was invisible, and the day looked empty.",
             "Settings → Apple Health lists what Health hands over for today. iOS never tells an app whether reading was allowed, so a refused read looks exactly like an empty day; this line tells the two apart. If it says nothing while your watch has something, open Health → your picture → Apps → Workout Sync and switch the rows on."
