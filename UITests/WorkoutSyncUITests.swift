@@ -34,6 +34,27 @@ final class WorkoutSyncUITests: XCTestCase {
         return app
     }
 
+    /* 14. Deleting every photograph asks first. The pictures are the only
+           copies, so a mis-tap must not be able to take them. */
+    func testDeletingEveryPhotographAsksFirst() {
+        let app = launch(canLog: true)
+        XCTAssertTrue(app.buttons["tab-settings"].waitForExistence(timeout: 15))
+        app.buttons["tab-settings"].tap()
+
+        // A settings row is a composite: its identifier reaches its children
+        // too, so take the first rather than insisting on one.
+        let count = app.descendants(matching: .any).matching(identifier: "photos-count").firstMatch
+        XCTAssertTrue(count.waitForExistence(timeout: 10), "Settings does not say how many photographs there are")
+        let before = count.label
+
+        let delete = app.buttons["photos-delete-all"]
+        if delete.exists {
+            delete.tap()
+            // A dialog is waiting; nothing may have gone yet.
+            XCTAssertEqual(count.label, before, "photographs went without being asked about")
+        }
+    }
+
     /* 13. Settings says what Health hands over for today and for yesterday,
            behind a toggle — so a silent refusal is visible. */
     func testSettingsSaysWhatHealthHandsOver() {

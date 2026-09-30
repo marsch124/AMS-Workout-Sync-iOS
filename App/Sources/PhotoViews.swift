@@ -269,6 +269,7 @@ struct PhotoSettings: View {
         SettingsRow(title: "\(photos.index.count) photo\(photos.index.count == 1 ? "" : "s") · \(String(format: "%.1f", mb)) MB",
                     sub: "On this phone only, and in the iPhone's own backup. Not in the workbook, not in Dropbox."
                         + (orphans > 0 ? " \(orphans) belong to a session that has since changed — still here, still exported." : ""))
+            .accessibilityIdentifier("photos-count")
         HStack(spacing: 8) {
             Button("Save all") {
                 let url = FileManager.default.temporaryDirectory
@@ -283,6 +284,7 @@ struct PhotoSettings: View {
             if !photos.index.isEmpty {
                 Button("Delete all") { confirmDeleteAll = true }
                     .settingsButton(tint: Theme.danger)
+                    .accessibilityIdentifier("photos-delete-all")
             }
             Spacer(minLength: 0)
         }

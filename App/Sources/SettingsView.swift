@@ -121,8 +121,14 @@ struct SettingsView: View {
 
                     SectionHeading(text: "Dropbox")
                     if Dropbox.shared.isConnected {
+                        // Disconnecting strands anything still waiting: it is kept
+                        // on the phone, but nothing can be sent until he connects
+                        // and picks the plan again. Say so before he presses it.
+                        let waiting = store.queue.count
                         SettingsRow(title: Dropbox.shared.account.isEmpty ? "Connected" : Dropbox.shared.account,
-                                    sub: "The app can read and write only the files you point it at.",
+                                    sub: waiting == 0
+                                        ? "The app can read and write only the files you point it at."
+                                        : "The app can read and write only the files you point it at. \(waiting) entr\(waiting == 1 ? "y is" : "ies are") still waiting to be sent — disconnecting keeps them on this phone, but nothing goes to Dropbox until you connect and choose the plan again.",
                                     action: ("Disconnect", {
                                         Dropbox.shared.disconnect()
                                         store.dropboxPath = nil

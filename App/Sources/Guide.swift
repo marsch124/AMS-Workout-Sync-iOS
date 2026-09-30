@@ -111,6 +111,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (55)", date: "30 September 2026", headline: "Disconnect tells you what is still waiting", items: [
+            "Settings → Dropbox now says how many entries are still to be sent before you disconnect. They stay on this phone either way, but nothing reaches Dropbox until you connect and choose the plan again."
+        ]),
         Release(version: "1.1 (54)", date: "30 September 2026", headline: "The pictures, not a camera", items: [
             "On Today, a session or an extra with photographs shows them — up to three, in the corner of its card — instead of a camera and a number. The Sessions list already did; Today had been left behind."
         ]),
