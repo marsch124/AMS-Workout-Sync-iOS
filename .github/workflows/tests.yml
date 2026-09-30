@@ -45,6 +45,10 @@ jobs:
           echo "SIM_UDID=$UDID" >> $GITHUB_ENV
           echo "Using simulator:$(echo "$LINE" | sed -E 's/ *\(.*//')"
 
+      # Seconds, no simulator: the reading and writing logic on its own.
+      - name: Model tests
+        run: swift test --package-path Core
+
       - name: UI tests
         run: |
           xcodebuild test \

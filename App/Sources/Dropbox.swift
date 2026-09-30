@@ -180,12 +180,13 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
 
     /* The file and the revision it is at — the revision is what makes a later upload safe. */
     func download(_ path: String) async throws -> (data: Data, rev: String, name: String) {
-        var request = URLRequest(url: URL(string: contentURL + "/files/download")!, timeoutInterval: 45)
+        guard let url = URL(string: contentURL + "/files/download") else { throw DropboxError.badResponse }
+        var request = URLRequest(url: url, timeoutInterval: 45)
         request.httpMethod = "POST"
         request.setValue("Bearer " + (try await token()), forHTTPHeaderField: "Authorization")
         request.setValue(Self.apiArg(["path": path]), forHTTPHeaderField: "Dropbox-API-Arg")
         let (data, response) = try await URLSession.shared.data(for: request)
-        let http = response as! HTTPURLResponse
+        guard let http = response as? HTTPURLResponse else { throw DropboxError.badResponse }
         guard http.statusCode == 200 else { throw DropboxError.http(http.statusCode, String(decoding: data, as: UTF8.self)) }
         guard let header = http.value(forHTTPHeaderField: "Dropbox-API-Result"),
               let meta = try JSONSerialization.jsonObject(with: Data(header.utf8)) as? [String: Any],
@@ -199,14 +200,15 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
      * refuses, and the sync starts again from the newer copy.
      */
     func upload(_ path: String, _ data: Data, rev: String) async throws -> RemoteFile {
-        var request = URLRequest(url: URL(string: contentURL + "/files/upload")!, timeoutInterval: 90)
+        guard let url = URL(string: contentURL + "/files/upload") else { throw DropboxError.badResponse }
+        var request = URLRequest(url: url, timeoutInterval: 90)
         request.httpMethod = "POST"
         request.setValue("Bearer " + (try await token()), forHTTPHeaderField: "Authorization")
         request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         request.setValue(Self.apiArg(["path": path, "mode": [".tag": "update", "update": rev],
                                       "autorename": false, "mute": true]), forHTTPHeaderField: "Dropbox-API-Arg")
         let (body, response) = try await URLSession.shared.upload(for: request, from: data)
-        let http = response as! HTTPURLResponse
+        guard let http = response as? HTTPURLResponse else { throw DropboxError.badResponse }
         if http.statusCode == 409, String(decoding: body, as: UTF8.self).contains("conflict") { throw RemoteError.conflict }
         guard http.statusCode == 200 else { throw DropboxError.http(http.statusCode, String(decoding: body, as: UTF8.self)) }
         guard let meta = try JSONSerialization.jsonObject(with: body) as? [String: Any],
@@ -217,7 +219,8 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
     // MARK: plumbing
 
     private func rpc(_ endpoint: String, _ body: [String: Any]?) async throws -> [String: Any] {
-        var request = URLRequest(url: URL(string: apiURL + "/" + endpoint)!, timeoutInterval: 45)
+        guard let url = URL(string: apiURL + "/" + endpoint) else { throw DropboxError.badResponse }
+        var request = URLRequest(url: url, timeoutInterval: 45)
         request.httpMethod = "POST"
         request.setValue("Bearer " + (try await token()), forHTTPHeaderField: "Authorization")
         if let body {
@@ -225,13 +228,14 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
         let (data, response) = try await URLSession.shared.data(for: request)
-        let http = response as! HTTPURLResponse
+        guard let http = response as? HTTPURLResponse else { throw DropboxError.badResponse }
         guard http.statusCode == 200 else { throw DropboxError.http(http.statusCode, String(decoding: data, as: UTF8.self)) }
         return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 
     private func form(_ url: String, _ fields: [String: String]) async throws -> [String: Any] {
-        var request = URLRequest(url: URL(string: url)!, timeoutInterval: 45)
+        guard let endpoint = URL(string: url) else { throw DropboxError.badResponse }
+        var request = URLRequest(url: endpoint, timeoutInterval: 45)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         var allowed = CharacterSet.alphanumerics
@@ -239,7 +243,7 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
         request.httpBody = fields.map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: allowed) ?? "")" }
             .joined(separator: "&").data(using: .utf8)
         let (data, response) = try await URLSession.shared.data(for: request)
-        let http = response as! HTTPURLResponse
+        guard let http = response as? HTTPURLResponse else { throw DropboxError.badResponse }
         guard http.statusCode == 200 else { throw DropboxError.http(http.statusCode, String(decoding: data, as: UTF8.self)) }
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw DropboxError.badResponse }
         return json
@@ -247,10 +251,14 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
 
     /* Dropbox-API-Arg is JSON in a header, so anything outside ASCII must be escaped as \uXXXX. */
     static func apiArg(_ object: [String: Any]) -> String {
-        let json = String(decoding: try! JSONSerialization.data(withJSONObject: object), as: UTF8.self)
+        // Never fatal: a header that cannot be built fails the request, it does
+        // not take the app down with it.
+        guard let data = try? JSONSerialization.data(withJSONObject: object) else { return "{}" }
+        let json = String(decoding: data, as: UTF8.self)
         var out = ""
         for unit in json.utf16 {
-            if unit < 0x80 { out.unicodeScalars.append(UnicodeScalar(unit)!) }
+            // Below 0x80 every unit is a scalar; the fallback keeps it from ever being fatal.
+            if unit < 0x80, let scalar = UnicodeScalar(unit) { out.unicodeScalars.append(scalar) }
             else { out += String(format: "\\u%04x", unit) }
         }
         return out

@@ -111,6 +111,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (52)", date: "30 September 2026", headline: "Hardening: nothing new, less to go wrong", items: [
+            "A date the sheet cannot mean — a thirteenth month, a 31st of February — is refused instead of quietly becoming another day. A garbled date in the Extras sheet used to place the row in the wrong week.",
+            "The part of the app that talks to Dropbox can no longer be brought down by an odd answer from the network: every such case now fails the sync, with a reason, instead of the app.",
+            "Twenty-four new tests of the reading and writing itself, run on every push beside the ones that drive the screens. They already found the date fault above."
+        ]),
         Release(version: "1.1 (51)", date: "30 September 2026", headline: "Plainer week, plainer words", items: [
             "A session still to do is a lighter block of its sport's colour in the week strip, with no frame around it.",
             "Extra activity is Extra workout, everywhere the app says it.",

@@ -293,7 +293,7 @@ public enum Sync {
                               let row = Extras.findRow(sheet, target) else {
                             throw SyncError.noExtraRow(Extras.activity(extra.activity).label)
                         }
-                        let names = (try? learnWeekdayNames(try workbook.readSheet(mapping.sheets[0]), mapping)) ?? [:]
+                        let names = mapping.sheets.first.flatMap { try? learnWeekdayNames(try workbook.readSheet($0), mapping) } ?? [:]
                         let edits = Extras.buildEdits(sheet, extra, row: row, weekdayNames: names)
                         if edits.isEmpty { result.dropped.append(queued.id); continue }
                         try workbook.writeCells(name, edits)
@@ -305,7 +305,7 @@ public enum Sync {
                     let name = try Extras.ensureSheet(workbook)
                     let sheet = try workbook.readSheet(name)
                     if Extras.alreadyRecorded(sheet, extra) { result.written.append(queued.id); continue }
-                    let names = (try? learnWeekdayNames(try workbook.readSheet(mapping.sheets[0]), mapping)) ?? [:]
+                    let names = mapping.sheets.first.flatMap { try? learnWeekdayNames(try workbook.readSheet($0), mapping) } ?? [:]
                     let built = Extras.buildEdits(sheet, extra, weekdayNames: names)
                     if built.edits.isEmpty { throw SyncError.nothingToWrite }
                     try workbook.writeCells(name, built.edits)

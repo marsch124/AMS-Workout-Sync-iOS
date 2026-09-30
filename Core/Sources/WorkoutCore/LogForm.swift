@@ -83,7 +83,7 @@ public enum LogForm {
      * fields are revealed. As formFields() in the web app.
      */
     public static func fields(for workout: Workout, _ mapping: Mapping) -> (primary: [FormField], all: [FormField]) {
-        let preferred = preference[workout.discipline.id] ?? preference["other"]!
+        let preferred = preference[workout.discipline.id] ?? preference["other"] ?? []
         let available = Fields.resultFields.filter { mapping.columns[$0] != nil }
         let managed: Set<String> = ["done", "completedAt"]
         let primaryIds = preferred.filter { available.contains($0) && !managed.contains($0) }

@@ -216,7 +216,15 @@ public func dayKey(_ date: Date?) -> String? {
 public func parseDayKey(_ key: String?) -> Date? {
     guard let key, let m = Pattern("^(\\d{4})-(\\d{2})-(\\d{2})$").first(key.trimmingCharacters(in: .whitespaces)),
           let y = Int(m[1]!), let mo = Int(m[2]!), let d = Int(m[3]!) else { return nil }
-    return utc.date(from: DateComponents(year: y, month: mo, day: d))
+    // A month of 13 or a 31st of February used to roll quietly into the next
+    // month — a garbled date in his Extras sheet would have placed the row on a
+    // day nobody wrote down. It is refused instead (2026-09-30).
+    guard (1...12).contains(mo), (1...31).contains(d),
+          let date = utc.date(from: DateComponents(year: y, month: mo, day: d)),
+          utc.component(.year, from: date) == y,
+          utc.component(.month, from: date) == mo,
+          utc.component(.day, from: date) == d else { return nil }
+    return date
 }
 
 // MARK: - cells and sheets
