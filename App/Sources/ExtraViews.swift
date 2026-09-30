@@ -94,7 +94,7 @@ struct ExtraFormView: View {
                     labelled("When") {
                         DatePicker("When", selection: $date, displayedComponents: .date)
                             .labelsHidden()
-                            .environment(\.timeZone, TimeZone(identifier: "UTC")!)
+                            .environment(\.timeZone, TimeZone(identifier: "UTC") ?? .current)
                     }
                     // From Apple Health, as on a session's form: Use fills time, distance
                     // and heart rate — never a pace — and nothing is saved until Save.

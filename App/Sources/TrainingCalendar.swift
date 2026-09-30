@@ -219,8 +219,8 @@ final class TrainingCalendar: ObservableObject {
             guard let cal else { return .failure(NSError(domain: "AMSWorkoutSync", code: 2, userInfo: [NSLocalizedDescriptionKey: "No calendar could be made."])) }
 
             let now = Date()
-            let from = Calendar.current.date(byAdding: .year, value: -2, to: now)!
-            let to = Calendar.current.date(byAdding: .year, value: 3, to: now)!
+            let from = Calendar.current.date(byAdding: .year, value: -2, to: now) ?? now.addingTimeInterval(-63_072_000)
+            let to = Calendar.current.date(byAdding: .year, value: 3, to: now) ?? now.addingTimeInterval(94_608_000)
             var existing: [String: EKEvent] = [:]
             for ev in store.events(matching: store.predicateForEvents(withStart: from, end: to, calendars: [cal])) {
                 existing[ev.eventIdentifier] = ev

@@ -80,7 +80,7 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
         _ = SecRandomCopyBytes(kSecRandomDefault, stateBytes.count, &stateBytes)
         let state = Self.base64URL(Data(stateBytes))
 
-        var components = URLComponents(string: authURL)!
+        guard var components = URLComponents(string: authURL) else { throw DropboxError.badResponse }
         components.queryItems = [
             URLQueryItem(name: "client_id", value: Self.appKey),
             URLQueryItem(name: "response_type", value: "code"),
@@ -92,7 +92,11 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
         ]
 
         let callback: URL = try await withCheckedThrowingContinuation { continuation in
-            let session = ASWebAuthenticationSession(url: components.url!, callbackURLScheme: Self.callbackScheme) { url, error in
+            guard let signIn = components.url else {
+                continuation.resume(throwing: DropboxError.badResponse)
+                return
+            }
+            let session = ASWebAuthenticationSession(url: signIn, callbackURLScheme: Self.callbackScheme) { url, error in
                 if let url { continuation.resume(returning: url); return }
                 if let error = error as? ASWebAuthenticationSessionError, error.code == .canceledLogin {
                     continuation.resume(throwing: DropboxError.cancelled)

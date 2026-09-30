@@ -111,6 +111,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (56)", date: "1 October 2026", headline: "Nothing left that can bring it down", items: [
+            "The last places where an unexpected answer from the phone or the network would have stopped the app now stop only what they were doing — the calendar's dates, the sign-in address, a time zone.",
+            "Four more tests of how an extra workout reaches your sheet: it lands on the first empty row and never over one in use, it reads back as itself, sending it twice does not double it, and a correction writes only the boxes you altered."
+        ]),
         Release(version: "1.1 (55)", date: "30 September 2026", headline: "Disconnect tells you what is still waiting", items: [
             "Settings → Dropbox now says how many entries are still to be sent before you disconnect. They stay on this phone either way, but nothing reaches Dropbox until you connect and choose the plan again."
         ]),

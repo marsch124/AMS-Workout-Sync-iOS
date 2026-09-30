@@ -40,7 +40,7 @@ struct MoveView: View {
                     HStack(spacing: 10) {
                         DatePicker("New day", selection: $day, displayedComponents: .date)
                             .labelsHidden()
-                            .environment(\.timeZone, TimeZone(identifier: "UTC")!)
+                            .environment(\.timeZone, TimeZone(identifier: "UTC") ?? .current)
                         Button {
                             store.move(workout, to: chosenKey)
                             dismiss()
