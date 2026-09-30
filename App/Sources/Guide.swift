@@ -105,6 +105,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (46)", date: "30 September 2026", headline: "Rowing is a rowing machine", items: [
+            "The Rowing icon is the machine itself — fan, rail, seat and the monitor on its arm — drawn by hand like the rest. The crossed oars are gone: shown at the size the app actually draws them, without a label, they said nothing.",
+            "Chosen by looking: six candidates in the card they live in, no names, and the one that was recognised won."
+        ]),
         Release(version: "1.1 (45)", date: "30 September 2026", headline: "Health says why", items: [
             "Under What Health hands over there is now a line saying when Health was last asked, how many workouts it gave for the last seven days, and whether it gives anything at all. If Health returned an error it is printed in red — the app used to throw that error away, which is why a refusal and an empty day looked the same.",
             "Ask again always leaves something new on screen, and beside it Ask iOS again puts the permission question to iOS once more."
