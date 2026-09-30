@@ -99,10 +99,14 @@ struct SessionCard: View {
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(border, style: StrokeStyle(lineWidth: shown == .todo ? 1 : 2))
-        )
+        // Only a session that is done or missed says so with a frame; one
+        // still ahead is plain (his picture, 2026-09-30).
+        .overlay {
+            if shown != .todo {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(border, lineWidth: 2)
+            }
+        }
     }
 
     private var border: Color {
@@ -189,6 +193,10 @@ struct FlowRow: Layout {
 
 struct ExtraCard: View {
     let extra: ExtraSummary
+    /* Set on the extra's own screen: a round pen in the card's bottom corner,
+       under the tick and in line with it (his ask, 2026-09-30). In a list the
+       whole card is the tap target, so there is no pen there. */
+    var adjust: (() -> Void)?
     var body: some View {
         let activity = Extras.activity(extra.activity)
         HStack(alignment: .top, spacing: 14) {
@@ -211,10 +219,25 @@ struct ExtraCard: View {
                 }
             }
             Spacer(minLength: 0)
-            // An extra is something done, so it carries the done tick wherever the
-            // card appears — Today, Sessions, Settings, its own screen. Missing from
-            // build 34's Done list; he found it (2026-09-22).
-            DoneTick(washed: true)
+            // An extra is something done, so it carries the done tick wherever
+            // the card is shown; the pen sits below it, in the same line.
+            VStack(spacing: 0) {
+                DoneTick(washed: true)
+                if let adjust {
+                    Spacer(minLength: 14)
+                    Button(action: adjust) {
+                        ZStack {
+                            Circle().fill(Theme.surface2)
+                            Glyph(name: "icon-pen", size: 14).foregroundStyle(Theme.secondary)
+                        }
+                        .frame(width: 30, height: 30)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("extra-adjust")
+                    .accessibilityLabel("Adjust logged data")
+                }
+            }
+            .frame(maxHeight: .infinity, alignment: .top)
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))

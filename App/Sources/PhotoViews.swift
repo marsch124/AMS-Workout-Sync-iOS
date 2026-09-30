@@ -191,21 +191,12 @@ struct ExtraDetailView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    ExtraCard(extra: extra)
                     /*
-                     * Exactly what a logged session shows: a small grey Adjust on
-                     * the right (his choice for sessions, 2026-09-21). An extra is
-                     * logged by definition, so it is the only thing offered.
+                     * The pen lives inside the card now, a round one in the
+                     * bottom corner under the tick — it used to float beneath
+                     * the card, which looked like an afterthought (2026-09-30).
                      */
-                    if store.canLog {
-                        HStack {
-                            Spacer(minLength: 0)
-                            Button { adjusting = true } label: { Glyph(name: "icon-pen", size: 14) }
-                                .settingsButton(tint: Theme.secondary)
-                                .accessibilityIdentifier("extra-adjust")
-                                .accessibilityLabel("Adjust logged data")
-                        }
-                    }
+                    ExtraCard(extra: extra, adjust: store.canLog ? { adjusting = true } : nil)
                     PhotoStrip(owner: PhotoOwner(extra: extra))
                 }
                 .padding(16)

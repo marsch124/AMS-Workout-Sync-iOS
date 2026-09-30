@@ -105,6 +105,12 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (49)", date: "30 September 2026", headline: "Three things he pointed at", items: [
+            "Each tab keeps its own colour whether it is open or not, and the open one sits on a patch of that colour.",
+            "What kind of thing is a proper box now, carrying the activity's own badge in its own colour instead of a bare green word.",
+            "A session still to do has no frame around it. Done and missed still say so with one.",
+            "On an extra's own screen the pen is a round button inside the card, in the bottom corner under the tick."
+        ]),
         Release(version: "1.1 (48)", date: "30 September 2026", headline: "Every extra activity has its own icon", items: [
             "Yoga sits cross-legged, Walk walks, Hike carries a pack and a pole, Ski stands on its skis — drawn in the same hand as the swim, the bike, the run and the weight, and no longer borrowing them.",
             "In Settings, Read Health again says what it does, and Ask iOS for access only appears when nothing at all is coming through — there is no reason for it the rest of the time."

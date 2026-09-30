@@ -83,9 +83,9 @@ struct BottomBar: View {
      * strength. The words carry the meaning, so the glyphs are free to say
      * what the app is about. Each still takes its page's colour.
      */
-    private let items: [(id: String, label: String, icon: String)] = [
-        ("today", "Today", "icon-swim"), ("plan", "Sessions", "icon-bike"),
-        ("progress", "Progress", "icon-run"), ("settings", "Settings", "icon-strength")
+    private let items: [(id: String, label: String, icon: String, colour: Color)] = [
+        ("today", "Today", "icon-swim", Theme.today), ("plan", "Sessions", "icon-bike", Theme.plan),
+        ("progress", "Progress", "icon-run", Theme.progress), ("settings", "Settings", "icon-strength", Theme.settings)
     ]
 
     var body: some View {
@@ -94,12 +94,21 @@ struct BottomBar: View {
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) { tab = item.id }
                 } label: {
+                    // Each tab keeps its own colour whether it is open or not,
+                    // and the open one sits on a patch of it — the AMS
+                    // Instructions bar he pointed at (2026-09-30).
+                    let chosen = tab == item.id
                     VStack(spacing: 3) {
-                        Glyph(name: item.icon, size: 24)
+                        Glyph(name: item.icon, size: 24).foregroundStyle(item.colour)
                         Text(item.label).font(.caption2.weight(.semibold))
+                            .foregroundStyle(chosen ? item.colour : Theme.secondary)
                     }
                     .frame(maxWidth: .infinity, minHeight: 50)
-                    .foregroundStyle(tab == item.id ? tint : Theme.secondary)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(chosen ? item.colour.opacity(0.16) : .clear)
+                            .padding(.horizontal, 6)
+                    )
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("tab-" + item.id)

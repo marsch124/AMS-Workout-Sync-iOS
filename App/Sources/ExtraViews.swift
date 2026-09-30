@@ -106,14 +106,29 @@ struct ExtraFormView: View {
                         HealthOffNote()
                     }
                     labelled("What kind of thing") {
-                        Picker("Activity", selection: $activity) {
-                            ForEach(Extras.defaultActivities) {
-                                Text($0.label).tag($0.id).accessibilityIdentifier("extra-activity-" + $0.id)
+                        // A field like the others, wearing the activity's own
+                        // badge: bare green words beside boxed fields looked
+                        // unfinished (his picture, 2026-09-30).
+                        HStack(spacing: 12) {
+                            ZStack {
+                                Circle().fill(Theme.sport(chosen.colorId).opacity(0.22))
+                                Glyph(name: chosen.icon, size: 19)
+                                    .foregroundStyle(Theme.sportInk(chosen.colorId))
                             }
+                            .frame(width: 36, height: 36)
+                            Picker("Activity", selection: $activity) {
+                                ForEach(Extras.defaultActivities) {
+                                    Text($0.label).tag($0.id).accessibilityIdentifier("extra-activity-" + $0.id)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .tint(Theme.sportInk(chosen.colorId))
+                            .accessibilityIdentifier("extra-activity")
+                            .onChange(of: activity) { _, _ in isTraining = nil }
+                            Spacer(minLength: 0)
                         }
-                        .pickerStyle(.menu).tint(Theme.today)
-                        .accessibilityIdentifier("extra-activity")
-                        .onChange(of: activity) { _, _ in isTraining = nil }
+                        .padding(10)
+                        .background(box(changed: changes.contains(ExtraField.activity)))
                     }
                     field("What it was", id: ExtraField.what, text: $what, placeholder: "e.g. Dog walk along the river", keys: .default)
                     field("Duration", id: ExtraField.duration, text: $duration, placeholder: "e.g. 35", keys: .default,
