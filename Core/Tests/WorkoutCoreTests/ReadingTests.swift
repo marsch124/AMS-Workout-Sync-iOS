@@ -121,3 +121,63 @@ final class ReadingTests: XCTestCase {
         XCTAssertEqual(normalise("  Weekly  Schedules "), "weekly schedules")
     }
 }
+
+/*
+ * The waiting log survives an app update and a damaged file. Everything in
+ * here is something that would otherwise lose logging he has already done.
+ */
+final class QueueTests: XCTestCase {
+
+    func testAnEntryWrittenByAnOlderAppStillReads() throws {
+        // No "attempts", no "lastError": the shape before those fields existed.
+        let old = """
+        [{"id":"A1","workoutKey":"Weekly Schedules!7","sheet":"Weekly Schedules","row":7,
+          "dayKey":"2026-09-12","disciplineId":"run","title":"Long run",
+          "entry":{"actualDuration":"35","avgHr":"122","distanceUnit":"km"},"createdAt":770000000}]
+        """
+        let entries = try JSONDecoder().decode([QueuedEntry].self, from: Data(old.utf8))
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].id, "A1")
+        XCTAssertEqual(entries[0].attempts, 0)
+        XCTAssertNil(entries[0].lastError)
+        // And it still holds what he logged — an entry that survives empty is
+        // no better than one that is lost.
+        XCTAssertEqual(entries[0].entry.actualDuration, "35")
+        XCTAssertEqual(entries[0].entry.avgHr, "122")
+        XCTAssertFalse(entries[0].entry.missed)
+    }
+
+    func testAnEntryFromALaterAppDoesNotTakeTheOthersWithIt() throws {
+        // One entry of a shape this app does not know, between two it does.
+        let mixed = """
+        [{"id":"A1","workoutKey":"S!7","sheet":"S","row":7,"dayKey":"2026-09-12",
+          "disciplineId":"run","title":"a","entry":{"values":{},"distanceUnit":"km"},"createdAt":770000000},
+         {"nonsense":true},
+         {"id":"A3","workoutKey":"S!9","sheet":"S","row":9,"dayKey":"2026-09-13",
+          "disciplineId":"bike","title":"c","entry":{"values":{},"distanceUnit":"km"},"createdAt":770000001}]
+        """
+        // Whole-array decoding fails …
+        XCTAssertThrowsError(try JSONDecoder().decode([QueuedEntry].self, from: Data(mixed.utf8)))
+        // … so the app reads them one at a time, and keeps the two it understands.
+        let items = try XCTUnwrap(try JSONSerialization.jsonObject(with: Data(mixed.utf8)) as? [Any])
+        var recovered: [QueuedEntry] = []
+        for item in items {
+            if let bytes = try? JSONSerialization.data(withJSONObject: item),
+               let one = try? JSONDecoder().decode(QueuedEntry.self, from: bytes) { recovered.append(one) }
+        }
+        XCTAssertEqual(recovered.map(\.id), ["A1", "A3"])
+    }
+
+    func testAQueueRoundTripsThroughItsOwnFile() throws {
+        var entry = ExtraEntry(date: "2026-09-30", activity: "rowing", ref: "xqueue01")
+        entry.minutes = 20
+        entry.isTraining = true
+        let queued = QueuedEntry(extra: entry)
+        let data = try JSONEncoder().encode([queued])
+        let back = try JSONDecoder().decode([QueuedEntry].self, from: data)
+        XCTAssertEqual(back.count, 1)
+        XCTAssertEqual(back[0].extra?.ref, "xqueue01")
+        XCTAssertEqual(back[0].extra?.minutes, 20)
+        XCTAssertEqual(back[0].extra?.isTraining, true)
+    }
+}

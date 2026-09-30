@@ -82,6 +82,23 @@ public struct ExtraEntry: Codable, Equatable {
     /* Set when this corrects a row already on the sheet rather than adding one. */
     public var editing: ExtraTarget?
 
+    /* Read tolerantly, for the same reason LogEntry is: a queue written by an
+       older app must not lose the extra it was holding. */
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        date = (try? c.decode(String.self, forKey: .date)) ?? ""
+        activity = (try? c.decode(String.self, forKey: .activity)) ?? "other"
+        what = (try? c.decodeIfPresent(String.self, forKey: .what)) ?? ""
+        minutes = try? c.decodeIfPresent(Double.self, forKey: .minutes)
+        distance = try? c.decodeIfPresent(Double.self, forKey: .distance)
+        avgHr = try? c.decodeIfPresent(Double.self, forKey: .avgHr)
+        effort = try? c.decodeIfPresent(Double.self, forKey: .effort)
+        isTraining = (try? c.decodeIfPresent(Bool.self, forKey: .isTraining)) ?? false
+        notes = (try? c.decodeIfPresent(String.self, forKey: .notes)) ?? ""
+        ref = (try? c.decodeIfPresent(String.self, forKey: .ref)) ?? ""
+        editing = try? c.decodeIfPresent(ExtraTarget.self, forKey: .editing)
+    }
+
     public init(date: String, activity: String, ref: String = Extras.newRef()) {
         self.date = date
         self.activity = activity

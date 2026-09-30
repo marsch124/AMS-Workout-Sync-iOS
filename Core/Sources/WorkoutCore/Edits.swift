@@ -34,6 +34,33 @@ public struct LogEntry: Codable {
 
     public init() {}
 
+    /*
+     * Read tolerantly, like QueuedEntry: every optional already survives a
+     * missing key, but `missed` is a plain Bool, and one missing key threw the
+     * whole entry away — with everything he had logged in it (2026-09-30).
+     */
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        actualDuration = try? c.decodeIfPresent(String.self, forKey: .actualDuration)
+        actualDistance = try? c.decodeIfPresent(String.self, forKey: .actualDistance)
+        distanceUnit = try? c.decodeIfPresent(String.self, forKey: .distanceUnit)
+        avgHr = try? c.decodeIfPresent(String.self, forKey: .avgHr)
+        maxHr = try? c.decodeIfPresent(String.self, forKey: .maxHr)
+        avgSpeed = try? c.decodeIfPresent(String.self, forKey: .avgSpeed)
+        avgPower = try? c.decodeIfPresent(String.self, forKey: .avgPower)
+        cadence = try? c.decodeIfPresent(String.self, forKey: .cadence)
+        elevation = try? c.decodeIfPresent(String.self, forKey: .elevation)
+        calories = try? c.decodeIfPresent(String.self, forKey: .calories)
+        rpe = try? c.decodeIfPresent(String.self, forKey: .rpe)
+        avgPace = try? c.decodeIfPresent(String.self, forKey: .avgPace)
+        notes = try? c.decodeIfPresent(String.self, forKey: .notes)
+        doneLabel = try? c.decodeIfPresent(String.self, forKey: .doneLabel)
+        completedAt = try? c.decodeIfPresent(Date.self, forKey: .completedAt)
+        missed = (try? c.decodeIfPresent(Bool.self, forKey: .missed)) ?? false
+        moveTo = try? c.decodeIfPresent(String.self, forKey: .moveTo)
+        weekdayNames = try? c.decodeIfPresent([Int: String].self, forKey: .weekdayNames)
+    }
+
     func number(_ id: String) -> String? {
         switch id {
         case "avgHr": return avgHr

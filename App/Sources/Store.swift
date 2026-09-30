@@ -161,6 +161,39 @@ final class Store: ObservableObject {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("queue.json")
     }
 
+    /*
+     * The waiting log, read as forgivingly as it can be.
+     *
+     * It used to be one `try?`: a file that would not decode left the queue
+     * empty and said nothing, so everything he had logged and not yet sent
+     * was gone without a word. Now a single bad entry loses only itself, and
+     * a file that cannot be read at all is kept beside the queue rather than
+     * thrown away (2026-09-30).
+     */
+    private func loadQueue() {
+        guard let data = try? Data(contentsOf: queueURL), !data.isEmpty else { return }
+        if let saved = try? JSONDecoder().decode([QueuedEntry].self, from: data) {
+            queue = saved
+            return
+        }
+        var recovered: [QueuedEntry] = []
+        if let items = try? JSONSerialization.jsonObject(with: data) as? [Any] {
+            for item in items {
+                if let bytes = try? JSONSerialization.data(withJSONObject: item),
+                   let one = try? JSONDecoder().decode(QueuedEntry.self, from: bytes) {
+                    recovered.append(one)
+                }
+            }
+        }
+        queue = recovered
+        let kept = queueURL.deletingLastPathComponent().appendingPathComponent("queue-unreadable.json")
+        try? FileManager.default.removeItem(at: kept)
+        try? FileManager.default.copyItem(at: queueURL, to: kept)
+        lastProblem = recovered.isEmpty
+            ? "The waiting log on this phone could not be read. Nothing has been thrown away — it is kept as queue-unreadable.json."
+            : "Part of the waiting log could not be read; \(recovered.count) of it was recovered. The original is kept as queue-unreadable.json."
+    }
+
     private func saveQueue() {
         do {
             try FileManager.default.createDirectory(at: queueURL.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -187,9 +220,7 @@ final class Store: ObservableObject {
             UserDefaults.standard.removeObject(forKey: "health.enabled")
         }
         #endif
-        if let data = try? Data(contentsOf: queueURL), let saved = try? JSONDecoder().decode([QueuedEntry].self, from: data) {
-            queue = saved
-        }
+        loadQueue()
         fileName = UserDefaults.standard.string(forKey: nameKey) ?? ""
         readAt = UserDefaults.standard.object(forKey: readAtKey) as? Date
         #if DEBUG

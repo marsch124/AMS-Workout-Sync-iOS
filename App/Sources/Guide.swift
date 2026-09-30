@@ -111,6 +111,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (53)", date: "30 September 2026", headline: "Your waiting logging cannot go missing", items: [
+            "Anything logged but not yet sent to Dropbox lives in one file on this phone. If that file could not be read — which an app update could have caused on its own — the app used to start with an empty queue and say nothing. It now reads what it can, keeps a copy of anything it cannot, and tells you.",
+            "A record written by an older version of the app reads correctly, with the numbers you put in it."
+        ]),
         Release(version: "1.1 (52)", date: "30 September 2026", headline: "Hardening: nothing new, less to go wrong", items: [
             "A date the sheet cannot mean — a thirteenth month, a 31st of February — is refused instead of quietly becoming another day. A garbled date in the Extras sheet used to place the row in the wrong week.",
             "The part of the app that talks to Dropbox can no longer be brought down by an odd answer from the network: every such case now fails the sync, with a reason, instead of the app.",

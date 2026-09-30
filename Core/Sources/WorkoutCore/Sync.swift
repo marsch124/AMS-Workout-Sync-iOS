@@ -43,6 +43,31 @@ public struct QueuedEntry: Codable, Identifiable, Equatable {
     public var attempts: Int = 0
     public var lastError: String?
 
+    /*
+     * Read tolerantly.
+     *
+     * Swift's own decoding ignores a property's default value: a queue.json
+     * written before a field existed would fail to decode, and every unsent
+     * log on the phone would quietly disappear on the next app update. The
+     * fields that are only bookkeeping are read if present and defaulted if
+     * not (2026-09-30).
+     */
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        workoutKey = (try? c.decode(String.self, forKey: .workoutKey)) ?? ""
+        sheet = (try? c.decode(String.self, forKey: .sheet)) ?? ""
+        row = (try? c.decode(Int.self, forKey: .row)) ?? 0
+        dayKey = (try? c.decode(String.self, forKey: .dayKey)) ?? ""
+        disciplineId = (try? c.decode(String.self, forKey: .disciplineId)) ?? ""
+        title = (try? c.decode(String.self, forKey: .title)) ?? ""
+        entry = (try? c.decode(LogEntry.self, forKey: .entry)) ?? LogEntry()
+        extra = try? c.decodeIfPresent(ExtraEntry.self, forKey: .extra)
+        createdAt = (try? c.decode(Date.self, forKey: .createdAt)) ?? Date()
+        attempts = (try? c.decodeIfPresent(Int.self, forKey: .attempts)) ?? 0
+        lastError = try? c.decodeIfPresent(String.self, forKey: .lastError)
+    }
+
     public init(extra: ExtraEntry, now: Date = Date()) {
         id = UUID().uuidString
         workoutKey = ""; sheet = ""; row = 0; dayKey = extra.date; disciplineId = ""; title = ""
