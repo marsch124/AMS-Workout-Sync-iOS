@@ -75,6 +75,26 @@ followed, a row changed to another sport refused, one bad entry not blocking
 the rest, verify refusing bad bytes, the overlay and swap list, and extras
 appended without doubling.
 
+## The soak — weeks of use in a few seconds
+
+```bash
+swift build -c release --package-path Core --product soak
+Core/.build/release/soak <his-plan.xlsx> /tmp/soakwork 12
+```
+
+Twelve rounds of four logged sessions, a missed mark, a move and two extra
+workouts, through the real sync engine against a file-backed Dropbox, with
+someone saving the file in Excel before one upload so a conflict has to be
+survived. Then it reads the workbook back and checks every logged session's
+minutes, every missed mark, every move's new date AND unchanged words, every
+extra exactly once — and that every cell on every other sheet is what it was.
+Ends with "errors: none". Works on a copy; his own file is never touched.
+
+🪤 Build the mapping with `Plan.mapping(for:)`, never bare `autoDetect`: the
+wrapper is what reads the units out of his headings. With the bare one the
+duration unit stays "hours" and a harness will cheerfully write seconds into a
+minutes column and then blame the app.
+
 ## Progress — the figures
 
 ```bash
