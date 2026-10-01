@@ -49,6 +49,13 @@ jobs:
       - name: Model tests
         run: swift test --package-path Core
 
+      # Weeks of use against the invented workbook: logging, missed marks,
+      # moves, extras and a conflict, then the file checked cell by cell.
+      - name: Soak the sync engine
+        run: |
+          swift build -c release --package-path Core --product soak
+          Core/.build/release/soak UITests/Fixtures/plan.xlsx "$RUNNER_TEMP/soak" 3
+
       - name: UI tests
         run: |
           xcodebuild test \
