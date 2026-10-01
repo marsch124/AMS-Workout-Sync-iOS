@@ -14,7 +14,8 @@ struct GuideView: View {
     static let parts: [Part] = [
         Part(id: "What this app is", body: [
             "Your training plan lives in an Excel workbook in Dropbox. This app reads it, shows you the week and the day, and writes what you did back into the cells that are already there.",
-            "It writes nothing anywhere else. Every other part of the workbook is copied through untouched."
+            "It writes nothing anywhere else. Every other part of the workbook is copied through untouched.",
+            "Four tabs along the bottom, each in its own colour: swipe between them or tap one. Tapping the tab you are already on comes back to that tab's first screen, whatever you had opened."
         ]),
         Part(id: "Today", body: [
             "The week strip is one column a day, one bar a session. A solid block is recorded, a lighter block of the same colour is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
@@ -56,9 +57,9 @@ struct GuideView: View {
             "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
         ]),
         Part(id: "Progress", body: [
-            "The flag beside the weeks to go holds what the race is — distances, where, and the day. It is a tap because it is the one thing on that screen you already know.",
+            "The flag beside the weeks to go holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, the name your sheet gives it, and how many weeks it lasts.",
             "Nothing here is read from the Progress sheet — its cells are formulas that carry Excel's last answer, and the app never recalculates them. Every figure is worked out from the session rows each time the screen opens, and none of it is stored.",
-            "The road: weeks to the race, the phases as one bar with today marked on it, sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
+            "The road: weeks to the race, the phases as one bar with today marked on it — each phase in its own colour, cool early in the season and warm near the race, today's at full strength and the weeks ahead faint — sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
         ]),
         Part(id: "Your zones", body: [
             "A session's Z2 or Z4–Z5 is a pill on its screen. Tap it and the app says what that is for you this season — heart rate always, bike power on a ride once an FTP is entered, the swim paces on a swim — read from the Test Results & Zones sheet of your workbook, from your latest test. The app never works a zone out itself.",
@@ -111,6 +112,13 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (57)", date: "1 October 2026", headline: "The phases have colours and names", items: [
+            "The phase bar on Progress is no longer four greys: each phase has its own colour, cool at the start of the season and warm towards the race, so the bar reads at a glance. Today's phase is at full strength, the ones behind you and ahead of you a little lighter.",
+            "The bar used to run out of its card on the right. Your sheet has a four-week postseason after race day, and the bar is measured in days to the race, so the blocks came to more than the whole road. It stops at the race now, and a phase that falls after it says so instead of giving a length.",
+            "The flag beside the weeks to go now also lists the phases under the race: the colour, the name your sheet gives it, and how many weeks long it is. The bar had nothing to say what its blocks were.",
+            "Tap the tab you are already on and it goes back to that tab's own first screen — out of a session, out of a list, without pressing Back.",
+            "What Health hands over is a switch now rather than a button."
+        ]),
         Release(version: "1.1 (56)", date: "1 October 2026", headline: "Nothing left that can bring it down", items: [
             "The last places where an unexpected answer from the phone or the network would have stopped the app now stop only what they were doing — the calendar's dates, the sign-in address, a time zone.",
             "Four more tests of how an extra workout reaches your sheet: it lands on the first empty row and never over one in use, it reads back as itself, sending it twice does not double it, and a correction writes only the boxes you altered."

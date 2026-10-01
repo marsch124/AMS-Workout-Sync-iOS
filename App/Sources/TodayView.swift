@@ -8,6 +8,7 @@ struct ExtraDay: Identifiable, Equatable {
 }
 
 struct TodayView: View {
+    @Binding var path: NavigationPath
     @EnvironmentObject var store: Store
     /* The extra form and the day it is for, in one piece of state: two would
        let the sheet be built with today's day and yesterday's flag. */
@@ -15,7 +16,7 @@ struct TodayView: View {
     @State private var openExtra: ExtraSummary?
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 if let view = store.view {
                     content(view)

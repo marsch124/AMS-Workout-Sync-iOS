@@ -62,7 +62,8 @@ final class WorkoutSyncUITests: XCTestCase {
         XCTAssertTrue(app.buttons["tab-settings"].waitForExistence(timeout: 15))
         app.buttons["tab-settings"].tap()
 
-        let toggle = app.buttons["health-what"]
+        // A switch since build 57, not a button.
+        let toggle = app.switches["health-what"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 10), "Settings has no way to see what Health hands over")
         let today = app.descendants(matching: .any).matching(identifier: "health-today-row")
         XCTAssertEqual(today.count, 0, "the lists are behind the toggle until it is tapped")

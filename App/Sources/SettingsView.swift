@@ -13,6 +13,7 @@ import WorkoutCore
  * on, with one prominent button per screen at most.
  */
 struct SettingsView: View {
+    @Binding var path: NavigationPath
     @EnvironmentObject var store: Store
     @State private var picking = false
     @State private var browsing = false
@@ -20,7 +21,7 @@ struct SettingsView: View {
     @State private var problem: String?
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
@@ -366,10 +367,15 @@ struct HealthToday: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button(open ? "Hide" : "What Health hands over") {
-                withAnimation(.easeInOut(duration: 0.15)) { open.toggle() }
+            // A switch rather than a button: it is a thing left on or off,
+            // not an action (his ask, 2026-10-01).
+            Toggle(isOn: $open.animation(.easeInOut(duration: 0.15))) {
+                Text("What Health hands over")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.text)
             }
-            .settingsButton(tint: Theme.today)
+            .toggleStyle(.switch)
+            .tint(Theme.today)
             .accessibilityIdentifier("health-what")
 
             if open {

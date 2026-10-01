@@ -337,6 +337,42 @@ public enum Stats {
         public let started: Bool
     }
 
+    /* The phase bar on Progress, as fractions of the road.
+     *
+     * The bar is the road to the race, so it is measured in days from the
+     * plan's start to the race day. A sheet's phases need not stop there —
+     * his own has a four-week postseason after it — so a phase is cut at the
+     * race and one lying wholly beyond it gets no block. Without that the
+     * blocks added up to more than the road and the bar drew out of its card
+     * (seen on 1 October 2026, build 57).
+     */
+    public struct PhaseBlock: Identifiable, Equatable {
+        public var id: Int { index }
+        public let index: Int       // into road.phases
+        public let width: Double    // a fraction of the road
+    }
+
+    public static func phaseBlocks(_ road: Road) -> [PhaseBlock] {
+        // Counted inclusively, as a phase's own days are: the road from the
+        // first day of the plan to race day, both days in it.
+        let total = Double(max(1, daysBetween(road.start, road.raceDay) + 1))
+        var out: [PhaseBlock] = []
+        var used = 0.0
+        for (i, phase) in road.phases.enumerated() {
+            guard phase.from <= road.raceDay else { continue }
+            let end = min(phase.to, road.raceDay)
+            let days = daysBetween(phase.from, end) + 1
+            guard days > 0 else { continue }
+            // Phases a sheet has overlapping — two rows left sharing a week —
+            // would otherwise come to more than the whole road between them.
+            let width = min(Double(days) / total, 1 - used)
+            guard width > 0 else { break }
+            out.append(PhaseBlock(index: i, width: width))
+            used += width
+        }
+        return out
+    }
+
     public static func daysBetween(_ a: String, _ b: String) -> Int {
         guard let x = parseDayKey(a), let y = parseDayKey(b) else { return 0 }
         return Int((y.timeIntervalSince(x) / 86400).rounded())

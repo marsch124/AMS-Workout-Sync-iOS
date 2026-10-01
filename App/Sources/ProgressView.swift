@@ -172,21 +172,24 @@ struct RoadCard: View {
                 .font(.subheadline).foregroundStyle(Theme.secondary)
 
             if !road.phases.isEmpty {
-                let total = Double(max(1, Stats.daysBetween(road.start, road.raceDay)))
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         // Each phase as wide as the days it covers: the plan's own shape.
                         HStack(spacing: 0) {
-                            ForEach(Array(road.phases.enumerated()), id: \.element.id) { i, phase in
-                                let width = Double(max(1, Stats.daysBetween(phase.from, phase.to) + 1)) / total
+                            // Widths come from Stats.phaseBlocks, which cuts the
+                            // road off at the race — see the note there.
+                            ForEach(Stats.phaseBlocks(road)) { block in
+                                let phase = road.phases[block.index]
                                 let isNow = today >= phase.from && today <= phase.to
                                 let done = today > phase.to
                                 Rectangle()
-                                    .fill(Theme.progress.opacity(isNow ? 0.9 : (done ? 0.45 : 0.2 + Double(i % 4) * 0.06)))
+                                    .fill(Theme.phase(block.index, of: road.phases.count)
+                                        .opacity(isNow ? 1 : (done ? 0.75 : 0.55)))
                                     .overlay(alignment: .trailing) { Rectangle().fill(Theme.surface).frame(width: 1.5) }
-                                    .frame(width: geo.size.width * width)
+                                    .frame(width: geo.size.width * block.width)
                             }
                         }
+                        .frame(width: geo.size.width, alignment: .leading)
                         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                         if road.started && road.through <= 1 {
                             Rectangle().fill(Theme.text).frame(width: 2, height: 22)
@@ -198,6 +201,36 @@ struct RoadCard: View {
                 if let now = road.phases.first(where: { today >= $0.from && today <= $0.to }) {
                     Text("You are in ").font(.subheadline).foregroundStyle(Theme.secondary)
                     + Text(now.name).font(.subheadline.weight(.bold)).foregroundStyle(Theme.text)
+                }
+                // The whole build, named, behind the same flag as the race (his
+                // pick, 2026-10-01): a bar of colours explains itself once, and
+                // after that it is only in the way.
+                if raceOpen {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Each block is a phase, as wide as it is long. The line is today. The bar ends at the race, so anything after it has no block.")
+                            .font(.caption).foregroundStyle(Theme.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        ForEach(Array(road.phases.enumerated()), id: \.element.id) { i, phase in
+                            let isNow = today >= phase.from && today <= phase.to
+                            let weeks = max(1, (Stats.daysBetween(phase.from, phase.to) + 1) / 7)
+                            let after = phase.from > road.raceDay
+                            HStack(spacing: 8) {
+                                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                    .fill(Theme.phase(i, of: road.phases.count)
+                                        .opacity(isNow ? 1 : (today > phase.to ? 0.75 : 0.55)))
+                                    .frame(width: 16, height: 11)
+                                Text(phase.name)
+                                    .font(.caption.weight(isNow ? .bold : .regular))
+                                    .foregroundStyle(isNow ? Theme.text : Theme.secondary)
+                                Spacer(minLength: 0)
+                                Text(after ? "after the race" : "\(weeks) week\(weeks == 1 ? "" : "s")")
+                                    .font(.caption).foregroundStyle(Theme.secondary)
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier("phase-row")
+                        }
+                    }
+                    .padding(.top, 2)
                 }
             }
 

@@ -2,6 +2,7 @@ import SwiftUI
 import WorkoutCore
 
 struct PlanTab: View {
+    @Binding var path: NavigationPath
     @EnvironmentObject var store: Store
     @State private var range: Range = {
         #if DEBUG
@@ -49,7 +50,7 @@ struct PlanTab: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 if let view = store.view {
                     // The four words stay put while the list moves under them:

@@ -118,6 +118,38 @@ struct Pill: View {
     }
 }
 
+/*
+ * The build, phase by phase: cool at the start, warm at the race. The colour
+ * is the plan's own shape — a block says where in the build it sits without a
+ * word (his ask for more colour, 2026-10-01).
+ */
+extension Theme {
+    private static let phaseHues: [UInt32] = [
+        0x4f87f8,   // the swim's blue — the far start
+        0x18a5b8,   // teal
+        0x14a37a,   // green
+        0x85ce6c,   // the run's green
+        0xd8b931,   // amber
+        0xff8c1a,   // the strength orange
+        0xf0603c,   // warm
+        0xef4444    // the race's red
+    ]
+
+    /* The i-th of n phases, spread across the whole range however many there are. */
+    static func phase(_ i: Int, of n: Int) -> Color {
+        guard n > 1 else { return Color(hex: phaseHues[0]) }
+        let place = Double(min(max(i, 0), n - 1)) / Double(n - 1) * Double(phaseHues.count - 1)
+        let low = Int(place), high = min(low + 1, phaseHues.count - 1)
+        let t = place - Double(low)
+        let a = phaseHues[low], b = phaseHues[high]
+        func part(_ shift: UInt32) -> Double {
+            let x = Double((a >> shift) & 0xff) / 255, y = Double((b >> shift) & 0xff) / 255
+            return x + (y - x) * t
+        }
+        return Color(.sRGB, red: part(16), green: part(8), blue: part(0))
+    }
+}
+
 /* A pill carrying a mark instead of words, for what a phrase said twice over. */
 struct MarkPill: View {
     let icon: String

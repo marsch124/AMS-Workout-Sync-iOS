@@ -33,16 +33,31 @@ struct RootView: View {
      * The three screens are pages you swipe between, as in AMS PARA, with a
      * bar of our own underneath — the page style has no tab bar of its own.
      */
+    @State private var todayPath = NavigationPath()
+    @State private var planPath = NavigationPath()
+    @State private var settingsPath = NavigationPath()
+
     var body: some View {
         TabView(selection: $tab) {
-            TodayView().tag("today")
-            PlanTab().tag("plan")
+            TodayView(path: $todayPath).tag("today")
+            PlanTab(path: $planPath).tag("plan")
             ProgressView().tag("progress")
-            SettingsView().tag("settings")
+            SettingsView(path: $settingsPath).tag("settings")
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea(.keyboard)
-        .safeAreaInset(edge: .bottom, spacing: 0) { BottomBar(tab: $tab, tint: tint) }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            // Pressing the tab you are already on comes back to its own first
+            // screen, as every other app does (his ask, 2026-10-01).
+            BottomBar(tab: $tab, tint: tint) { which in
+                switch which {
+                case "today": todayPath = NavigationPath()
+                case "plan": planPath = NavigationPath()
+                case "settings": settingsPath = NavigationPath()
+                default: break
+                }
+            }
+        }
         .tint(tint)
         #if DEBUG
         .overlay {
@@ -77,6 +92,8 @@ struct RootView: View {
 struct BottomBar: View {
     @Binding var tab: String
     let tint: Color
+    /* Told when the tab already open is pressed again. */
+    var again: (String) -> Void = { _ in }
 
     /*
      * The four disciplines across the bar — his idea: swim, bike, run,
@@ -92,7 +109,11 @@ struct BottomBar: View {
         HStack(spacing: 0) {
             ForEach(items, id: \.id) { item in
                 Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { tab = item.id }
+                    if tab == item.id {
+                        again(item.id)
+                    } else {
+                        withAnimation(.easeInOut(duration: 0.2)) { tab = item.id }
+                    }
                 } label: {
                     // Each tab keeps its own colour whether it is open or not,
                     // and the open one sits on a patch of it — the AMS
