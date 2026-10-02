@@ -179,18 +179,46 @@ struct RoadCard: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         // Each phase as wide as the days it covers: the plan's own shape.
+                        let blocks = Stats.phaseBlocks(road)
                         HStack(spacing: 0) {
                             // Widths come from Stats.phaseBlocks, which cuts the
                             // road off at the race — see the note there.
-                            ForEach(Stats.phaseBlocks(road)) { block in
+                            ForEach(Array(blocks.enumerated()), id: \.element.id) { i, block in
                                 let phase = road.phases[block.index]
+                                let startX = blocks.prefix(i).reduce(0) { $0 + $1.width } * geo.size.width
                                 let isNow = today >= phase.from && today <= phase.to
                                 let done = today > phase.to
+                                let width = geo.size.width * block.width
                                 Rectangle()
                                     .fill(Theme.phase(block.index, of: road.phases.count)
                                         .opacity(isNow ? 1 : (done ? 0.75 : 0.55)))
+                                    .overlay {
+                                        // How many sessions the phase holds, small,
+                                        // inside its own block — his ask of 2 October
+                                        // 2026. Theme.text is dark on the pale blocks
+                                        // of daylight and white on the night ones.
+                                        //
+                                        // Today's line crosses one block, and it drew
+                                        // straight through that block's number. The
+                                        // number sits in the roomier of the two sides
+                                        // of the line instead. A block too narrow for
+                                        // it shows none: half a number is worse.
+                                        let lineX = geo.size.width * road.through - startX
+                                        let split = (road.started && lineX > 0 && lineX < width)
+                                        let room = split ? max(lineX, width - lineX) : width
+                                        let nudge = !split ? 0 : (lineX >= width - lineX
+                                                                  ? lineX / 2 - width / 2
+                                                                  : lineX + (width - lineX) / 2 - width / 2)
+                                        if phase.sessions > 0, room >= 17 {
+                                            Text("\(phase.sessions)")
+                                                .font(.system(size: 9, weight: .semibold).monospacedDigit())
+                                                .foregroundStyle(Theme.text)
+                                                .lineLimit(1)
+                                                .offset(x: nudge)
+                                        }
+                                    }
                                     .overlay(alignment: .trailing) { Rectangle().fill(Theme.surface).frame(width: 1.5) }
-                                    .frame(width: geo.size.width * block.width)
+                                    .frame(width: width)
                             }
                         }
                         .frame(width: geo.size.width, alignment: .leading)
@@ -201,7 +229,7 @@ struct RoadCard: View {
                         }
                     }
                 }
-                .frame(height: 16)
+                .frame(height: 18)
                 if let now = road.phases.first(where: { today >= $0.from && today <= $0.to }) {
                     Text("You are in ").font(.subheadline).foregroundStyle(Theme.secondary)
                     + Text(now.name).font(.subheadline.weight(.bold)).foregroundStyle(Theme.text)

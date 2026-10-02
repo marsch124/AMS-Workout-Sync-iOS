@@ -57,7 +57,7 @@ struct GuideView: View {
             "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
         ]),
         Part(id: "Progress", body: [
-            "The flag beside the weeks to go holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, the name your sheet gives it, how many weeks it lasts and how many sessions it holds. Under the bar, how many of the phase you are in are behind you.",
+            "The flag beside the weeks to go holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, the name your sheet gives it, how many weeks it lasts and how many sessions it holds. Each block of the bar carries that number too, where it is wide enough to hold it. Under the bar, how many of the phase you are in are behind you.",
             "Nothing here is read from the Progress sheet — its cells are formulas that carry Excel's last answer, and the app never recalculates them. Every figure is worked out from the session rows each time the screen opens, and none of it is stored.",
             "The road: weeks to the race, the phases as one bar with today marked on it — each phase in its own colour, cool early in the season and warm near the race, today's at full strength and the weeks ahead faint — sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for, counting only weeks that are over — a week still being lived would show the sessions left in it as hours missed. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
         ]),
@@ -112,6 +112,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (62)", date: "2 October 2026", headline: "Each phase carries its own number", items: [
+            "Inside every block of the phase bar, small, the number of sessions that phase holds. The two short blocks near the race — Peak and Taper — have no room for a figure, and their counts are in the list behind the flag.",
+            "Today's line used to be drawn straight through the number of the phase you are in. The number now sits to whichever side of the line has more room."
+        ]),
         Release(version: "1.1 (61)", date: "2 October 2026", headline: "The weekly figures wait for the week to finish", items: [
             "Twelve weeks counts only weeks that are over. A week still being lived showed every session not yet done as time missed, so a Thursday reading had you behind on hours you still had the weekend to do.",
             "Its columns are the weeks that hold training. Nine empty weeks from before the plan began used to be drawn too, squeezing the real ones into the corner with dates printed under nothing — and the last date was cut off at \"21…\". The dates are spaced evenly now, each under its own column, and the line for the hours asked for is the width of the column it belongs to.",
