@@ -116,8 +116,11 @@ struct BottomBar: View {
                     }
                 } label: {
                     // Each tab keeps its own colour whether it is open or not,
-                    // and the open one sits on a patch of it — the AMS
-                    // Instructions bar he pointed at (2026-09-30).
+                    // and the open one's colour fills its whole cell — the full
+                    // width of its quarter, from the top edge of the bar down to
+                    // the bottom of the phone. It was a rounded pill floating
+                    // inside the cell until he drew the cells he meant and chose
+                    // this (2 October 2026).
                     let chosen = tab == item.id
                     VStack(spacing: 3) {
                         Glyph(name: item.icon, size: 24).foregroundStyle(item.colour)
@@ -125,11 +128,7 @@ struct BottomBar: View {
                             .foregroundStyle(chosen ? item.colour : Theme.secondary)
                     }
                     .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(chosen ? item.colour.opacity(0.16) : .clear)
-                            .padding(.horizontal, 6)
-                    )
+                    .background(chosen ? item.colour.opacity(0.16) : .clear)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("tab-" + item.id)

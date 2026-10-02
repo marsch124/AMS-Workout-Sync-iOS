@@ -15,7 +15,7 @@ struct GuideView: View {
         Part(id: "What this app is", body: [
             "Your training plan lives in an Excel workbook in Dropbox. This app reads it, shows you the week and the day, and writes what you did back into the cells that are already there.",
             "It writes nothing anywhere else. Every other part of the workbook is copied through untouched.",
-            "Four tabs along the bottom, each in its own colour: swipe between them or tap one. Tapping the tab you are already on comes back to that tab's first screen, whatever you had opened."
+            "Four tabs along the bottom, each in its own colour, each with a quarter of the bar to itself: the one you are on is that whole quarter in its colour. Swipe between them or tap one. Tapping the tab you are already on comes back to that tab's first screen, whatever you had opened."
         ]),
         Part(id: "Today", body: [
             "The week strip is one column a day, one bar a session. A solid block is recorded, a lighter block of the same colour is still to do, hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key.",
@@ -112,6 +112,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (59)", date: "2 October 2026", headline: "The open tab fills its whole quarter", items: [
+            "The tab you are on is a block of its own colour filling its quarter of the bar — the full width of it, from the top edge down to the bottom of the phone — instead of a small rounded button floating in the middle of it."
+        ]),
         Release(version: "1.1 (58)", date: "2 October 2026", headline: "The extras lose their dots", items: [
             "An extra workout in the week strip is its dotted outline and nothing inside it: the line of dots down the middle is gone, as you asked. The key shows the same."
         ]),
