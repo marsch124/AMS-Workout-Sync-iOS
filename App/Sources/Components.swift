@@ -138,22 +138,15 @@ struct SectionHeading: View {
 }
 
 
-/* Outside the plan: the activity's own colour, dotted down the middle — the web app's v1.71.1 drawing. */
+/* Outside the plan: the activity's own colour inside a dotted outline.
+   A line of dots ran down the middle of it until he asked for it to go
+   (2 October 2026) — the outline alone says enough. */
 struct DottedFill: View {
     let colorId: String
     var body: some View {
         let colour = Theme.sport(colorId)
         RoundedRectangle(cornerRadius: 3, style: .continuous)
             .fill(colour.opacity(0.22))
-            .overlay(
-                GeometryReader { geo in
-                    let n = max(1, Int(geo.size.height / 6))
-                    VStack(spacing: 3) {
-                        ForEach(0..<n, id: \.self) { _ in Circle().fill(colour).frame(width: 3, height: 3) }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            )
             .overlay(RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .strokeBorder(style: StrokeStyle(lineWidth: 1.2, dash: [2, 2]))
                 .foregroundStyle(colour))

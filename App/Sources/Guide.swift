@@ -112,6 +112,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (58)", date: "2 October 2026", headline: "The extras lose their dots", items: [
+            "An extra workout in the week strip is its dotted outline and nothing inside it: the line of dots down the middle is gone, as you asked. The key shows the same."
+        ]),
         Release(version: "1.1 (57)", date: "1 October 2026", headline: "The phases have colours and names", items: [
             "The phase bar on Progress is no longer four greys: each phase has its own colour, cool at the start of the season and warm towards the race, so the bar reads at a glance. Today's phase is at full strength, the ones behind you and ahead of you a little lighter.",
             "The bar used to run out of its card on the right. Your sheet has a four-week postseason after race day, and the bar is measured in days to the race, so the blocks came to more than the whole road. It stops at the race now, and a phase that falls after it says so instead of giving a length.",
