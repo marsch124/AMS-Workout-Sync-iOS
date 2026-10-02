@@ -112,6 +112,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (60)", date: "2 October 2026", headline: "What Health hands over opens, it does not switch on", items: [
+            "That row carries a chevron now, turning to point down when it is open — the sign for showing and hiding a piece of reading. It was a switch for three builds, and a switch means turning something on: sitting directly under In use and Stop, it read as if it controlled Apple Health itself. It never did."
+        ]),
         Release(version: "1.1 (59)", date: "2 October 2026", headline: "The open tab fills its whole quarter", items: [
             "The tab you are on is a block of its own colour filling its quarter of the bar — the full width of it, from the top edge down to the bottom of the phone — instead of a small rounded button floating in the middle of it."
         ]),

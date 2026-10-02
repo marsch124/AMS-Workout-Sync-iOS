@@ -367,16 +367,30 @@ struct HealthToday: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // A switch rather than a button: it is a thing left on or off,
-            // not an action (his ask, 2026-10-01).
-            Toggle(isOn: $open.animation(.easeInOut(duration: 0.15))) {
-                Text("What Health hands over")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.text)
+            // A disclosure, not a switch: this shows and hides a piece of
+            // reading, it does not turn anything on. A switch here also sat
+            // directly under In use / Stop and read as if it controlled Health
+            // itself — he asked whether it was right, and it was not
+            // (2 October 2026). The chevron is the one the Settings rows use.
+            Button {
+                withAnimation(.easeInOut(duration: 0.15)) { open.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Text("What Health hands over")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.text)
+                    Spacer(minLength: 0)
+                    Text("›")
+                        .font(.title2)
+                        .foregroundStyle(Theme.secondary)
+                        .rotationEffect(.degrees(open ? 90 : 0))
+                }
+                .contentShape(Rectangle())
             }
-            .toggleStyle(.switch)
-            .tint(Theme.today)
+            .buttonStyle(.plain)
             .accessibilityIdentifier("health-what")
+            .accessibilityLabel("What Health hands over")
+            .accessibilityValue(open ? "showing" : "hidden")
 
             if open {
                 day("WHAT APPLE HEALTH HAS TODAY", today, name: "health-today")
