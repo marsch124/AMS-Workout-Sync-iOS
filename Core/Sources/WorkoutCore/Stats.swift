@@ -318,12 +318,27 @@ public enum Stats {
         return (0..<count).reversed().map { PlanView.addDays(thisWeek, -$0 * 7) }
     }
 
+    /* The same, but ending with the last week that is actually over.
+     *
+     * A week still being lived shows every session not yet done as time missed,
+     * so a Thursday reading says he is behind on hours he still has the weekend
+     * to do. The weekly figures count finished weeks only (2 October 2026).
+     */
+    public static func completedWeekStarts(_ count: Int, today: String) -> [String] {
+        let lastFinished = PlanView.addDays(PlanView.weekStart(today), -7)
+        return (0..<count).reversed().map { PlanView.addDays(lastFinished, -$0 * 7) }
+    }
+
     // MARK: the road to the race
 
     public struct Phase: Identifiable, Equatable {
         public var id: String { name + from }
         public let name: String
         public var from: String, to: String
+        /* Sessions the plan puts in this phase, and how many are recorded —
+           a rest day is not a session, a missed one is not done. */
+        public var sessions: Int = 0
+        public var done: Int = 0
     }
 
     public struct Road: Equatable {
@@ -393,8 +408,18 @@ public enum Stats {
         for w in visible {
             let name = w.phase.trimmingCharacters(in: .whitespaces)
             if name.isEmpty { continue }
-            if let i = phases.indices.last, phases[i].name == name { phases[i].to = w.dayKey; continue }
-            phases.append(Phase(name: name, from: w.dayKey, to: w.dayKey))
+            let counts = w.discipline.id != "rest"
+            if let i = phases.indices.last, phases[i].name == name {
+                phases[i].to = w.dayKey
+                if counts {
+                    phases[i].sessions += 1
+                    if w.logged && !w.missed { phases[i].done += 1 }
+                }
+                continue
+            }
+            phases.append(Phase(name: name, from: w.dayKey, to: w.dayKey,
+                                sessions: counts ? 1 : 0,
+                                done: counts && w.logged && !w.missed ? 1 : 0))
         }
 
         let start = first.dayKey

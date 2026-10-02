@@ -121,4 +121,75 @@ final class ProgressTests: XCTestCase {
             XCTAssertLessThanOrEqual(sum, 1.0001, "phases \(shape.map(\.0)) overflow the bar at \(sum)")
         }
     }
+
+    // MARK: the weeks that are over, and the size of a phase
+
+    /* A week still being lived counts every session not yet done as time
+       missed, so a Thursday reading said he was behind on hours he still had
+       the weekend to do (his words, 2 October 2026). */
+    func testTheWeeklyFiguresStopAtTheWeekJustGone() {
+        let starts = Stats.completedWeekStarts(12, today: "2026-10-02")   // a Friday
+        XCTAssertEqual(starts.count, 12)
+        XCTAssertEqual(PlanView.weekStart("2026-10-02"), "2026-09-28", "this week began on the Monday")
+        XCTAssertEqual(starts.last, "2026-09-21", "the last one counted is the week before this one")
+        XCTAssertFalse(starts.contains("2026-09-28"), "the week being lived is not in the figures")
+        XCTAssertEqual(Set(starts).count, 12, "no week is listed twice")
+        for w in starts { XCTAssertEqual(PlanView.weekStart(w), w, "every one of them is a Monday") }
+    }
+
+    /* Monday is the awkward day: the week that just began holds nothing yet. */
+    func testOnAMondayTheWeekJustBegunIsStillLeftOut() {
+        let starts = Stats.completedWeekStarts(3, today: "2026-09-28")   // the Monday itself
+        XCTAssertEqual(starts, ["2026-09-07", "2026-09-14", "2026-09-21"])
+    }
+
+    /* A real mapping, read from the fixture workbook: the phase counting does
+       not depend on it, but building a road does. */
+    private func aMapping() throws -> Mapping {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "Fixtures/plan", withExtension: "xlsx"))
+        return try XCTUnwrap(try Plan.mapping(for: Workbook(data: try Data(contentsOf: url))))
+    }
+
+    private func session(_ day: String, phase: String, sport: String = "run",
+                         logged: Bool = false, missed: Bool = false) -> Workout {
+        Workout(key: day + sport, sheet: "Weekly Schedules", row: 1, rows: [1],
+                date: parseDayKey(day)!, dayKey: day, disciplineRaw: sport,
+                discipline: Discipline(id: sport, label: sport.capitalized, synonyms: []),
+                title: "A session", phase: phase, sections: [],
+                planned: Planned(durationRaw: 60, distanceRaw: nil, intensity: "", description: ""),
+                results: [:],
+                loggedInSheet: logged, missed: missed, logged: logged)
+    }
+
+    /* He asked for the size of each phase, and how much of the one he is in is
+       behind him. */
+    func testAPhaseKnowsHowManySessionsItHoldsAndHowManyAreDone() throws {
+        let plan = [session("2026-01-05", phase: "Base 1", logged: true),
+                    session("2026-01-06", phase: "Base 1"),
+                    session("2026-01-07", phase: "Base 1", sport: "rest"),       // not a session
+                    session("2026-01-08", phase: "Base 1", logged: true, missed: true), // not done
+                    session("2026-01-12", phase: "Base 2", logged: true),
+                    session("2026-01-13", phase: "Base 2")]
+        let road = Stats.road(plan, today: "2026-01-09", mapping: try aMapping())
+        XCTAssertNotNil(road)
+        let base1 = road!.phases.first { $0.name == "Base 1" }
+        XCTAssertEqual(base1?.sessions, 3, "the rest day is not a session")
+        XCTAssertEqual(base1?.done, 1, "a missed session is not a done one")
+        let base2 = road!.phases.first { $0.name == "Base 2" }
+        XCTAssertEqual(base2?.sessions, 2)
+        XCTAssertEqual(base2?.done, 1)
+    }
+
+    /* The phases must add up to the figure printed beside them on the same
+       card, or the two readings argue with each other. */
+    func testThePhasesAddUpToTheRoadsOwnTotals() throws {
+        let plan = [session("2026-01-05", phase: "Base 1", logged: true),
+                    session("2026-01-06", phase: "Base 1"),
+                    session("2026-01-07", phase: "Base 1", sport: "rest"),
+                    session("2026-01-12", phase: "Base 2", logged: true),
+                    session("2026-01-13", phase: "Base 2", logged: true, missed: true)]
+        let road = Stats.road(plan, today: "2026-01-09", mapping: try aMapping())!
+        XCTAssertEqual(road.phases.reduce(0) { $0 + $1.sessions }, road.sessions)
+        XCTAssertEqual(road.phases.reduce(0) { $0 + $1.done }, road.done)
+    }
 }

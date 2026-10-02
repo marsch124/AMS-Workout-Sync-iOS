@@ -93,7 +93,11 @@ struct Figure: View {
     let label: String
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.title2.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
+            // One line, always: 327h 23m used to fold onto a second line while
+            // the figures beside it stayed on one, and the row read as a mess
+            // (his picture, 2 October 2026).
+            Text(value).font(.title3.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
+                .lineLimit(1).minimumScaleFactor(0.6)
             Text(label).font(.caption).foregroundStyle(Theme.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -201,13 +205,18 @@ struct RoadCard: View {
                 if let now = road.phases.first(where: { today >= $0.from && today <= $0.to }) {
                     Text("You are in ").font(.subheadline).foregroundStyle(Theme.secondary)
                     + Text(now.name).font(.subheadline.weight(.bold)).foregroundStyle(Theme.text)
+                    if now.sessions > 0 {
+                        Text("\(now.done) of its \(now.sessions) sessions done")
+                            .font(.caption).foregroundStyle(Theme.secondary)
+                            .accessibilityIdentifier("phase-now-done")
+                    }
                 }
                 // The whole build, named, behind the same flag as the race (his
                 // pick, 2026-10-01): a bar of colours explains itself once, and
                 // after that it is only in the way.
                 if raceOpen {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("Each block is a phase, as wide as it is long. The line is today. The bar ends at the race, so anything after it has no block.")
+                        Text("Each block is a phase, as wide as it is long, and the figure after its weeks is how many sessions it holds. The line is today. The bar ends at the race, so anything after it has no block.")
                             .font(.caption).foregroundStyle(Theme.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                         ForEach(Array(road.phases.enumerated()), id: \.element.id) { i, phase in
@@ -223,8 +232,10 @@ struct RoadCard: View {
                                     .font(.caption.weight(isNow ? .bold : .regular))
                                     .foregroundStyle(isNow ? Theme.text : Theme.secondary)
                                 Spacer(minLength: 0)
-                                Text(after ? "after the race" : "\(weeks) week\(weeks == 1 ? "" : "s")")
+                                Text(after ? "after the race"
+                                           : "\(weeks) week\(weeks == 1 ? "" : "s") · \(phase.sessions)")
                                     .font(.caption).foregroundStyle(Theme.secondary)
+                                    .lineLimit(1)
                             }
                             .accessibilityElement(children: .combine)
                             .accessibilityIdentifier("phase-row")
@@ -234,7 +245,11 @@ struct RoadCard: View {
                 }
             }
 
-            HStack(spacing: 8) {
+            // Three equal columns. Giving the two times a higher layout
+            // priority starved the count to nothing and left a hole where it
+            // had been; a third of the row each, with the figure shrinking to
+            // stay on one line, is enough.
+            HStack(alignment: .top, spacing: 10) {
                 Figure(value: "\(road.done)", label: "done of \(road.sessions)")
                 Figure(value: hours(road.doneSeconds), label: "banked of \(hours(road.plannedSoFar)) due")
                 Figure(value: hours(road.plannedAll), label: "the whole build")
@@ -328,32 +343,47 @@ struct WeeksCard: View {
         let weeks = load.weeks.filter { $0.planned > 0 || $0.actual > 0 }
         if weeks.count < 3 { EmptyView() } else {
             let share = load.planned > 0 ? Int((load.actual / load.planned * 100).rounded()) : 0
+            // About five labels, however many weeks there are, counted back from
+            // the last so the gaps are even and the newest week is always named.
+            // Every third regardless left three columns sharing one label, and
+            // taken forwards the last two landed side by side (2 October 2026).
+            let step = max(1, Int((Double(weeks.count) / 5).rounded(.up)))
+            let labelled = Set(stride(from: weeks.count - 1, through: 0, by: -step).map { weeks[$0].start })
             StatCard(title: "Twelve weeks",
-                     lede: load.planned > 0 ? "\(hoursShort(load.actual)) of \(hoursShort(load.planned)) asked for over these twelve weeks — \(share)%." : "Nothing planned in these twelve weeks.") {
+                     lede: load.planned > 0 ? "\(hoursShort(load.actual)) of \(hoursShort(load.planned)) asked for over the last twelve finished weeks — \(share)%." : "Nothing planned in the last twelve finished weeks.") {
                 Chart {
-                    ForEach(load.weeks) { w in
-                        BarMark(x: .value("Week", w.start), y: .value("Hours", w.actual / 3600))
-                            .foregroundStyle(w.start == load.weeks.last?.start ? Theme.progress : Theme.progress.opacity(0.55))
+                    // Only the weeks that hold something. Nine empty columns from
+                    // before the plan began pushed his three real ones into the
+                    // corner and put labels under nothing at all.
+                    ForEach(weeks) { w in
+                        BarMark(x: .value("Week", w.start), y: .value("Hours", w.actual / 3600),
+                                width: .ratio(0.6))
+                            .foregroundStyle(w.start == weeks.last?.start ? Theme.progress : Theme.progress.opacity(0.55))
                             .cornerRadius(3)
                         if w.planned > 0 {
-                            RuleMark(xStart: .value("Week", w.start), xEnd: .value("Week", w.start), y: .value("Planned", w.planned / 3600))
-                            RectangleMark(x: .value("Week", w.start), y: .value("Planned", w.planned / 3600), height: 2)
+                            // As wide as its own column and no wider: the line
+                            // used to run the whole band and touch its neighbour.
+                            RectangleMark(x: .value("Week", w.start), y: .value("Planned", w.planned / 3600),
+                                          width: .ratio(0.68), height: 2)
                                 .foregroundStyle(Theme.text)
                         }
                     }
                 }
                 .chartXAxis {
-                    AxisMarks(values: load.weeks.enumerated().filter { $0.offset % 3 == 0 || $0.offset == load.weeks.count - 1 }.map { $0.element.start }) { value in
+                    AxisMarks(values: weeks.map(\.start).filter { labelled.contains($0) }) { value in
                         AxisValueLabel {
                             if let s = value.as(String.self), let d = parseDayKey(s) {
-                                Text(Dates.formatter("dMMM").string(from: d)).font(.caption2)
+                                Text(Dates.formatter("dMMM").string(from: d))
+                                    .font(.caption2).fixedSize()
                             }
                         }
                     }
                 }
                 .chartYAxis { AxisMarks(position: .leading) { v in AxisValueLabel { if let h = v.as(Double.self) { Text("\(Int(h))h").font(.caption2) } } } }
                 .frame(height: 150)
-                Text("Each column is a week: the hours you did, with a line across it where the plan asked you to reach. This week is still going, so its column is short by however much of it is left.")
+                // Room for the last date, which used to be clipped to "21…".
+                .padding(.trailing, 14)
+                Text("Each column is a week with training in it: the hours you did, with a line across it where the plan asked you to reach. Only weeks that are over are counted — this week is still being lived, so counting it would show its remaining sessions as hours you had missed.")
                     .font(.caption).foregroundStyle(Theme.secondary)
             }
         }

@@ -459,8 +459,8 @@ final class Store: ObservableObject {
         return Progress(
             summary: Stats.summarise(plan, moves: moves, movesSince: movesSince, today: today, mapping: mapping),
             trends: Stats.trends(Stats.trendRows(plan, mapping)),
-            load: Stats.load(Stats.loadRows(plan, mapping), weekStarts: Stats.recentWeekStarts(12, today: today),
-                             endExclusive: PlanView.addDays(PlanView.weekStart(today), 7)),
+            load: Stats.load(Stats.loadRows(plan, mapping), weekStarts: Stats.completedWeekStarts(12, today: today),
+                             endExclusive: PlanView.weekStart(today)),
             road: Stats.road(view.visible, today: today, mapping: mapping))
     }
 

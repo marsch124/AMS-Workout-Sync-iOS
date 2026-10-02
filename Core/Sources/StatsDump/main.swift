@@ -17,8 +17,8 @@ func dump(_ path: String) throws -> [String: Any] {
     let view = PlanView(plan: plan, mapping: mapping)
     let s = Stats.summarise(plan, moves: [:], movesSince: nil, today: today, mapping: mapping)
     let trends = Stats.trends(Stats.trendRows(plan, mapping))
-    let load = Stats.load(Stats.loadRows(plan, mapping), weekStarts: Stats.recentWeekStarts(12, today: today),
-                          endExclusive: PlanView.addDays(PlanView.weekStart(today), 7))
+    let load = Stats.load(Stats.loadRows(plan, mapping), weekStarts: Stats.completedWeekStarts(12, today: today),
+                          endExclusive: PlanView.weekStart(today))
     let road = Stats.road(view.visible, today: today, mapping: mapping)
     let n = { (d: Double?) -> Any in d.map { $0.isFinite ? $0 : -1 } ?? NSNull() }
     return [

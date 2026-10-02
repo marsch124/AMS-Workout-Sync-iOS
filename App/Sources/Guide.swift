@@ -57,9 +57,9 @@ struct GuideView: View {
             "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
         ]),
         Part(id: "Progress", body: [
-            "The flag beside the weeks to go holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, the name your sheet gives it, and how many weeks it lasts.",
+            "The flag beside the weeks to go holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, the name your sheet gives it, how many weeks it lasts and how many sessions it holds. Under the bar, how many of the phase you are in are behind you.",
             "Nothing here is read from the Progress sheet — its cells are formulas that carry Excel's last answer, and the app never recalculates them. Every figure is worked out from the session rows each time the screen opens, and none of it is stored.",
-            "The road: weeks to the race, the phases as one bar with today marked on it — each phase in its own colour, cool early in the season and warm near the race, today's at full strength and the weeks ahead faint — sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
+            "The road: weeks to the race, the phases as one bar with today marked on it — each phase in its own colour, cool early in the season and warm near the race, today's at full strength and the weeks ahead faint — sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for, counting only weeks that are over — a week still being lived would show the sessions left in it as hours missed. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
         ]),
         Part(id: "Your zones", body: [
             "A session's Z2 or Z4–Z5 is a pill on its screen. Tap it and the app says what that is for you this season — heart rate always, bike power on a ride once an FTP is entered, the swim paces on a swim — read from the Test Results & Zones sheet of your workbook, from your latest test. The app never works a zone out itself.",
@@ -112,6 +112,12 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (61)", date: "2 October 2026", headline: "The weekly figures wait for the week to finish", items: [
+            "Twelve weeks counts only weeks that are over. A week still being lived showed every session not yet done as time missed, so a Thursday reading had you behind on hours you still had the weekend to do.",
+            "Its columns are the weeks that hold training. Nine empty weeks from before the plan began used to be drawn too, squeezing the real ones into the corner with dates printed under nothing — and the last date was cut off at \"21…\". The dates are spaced evenly now, each under its own column, and the line for the hours asked for is the width of the column it belongs to.",
+            "On the road card, all three figures stay on one line; 327h 23m used to fold onto a second while the others did not.",
+            "Under the phase you are in: how many of its sessions are behind you. In the list behind the flag, each phase now says how many sessions it holds as well as how many weeks it lasts."
+        ]),
         Release(version: "1.1 (60)", date: "2 October 2026", headline: "What Health hands over opens, it does not switch on", items: [
             "That row carries a chevron now, turning to point down when it is open — the sign for showing and hiding a piece of reading. It was a switch for three builds, and a switch means turning something on: sitting directly under In use and Stop, it read as if it controlled Apple Health itself. It never did."
         ]),
