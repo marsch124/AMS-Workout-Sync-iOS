@@ -28,6 +28,9 @@ struct MoveView: View {
     }
 
     private var chosenKey: String { dayKey(day) ?? workout.dayKey }
+    /* Tomorrow from today, not from the session's own day: a session three days
+       behind him belongs on tomorrow, not on last Thursday plus one. */
+    private var tomorrow: String { PlanView.addDays(store.today, 1) }
     private var candidates: [(workout: Workout, gap: Int)] { Sync.swapCandidates(for: workout, in: store.displayed) }
 
     var body: some View {
@@ -36,23 +39,39 @@ struct MoveView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     SessionCard(workout: workout, mapping: store.mapping!)
 
-                    SectionHeading(text: "Move it to")
+                    // Pushing a session to tomorrow is the move he makes most
+                    // often, so it is one tap of its own rather than a trip
+                    // through the date wheel (his ask, 12 October 2026).
+                    HStack(alignment: .center, spacing: 8) {
+                        SectionHeading(text: "Move it to")
+                        if tomorrow != workout.dayKey {
+                            Button {
+                                store.move(workout, to: tomorrow)
+                                dismiss()
+                            } label: {
+                                Text("+1").font(.caption.weight(.bold).monospacedDigit())
+                            }
+                            .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+                            .accessibilityIdentifier("move-tomorrow")
+                            .accessibilityLabel("Move to tomorrow")
+                        }
+                    }
                     HStack(spacing: 10) {
                         DatePicker("New day", selection: $day, displayedComponents: .date)
                             .labelsHidden()
                             .environment(\.timeZone, TimeZone(identifier: "UTC") ?? .current)
                         Button {
+                            guard chosenKey != workout.dayKey else { return }
                             store.move(workout, to: chosenKey)
                             dismiss()
                         } label: {
                             Text("Move the session").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
                         }
                         .buttonStyle(.borderedProminent).tint(Theme.today)
-                        .disabled(chosenKey == workout.dayKey)
                     }
                     Text(chosenKey == workout.dayKey
                          ? "Pick a different day first."
-                         : "Only the date is rewritten. The session keeps its place in every weekly total, because your sheet counts by week number and sport, never by date.")
+                         : "+1 moves it straight to tomorrow. Only the date is rewritten either way: the session keeps its place in every weekly total, because your sheet counts by week number and sport, never by date.")
                         .font(.caption).foregroundStyle(Theme.secondary)
 
                     if !candidates.isEmpty {

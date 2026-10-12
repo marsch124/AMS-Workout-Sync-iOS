@@ -210,6 +210,32 @@ final class WorkoutSyncUITests: XCTestCase {
     }
 
     /* 4. Once a session is logged, Missed and Move are gone and only a small Adjust stays. */
+    /* 15. +1 in the Move sheet puts the session on tomorrow in one tap. The
+           move he makes most often, so it must not need the date wheel. */
+    func testPlusOneMovesTheSessionToTomorrow() {
+        let app = launch(canLog: true)
+        let today = app.buttons["today-session-2026-09-16-run"]
+        XCTAssertTrue(today.waitForExistence(timeout: 15))
+        // Nothing of that sport on tomorrow yet, or the check below proves nothing.
+        XCTAssertFalse(app.buttons["today-session-2026-09-17-run"].exists,
+                       "the fixture must not already hold a run on the 17th")
+        today.tap()
+
+        app.buttons["session-move"].tap()
+        let plusOne = app.buttons["move-tomorrow"]
+        XCTAssertTrue(plusOne.waitForExistence(timeout: 10), "the Move sheet offers no +1")
+        plusOne.tap()
+
+        // The sheet closes onto the session's own screen, which carries none of
+        // the day's rows; the Today tab, tapped while already on Today, goes
+        // back to its first screen.
+        app.buttons["tab-today"].tap()
+        XCTAssertTrue(app.buttons["today-session-2026-09-17-run"].waitForExistence(timeout: 10),
+                      "the session did not land on tomorrow")
+        XCTAssertFalse(app.buttons["today-session-2026-09-16-run"].exists,
+                       "it is no longer today's session")
+    }
+
     func testLoggingLeavesOnlyAdjust() {
         let app = launch(canLog: true)
         let run = app.buttons["today-session-2026-09-16-run"]

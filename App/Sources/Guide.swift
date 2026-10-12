@@ -37,7 +37,7 @@ struct GuideView: View {
         ]),
         Part(id: "Missed, Move, Swap", body: [
             "Missed writes the missed mark and an optional note. You can still log the session later if you did it after all.",
-            "Move rewrites only the date and the weekday beside it. Your sheet totals by week number and sport, never by date, so the session keeps its place in every figure.",
+            "Move rewrites only the date and the weekday beside it. +1, beside the heading, puts it on tomorrow in one tap. Your sheet totals by week number and sport, never by date, so the session keeps its place in every figure.",
             "Swap exchanges two sessions' days. Only sessions still to do are offered, nearest first — a done session is never swapped by accident."
         ]),
         Part(id: "Extra workouts", body: [
@@ -112,6 +112,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (63)", date: "12 October 2026", headline: "+1 moves it to tomorrow", items: [
+            "The Move sheet carries a +1 beside its heading: one tap and the session is on tomorrow, without the date wheel. It is the move made most often.",
+            "Move the session is never a dead grey button any more. Pressed before you have picked another day it simply waits, and the line underneath says what it wants.",
+            "The Extra workout pill sits level with the word TOMORROW instead of a few points below it."
+        ]),
         Release(version: "1.1 (62)", date: "2 October 2026", headline: "Each phase carries its own number", items: [
             "Inside every block of the phase bar, small, the number of sessions that phase holds. The two short blocks near the race — Peak and Taper — have no room for a figure, and their counts are in the list behind the flag.",
             "Today's line used to be drawn straight through the number of the phase you are in. The number now sits to whichever side of the line has more room."

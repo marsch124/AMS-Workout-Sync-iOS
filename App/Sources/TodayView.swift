@@ -141,7 +141,7 @@ struct TodayView: View {
                             .background(UnevenRoundedRectangle(topLeadingRadius: 16, topTrailingRadius: 12, style: .continuous)
                                 .fill(Theme.tomorrow))
                         Spacer(minLength: 8)
-                        if store.canLog { extraButton.padding(.trailing, 12) }
+                        if store.canLog { extraButton.padding(.trailing, 12).offset(y: -3) }
                     }
                     VStack(alignment: .leading, spacing: 14) {
                         if tomorrow.allSatisfy({ $0.discipline.id == "rest" }) {
