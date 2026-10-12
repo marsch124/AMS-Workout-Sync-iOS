@@ -210,6 +210,30 @@ final class WorkoutSyncUITests: XCTestCase {
     }
 
     /* 4. Once a session is logged, Missed and Move are gone and only a small Adjust stays. */
+    /* 16. The bar under the four counts is made of those same counts. A
+           picture that disagrees with the figures beside it is worse than no
+           picture, so the test reads both and compares them. */
+    func testTheSessionsBarAgreesWithTheFourCounts() {
+        let app = launch()
+        app.buttons["tab-plan"].tap()
+
+        let bar = app.otherElements["sessions-bar"]
+        XCTAssertTrue(bar.waitForExistence(timeout: 10), "the Sessions tab has no bar")
+
+        func number(in label: String) -> Int {
+            Int(label.components(separatedBy: CharacterSet.decimalDigits.inverted)
+                     .filter { !$0.isEmpty }.last ?? "") ?? -1
+        }
+        let done = number(in: app.buttons["sessions-filter-done"].label)
+        let missed = number(in: app.buttons["sessions-filter-missed"].label)
+        let upcoming = number(in: app.buttons["sessions-filter-upcoming"].label)
+        XCTAssertGreaterThanOrEqual(done, 0)
+        XCTAssertGreaterThanOrEqual(upcoming, 0)
+
+        XCTAssertEqual(bar.value as? String, "\(done) done, \(missed) missed, \(upcoming) to do",
+                       "the bar and the four counts tell different stories")
+    }
+
     /* 15. +1 in the Move sheet puts the session on tomorrow in one tap. The
            move he makes most often, so it must not need the date wheel. */
     func testPlusOneMovesTheSessionToTomorrow() {

@@ -32,7 +32,7 @@ struct GuideView: View {
             "Settings → Apple Health says what Health is handing over today and yesterday. Both lists empty while your watch has something means the app is not being given it: open Health → your picture → Apps → Workout Sync and switch the rows on. Stop switches the whole thing off."
         ]),
         Part(id: "The Sessions tab", body: [
-            "Four lists — Upcoming, Done, Missed, All — each with the number of things in it. The words stay at the top while the list scrolls under them, so choosing another list never means scrolling back.",
+            "Four lists — Upcoming, Done, Missed, All — each with the number of things in it, and under them one bar for the whole plan: solid recorded, hatched missed, light still to come. The words and the bar stay at the top while the list scrolls under them, so choosing another list never means scrolling back.",
             "Sessions and extra workouts are listed together under Done and All, each on the day it happened."
         ]),
         Part(id: "Missed, Move, Swap", body: [
@@ -112,6 +112,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (64)", date: "12 October 2026", headline: "A bar under the four counts", items: [
+            "Under Upcoming, Done, Missed and All there is now one bar for the whole plan: solid for what is recorded, hatched for what was missed, light for what is still to come — the same three signs the week strip on Today uses, in this tab's blue.",
+            "It is counted from the same lists the four numbers are counted from, so the picture and the figures cannot disagree. All is not part of it: that one holds rest days too, which are not sessions anybody does."
+        ]),
         Release(version: "1.1 (63)", date: "12 October 2026", headline: "+1 moves it to tomorrow", items: [
             "The Move sheet carries a +1 beside its heading: one tap and the session is on tomorrow, without the date wheel. It is the move made most often.",
             "Move the session is never a dead grey button any more. Pressed before you have picked another day it simply waits, and the line underneath says what it wants.",

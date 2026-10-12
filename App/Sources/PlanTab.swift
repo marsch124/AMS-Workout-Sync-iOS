@@ -151,6 +151,7 @@ struct PlanTab: View {
      * "Upcoming" short; the number stands under the word instead.
      */
     private func filters(_ view: PlanView) -> some View {
+        VStack(spacing: 0) {
         HStack(spacing: 6) {
             ForEach(Range.allCases) { r in
                 let chosen = r == range
@@ -169,6 +170,10 @@ struct PlanTab: View {
             }
         }
         .padding(.horizontal, 16)
+        planBar(view)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+        }
         .padding(.top, 4)
         .padding(.bottom, 10)
         // Its own ground and a hairline under it: the cards pass beneath the
@@ -178,6 +183,53 @@ struct PlanTab: View {
                 Rectangle().fill(Theme.border).frame(height: 0.5)
             }
         }
+    }
+
+    /*
+     * The whole plan as one bar, under the four counts it is made of: solid
+     * for what is recorded, hatched for what was missed, light for what is
+     * still to come — the same three signs the week strip on Today uses, in
+     * this tab's own blue. His ask, 12 October 2026: the Today view has a bar
+     * for the week's hours, and the Sessions tab had nothing of the kind.
+     *
+     * Counted from the same lists the four numbers above are counted from, so
+     * the picture and the figures can never disagree. All is not one of them:
+     * it holds rest days too, which are not sessions anybody does.
+     */
+    private func planBar(_ view: PlanView) -> some View {
+        let done = rows(.done, view).count
+        let missed = rows(.missed, view).count
+        let todo = rows(.upcoming, view).count
+        let total = done + missed + todo
+        return GeometryReader { geo in
+            let gap: CGFloat = 1.5
+            let parts = [done, missed, todo].filter { $0 > 0 }.count
+            let room = max(0, geo.size.width - gap * CGFloat(max(0, parts - 1)))
+            HStack(spacing: gap) {
+                if done > 0 {
+                    Rectangle().fill(Theme.plan)
+                        .frame(width: room * CGFloat(done) / CGFloat(max(1, total)))
+                }
+                if missed > 0 {
+                    Rectangle().fill(Color.clear)
+                        .overlay(Hatch().stroke(Theme.plan, lineWidth: 1.4))
+                        .opacity(0.8)
+                        .frame(width: room * CGFloat(missed) / CGFloat(max(1, total)))
+                }
+                if todo > 0 {
+                    Rectangle().fill(Theme.plan.opacity(0.34))
+                        .frame(width: room * CGFloat(todo) / CGFloat(max(1, total)))
+                }
+            }
+            .frame(width: geo.size.width, alignment: .leading)
+            .clipShape(Capsule())
+        }
+        .frame(height: 10)
+        .opacity(total == 0 ? 0 : 1)
+        .accessibilityElement()
+        .accessibilityIdentifier("sessions-bar")
+        .accessibilityLabel("The plan so far")
+        .accessibilityValue("\(done) done, \(missed) missed, \(todo) to do")
     }
 
     /* How much of the row's bottom corner the pen and the thumbnails take. */
