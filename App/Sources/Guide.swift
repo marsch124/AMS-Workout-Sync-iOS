@@ -112,6 +112,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (66)", date: "13 October 2026", headline: "Tomorrow's card carries its pictures too", items: [
+            "Today draws photographs on today's sessions, on today's extra workouts and on anything behind you not recorded — but the block for tomorrow was the one list that did not, so a session done early and photographed showed none of them."
+        ]),
         Release(version: "1.1 (65)", date: "13 October 2026", headline: "Your photographs come back", items: [
             "Pictures that had stopped being shown are shown again, on Today, in the Sessions list and on the session itself. A photograph remembered the row of the sheet it was taken against, and a row number is not a name: insert a line in Excel and everything below it shifts, so the picture was looking for a row that had become somebody else's. It now falls back on the day and the sport, which shifting rows do not change.",
             "Nothing was ever lost — the pictures were on the phone the whole time, only unfindable."

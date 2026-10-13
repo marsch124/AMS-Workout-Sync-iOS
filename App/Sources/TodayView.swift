@@ -148,9 +148,24 @@ struct TodayView: View {
                             RestCard(text: tomorrow[0].title)
                         } else {
                             ForEach(tomorrow.filter { $0.discipline.id != "rest" }) { w in
-                                NavigationLink(value: w.key) { SessionCard(workout: w, mapping: view.mapping) }
-                                .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
+                                // Tomorrow's cards carry their pictures too. They
+                                // were the one list on this screen that did not,
+                                // so a session done early and photographed showed
+                                // none of them (13 October 2026).
+                                let shots = Array(PhotoStore.shared.photos(for: PhotoOwner(w)).prefix(3))
+                                ZStack(alignment: .bottomTrailing) {
+                                    NavigationLink(value: w.key) {
+                                        SessionCard(workout: w, mapping: view.mapping,
+                                                    cornerRoom: shots.isEmpty ? 0 : CGFloat(shots.count) * 36 + 4)
+                                    }
+                                    .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
                                     .buttonStyle(.plain)
+                                    if !shots.isEmpty {
+                                        HStack(spacing: 6) { ForEach(shots) { MicroThumb(id: $0.id) } }
+                                            .padding(14)
+                                            .allowsHitTesting(false)
+                                    }
+                                }
                             }
                         }
                     }
