@@ -93,10 +93,22 @@ final class PhotoStore: ObservableObject {
         try? JSONEncoder().encode(index).write(to: indexURL, options: .atomic)
     }
 
+    /*
+     * A photograph belongs to a session by the row it was taken against —
+     * and a row number is not a name. Insert a line in Excel and every row
+     * below it shifts, so Weekly Schedules!7 becomes !8 and the pictures
+     * taken against it quietly stop being shown anywhere (13 October 2026:
+     * "Can not see any photo thumbnails in the Today view").
+     *
+     * So the row is tried first, and failing that the day and the sport,
+     * which a shifting row does not change. Two sessions of one sport on one
+     * day would then share their pictures; that is a far smaller harm than
+     * pictures that cannot be found at all, and the row match keeps them
+     * apart in every other case.
+     */
     func belongsTo(_ photo: PhotoMeta, _ owner: PhotoOwner) -> Bool {
-        guard photo.workoutKey == owner.key else { return false }
-        if owner.key.hasPrefix("extra:") { return true }
-        return photo.disciplineId == owner.disciplineId
+        PhotoMatch.belongs(photoKey: photo.workoutKey, photoDay: photo.dayKey, photoSport: photo.disciplineId,
+                           ownerKey: owner.key, ownerDay: owner.dayKey, ownerSport: owner.disciplineId)
     }
 
     func photos(for owner: PhotoOwner) -> [PhotoMeta] { index.filter { belongsTo($0, owner) } }

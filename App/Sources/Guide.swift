@@ -54,7 +54,7 @@ struct GuideView: View {
         Part(id: "Photographs", body: [
             "A session or an extra can carry photographs. They live on this phone beside the plan, never inside it: the workbook stays the record, and the iPhone's own backup covers the pictures. Settings → Photos saves them all out, and brings in the web app's export.",
             "Adding one happens behind the pen: open the form and press Add photo, which asks whether to take one now or pick from your photos. A picture is kept the moment you add it — there is nothing to save, and the Save button only ever writes the boxes you changed. In the Sessions list, the first three of a session's pictures sit in the corner of its row, beside the pen.",
-            "A photo is shown only against a session whose sport still matches the row it was taken against — a row inserted in Excel slides every session onto its neighbour's identity, and a picture against the wrong session is worse than one you have to look for. Nothing is dropped: it is counted and exported."
+            "A photograph is shown against the session it was taken against: the row of the sheet, or failing that the same day and the same sport, so that a line inserted in Excel — which shifts every row below it — does not hide your pictures. The sport always has to agree; a row that has become another kind of session is a different session. Nothing is ever dropped: every picture is counted and exported whether or not it can be placed."
         ]),
         Part(id: "Progress", body: [
             "The flag beside the weeks to go holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, the name your sheet gives it, how many weeks it lasts and how many sessions it holds. Each block of the bar carries that number too, where it is wide enough to hold it. Under the bar, how many of the phase you are in are behind you.",
@@ -112,6 +112,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (65)", date: "13 October 2026", headline: "Your photographs come back", items: [
+            "Pictures that had stopped being shown are shown again, on Today, in the Sessions list and on the session itself. A photograph remembered the row of the sheet it was taken against, and a row number is not a name: insert a line in Excel and everything below it shifts, so the picture was looking for a row that had become somebody else's. It now falls back on the day and the sport, which shifting rows do not change.",
+            "Nothing was ever lost — the pictures were on the phone the whole time, only unfindable."
+        ]),
         Release(version: "1.1 (64)", date: "12 October 2026", headline: "A bar under the four counts", items: [
             "Under Upcoming, Done, Missed and All there is now one bar for the whole plan: solid for what is recorded, hatched for what was missed, light for what is still to come — the same three signs the week strip on Today uses, in this tab's blue.",
             "It is counted from the same lists the four numbers are counted from, so the picture and the figures cannot disagree. All is not part of it: that one holds rest days too, which are not sessions anybody does."
