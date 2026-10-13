@@ -24,6 +24,7 @@ struct ProgressView: View {
                                       text: "Once sessions are behind you, this is where the patterns in them show up.")
                         } else {
                             TrendsCard(trends: p.trends)
+                            FormCard(form: p.form, today: store.today)
                             WeeksCard(load: p.load, today: store.today)
                             MixCard(load: p.load)
                             if p.summary.counted < 12 {
@@ -358,6 +359,94 @@ struct TrendsCard: View {
             Text("at \(Int(hr.rounded())) bpm").font(.caption).foregroundStyle(Theme.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - fitness and freshness
+
+/*
+ * The two curves every training platform draws, from his own sessions.
+ *
+ * Hours alone cannot tell an easy week from a hard one, so each session is
+ * first turned into what it cost (Effort.cost, where an hour at threshold is
+ * 100). Six weeks of those costs is fitness, the last week is fatigue, and
+ * what is left of one after the other is how fresh he is.
+ */
+struct FormCard: View {
+    let form: [Effort.Form]
+    let today: String
+
+    var body: some View {
+        if form.count < 14 { EmptyView() } else {
+            let now = form.last!
+            let last12 = Array(form.suffix(84))
+            StatCard(title: "Fitness and freshness",
+                     lede: "Each session costs something — an hour at your threshold heart rate is 100, and an easy hour far less. Six weeks of that is fitness; the last week is fatigue.") {
+                HStack(alignment: .top, spacing: 10) {
+                    Figure(value: "\(Int(now.fitness.rounded()))", label: "fitness")
+                    Figure(value: "\(Int(now.fatigue.rounded()))", label: "fatigue of the last week")
+                    Figure(value: signed(now.freshness), label: Effort.standing(freshness: now.freshness).lowercased())
+                }
+                Chart {
+                    ForEach(last12) { f in
+                        if let d = parseDayKey(f.day) {
+                            AreaMark(x: .value("Day", d), y: .value("Fitness", f.fitness))
+                                .foregroundStyle(Theme.progress.opacity(0.18))
+                            LineMark(x: .value("Day", d), y: .value("Fitness", f.fitness))
+                                .foregroundStyle(Theme.progress)
+                                .lineStyle(StrokeStyle(lineWidth: 2))
+                            LineMark(x: .value("Day", d), y: .value("Fatigue", f.fatigue),
+                                     series: .value("Line", "fatigue"))
+                                .foregroundStyle(Theme.danger.opacity(0.75))
+                                .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
+                        }
+                    }
+                }
+                .chartYAxis { AxisMarks(position: .leading) { v in
+                    AxisValueLabel { if let n = v.as(Double.self) { Text("\(Int(n))").font(.caption2) } }
+                } }
+                // Four dates, evenly spaced and ending on today — by month it
+                // printed one label, adrift in the middle of the chart.
+                .chartXAxis {
+                    AxisMarks(values: marks(last12)) { v in
+                        AxisValueLabel {
+                            if let d = v.as(Date.self) {
+                                Text(Dates.formatter("dMMM").string(from: d)).font(.caption2).fixedSize()
+                            }
+                        }
+                    }
+                }
+                .frame(height: 150)
+                .padding(.trailing, 26)
+                .accessibilityIdentifier("form-chart")
+                HStack(spacing: 14) {
+                    key(Theme.progress, "fitness")
+                    key(Theme.danger.opacity(0.75), "fatigue", dashed: true)
+                }
+                Text("Under zero means you are carrying fatigue, which is where the work gets done; over zero is rested. Worked out from your heart rate where you recorded it, your effort where you did not, and the zone the plan asked for failing both. Heart rate reads low in water, so a swim costs modestly.")
+                    .font(.caption).foregroundStyle(Theme.secondary)
+            }
+        }
+    }
+
+    /* Four days across the stretch, the last of them today. */
+    private func marks(_ days: [Effort.Form]) -> [Date] {
+        guard days.count > 1 else { return days.compactMap { parseDayKey($0.day) } }
+        let step = max(1, (days.count - 1) / 3)
+        return stride(from: days.count - 1, through: 0, by: -step).compactMap { parseDayKey(days[$0].day) }
+    }
+
+    private func signed(_ n: Double) -> String {
+        let v = Int(n.rounded())
+        return v > 0 ? "+\(v)" : "\(v)"
+    }
+
+    private func key(_ colour: Color, _ word: String, dashed: Bool = false) -> some View {
+        HStack(spacing: 6) {
+            Rectangle().fill(colour).frame(width: 16, height: dashed ? 1.5 : 2)
+                .opacity(dashed ? 0.9 : 1)
+            Text(word).font(.caption).foregroundStyle(Theme.secondary)
+        }
     }
 }
 

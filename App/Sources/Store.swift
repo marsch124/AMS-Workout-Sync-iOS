@@ -449,6 +449,10 @@ final class Store: ObservableObject {
         let trends: [Stats.Trend]
         let load: Stats.Load
         let road: Stats.Road?
+        /* Fitness and fatigue, a day at a time, from the first day of the
+           plan to today. Empty when the sheet has no threshold heart rate
+           to weigh a session against. */
+        let form: [Effort.Form]
     }
 
     /* Derived here and now from the plan already in memory; nothing cached, nothing written. */
@@ -461,7 +465,21 @@ final class Store: ObservableObject {
             trends: Stats.trends(Stats.trendRows(plan, mapping)),
             load: Stats.load(Stats.loadRows(plan, mapping), weekStarts: Stats.completedWeekStarts(12, today: today),
                              endExclusive: PlanView.weekStart(today)),
-            road: Stats.road(view.visible, today: today, mapping: mapping))
+            road: Stats.road(view.visible, today: today, mapping: mapping),
+            form: form(plan, view: view, mapping: mapping, today: today))
+    }
+
+    /*
+     * The two curves. Without a threshold heart rate in the sheet there is
+     * nothing to weigh a session against, so nothing is drawn rather than
+     * something invented.
+     */
+    private func form(_ plan: [Workout], view: PlanView, mapping: Mapping, today: String) -> [Effort.Form] {
+        guard let lthr = zones?.lthr, let first = plan.first?.dayKey else { return [] }
+        let costs = Effort.dailyCost(plan, extras: view.extras, mapping: mapping, lthr: lthr)
+        guard !costs.isEmpty else { return [] }
+        let from = min(first, costs.keys.min() ?? first)
+        return Effort.form(dailyCost: costs, from: from, to: today)
     }
 
     /* Text for the warning once the oldest waiting entry is a full day old; nil below that. */

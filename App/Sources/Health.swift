@@ -61,11 +61,95 @@ final class HealthImport: ObservableObject {
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
+    /*
+     * What the night left behind: last night's sleep, this morning's resting
+     * heart rate and HRV, each against his own fortnight — his own normal,
+     * because a resting heart rate means nothing against anybody else's.
+     *
+     * The numbers are given plainly and no score is invented from them. They
+     * answer a question he can only ask before training, which the rest of
+     * this app answers only after.
+     */
+    struct Morning: Equatable {
+        var restingHR: Double?
+        var restingHRNormal: Double?
+        var hrv: Double?
+        var hrvNormal: Double?
+        var sleepHours: Double?
+        var isEmpty: Bool { restingHR == nil && hrv == nil && sleepHours == nil }
+    }
+
+    @Published private(set) var morning = Morning()
+
+    func readMorning() async {
+        guard isAvailable, enabled else { return }
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil {
+            await MainActor.run {
+                morning = Morning(restingHR: 48, restingHRNormal: 50, hrv: 64, hrvNormal: 58, sleepHours: 7.4)
+            }
+            return
+        }
+        #endif
+        let rest = await latestAndNormal(.restingHeartRate, unit: HKUnit.count().unitDivided(by: .minute()))
+        let hrv = await latestAndNormal(.heartRateVariabilitySDNN, unit: HKUnit.secondUnit(with: .milli))
+        let sleep = await lastNightsSleep()
+        await MainActor.run {
+            morning = Morning(restingHR: rest.latest, restingHRNormal: rest.normal,
+                              hrv: hrv.latest, hrvNormal: hrv.normal, sleepHours: sleep)
+        }
+    }
+
+    /* The newest reading of the last two days, and the average of a fortnight. */
+    private func latestAndNormal(_ id: HKQuantityTypeIdentifier, unit: HKUnit) async -> (latest: Double?, normal: Double?) {
+        guard let type = HKObjectType.quantityType(forIdentifier: id) else { return (nil, nil) }
+        let since = Date().addingTimeInterval(-14 * 86400)
+        let predicate = HKQuery.predicateForSamples(withStart: since, end: nil)
+        let samples: [HKQuantitySample] = await withCheckedContinuation { go in
+            let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit,
+                                  sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)]) { _, found, _ in
+                go.resume(returning: (found as? [HKQuantitySample]) ?? [])
+            }
+            store.execute(q)
+        }
+        guard !samples.isEmpty else { return (nil, nil) }
+        let values = samples.map { $0.quantity.doubleValue(for: unit) }
+        let twoDaysAgo = Date().addingTimeInterval(-2 * 86400)
+        let latest = samples.first.flatMap { $0.endDate >= twoDaysAgo ? $0.quantity.doubleValue(for: unit) : nil }
+        return (latest, values.reduce(0, +) / Double(values.count))
+    }
+
+    /* Hours actually asleep since yesterday evening — time in bed awake is not sleep. */
+    private func lastNightsSleep() async -> Double? {
+        guard let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { return nil }
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        let from = startOfToday.addingTimeInterval(-6 * 3600)        // from six in the evening
+        let predicate = HKQuery.predicateForSamples(withStart: from, end: Date())
+        let samples: [HKCategorySample] = await withCheckedContinuation { go in
+            let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit,
+                                  sortDescriptors: nil) { _, found, _ in
+                go.resume(returning: (found as? [HKCategorySample]) ?? [])
+            }
+            store.execute(q)
+        }
+        let asleep: Set<Int> = [HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+                                HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
+                                HKCategoryValueSleepAnalysis.asleepREM.rawValue,
+                                HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue]
+        let seconds = samples.filter { asleep.contains($0.value) }
+            .reduce(0.0) { $0 + $1.endDate.timeIntervalSince($1.startDate) }
+        return seconds > 0 ? seconds / 3600 : nil
+    }
+
     private var readTypes: Set<HKObjectType> {
         var types: Set<HKObjectType> = [HKObjectType.workoutType()]
-        for id in [HKQuantityTypeIdentifier.heartRate, .distanceWalkingRunning, .distanceCycling, .distanceSwimming] {
+        for id in [HKQuantityTypeIdentifier.heartRate, .distanceWalkingRunning, .distanceCycling, .distanceSwimming,
+                   // The morning numbers: what the night says before training.
+                   .restingHeartRate, .heartRateVariabilitySDNN] {
             if let t = HKObjectType.quantityType(forIdentifier: id) { types.insert(t) }
         }
+        if let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(sleep) }
         return types
     }
 

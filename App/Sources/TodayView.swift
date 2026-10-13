@@ -53,6 +53,7 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: 14) {
             header(view, today)
             if let waited = store.waitedTooLong { WaitingWarning(text: waited) }
+            MorningLine()
             WeekCard(view: view, today: today)
 
             if sessions.isEmpty {
@@ -176,6 +177,62 @@ struct TodayView: View {
                         .fill(Theme.tomorrow))
                 }
                 .padding(.horizontal, -12)
+            }
+        }
+    }
+
+    /*
+     * What the night left behind, before the day's training rather than after
+     * it: last night's sleep, this morning's resting heart rate and HRV, each
+     * beside his own fortnight's normal.
+     *
+     * Three plain numbers and no invented score. A resting heart rate means
+     * nothing against anybody else's, and a single morning means little
+     * against a single other morning — the fortnight is what gives them
+     * something to be measured against.
+     */
+    private struct MorningLine: View {
+        @ObservedObject private var health = HealthImport.shared
+        var body: some View {
+            let m = health.morning
+            if !m.isEmpty {
+                HStack(spacing: 14) {
+                    if let s = m.sleepHours { reading("Slept", hours(s), nil) }
+                    if let r = m.restingHR { reading("Resting", "\(Int(r.rounded()))", against(r, m.restingHRNormal, lowerIsBetter: true)) }
+                    if let v = m.hrv { reading("HRV", "\(Int(v.rounded()))", against(v, m.hrvNormal, lowerIsBetter: false)) }
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 2)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("morning-line")
+                .task { await health.readMorning() }
+            } else {
+                Color.clear.frame(height: 0).task { await health.readMorning() }
+            }
+        }
+
+        private func hours(_ h: Double) -> String {
+            let whole = Int(h), minutes = Int(((h - Double(whole)) * 60).rounded())
+            return minutes == 0 ? "\(whole)h" : "\(whole)h \(minutes)m"
+        }
+
+        /* How far from his own fortnight, and whether that way is the good way. */
+        private func against(_ value: Double, _ normal: Double?, lowerIsBetter: Bool) -> (String, Color)? {
+            guard let normal, normal > 0 else { return nil }
+            let delta = value - normal
+            guard abs(delta) >= max(1, normal * 0.04) else { return ("as usual", Theme.secondary) }
+            let good = lowerIsBetter ? delta < 0 : delta > 0
+            let sign = delta > 0 ? "+" : "−"
+            return ("\(sign)\(Int(abs(delta).rounded())) on your normal", good ? Theme.today : Theme.secondary)
+        }
+
+        private func reading(_ name: String, _ value: String, _ note: (String, Color)?) -> some View {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(name).font(.caption2).foregroundStyle(Theme.secondary)
+                Text(value).font(.subheadline.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
+                if let note {
+                    Text(note.0).font(.caption2).foregroundStyle(note.1).lineLimit(1)
+                }
             }
         }
     }

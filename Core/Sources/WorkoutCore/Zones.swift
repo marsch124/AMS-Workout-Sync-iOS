@@ -50,6 +50,14 @@ public struct Zones: Equatable, Codable {
 
     public var rpe: String? { abbreviations.first { $0.label.uppercased() == "RPE" }?.value }
 
+    /* The threshold heart rate from his latest test, as a number. Everything
+       that weighs a session against his own effort needs it. */
+    public var lthr: Double? {
+        guard let row = current.first(where: { $0.label.uppercased().contains("LTHR") }) else { return nil }
+        let n = jsParseFloat(firstCommaToDot(row.value))
+        return n.isNaN || n < 60 || n > 230 ? nil : n
+    }
+
     /* The zone tables are formulas. Empty means Excel has not worked them out
        since the file was last written — not that nothing was ever entered. */
     public var waitingForExcel: Bool {

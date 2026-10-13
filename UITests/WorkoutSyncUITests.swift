@@ -210,6 +210,22 @@ final class WorkoutSyncUITests: XCTestCase {
     }
 
     /* 4. Once a session is logged, Missed and Move are gone and only a small Adjust stays. */
+    /* 17. The morning numbers stand at the top of Today, before the day's
+           training rather than after it. */
+    func testTodayShowsLastNightsNumbers() {
+        let app = launch(garmin: true)
+        let line = app.otherElements["morning-line"]
+        XCTAssertTrue(line.waitForExistence(timeout: 15), "Today says nothing about the night")
+        // The pretended Health: slept 7h 24m, resting 48 against a normal of 50,
+        // HRV 64 against 58.
+        XCTAssertTrue(app.staticTexts["7h 24m"].exists, "the sleep is not shown")
+        XCTAssertTrue(app.staticTexts["48"].exists, "the resting heart rate is not shown")
+        XCTAssertTrue(app.staticTexts["64"].exists, "the HRV is not shown")
+        // Against his own fortnight, not against anybody else's.
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'on your normal'")).count >= 2,
+                      "the numbers are given without anything to measure them against")
+    }
+
     /* 16. The bar under the four counts is made of those same counts. A
            picture that disagrees with the figures beside it is worse than no
            picture, so the test reads both and compares them. */

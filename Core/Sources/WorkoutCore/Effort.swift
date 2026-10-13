@@ -72,6 +72,31 @@ public enum Effort {
         return Cost(score: 0, source: .none)
     }
 
+    /*
+     * What each day of the plan cost, sessions and the extra workouts that
+     * count as training alike — the same rule the week's hours use, so the
+     * two cannot tell different stories.
+     */
+    public static func dailyCost(_ plan: [Workout], extras: [ExtraSummary],
+                                 mapping: Mapping, lthr: Double) -> [String: Double] {
+        var out: [String: Double] = [:]
+        for w in plan where w.logged && !w.missed && w.discipline.id != "rest" {
+            let a = Stats.actualsOf(w, mapping)
+            let minutes = a.minutes > 0 ? a.minutes : (Plan.plannedSeconds(w, mapping) ?? 0) / 60
+            let c = cost(minutes: minutes, avgHR: a.hr, rpe: a.rpe, lthr: lthr,
+                         plannedZone: w.planned.intensity)
+            if c.score > 0 { out[w.dayKey, default: 0] += c.score }
+        }
+        for x in extras where x.isTraining {
+            let hr = jsParseFloat(firstCommaToDot(x.avgHr))
+            let rpe = jsParseFloat(firstCommaToDot(x.effort))
+            let c = cost(minutes: x.minutes ?? 0, avgHR: hr.isNaN ? 0 : hr,
+                         rpe: rpe.isNaN ? 0 : rpe, lthr: lthr, plannedZone: "")
+            if c.score > 0 { out[x.dayKey, default: 0] += c.score }
+        }
+        return out
+    }
+
     // MARK: fitness, fatigue, freshness
 
     public struct Form: Equatable, Identifiable {

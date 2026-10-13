@@ -88,4 +88,58 @@ final class EffortTests: XCTestCase {
         XCTAssertEqual(Effort.standing(freshness: 10), "Fresh")
         XCTAssertEqual(Effort.standing(freshness: 40), "Very fresh")
     }
+
+    // MARK: reading it off a plan
+
+    private func aMapping() throws -> Mapping {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "Fixtures/plan", withExtension: "xlsx"))
+        return try XCTUnwrap(try Plan.mapping(for: Workbook(data: try Data(contentsOf: url))))
+    }
+
+    private func session(_ day: String, sport: String = "run", logged: Bool = true, missed: Bool = false,
+                         zone: String = "Z2") -> Workout {
+        Workout(key: day + sport, sheet: "Weekly Schedules", row: 1, rows: [1],
+                date: parseDayKey(day)!, dayKey: day, disciplineRaw: sport,
+                discipline: Discipline(id: sport, label: sport.capitalized, synonyms: []),
+                title: "A session", phase: "Base", sections: [],
+                planned: Planned(durationRaw: 60, distanceRaw: nil, intensity: zone, description: ""),
+                results: [:], loggedInSheet: logged, missed: missed, logged: logged)
+    }
+
+    /* Nothing that was not done counts: a session still to do, and a missed
+       one, both cost nothing. */
+    func testOnlyWhatWasActuallyDoneCosts() throws {
+        let plan = [session("2026-01-05"),
+                    session("2026-01-06", logged: false),
+                    session("2026-01-07", missed: true),
+                    session("2026-01-08", sport: "rest")]
+        let costs = Effort.dailyCost(plan, extras: [], mapping: try aMapping(), lthr: 150)
+        XCTAssertNotNil(costs["2026-01-05"])
+        XCTAssertNil(costs["2026-01-06"], "a session still to do has cost nothing yet")
+        XCTAssertNil(costs["2026-01-07"], "a missed session cost nothing")
+        XCTAssertNil(costs["2026-01-08"], "a rest day is not a session")
+    }
+
+    /* Two sessions on one day add up, as a day's work does. */
+    func testADayHoldsEverythingDoneOnIt() throws {
+        let plan = [session("2026-01-05", sport: "swim"), session("2026-01-05", sport: "run")]
+        let costs = Effort.dailyCost(plan, extras: [], mapping: try aMapping(), lthr: 150)
+        let one = Effort.dailyCost([plan[0]], extras: [], mapping: try aMapping(), lthr: 150)["2026-01-05"]!
+        XCTAssertEqual(costs["2026-01-05"]!, one * 2, accuracy: 0.01)
+    }
+
+    /* An extra that counts as training is training; one that does not is not. */
+    func testOnlyTheExtrasThatCountAreCounted() throws {
+        func extra(_ day: String, training: Bool) -> ExtraSummary {
+            ExtraSummary(id: day + String(training), dayKey: day, activity: "walk", label: "Walk", what: "",
+                         minutes: 60, isTraining: training, pending: false,
+                         distance: "", avgHr: "120", effort: "", notes: "", ref: "")
+        }
+        let counted = Effort.dailyCost([], extras: [extra("2026-01-05", training: true)],
+                                       mapping: try aMapping(), lthr: 150)
+        let not = Effort.dailyCost([], extras: [extra("2026-01-06", training: false)],
+                                   mapping: try aMapping(), lthr: 150)
+        XCTAssertGreaterThan(counted["2026-01-05"] ?? 0, 0)
+        XCTAssertTrue(not.isEmpty, "a walk he did not call training is not training")
+    }
 }

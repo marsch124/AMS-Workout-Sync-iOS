@@ -56,9 +56,14 @@ struct GuideView: View {
             "Adding one happens behind the pen: open the form and press Add photo, which asks whether to take one now or pick from your photos. A picture is kept the moment you add it — there is nothing to save, and the Save button only ever writes the boxes you changed. In the Sessions list, the first three of a session's pictures sit in the corner of its row, beside the pen.",
             "A photograph is shown against the session it was taken against: the row of the sheet, or failing that the same day and the same sport, so that a line inserted in Excel — which shifts every row below it — does not hide your pictures. The sport always has to agree; a row that has become another kind of session is a different session. Nothing is ever dropped: every picture is counted and exported whether or not it can be placed."
         ]),
+        Part(id: "Before you train", body: [
+            "Today opens with what the night left behind: how long you slept, your resting heart rate and your HRV — each beside your own fortnight's normal, because a resting heart rate means nothing against anybody else's and one morning means little against one other morning.",
+            "No score is made out of them. They are there to be read before you train, which is the one question the rest of this app can only answer afterwards. They appear when Apple Health has them; it asks once for permission."
+        ]),
         Part(id: "Progress", body: [
             "The flag beside the weeks to go holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, the name your sheet gives it, how many weeks it lasts and how many sessions it holds. Each block of the bar carries that number too, where it is wide enough to hold it. Under the bar, how many of the phase you are in are behind you.",
             "Nothing here is read from the Progress sheet — its cells are formulas that carry Excel's last answer, and the app never recalculates them. Every figure is worked out from the session rows each time the screen opens, and none of it is stored.",
+            "Fitness and freshness: each session is turned into what it cost — an hour at your threshold heart rate is 100, an easy hour far less, because hours alone cannot tell an easy week from a hard one. Six weeks of those costs is fitness, the last week is fatigue, and the difference is how fresh you are: under zero is carrying work, over zero is rested. It uses your heart rate where you recorded it, your effort where you did not, and the zone the plan asked for failing both.",
             "The road: weeks to the race, the phases as one bar with today marked on it — each phase in its own colour, cool early in the season and warm near the race, today's at full strength and the weeks ahead faint — sessions done, hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for, counting only weeks that are over — a week still being lived would show the sessions left in it as hours missed. Then what was kept: completed, missed, unanswered; the run you are on; which sport runs behind; missed against moved."
         ]),
         Part(id: "Your zones", body: [
@@ -112,6 +117,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (67)", date: "13 October 2026", headline: "What a session cost, and what the night left behind", items: [
+            "Progress has a new card, Fitness and freshness. Until now the app counted hours, and hours cannot tell an easy week from a hard one: your plan could be kept to the letter and still not be trained. Each session now costs something — an hour at your threshold heart rate is 100, an easy hour far less — and six weeks of those costs is fitness, the last week is fatigue, and what is left of one after the other says whether you are carrying work or rested.",
+            "It is worked out from your own heart rate where you recorded it, your effort where you did not, and the zone the plan asked for failing both; the card says so, because an estimate should admit what it is. Heart rate reads low in water, so a swim costs modestly.",
+            "Today opens with last night: how long you slept, your resting heart rate and your HRV, each against your own fortnight rather than anybody else's. Three plain numbers and no invented score. Apple Health will ask once for permission to read them."
+        ]),
         Release(version: "1.1 (66)", date: "13 October 2026", headline: "Tomorrow's card carries its pictures too", items: [
             "Today draws photographs on today's sessions, on today's extra workouts and on anything behind you not recorded — but the block for tomorrow was the one list that did not, so a session done early and photographed showed none of them."
         ]),
