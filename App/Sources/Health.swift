@@ -83,6 +83,7 @@ final class HealthImport: ObservableObject {
 
     func readMorning() async {
         guard isAvailable, enabled else { return }
+        await askForAnythingNew()
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil {
             await MainActor.run {
@@ -173,6 +174,27 @@ final class HealthImport: ObservableObject {
         }
         #endif
         status = isAvailable ? (UserDefaults.standard.bool(forKey: "health.asked") ? .asked : .unknown) : .unavailable
+    }
+
+    /*
+     * Ask again when the app has learned to want something new.
+     *
+     * iOS grants each kind of data separately, and only what was asked for at
+     * the time. Workouts were granted long ago, so "health.asked" was already
+     * true and nothing ever put the question for sleep, resting heart rate
+     * and HRV when build 67 began wanting them: the app read a drawer it had
+     * never been given the key to, found it empty, and said nothing — which
+     * is exactly how it looked on his phone (26 October 2026).
+     *
+     * iOS itself will say whether it would put the question, so this asks it
+     * rather than keeping a list, and anything the app learns to want later
+     * is covered without another thought.
+     */
+    func askForAnythingNew() async {
+        guard isAvailable, UserDefaults.standard.bool(forKey: "health.asked") else { return }
+        let status = try? await store.statusForAuthorizationRequest(toShare: [], read: readTypes)
+        guard status == .shouldRequest else { return }
+        try? await store.requestAuthorization(toShare: [], read: readTypes)
     }
 
     /* iOS never says whether reading was granted — only that the question was put. */

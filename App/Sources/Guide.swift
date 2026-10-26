@@ -117,6 +117,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (68)", date: "26 October 2026", headline: "Health is asked for the morning numbers", items: [
+            "The line at the top of Today never appeared. The app had permission to read your workouts, granted weeks ago, and iOS treats every kind of data as a permission of its own: nothing ever put the question for sleep, resting heart rate and HRV, so the app read a drawer it had never been given the key to and said nothing. It now asks iOS whether the question still needs putting, and puts it — once, for those three."
+        ]),
         Release(version: "1.1 (67)", date: "13 October 2026", headline: "What a session cost, and what the night left behind", items: [
             "Progress has a new card, Fitness and freshness. Until now the app counted hours, and hours cannot tell an easy week from a hard one: your plan could be kept to the letter and still not be trained. Each session now costs something — an hour at your threshold heart rate is 100, an easy hour far less — and six weeks of those costs is fitness, the last week is fatigue, and what is left of one after the other says whether you are carrying work or rested.",
             "It is worked out from your own heart rate where you recorded it, your effort where you did not, and the zone the plan asked for failing both; the card says so, because an estimate should admit what it is. Heart rate reads low in water, so a swim costs modestly.",
