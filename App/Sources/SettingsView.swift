@@ -360,6 +360,8 @@ struct HealthSettings: View {
  */
 struct HealthToday: View {
     @EnvironmentObject var store: Store
+    // Observed, so the night's rows fill in when the reading finishes.
+    @ObservedObject private var healthNow = HealthImport.shared
     @State private var open = false
     @State private var today: [HealthWorkout]?
     @State private var yesterday: [HealthWorkout]?
@@ -395,6 +397,7 @@ struct HealthToday: View {
             if open {
                 day("WHAT APPLE HEALTH HAS TODAY", today, name: "health-today")
                 day("WHAT APPLE HEALTH HAD YESTERDAY", yesterday, name: "health-yesterday")
+                nightRows
                 if let probe {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Asked at " + probe.at.formatted(date: .omitted, time: .standard)
@@ -434,6 +437,40 @@ struct HealthToday: View {
         .task(id: store.today) { await load() }
     }
 
+    /*
+     * The three numbers Today opens with, each one said plainly — a value, or
+     * that Health has none. Today hides the line when it has nothing, which
+     * left him unable to tell "not allowed" from "nothing there"; this is the
+     * place to look (27 October 2026).
+     */
+    @ViewBuilder
+    private var nightRows: some View {
+        let m = healthNow.morning
+        VStack(alignment: .leading, spacing: 4) {
+            Text("WHAT APPLE HEALTH HAS FOR THE NIGHT")
+                .font(.caption.weight(.bold)).tracking(0.8).foregroundStyle(Theme.secondary)
+            night("Sleep", m.sleepHours.map { String(format: "%.1f hours", $0) }, name: "sleep")
+            night("Resting heart rate", m.restingHR.map { "\(Int($0.rounded())) bpm" }, name: "resting")
+            night("HRV", m.hrv.map { "\(Int($0.rounded())) ms" }, name: "hrv")
+            if m.isEmpty {
+                Text("Garmin Connect shares sleep with Apple Health once you switch it on there (Garmin Connect → Settings → Connected Apps → Apple Health). It does not appear to share HRV, and resting heart rate is not confirmed. If Health itself shows nothing, so does this app.")
+                    .font(.caption).foregroundStyle(Theme.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func night(_ name: String, _ value: String?, name id: String) -> some View {
+        HStack(spacing: 6) {
+            Text(name).font(.caption).foregroundStyle(Theme.text)
+            Spacer(minLength: 0)
+            Text(value ?? "none in Health").font(.caption)
+                .foregroundStyle(value == nil ? Theme.secondary : Theme.text)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("night-" + id)
+    }
+
     @ViewBuilder
     private func day(_ heading: String, _ workouts: [HealthWorkout]?, name: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -460,6 +497,7 @@ struct HealthToday: View {
         today = await HealthImport.shared.workouts(on: store.today)
         yesterday = await HealthImport.shared.workouts(on: PlanView.addDays(store.today, -1))
         probe = await HealthImport.shared.probe()
+        await HealthImport.shared.readMorning()
     }
 }
 

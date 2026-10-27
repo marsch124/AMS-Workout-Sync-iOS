@@ -76,6 +76,12 @@ final class WorkoutSyncUITests: XCTestCase {
         XCTAssertEqual(yesterday.count, 3, "yesterday has a heading and a list of its own")
         XCTAssertTrue(app.staticTexts["health-probe"].exists,
                       "pressing Ask again must leave something on screen that says Health answered")
+        // The night's three numbers are said here whether Health has them or not,
+        // because Today hides them when it has nothing.
+        for id in ["night-sleep", "night-resting", "night-hrv"] {
+            XCTAssertTrue(app.descendants(matching: .any).matching(identifier: id).firstMatch
+                .waitForExistence(timeout: 10), "\(id) is not said in Settings")
+        }
     }
 
     /* 12. A session offers the day's workouts even when Health filed them

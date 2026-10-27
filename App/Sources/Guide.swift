@@ -117,6 +117,10 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (69)", date: "27 October 2026", headline: "Settings says what Health has for the night", items: [
+            "Settings → Apple Health → What Health hands over now lists sleep, resting heart rate and HRV, each as a value or as none in Health. Today hides the morning line when it has nothing to show, which left no way to tell not allowed from nothing there; this is the place to look.",
+            "Garmin passes sleep to Apple Health once you switch it on in Garmin Connect (Settings → Connected Apps → Apple Health). It does not appear to pass on HRV, and resting heart rate is not confirmed — so some of the three may stay empty however much you allow."
+        ]),
         Release(version: "1.1 (68)", date: "26 October 2026", headline: "Health is asked for the morning numbers", items: [
             "The line at the top of Today never appeared. The app had permission to read your workouts, granted weeks ago, and iOS treats every kind of data as a permission of its own: nothing ever put the question for sleep, resting heart rate and HRV, so the app read a drawer it had never been given the key to and said nothing. It now asks iOS whether the question still needs putting, and puts it — once, for those three."
         ]),
