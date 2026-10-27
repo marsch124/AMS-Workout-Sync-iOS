@@ -117,6 +117,9 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (71)", date: "27 October 2026", headline: "Slept counts the night once", items: [
+            "Slept said 10h 40m after a night of about 5h 20m. Apple Health can hold the same night more than once — Garmin handing it over again on a later sync, or the whole night and its phases side by side — and the app added every copy together. A stretch of sleep now counts once however many times Health holds it, and if two devices both recorded the night, the app takes the fuller of the two rather than adding them."
+        ]),
         Release(version: "1.1 (70)", date: "27 October 2026", headline: "The morning line is one row, always current — and a Dropbox button", items: [
             "The morning line at the top of Today is a single row now — Slept 7h 24m, Resting 48 −2, HRV 64 +6 — instead of three stacked readings. The small figure after a reading is how far it sits from your own fortnight: green where that way is the good way, grey otherwise, nothing at all when it is as usual.",
             "Today read your night once, the first time the screen appeared, and never again until the app was closed and reopened — so a first read that found nothing left the line missing until a visit to Settings forced a second one. It now reads again every time you open the app.",

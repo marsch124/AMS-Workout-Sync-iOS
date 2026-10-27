@@ -120,7 +120,8 @@ final class HealthImport: ObservableObject {
         return (latest, values.reduce(0, +) / Double(values.count))
     }
 
-    /* Hours actually asleep since yesterday evening — time in bed awake is not sleep. */
+    /* Hours actually asleep since yesterday evening — time in bed awake is not
+       sleep, and a stretch Health holds twice is still slept once (Sleep). */
     private func lastNightsSleep() async -> Double? {
         guard let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { return nil }
         let calendar = Calendar.current
@@ -138,9 +139,9 @@ final class HealthImport: ObservableObject {
                                 HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
                                 HKCategoryValueSleepAnalysis.asleepREM.rawValue,
                                 HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue]
-        let seconds = samples.filter { asleep.contains($0.value) }
-            .reduce(0.0) { $0 + $1.endDate.timeIntervalSince($1.startDate) }
-        return seconds > 0 ? seconds / 3600 : nil
+        let spans = samples.filter { asleep.contains($0.value) }
+            .map { Sleep.Span(source: $0.sourceRevision.source.bundleIdentifier, start: $0.startDate, end: $0.endDate) }
+        return Sleep.asleepSeconds(spans).map { $0 / 3600 }
     }
 
     private var readTypes: Set<HKObjectType> {
