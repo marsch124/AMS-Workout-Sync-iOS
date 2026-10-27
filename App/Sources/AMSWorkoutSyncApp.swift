@@ -13,7 +13,15 @@ struct AMSWorkoutSyncApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     // The plan may have been logged in the web app or edited in
                     // Excel since it was last read.
-                    if phase == .active { store.refresh() }
+                    if phase == .active {
+                        store.refresh()
+                        // The night's numbers arrive while the app is closed, and
+                        // Today read them once, at first sight. Opening the app
+                        // is when they are wanted (27 October 2026: the line
+                        // appeared only after a visit to Settings forced a
+                        // second read).
+                        Task { await HealthImport.shared.readMorning() }
+                    }
                 }
         }
     }
@@ -39,7 +47,9 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $tab) {
-            TodayView(path: $todayPath).tag("today")
+            TodayView(path: $todayPath,
+                      goToSettings: { withAnimation(.easeInOut(duration: 0.2)) { tab = "settings" } })
+                .tag("today")
             PlanTab(path: $planPath).tag("plan")
             ProgressView().tag("progress")
             SettingsView(path: $settingsPath).tag("settings")

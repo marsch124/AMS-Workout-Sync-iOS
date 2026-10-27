@@ -57,7 +57,7 @@ struct GuideView: View {
             "A photograph is shown against the session it was taken against: the row of the sheet, or failing that the same day and the same sport, so that a line inserted in Excel — which shifts every row below it — does not hide your pictures. The sport always has to agree; a row that has become another kind of session is a different session. Nothing is ever dropped: every picture is counted and exported whether or not it can be placed."
         ]),
         Part(id: "Before you train", body: [
-            "Today opens with what the night left behind: how long you slept, your resting heart rate and your HRV — each beside your own fortnight's normal, because a resting heart rate means nothing against anybody else's and one morning means little against one other morning.",
+            "Today opens with what the night left behind: how long you slept, your resting heart rate and your HRV — on one row, each with how far it sits from your own fortnight's normal — a resting heart rate means nothing against anybody else's, and one morning means little against one other morning. It is read again every time you open the app. Garmin passes sleep to Apple Health but apparently not HRV, so that one may never appear.",
             "No score is made out of them. They are there to be read before you train, which is the one question the rest of this app can only answer afterwards. They appear when Apple Health has them; it asks once for permission."
         ]),
         Part(id: "Progress", body: [
@@ -117,6 +117,12 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (70)", date: "27 October 2026", headline: "The morning line is one row, always current — and a Dropbox button", items: [
+            "The morning line at the top of Today is a single row now — Slept 7h 24m, Resting 48 −2, HRV 64 +6 — instead of three stacked readings. The small figure after a reading is how far it sits from your own fortnight: green where that way is the good way, grey otherwise, nothing at all when it is as usual.",
+            "Today read your night once, the first time the screen appeared, and never again until the app was closed and reopened — so a first read that found nothing left the line missing until a visit to Settings forced a second one. It now reads again every time you open the app.",
+            "The line sits right under the heading instead of floating below it.",
+            "Without Dropbox, Today used to say Read only in a pill — which looked like a button and gave you nothing to press. It is a real button now: Connect Dropbox, or Choose your plan if Dropbox is connected but no plan is picked, and it takes you to Settings. On your phone it does not show while Dropbox is connected."
+        ]),
         Release(version: "1.1 (69)", date: "27 October 2026", headline: "Settings says what Health has for the night", items: [
             "Settings → Apple Health → What Health hands over now lists sleep, resting heart rate and HRV, each as a value or as none in Health. Today hides the morning line when it has nothing to show, which left no way to tell not allowed from nothing there; this is the place to look.",
             "Garmin passes sleep to Apple Health once you switch it on in Garmin Connect (Settings → Connected Apps → Apple Health). It does not appear to pass on HRV, and resting heart rate is not confirmed — so some of the three may stay empty however much you allow."

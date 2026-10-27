@@ -9,6 +9,8 @@ struct ExtraDay: Identifiable, Equatable {
 
 struct TodayView: View {
     @Binding var path: NavigationPath
+    /* Where the Dropbox button goes: the Settings tab. */
+    var goToSettings: () -> Void = {}
     @EnvironmentObject var store: Store
     /* The extra form and the day it is for, in one piece of state: two would
        let the sheet be built with today's day and yesterday's flag. */
@@ -196,44 +198,76 @@ struct TodayView: View {
         var body: some View {
             let m = health.morning
             if !m.isEmpty {
-                HStack(spacing: 14) {
-                    if let s = m.sleepHours { reading("Slept", hours(s), nil) }
-                    if let r = m.restingHR { reading("Resting", "\(Int(r.rounded()))", against(r, m.restingHRNormal, lowerIsBetter: true)) }
-                    if let v = m.hrv { reading("HRV", "\(Int(v.rounded()))", against(v, m.hrvNormal, lowerIsBetter: false)) }
-                    Spacer(minLength: 0)
-                }
-                .padding(.horizontal, 2)
-                .accessibilityElement(children: .contain)
-                .accessibilityIdentifier("morning-line")
-                .task { await health.readMorning() }
+                // One row, not three stacked readings: the figure, and beside it
+                // how far it sits from his own fortnight (his ask, 27 October
+                // 2026). Green where that way is the good way, grey otherwise,
+                // and nothing at all when it is as usual.
+                line(m)
+                    .font(.footnote)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 2)
+                    // The page spaces its rows 14 apart, which left this one
+                    // floating well below its heading; it belongs to it.
+                    .padding(.top, -9)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityIdentifier("morning-line")
+                    .accessibilityLabel(spoken(m))
+                    .task { await health.readMorning() }
             } else {
                 Color.clear.frame(height: 0).task { await health.readMorning() }
             }
         }
+
+        private func line(_ m: HealthImport.Morning) -> Text {
+            var parts: [Text] = []
+            if let s = m.sleepHours { parts.append(name("Slept ") + value(hours(s))) }
+            if let r = m.restingHR {
+                parts.append(name("Resting ") + value("\(Int(r.rounded()))") + delta(r, m.restingHRNormal, lowerIsBetter: true))
+            }
+            if let v = m.hrv {
+                parts.append(name("HRV ") + value("\(Int(v.rounded()))") + delta(v, m.hrvNormal, lowerIsBetter: false))
+            }
+            guard var out = parts.first else { return Text("") }
+            for part in parts.dropFirst() { out = out + Text("   ").foregroundStyle(Theme.secondary) + part }
+            return out
+        }
+
+        private func name(_ s: String) -> Text { Text(s).foregroundStyle(Theme.secondary) }
+        private func value(_ s: String) -> Text { Text(s).fontWeight(.bold).foregroundStyle(Theme.text) }
 
         private func hours(_ h: Double) -> String {
             let whole = Int(h), minutes = Int(((h - Double(whole)) * 60).rounded())
             return minutes == 0 ? "\(whole)h" : "\(whole)h \(minutes)m"
         }
 
-        /* How far from his own fortnight, and whether that way is the good way. */
-        private func against(_ value: Double, _ normal: Double?, lowerIsBetter: Bool) -> (String, Color)? {
-            guard let normal, normal > 0 else { return nil }
-            let delta = value - normal
-            guard abs(delta) >= max(1, normal * 0.04) else { return ("as usual", Theme.secondary) }
-            let good = lowerIsBetter ? delta < 0 : delta > 0
-            let sign = delta > 0 ? "+" : "−"
-            return ("\(sign)\(Int(abs(delta).rounded())) on your normal", good ? Theme.today : Theme.secondary)
+        /* How far from his own fortnight; empty when it is as usual. */
+        private func delta(_ value: Double, _ normal: Double?, lowerIsBetter: Bool) -> Text {
+            guard let normal, normal > 0 else { return Text("") }
+            let d = value - normal
+            guard abs(d) >= max(1, normal * 0.04) else { return Text("") }
+            let good = lowerIsBetter ? d < 0 : d > 0
+            return Text(" " + (d > 0 ? "+" : "−") + "\(Int(abs(d).rounded()))")
+                .foregroundStyle(good ? Theme.today : Theme.secondary)
         }
 
-        private func reading(_ name: String, _ value: String, _ note: (String, Color)?) -> some View {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(name).font(.caption2).foregroundStyle(Theme.secondary)
-                Text(value).font(.subheadline.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
-                if let note {
-                    Text(note.0).font(.caption2).foregroundStyle(note.1).lineLimit(1)
-                }
+        /* What VoiceOver says, and what a test can read: the words, in full. */
+        private func spoken(_ m: HealthImport.Morning) -> String {
+            var out: [String] = []
+            if let s = m.sleepHours { out.append("Slept " + hours(s)) }
+            if let r = m.restingHR {
+                out.append("Resting heart rate \(Int(r.rounded()))" + spokenDelta(r, m.restingHRNormal))
             }
+            if let v = m.hrv { out.append("HRV \(Int(v.rounded()))" + spokenDelta(v, m.hrvNormal)) }
+            return out.joined(separator: ". ")
+        }
+
+        private func spokenDelta(_ value: Double, _ normal: Double?) -> String {
+            guard let normal, normal > 0 else { return "" }
+            let d = value - normal
+            guard abs(d) >= max(1, normal * 0.04) else { return ", as usual" }
+            return ", \(Int(abs(d).rounded())) \(d > 0 ? "above" : "below") your normal"
         }
     }
 
@@ -256,7 +290,7 @@ struct TodayView: View {
             let phase = view.phase(on: today)
             Text(phase.isEmpty ? "Today" : phase).font(.title3.weight(.bold)).foregroundStyle(Theme.today)
             Spacer()
-            if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { ReadOnlyChip() }
+            if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { DropboxChip(action: goToSettings) }
         }
         .padding(.top, 12)
     }
@@ -285,14 +319,29 @@ struct WaitingWarning: View {
     }
 }
 
-/* Stage 1 says what it is, once, small: this app looks and does not touch. */
-struct ReadOnlyChip: View {
+/*
+ * Without Dropbox the app can look but not write, so Move, Missed and logging
+ * are hidden. It used to say "Read only" in a pill — which looked like a
+ * button and gave him nothing to press. It is a button now, and says what to
+ * do: it takes him to Settings, where Dropbox is connected (his ask, 27
+ * October 2026).
+ */
+struct DropboxChip: View {
+    @EnvironmentObject var store: Store
+    let action: () -> Void
+
+    /* Connected but no plan chosen is a different errand from not connected. */
+    private var words: String {
+        Dropbox.shared.isConnected && store.dropboxPath == nil ? "Choose your plan" : "Connect Dropbox"
+    }
+
     var body: some View {
-        Text("Read only")
+        Button(action: action) {
+            Text(words)
+        }
         .font(.caption.weight(.semibold))
-        .foregroundStyle(Theme.secondary)
-        .padding(.horizontal, 8).padding(.vertical, 4)
-        .background(Capsule().strokeBorder(Theme.border))
+        .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
+        .accessibilityIdentifier("today-connect-dropbox")
     }
 }
 

@@ -216,20 +216,38 @@ final class WorkoutSyncUITests: XCTestCase {
     }
 
     /* 4. Once a session is logged, Missed and Move are gone and only a small Adjust stays. */
+    /* 18. With no Dropbox the app cannot write, and Today used to say so in a
+           pill that read "Read only" — shaped like a button, with nothing to
+           press. It is a button that goes to where Dropbox is connected. */
+    func testWithoutDropboxTodayOffersToConnectIt() {
+        let app = launch()   // no logging, as with no Dropbox
+        let connect = app.buttons["today-connect-dropbox"]
+        XCTAssertTrue(connect.waitForExistence(timeout: 15), "Today offers no way to connect Dropbox")
+        connect.tap()
+        XCTAssertTrue(app.buttons["settings-whats-new"].waitForExistence(timeout: 10),
+                      "the button did not take him to Settings")
+    }
+
     /* 17. The morning numbers stand at the top of Today, before the day's
            training rather than after it. */
     func testTodayShowsLastNightsNumbers() {
         let app = launch(garmin: true)
-        let line = app.otherElements["morning-line"]
-        XCTAssertTrue(line.waitForExistence(timeout: 15), "Today says nothing about the night")
+        // The line is found by its identifier, and then waited for until it has
+        // said something: the element can exist a moment before its text does,
+        // and reading it that instant found it empty (27 October 2026).
+        func line(containing text: String) -> XCUIElement {
+            app.descendants(matching: .any)
+                .matching(NSPredicate(format: "identifier == 'morning-line' AND label CONTAINS %@", text))
+                .firstMatch
+        }
         // The pretended Health: slept 7h 24m, resting 48 against a normal of 50,
-        // HRV 64 against 58.
-        XCTAssertTrue(app.staticTexts["7h 24m"].exists, "the sleep is not shown")
-        XCTAssertTrue(app.staticTexts["48"].exists, "the resting heart rate is not shown")
-        XCTAssertTrue(app.staticTexts["64"].exists, "the HRV is not shown")
+        // HRV 64 against 58. One row, so one element, read by its label.
+        XCTAssertTrue(line(containing: "7h 24m").waitForExistence(timeout: 20), "the sleep is not shown")
+        XCTAssertTrue(line(containing: "48").exists, "the resting heart rate is not shown")
+        XCTAssertTrue(line(containing: "64").exists, "the HRV is not shown")
         // Against his own fortnight, not against anybody else's.
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'on your normal'")).count >= 2,
-                      "the numbers are given without anything to measure them against")
+        XCTAssertTrue(line(containing: "your normal").exists, "the numbers have nothing to be measured against")
+        XCTAssertLessThan(line(containing: "7h 24m").frame.height, 40, "the morning line is meant to be a single row")
     }
 
     /* 16. The bar under the four counts is made of those same counts. A
