@@ -199,9 +199,9 @@ struct TodayView: View {
             let m = health.morning
             if !m.isEmpty {
                 // One row, not three stacked readings: the figure, and beside it
-                // how far it sits from his own fortnight (his ask, 27 October
-                // 2026). Green where that way is the good way, grey otherwise,
-                // and nothing at all when it is as usual.
+                // in brackets how far it sits from his own fortnight — always,
+                // so a missing trend never looks like a fault (his ask, 28
+                // October 2026). Green the good way, red the other, grey as usual.
                 line(m)
                     .font(.footnote)
                     .lineLimit(1)
@@ -224,10 +224,12 @@ struct TodayView: View {
             var parts: [Text] = []
             if let s = m.sleepHours { parts.append(name("Slept ") + value(hours(s))) }
             if let r = m.restingHR {
-                parts.append(name("Resting ") + value("\(Int(r.rounded()))") + delta(r, m.restingHRNormal, lowerIsBetter: true))
+                parts.append(name("Resting ") + value("\(Int(r.rounded()))")
+                             + delta(r, m.restingHRNormal, days: m.restingDays, lowerIsBetter: true))
             }
             if let v = m.hrv {
-                parts.append(name("HRV ") + value("\(Int(v.rounded()))") + delta(v, m.hrvNormal, lowerIsBetter: false))
+                parts.append(name("HRV ") + value("\(Int(v.rounded()))")
+                             + delta(v, m.hrvNormal, days: m.hrvDays, lowerIsBetter: false))
             }
             guard var out = parts.first else { return Text("") }
             for part in parts.dropFirst() { out = out + Text("   ").foregroundStyle(Theme.secondary) + part }
@@ -242,14 +244,21 @@ struct TodayView: View {
             return minutes == 0 ? "\(whole)h" : "\(whole)h \(minutes)m"
         }
 
-        /* How far from his own fortnight; empty when it is as usual. */
-        private func delta(_ value: Double, _ normal: Double?, lowerIsBetter: Bool) -> Text {
-            guard let normal, normal > 0 else { return Text("") }
+        /* How far from his own fortnight, in brackets — or how soon there will be one. */
+        private func delta(_ value: Double, _ normal: Double?, days: Int, lowerIsBetter: Bool) -> Text {
+            guard let normal, normal > 0 else { return Text(" (" + untilNormal(days) + ")").foregroundStyle(Theme.secondary) }
             let d = value - normal
-            guard abs(d) >= max(1, normal * 0.04) else { return Text("") }
+            let whole = Int(abs(d).rounded())
+            let figure = whole == 0 ? "±0" : (d > 0 ? "+" : "−") + "\(whole)"
+            guard abs(d) >= max(1, normal * 0.04) else { return Text(" (\(figure))").foregroundStyle(Theme.secondary) }
             let good = lowerIsBetter ? d < 0 : d > 0
-            return Text(" " + (d > 0 ? "+" : "−") + "\(Int(abs(d).rounded()))")
-                .foregroundStyle(good ? Theme.today : Theme.secondary)
+            return Text(" (\(figure))").foregroundStyle(good ? Theme.today : Theme.danger)
+        }
+
+        /* No normal yet: say when there will be one rather than leave a gap. */
+        private func untilNormal(_ days: Int) -> String {
+            let left = max(1, Fortnight.daysNeeded - days)
+            return left == 1 ? "normal tomorrow" : "normal in \(left) days"
         }
 
         /* What VoiceOver says, and what a test can read: the words, in full. */
@@ -257,14 +266,14 @@ struct TodayView: View {
             var out: [String] = []
             if let s = m.sleepHours { out.append("Slept " + hours(s)) }
             if let r = m.restingHR {
-                out.append("Resting heart rate \(Int(r.rounded()))" + spokenDelta(r, m.restingHRNormal))
+                out.append("Resting heart rate \(Int(r.rounded()))" + spokenDelta(r, m.restingHRNormal, days: m.restingDays))
             }
-            if let v = m.hrv { out.append("HRV \(Int(v.rounded()))" + spokenDelta(v, m.hrvNormal)) }
+            if let v = m.hrv { out.append("HRV \(Int(v.rounded()))" + spokenDelta(v, m.hrvNormal, days: m.hrvDays)) }
             return out.joined(separator: ". ")
         }
 
-        private func spokenDelta(_ value: Double, _ normal: Double?) -> String {
-            guard let normal, normal > 0 else { return "" }
+        private func spokenDelta(_ value: Double, _ normal: Double?, days: Int) -> String {
+            guard let normal, normal > 0 else { return ", " + untilNormal(days) }
             let d = value - normal
             guard abs(d) >= max(1, normal * 0.04) else { return ", as usual" }
             return ", \(Int(abs(d).rounded())) \(d > 0 ? "above" : "below") your normal"

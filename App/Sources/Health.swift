@@ -76,6 +76,9 @@ final class HealthImport: ObservableObject {
         var hrv: Double?
         var hrvNormal: Double?
         var sleepHours: Double?
+        // How many earlier days each normal stands on (Fortnight).
+        var restingDays = 0
+        var hrvDays = 0
         var isEmpty: Bool { restingHR == nil && hrv == nil && sleepHours == nil }
     }
 
@@ -87,7 +90,8 @@ final class HealthImport: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil {
             await MainActor.run {
-                morning = Morning(restingHR: 48, restingHRNormal: 50, hrv: 64, hrvNormal: 58, sleepHours: 7.4)
+                morning = Morning(restingHR: 48, restingHRNormal: 50, hrv: 64, hrvNormal: 58, sleepHours: 7.4,
+                                  restingDays: 13, hrvDays: 13)
             }
             return
         }
@@ -97,14 +101,16 @@ final class HealthImport: ObservableObject {
         let sleep = await lastNightsSleep()
         await MainActor.run {
             morning = Morning(restingHR: rest.latest, restingHRNormal: rest.normal,
-                              hrv: hrv.latest, hrvNormal: hrv.normal, sleepHours: sleep)
+                              hrv: hrv.latest, hrvNormal: hrv.normal, sleepHours: sleep,
+                              restingDays: rest.days, hrvDays: hrv.days)
         }
     }
 
-    /* The newest reading of the last two days, and the average of a fortnight. */
-    private func latestAndNormal(_ id: HKQuantityTypeIdentifier, unit: HKUnit) async -> (latest: Double?, normal: Double?) {
-        guard let type = HKObjectType.quantityType(forIdentifier: id) else { return (nil, nil) }
-        let since = Date().addingTimeInterval(-14 * 86400)
+    /* This morning's reading and the fortnight before it, one value a day (Fortnight). */
+    private func latestAndNormal(_ id: HKQuantityTypeIdentifier, unit: HKUnit) async -> Fortnight.Reading {
+        let none = Fortnight.Reading(latest: nil, normal: nil, days: 0)
+        guard let type = HKObjectType.quantityType(forIdentifier: id) else { return none }
+        let since = Date().addingTimeInterval(-16 * 86400)
         let predicate = HKQuery.predicateForSamples(withStart: since, end: nil)
         let samples: [HKQuantitySample] = await withCheckedContinuation { go in
             let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit,
@@ -113,11 +119,8 @@ final class HealthImport: ObservableObject {
             }
             store.execute(q)
         }
-        guard !samples.isEmpty else { return (nil, nil) }
-        let values = samples.map { $0.quantity.doubleValue(for: unit) }
-        let twoDaysAgo = Date().addingTimeInterval(-2 * 86400)
-        let latest = samples.first.flatMap { $0.endDate >= twoDaysAgo ? $0.quantity.doubleValue(for: unit) : nil }
-        return (latest, values.reduce(0, +) / Double(values.count))
+        return Fortnight.reading(samples.map { Fortnight.Sample(end: $0.endDate, value: $0.quantity.doubleValue(for: unit)) },
+                                 now: Date())
     }
 
     /* Hours actually asleep since yesterday evening — time in bed awake is not

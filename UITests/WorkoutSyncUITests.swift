@@ -247,6 +247,8 @@ final class WorkoutSyncUITests: XCTestCase {
         XCTAssertTrue(line(containing: "64").exists, "the HRV is not shown")
         // Against his own fortnight, not against anybody else's.
         XCTAssertTrue(line(containing: "your normal").exists, "the numbers have nothing to be measured against")
+        // The trend is said, not only shown: 48 against 50 is two below.
+        XCTAssertTrue(line(containing: "Resting heart rate 48, 2 below your normal").exists, "the resting trend is missing")
         XCTAssertLessThan(line(containing: "7h 24m").frame.height, 40, "the morning line is meant to be a single row")
     }
 

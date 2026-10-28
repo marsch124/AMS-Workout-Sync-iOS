@@ -449,9 +449,13 @@ struct HealthToday: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("WHAT APPLE HEALTH HAS FOR THE NIGHT")
                 .font(.caption.weight(.bold)).tracking(0.8).foregroundStyle(Theme.secondary)
-            night("Sleep", m.sleepHours.map { String(format: "%.1f hours", $0) }, name: "sleep")
-            night("Resting heart rate", m.restingHR.map { "\(Int($0.rounded())) bpm" }, name: "resting")
-            night("HRV", m.hrv.map { "\(Int($0.rounded())) ms" }, name: "hrv")
+            night("Sleep", m.sleepHours.map { String(format: "%.1f hours", $0) }, name: "sleep",
+                  none: "none since 6 pm yesterday")
+            // With the normal beside it and how many days it stands on, so he
+            // can judge the trend on Today for himself (28 October 2026).
+            night("Resting heart rate", m.restingHR.map { "\(Int($0.rounded())) bpm" + normal(m.restingHRNormal, m.restingDays) },
+                  name: "resting")
+            night("HRV", m.hrv.map { "\(Int($0.rounded())) ms" + normal(m.hrvNormal, m.hrvDays) }, name: "hrv")
             if m.isEmpty {
                 Text("Garmin Connect shares sleep with Apple Health once you switch it on there (Garmin Connect → Settings → Connected Apps → Apple Health). It does not appear to share HRV, and resting heart rate is not confirmed. If Health itself shows nothing, so does this app.")
                     .font(.caption).foregroundStyle(Theme.secondary)
@@ -460,11 +464,16 @@ struct HealthToday: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func night(_ name: String, _ value: String?, name id: String) -> some View {
+    private func normal(_ normal: Double?, _ days: Int) -> String {
+        guard let normal else { return " · no normal yet (\(days) of \(Fortnight.daysNeeded) days)" }
+        return " · normal \(Int(normal.rounded())) over \(days) days"
+    }
+
+    private func night(_ name: String, _ value: String?, name id: String, none: String = "none in Health") -> some View {
         HStack(spacing: 6) {
             Text(name).font(.caption).foregroundStyle(Theme.text)
             Spacer(minLength: 0)
-            Text(value ?? "none in Health").font(.caption)
+            Text(value ?? none).font(.caption)
                 .foregroundStyle(value == nil ? Theme.secondary : Theme.text)
         }
         .accessibilityElement(children: .combine)

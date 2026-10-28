@@ -57,7 +57,7 @@ struct GuideView: View {
             "A photograph is shown against the session it was taken against: the row of the sheet, or failing that the same day and the same sport, so that a line inserted in Excel — which shifts every row below it — does not hide your pictures. The sport always has to agree; a row that has become another kind of session is a different session. Nothing is ever dropped: every picture is counted and exported whether or not it can be placed."
         ]),
         Part(id: "Before you train", body: [
-            "Today opens with what the night left behind: how long you slept, your resting heart rate and your HRV — on one row, each with how far it sits from your own fortnight's normal — a resting heart rate means nothing against anybody else's, and one morning means little against one other morning. It is read again every time you open the app. Garmin passes sleep to Apple Health but apparently not HRV, so that one may never appear.",
+            "Today opens with what the night left behind: how long you slept, your resting heart rate and your HRV — on one row, each with how far it sits from your own normal in brackets: green the good way, red the other, grey when it is as usual. A resting heart rate means nothing against anybody else's, and one morning means little against one other morning. Your normal is the average of up to fourteen days before the morning shown, one reading a day, and there is none until four days are there to make it — until then the brackets say when it will come. Settings → Apple Health → What Health hands over shows your normal and how many days it stands on. It is all read again every time you open the app. Garmin passes sleep to Apple Health but apparently not HRV, so that one may never appear.",
             "No score is made out of them. They are there to be read before you train, which is the one question the rest of this app can only answer afterwards. They appear when Apple Health has them; it asks once for permission."
         ]),
         Part(id: "Progress", body: [
@@ -117,6 +117,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "1.1 (72)", date: "28 October 2026", headline: "The trend is always there, in brackets", items: [
+            "Resting and HRV now always carry their trend in brackets — Resting 48 (−2) — green when it moved the good way, red when the other, grey when it is about as usual. Before, the figure was left out whenever the difference was small, so a quiet morning looked like a missing trend.",
+            "Your normal is worked out more carefully. It used to average every reading Health held over the fortnight, this morning's included, so a day Health held twice counted twice and the morning was partly measured against itself. Now each day counts once, the morning shown is held against the days before it, and there is no normal until four days are there to make one — the brackets say \"normal in 2 days\" until then.",
+            "Settings → Apple Health → What Health hands over shows your normal beside each reading and how many days it stands on, and says sleep is \"none since 6 pm yesterday\" when Garmin has not handed last night over yet."
+        ]),
         Release(version: "1.1 (71)", date: "27 October 2026", headline: "Slept counts the night once", items: [
             "Slept said 10h 40m after a night of about 5h 20m. Apple Health can hold the same night more than once — Garmin handing it over again on a later sync, or the whole night and its phases side by side — and the app added every copy together. A stretch of sleep now counts once however many times Health holds it, and if two devices both recorded the night, the app takes the fuller of the two rather than adding them."
         ]),
