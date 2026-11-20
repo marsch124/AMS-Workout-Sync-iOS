@@ -28,6 +28,21 @@ jobs:
       - name: Generate the project
         run: xcodegen generate
 
+      # 20 Nov 2026: GitHub's runner got a new Xcode (26.6) with NO iPhone simulator, and the
+      # tests stopped before they began. Keep the Xcode in use if it has an iPhone; otherwise
+      # take the newest Xcode that has one. (Same fix as AMS Manual Expenses 9e6e778.)
+      - name: Use an Xcode that has an iPhone simulator
+        run: |
+          has_iphone() { xcodebuild -showdestinations -project AMSWorkoutSync.xcodeproj -scheme AMSWorkoutSync 2>/dev/null | grep -q "platform:iOS Simulator, .*name:iPhone"; }
+          if has_iphone; then echo "Keeping $(xcode-select -p)"; xcodebuild -version; exit 0; fi
+          for XC in $(ls -d /Applications/Xcode*.app | sort -V -r); do
+            sudo xcode-select -s "$XC"
+            if has_iphone; then echo "Using $XC"; xcodebuild -version; exit 0; fi
+            echo "No iPhone simulator with $XC"
+          done
+          echo "::error::no Xcode on this runner has an iPhone simulator"
+          exit 1
+
       - name: Pick a simulator the runner actually has
         run: |
           # The highest-numbered iPhone: present on the runner image, and predictable.
