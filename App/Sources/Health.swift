@@ -273,6 +273,40 @@ final class HealthImport: ObservableObject {
     }
 
     /*
+     * Every workout between two days, for the Load card: what it was, the day
+     * and how long — no heart rate, no distance. Nil when Health could not be
+     * asked, so a failed read never wipes what the last good one found.
+     * Breathing and meditation are marked "mind": they are not load.
+     */
+    func found(from: String, to: String) async -> [Load.Found]? {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil {
+            return [
+                Load.Found(id: "fake-hike", dayKey: PlanView.addDays(to, -2), sport: "walk", name: "Hike", minutes: 147),
+                Load.Found(id: "fake-gym", dayKey: PlanView.addDays(to, -4), sport: "strength", name: "Strength", minutes: 40),
+                Load.Found(id: "fake-hike-2", dayKey: PlanView.addDays(to, -9), sport: "walk", name: "Hike", minutes: 195),
+                Load.Found(id: "fake-breath", dayKey: PlanView.addDays(to, -1), sport: "mind", name: "Breathing", minutes: 12)
+            ]
+        }
+        #endif
+        guard isAvailable, enabled, let first = parseDayKey(from), let last = parseDayKey(to) else { return nil }
+        let local = Calendar.current
+        guard let start = local.date(from: utc.dateComponents([.year, .month, .day], from: first)),
+              let lastStart = local.date(from: utc.dateComponents([.year, .month, .day], from: last)),
+              let end = local.date(byAdding: .day, value: 1, to: lastStart) else { return nil }
+        let answer = await ask(HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate),
+                               limit: HKObjectQueryNoLimit)
+        if answer.error != nil { return nil }
+        return answer.samples.map { w in
+            let mind = w.workoutActivityType == .mindAndBody || w.workoutActivityType == .preparationAndRecovery
+            return Load.Found(id: w.uuid.uuidString, dayKey: PlanView.todayKey(w.startDate),
+                              sport: mind ? "mind" : Self.sport(of: w.workoutActivityType),
+                              name: mind ? "Breathing" : Self.name(of: w.workoutActivityType),
+                              minutes: w.duration / 60)
+        }
+    }
+
+    /*
      * One workout query, and what Health said about it.
      *
      * The error used to be thrown away, so a refusal and an empty day looked

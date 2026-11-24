@@ -16,6 +16,10 @@ struct TodayView: View {
        let the sheet be built with today's day and yesterday's flag. */
     @State private var addingExtra: ExtraDay?
     @State private var openExtra: ExtraSummary?
+    /* How he felt each morning, kept on the phone. */
+    @ObservedObject private var diary = Diary.shared
+    /* He tapped "Feeling good" to change it: the question comes back for one tap. */
+    @State private var changingFeel = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -55,7 +59,18 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: 14) {
             header(view, today)
             if let waited = store.waitedTooLong { WaitingWarning(text: waited) }
-            MorningLine()
+            // "Feeling good" joins the night's numbers on the one line; a tap
+            // on the line brings the question back to change the answer.
+            MorningLine(feel: changingFeel ? nil : diary.feel.answer(on: today),
+                        change: { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true } })
+            // The morning question: once a day, one tap, and it is gone until
+            // tomorrow. Nothing else on this screen reacts to the answer.
+            if diary.feel.asks(on: today) || changingFeel {
+                FeelCard(current: diary.feel.answer(on: today)) { f in
+                    diary.setFeel(f, on: today)
+                    withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false }
+                }
+            }
             WeekCard(view: view, today: today)
 
             if sessions.isEmpty {
@@ -195,9 +210,12 @@ struct TodayView: View {
      */
     private struct MorningLine: View {
         @ObservedObject private var health = HealthImport.shared
+        /* This morning's answer to "How do you feel?", once given. */
+        var feel: Feel? = nil
+        var change: () -> Void = {}
         var body: some View {
             let m = health.morning
-            if !m.isEmpty {
+            if !m.isEmpty || feel != nil {
                 // One row, not three stacked readings: the figure, and beside it
                 // in brackets how far it sits from his own fortnight — always,
                 // so a missing trend never looks like a fault (his ask, 28
@@ -214,6 +232,8 @@ struct TodayView: View {
                     .accessibilityElement(children: .ignore)
                     .accessibilityIdentifier("morning-line")
                     .accessibilityLabel(spoken(m))
+                    .contentShape(Rectangle())
+                    .onTapGesture { if feel != nil { change() } }
                     .task { await health.readMorning() }
             } else {
                 Color.clear.frame(height: 0).task { await health.readMorning() }
@@ -231,6 +251,7 @@ struct TodayView: View {
                 parts.append(name("HRV ") + value("\(Int(v.rounded()))")
                              + delta(v, m.hrvNormal, days: m.hrvDays, lowerIsBetter: false))
             }
+            if let feel { parts.append(name("Feeling ") + value(feel == .ok ? "OK" : feel.word.lowercased())) }
             guard var out = parts.first else { return Text("") }
             for part in parts.dropFirst() { out = out + Text("   ").foregroundStyle(Theme.secondary) + part }
             return out
@@ -269,6 +290,7 @@ struct TodayView: View {
                 out.append("Resting heart rate \(Int(r.rounded()))" + spokenDelta(r, m.restingHRNormal, days: m.restingDays))
             }
             if let v = m.hrv { out.append("HRV \(Int(v.rounded()))" + spokenDelta(v, m.hrvNormal, days: m.hrvDays)) }
+            if let feel { out.append(feel.spoken) }
             return out.joined(separator: ". ")
         }
 

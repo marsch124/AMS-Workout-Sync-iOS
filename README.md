@@ -1,9 +1,11 @@
-# AMS Workout Sync (iPhone)
+# AMS Triathlon Training (iPhone)
+
+Called AMS Workout Sync up to 1.1 (72); the folder, the repository, the bundle id and the URL scheme `amsworkoutsync` keep the old name. The full description of the app is in `docs/SPECIFICATION.md`.
 
 The native iPhone app for Martin's training plan — a SwiftUI app around
 `Core/`, a Swift package that is a line-for-line port of the web app's reader
 and writer (`../AMS Workout Sync`). Since 1.0 (15 September 2026) it is the
-primary Workout Sync, and since 22 September 2026 the only one: Martin said
+primary training app, and since 22 September 2026 the only one: Martin said
 plainly that he no longer uses the web app, so work he asks for belongs here
 even when he names neither app. The web app stays as the reference
 implementation the parity harness checks against.

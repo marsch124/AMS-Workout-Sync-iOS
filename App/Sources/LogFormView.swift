@@ -271,7 +271,7 @@ struct HealthEmptyNote: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Nothing in Apple Health for \(what).").font(.caption).foregroundStyle(Theme.secondary)
-            Text("If your watch has it, look in Health → your picture → Apps → Workout Sync.")
+            Text("If your watch has it, look in Health → your picture → Apps → Triathlon.")
                 .font(.caption2).foregroundStyle(Theme.secondary)
         }
         .accessibilityIdentifier("health-empty")

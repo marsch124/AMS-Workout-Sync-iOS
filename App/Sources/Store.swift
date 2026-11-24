@@ -384,6 +384,40 @@ final class Store: ObservableObject {
         syncNow()
     }
 
+    /*
+     * "How hard was it?" — one tap, 1 to 10, into the plan's own Effort
+     * column: the same box the log form calls Effort, so nothing new is added
+     * to the workbook. Whatever is still waiting for this session travels
+     * with it, because the screens show the last waiting entry and a bare
+     * number would hide the length just logged.
+     */
+    func setEffort(_ workout: Workout, _ score: Int) {
+        guard canLog, (1...10).contains(score) else { return }
+        var entry = LogEntry()
+        if let waiting = workout.pending, !waiting.missed { entry = waiting }
+        entry.rpe = String(score)
+        log(workout, entry)
+    }
+
+    /* The same answer for an extra workout: only its Effort box is written. */
+    func setEffort(extra: ExtraSummary, _ score: Int) {
+        guard canLog, (1...10).contains(score) else { return }
+        func number(_ s: String) -> Double? {
+            let n = jsParseFloat(s.replacingOccurrences(of: ",", with: "."))
+            return n.isNaN ? nil : n
+        }
+        var entry = extra.ref.isEmpty ? ExtraEntry(date: extra.dayKey, activity: extra.activity)
+                                      : ExtraEntry(date: extra.dayKey, activity: extra.activity, ref: extra.ref)
+        entry.what = extra.what
+        entry.minutes = extra.minutes
+        entry.isTraining = extra.isTraining
+        entry.distance = number(extra.distance)
+        entry.avgHr = number(extra.avgHr)
+        entry.notes = extra.notes
+        entry.effort = Double(score)
+        editExtra(extra, entry, fields: [ExtraField.effort])
+    }
+
     /* A session that did not happen: the marker and a note, nothing else. */
     func markMissed(_ workout: Workout, note: String) {
         var entry = LogEntry()

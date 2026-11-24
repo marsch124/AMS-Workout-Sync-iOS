@@ -144,7 +144,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     NavigationLink { WhatsNewView() } label: {
-                        SettingsRow(title: "What’s new", sub: "AMS Workout Sync \(version)", chevron: true)
+                        SettingsRow(title: "What’s new", sub: "AMS Triathlon Training \(version)", chevron: true)
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings-whats-new")
@@ -327,7 +327,7 @@ struct HealthSettings: View {
             SettingsRow(title: "In use",
                         sub: "The log form offers the day’s workouts from Health to fill the boxes. Health is only read, never written.",
                         action: ("Stop", { health.enabled = false }))
-            Text("Stop means the app never asks Health for anything again. To also take the permission away, open the Health app → your picture → Apps → Workout Sync.")
+            Text("Stop means the app never asks Health for anything again. To also take the permission away, open the Health app → your picture → Apps → Triathlon.")
                 .font(.caption).foregroundStyle(Theme.secondary)
             Button("Open the Health app") {
                 if let url = URL(string: "x-apple-health://") { UIApplication.shared.open(url) }
@@ -338,7 +338,7 @@ struct HealthSettings: View {
                         sub: "The app does not read Health. The permission may still be granted in the Health app.",
                         action: ("Use again", { health.enabled = true }))
         case .denied:
-            SettingsRow(title: "Could not ask", sub: "iOS did not let the app ask for access. Open the Health app → your picture → Apps → Workout Sync.")
+            SettingsRow(title: "Could not ask", sub: "iOS did not let the app ask for access. Open the Health app → your picture → Apps → Triathlon.")
         case .unknown:
             SettingsRow(title: "Not connected",
                         sub: "Let the app read your workouts, heart rate and distances, and the log form can fill itself from what your Garmin sent to Health. Optional.",
@@ -412,7 +412,7 @@ struct HealthToday: View {
                     }
                 }
                 if (today?.isEmpty ?? false) && (yesterday?.isEmpty ?? false) {
-                    Text("Nothing at all means the app is not being given your workouts. Switch the rows on in Health → your picture → Apps → Workout Sync — and if they are already on, press Ask iOS again.")
+                    Text("Nothing at all means the app is not being given your workouts. Switch the rows on in Health → your picture → Apps → Triathlon — and if they are already on, press Ask iOS again.")
                         .font(.caption).foregroundStyle(Theme.secondary)
                 }
                 HStack(spacing: 8) {
@@ -553,7 +553,7 @@ struct CalendarSettings: View {
                 .font(.caption).foregroundStyle(Theme.secondary)
         } else if cal.status == .denied {
             SettingsRow(title: "Not allowed",
-                        sub: "iOS is not letting the app write to your calendar. Settings → Apps → Workout Sync → Calendars → Full Access.")
+                        sub: "iOS is not letting the app write to your calendar. Settings → Apps → Triathlon → Calendars → Full Access.")
             Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
             }

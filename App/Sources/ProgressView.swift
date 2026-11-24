@@ -10,9 +10,12 @@ import WorkoutCore
  */
 struct ProgressView: View {
     @EnvironmentObject var store: Store
+    /* The morning answers and the workouts Health holds, for the Load card. */
+    @ObservedObject private var diary = Diary.shared
 
     var body: some View {
         NavigationStack {
+            ScrollViewReader { reader in
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Progress").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
@@ -25,6 +28,9 @@ struct ProgressView: View {
                         } else {
                             TrendsCard(trends: p.trends)
                             FormCard(form: p.form, today: store.today)
+                            // Beside the fitness card, never on Today: minutes
+                            // times how hard, for everything he did.
+                            if let board = LoadBoard.make(store: store, diary: diary) { LoadCard(board: board).id("load") }
                             WeeksCard(load: p.load, today: store.today)
                             MixCard(load: p.load)
                             if p.summary.counted < 12 {
@@ -46,6 +52,16 @@ struct ProgressView: View {
             }
             .background(Theme.bg.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+            .task { await diary.readHealth(today: store.today) }
+            #if DEBUG
+            // AMSWS_SCROLL=load opens Progress at the Load card, for a picture.
+            .task {
+                guard ProcessInfo.processInfo.environment["AMSWS_SCROLL"] == "load" else { return }
+                try? await Task.sleep(nanoseconds: 900_000_000)
+                reader.scrollTo("load", anchor: .top)
+            }
+            #endif
+            }
         }
     }
 }

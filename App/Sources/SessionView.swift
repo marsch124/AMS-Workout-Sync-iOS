@@ -146,6 +146,14 @@ struct SessionView: View {
                         }
                     }
 
+                    // "How hard was it?" — where the Done button was, until it
+                    // is answered. One tap writes the plan's own Effort column;
+                    // unanswered it simply waits here, with no reminder.
+                    if store.canLog, w.state == .done, w.discipline.id != "rest",
+                       mapping.columns["rpe"] != nil, Stats.actualsOf(w, mapping).rpe == 0 {
+                        HowHardCard { store.setEffort(w, $0) }
+                    }
+
                     if w.missed {
                         Text("Marked missed").font(.headline).foregroundStyle(Theme.danger)
                     }

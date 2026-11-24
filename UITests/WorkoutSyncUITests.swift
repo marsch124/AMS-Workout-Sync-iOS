@@ -320,6 +320,47 @@ final class WorkoutSyncUITests: XCTestCase {
         XCTAssertFalse(app.buttons["session-done-as-planned"].exists)
     }
 
+    /* 19. The two questions take one tap each, and the load on Progress
+           counts a workout from Health that the plan never held.
+           Today shows a word afterwards and nothing more. */
+    func testTheTwoQuestionsTakeOneTapEachAndLoadCounts() {
+        let app = launch(canLog: true, garmin: true)
+
+        // The morning question: asked once, gone after one tap, the word on the line.
+        let question = app.staticTexts["feel-question"]
+        XCTAssertTrue(question.waitForExistence(timeout: 15), "Today does not ask how he feels")
+        app.buttons["feel-4"].tap()
+        XCTAssertTrue(question.waitForNonExistence(timeout: 5), "the question stays after it was answered")
+        let line = app.descendants(matching: .any).matching(identifier: "morning-line").firstMatch
+        XCTAssertTrue(line.waitForExistence(timeout: 5))
+        XCTAssertTrue(line.label.contains("Feeling good"), "the morning line does not carry the answer: \(line.label)")
+
+        // After Done: how hard, one tap, and the question does not come back.
+        app.buttons["today-session-2026-09-16-run"].tap()
+        let hard = app.staticTexts["how-hard-question"]
+        XCTAssertTrue(app.buttons["session-done-as-planned"].waitForExistence(timeout: 5))
+        XCTAssertFalse(hard.exists, "a session still to do is asked how hard it was")
+        app.buttons["session-done-as-planned"].tap()
+        XCTAssertTrue(hard.waitForExistence(timeout: 5), "Done is not followed by How hard was it?")
+        app.buttons["effort-6"].tap()
+        XCTAssertTrue(hard.waitForNonExistence(timeout: 5), "the question stays after a number was tapped")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        // Progress: the Load card, and a hike from Health that asks its own question.
+        app.buttons["tab-progress"].tap()
+        let week = app.descendants(matching: .any).matching(identifier: "load-this-week").firstMatch
+        XCTAssertTrue(week.waitForExistence(timeout: 10), "Progress has no Load card")
+        let before = week.label
+        let ask = app.buttons.matching(identifier: "load-how-hard").firstMatch
+        XCTAssertTrue(ask.waitForExistence(timeout: 5), "a workout outside the plan is not offered a How hard?")
+        ask.tap()
+        let nine = app.buttons["load-effort-9"]
+        XCTAssertTrue(nine.waitForExistence(timeout: 5))
+        nine.tap()
+        XCTAssertTrue(nine.waitForNonExistence(timeout: 5))
+        XCTAssertNotEqual(week.label, before, "the week's load did not move when the hike was given a number")
+    }
+
     /* 1. It opens on Today with today's session, and Settings carries the version. */
     func testOpensOnTodayAndSettingsShowsTheVersion() {
         let app = launch()
@@ -337,7 +378,7 @@ final class WorkoutSyncUITests: XCTestCase {
 
         let whatsNew = app.buttons["settings-whats-new"]
         XCTAssertTrue(whatsNew.waitForExistence(timeout: 5))
-        XCTAssertNotNil(whatsNew.label.range(of: #"AMS Workout Sync \d+\.\d+ \(\d+\)"#, options: .regularExpression),
+        XCTAssertNotNil(whatsNew.label.range(of: #"AMS Triathlon Training \d+\.\d+ \(\d+\)"#, options: .regularExpression),
                         "the version is missing from What's new: \(whatsNew.label)")
     }
 

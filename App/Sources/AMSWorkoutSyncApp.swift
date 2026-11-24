@@ -21,6 +21,8 @@ struct AMSWorkoutSyncApp: App {
                         // appeared only after a visit to Settings forced a
                         // second read).
                         Task { await HealthImport.shared.readMorning() }
+                        // The hikes and gym sessions outside the plan, for Load.
+                        Task { await Diary.shared.readHealth(today: store.today) }
                     }
                 }
         }

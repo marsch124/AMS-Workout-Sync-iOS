@@ -220,6 +220,13 @@ struct ExtraDetailView: View {
     let extra: ExtraSummary
     @State private var adjusting = false
     @State private var corrected = false
+    /* The number just tapped under "How hard was it?": this screen holds the old reading of the extra. */
+    @State private var effortGiven: Int?
+
+    private var asksHowHard: Bool {
+        store.canLog && effortGiven == nil && extra.effort.trimmingCharacters(in: .whitespaces).isEmpty
+            && extra.activity != "breathing" && extra.activity != "meditation"
+    }
 
     var body: some View {
         NavigationStack {
@@ -231,6 +238,16 @@ struct ExtraDetailView: View {
                      * the card, which looked like an afterthought (2026-09-30).
                      */
                     ExtraCard(extra: extra, adjust: store.canLog ? { adjusting = true } : nil)
+                    if asksHowHard {
+                        HowHardCard { n in
+                            store.setEffort(extra: extra, n)
+                            effortGiven = n
+                        }
+                    } else if let effortGiven {
+                        Text("Effort \(effortGiven) / 10 saved")
+                            .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.today)
+                            .accessibilityIdentifier("extra-effort-saved")
+                    }
                     PhotoStrip(owner: PhotoOwner(extra: extra))
                 }
                 .padding(16)

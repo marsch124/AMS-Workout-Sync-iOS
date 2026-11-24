@@ -77,7 +77,9 @@ enum Theme {
         switch discipline.id {
         case "swim", "bike", "run", "strength", "mobility": return "icon-" + discipline.id
         case "brick": return "icon-bike"
-        case "rest": return "icon-check"
+        // A moon, never the tick: the tick means done and nothing else
+        // (his yes of 19 November 2026). The drawing is the icon library's "Night".
+        case "rest": return "icon-rest"
         default: return "icon-other"
         }
     }
