@@ -267,6 +267,11 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("plan-rides")
         }
+        NavigationLink { FavouritesSettingsView() } label: {
+            SettingsRow(title: "Favourite sessions", sub: "\(FavouritesShelf.list.count) kept \u{2014} fill the New session page in one tap", chevron: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("settings-favourites")
         NavigationLink { PlanChangesView() } label: {
             SettingsRow(title: "Changes to the plan", sub: "\(store.planChanges.count) so far", chevron: true)
         }

@@ -48,6 +48,8 @@ struct SessionView: View {
                     SessionWhyLine(workout: w)
                     if w.discipline.id == "swim" { PoolCardButton(workout: w) }
 
+                    SessionFavouriteRow(key: key)
+
                     FlowRow(spacing: 6) {
                         if let s = Plan.plannedSeconds(w, mapping), s > 0 {
                             Pill(text: formatDuration(s)).accessibilityIdentifier("session-length")
