@@ -217,6 +217,10 @@ struct RoadCard: View {
             if raceOpen {
                 Text(road.raceTitle).font(.subheadline).foregroundStyle(Theme.text)
                     .accessibilityIdentifier("race-title")
+                if road.isRace {
+                    RaceSheetLink { Text("Open your race page \u{203A}").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.progress) }
+                        .accessibilityIdentifier("race-page-link")
+                }
             }
             Text(Dates.long(road.raceDay) + (parseDayKey(road.raceDay).map { " " + String(utc.component(.year, from: $0)) } ?? ""))
                 .font(.subheadline).foregroundStyle(Theme.secondary)

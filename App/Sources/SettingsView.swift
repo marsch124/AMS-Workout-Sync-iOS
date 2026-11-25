@@ -137,6 +137,18 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
 
+                    SectionHeading(text: "Race and kit")
+                    NavigationLink { RacePage() } label: {
+                        SettingsRow(title: "Race", sub: "Your plan for the day, fuel and kit list", chevron: true)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings-race")
+                    NavigationLink { GearPage() } label: {
+                        SettingsRow(title: "Shoes and bikes", sub: "Kilometres on each, counted from your logged sessions", chevron: true)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings-gear")
+
                     SectionHeading(text: "Photos").id("photos")
                     PhotoSettings()
 

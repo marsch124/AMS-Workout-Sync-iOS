@@ -148,6 +148,12 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_RIDES"] != nil {
                 NavigationStack { ThursdayRidesView() }
             }
+            if ProcessInfo.processInfo.environment["AMSWS_RACE_PAGE"] != nil {
+                NavigationStack { RacePage() }.environmentObject(store)
+            }
+            if ProcessInfo.processInfo.environment["AMSWS_GEAR_PAGE"] != nil {
+                NavigationStack { GearPage() }.environmentObject(store)
+            }
             if ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] != nil {
                 NavigationStack { MoveInView() }
             }

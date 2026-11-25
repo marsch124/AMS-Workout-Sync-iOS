@@ -140,9 +140,12 @@ struct PlanNumbers: View {
         if let road = Stats.road(view.visible, today: store.today, mapping: view.mapping), road.isRace,
            let weeks = PlanOverview.weeksTo(road.raceDay, today: store.today) {
             card("To the race", id: "plan-race") {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text("\(weeks) week\(weeks == 1 ? "" : "s")").font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
-                    Text(raceDate(road.raceDay)).font(.footnote).foregroundStyle(Theme.secondary)
+                RaceSheetLink {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text("\(weeks) week\(weeks == 1 ? "" : "s")").font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                        Text(raceDate(road.raceDay)).font(.footnote).foregroundStyle(Theme.secondary)
+                        Text("Race page \u{203A}").font(.footnote.weight(.semibold)).foregroundStyle(Theme.progress)
+                    }
                 }
             }
         }
