@@ -130,7 +130,12 @@ struct Glyph: View {
     ]
     var body: some View {
         let (mark, weight) = Glyph.marks[name] ?? (.triOther, 1.9)
+        // One element for VoiceOver and the screen tests, as the picture it replaced was:
+        // a drawn mark is none by itself, so a label on the view around it ("Done" on the
+        // tick) had nothing to hold on to (2.4 to 2.4.2; two screen tests went red).
         AppMarkView(mark, size: size, lineWidth: weight)
+            .accessibilityElement()
+            .accessibilityAddTraits(.isImage)
     }
 }
 
