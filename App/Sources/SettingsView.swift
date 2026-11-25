@@ -22,6 +22,13 @@ struct SettingsView: View {
     @State private var movingIn = false
     @State private var copyURL: URL?
     @State private var confirmGoBack = false
+    @State private var openICloud: Bool = {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["AMSWS_CLOUD_PAGE"] != nil
+        #else
+        return false
+        #endif
+    }()
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -32,8 +39,17 @@ struct SettingsView: View {
                         .accessibilityIdentifier("settings-title")
 
                     SectionHeading(text: "Your plan")
+                    // First: whether the plan is the same on all his devices.
+                    NavigationLink { ICloudPage() } label: { ICloudRow() }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("settings-icloud")
                     if store.planLivesHere {
                         appHomeRows
+                    } else if !Device.isPhone {
+                        // The iPad and the Mac take the plan from iCloud: no Excel, no Dropbox here.
+                        SettingsRow(title: "Not on this \(Device.word) yet",
+                                    sub: "Your plan arrives from iCloud by itself. Today says what it is waiting for.")
+                            .accessibilityIdentifier("plan-from-icloud")
                     } else if Dropbox.shared.isConnected {
                         SettingsRow(title: store.fileName.isEmpty ? "No plan chosen yet" : store.fileName,
                                     sub: planLine,
@@ -64,7 +80,7 @@ struct SettingsView: View {
                             SettingsRow(title: store.fileName, sub: "Read only · " + readLine)
                         }
                     }
-                    if !store.planLivesHere, store.view != nil {
+                    if !store.planLivesHere, store.view != nil, Device.isPhone {
                         SettingsRow(title: "Move the plan into this app",
                                     sub: "Now the plan lives in the Excel file in Dropbox.",
                                     action: ("Start", { movingIn = true }), actionID: "plan-move-in")
@@ -73,7 +89,7 @@ struct SettingsView: View {
                         Text(problem).font(.footnote).foregroundStyle(Theme.danger)
                     }
 
-                    if Dropbox.shared.isConnected, !(store.planLivesHere && store.queue.isEmpty) {
+                    if Device.isPhone, Dropbox.shared.isConnected, !(store.planLivesHere && store.queue.isEmpty) {
                         SectionHeading(text: "Waiting to sync")
                         if store.queue.isEmpty {
                             SettingsRow(title: "Nothing waiting",
@@ -128,8 +144,16 @@ struct SettingsView: View {
                     HealthSettings()
 
                     SectionHeading(text: "Calendar").id("calendar")
-                    CalendarSettings()
+                    if Device.isPhone {
+                        CalendarSettings()
+                    } else {
+                        // Written by the iPhone alone, into iCloud's calendars: it shows here already.
+                        SettingsRow(title: "Kept by your iPhone",
+                                    sub: "The Training calendar is written by your iPhone and appears in Calendar on this \(Device.word) through iCloud.")
+                            .accessibilityIdentifier("calendar-on-iphone")
+                    }
 
+                    if Device.isPhone {
                     SectionHeading(text: "Dropbox")
                     if Dropbox.shared.isConnected {
                         // Disconnecting strands anything still waiting: it is kept
@@ -150,6 +174,7 @@ struct SettingsView: View {
                     } else {
                         SettingsRow(title: "Not connected", sub: "Use Connect Dropbox above.")
                     }
+                    }
 
                     SectionHeading(text: "This app")
                     NavigationLink { GuideView() } label: {
@@ -167,6 +192,7 @@ struct SettingsView: View {
             }
             .background(Theme.bg.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $openICloud) { ICloudPage() }
             #if DEBUG
             .onAppear {
                 // A screenshot of one section, far down the page.
@@ -198,7 +224,7 @@ struct SettingsView: View {
     @ViewBuilder
     private var appHomeRows: some View {
         let copies = store.safetyCopies
-        SettingsRow(title: "Lives in this app", sub: homeSub)
+        SettingsRow(title: Device.isPhone ? "Lives in this app" : "Lives in this app and in iCloud", sub: homeSub)
             .accessibilityIdentifier("plan-home")
         NavigationLink { SafetyCopiesView() } label: {
             SettingsRow(title: "Safety copies",
@@ -211,12 +237,14 @@ struct SettingsView: View {
         SettingsRow(title: "Spreadsheet copy",
                     sub: store.lastSpreadsheetCopy.map { "last " + Self.dayMonth($0) } ?? "none yet — the first is made with the next change",
                     action: ("Save a copy now", { copyURL = store.spreadsheetCopy() }), actionID: "plan-copy")
-        Text("A copy is also saved every week in Files › On My iPhone › Triathlon.")
+        Text("A copy is also saved every week in Files › On My \(Device.word) › Triathlon.")
             .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
-        SettingsRow(title: "Copy in Dropbox", sub: dropboxCopyLine)
-            .accessibilityIdentifier("plan-dropbox-copy")
-        Text("A spreadsheet named \u{201C}Triathlon plan from the app\u{201D}, saved beside your Excel file. It is a copy outside this phone.")
-            .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
+        if Device.isPhone {
+            SettingsRow(title: "Copy in Dropbox", sub: dropboxCopyLine)
+                .accessibilityIdentifier("plan-dropbox-copy")
+            Text("A spreadsheet named \u{201C}Triathlon plan from the app\u{201D}, saved beside your Excel file. It is a copy outside this phone.")
+                .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
+        }
         if store.canChangePlan {
             NavigationLink { ThursdayRidesView() } label: {
                 SettingsRow(title: "Thursday rides", sub: "One easy ride every Thursday, from next Monday to your race", chevron: true)
@@ -233,6 +261,11 @@ struct SettingsView: View {
             SettingsRow(title: "Go back to Excel",
                         sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now into the Excel file in Dropbox.",
                         action: ("Go back to Excel", { confirmGoBack = true }), actionID: "plan-go-back")
+        } else if store.goBackClosed {
+            // Going back would leave the iPad or Mac with a plan nobody writes any more.
+            Text("Your iPad or Mac uses this plan too — a spreadsheet copy is the way out.")
+                .font(.footnote).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
+                .accessibilityIdentifier("plan-go-back-closed")
         }
         if let why = store.homeProblem {
             Text(why).font(.footnote).foregroundStyle(Theme.danger).accessibilityIdentifier("plan-problem")
@@ -413,6 +446,33 @@ struct WorkbookPicker: ViewModifier {
 }
 
 
+/* Settings → iCloud's row: the dot, its words, and when the devices last met. */
+struct ICloudRow: View {
+    @EnvironmentObject var store: Store
+    var body: some View {
+        let status = store.cloud.status
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("iCloud").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    StatusDot(status: status)
+                    Text(line(status)).font(.footnote).foregroundStyle(Theme.secondary)
+                }
+            }
+            Spacer(minLength: 0)
+            Text("›").font(.title2).foregroundStyle(Theme.secondary)
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .accessibilityElement(children: .combine)
+    }
+
+    private func line(_ status: SyncStatus) -> String {
+        if case .same(let at?) = status { return status.words + " · " + WaitingForPlanView.when(at) }
+        return status.words
+    }
+}
+
 struct HealthSettings: View {
     @ObservedObject private var health = HealthImport.shared
 
@@ -426,6 +486,13 @@ struct HealthSettings: View {
 
     @ViewBuilder
     private var state: some View {
+        if Device.isMac {
+            // No Apple Health on a Mac: the iPhone's numbers are shown, and there is nothing to connect.
+            SettingsRow(title: "From your iPhone",
+                        sub: "Apple Health lives on your iPhone; its numbers arrive from there"
+                            + (health.shared.map { " — " + $0.asOfWords() + "." } ?? "."))
+                .accessibilityIdentifier("health-from-iphone")
+        } else {
         switch health.status {
         case .unavailable:
             SettingsRow(title: "Not available on this device", sub: "Apple Health is iPhone only.")
@@ -449,6 +516,7 @@ struct HealthSettings: View {
             SettingsRow(title: "Not connected",
                         sub: "Let the app read your workouts, heart rate and distances, and the log form can fill itself from what your Garmin sent to Health. Optional.",
                         action: ("Connect", { Task { await health.requestAccess(); health.enabled = true } }))
+        }
         }
     }
 }

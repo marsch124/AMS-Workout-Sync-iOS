@@ -29,14 +29,20 @@ targets:
     entitlements:
       path: App/Config/AMSWorkoutSync.entitlements
       properties:
+        # HealthKit must never be dropped (30 Sep 2026: builds 40-46 lost it).
         com.apple.developer.healthkit: true
         com.apple.developer.healthkit.access: []
+        # 2.1: the plan is shared through the app's own iCloud folder (hidden from Files on purpose).
+        com.apple.developer.icloud-container-identifiers: [iCloud.com.schabbauer.AMSWorkoutSync]
+        com.apple.developer.icloud-services: [CloudDocuments]
+        com.apple.developer.ubiquity-container-identifiers: [iCloud.com.schabbauer.AMSWorkoutSync]
     dependencies:
       - package: WorkoutCore
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.schabbauer.AMSWorkoutSync
-        TARGETED_DEVICE_FAMILY: "1"
+        # iPhone and iPad; the Mac runs the iPad app ("Designed for iPad"). Once on App Store Connect, iPad cannot be dropped again.
+        TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: App/Config/Info.plist
         GENERATE_INFOPLIST_FILE: NO
@@ -57,12 +63,14 @@ targets:
         UILaunchScreen:
           UIColorName: ""
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # Apple refuses an iPad app without all four (error 90474).
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         CFBundleURLTypes:
           - CFBundleURLName: com.schabbauer.amsworkoutsync
             CFBundleURLSchemes: [amsworkoutsync]
         ITSAppUsesNonExemptEncryption: false
         NSCalendarsFullAccessUsageDescription: To keep your sessions in a Training calendar — added, moved and removed as the plan changes. Full access is what iOS requires for an app to update events it made itself.
-        NSCameraUsageDescription: To take a photograph of a session and keep it beside the plan. Photos stay on this phone.
+        NSCameraUsageDescription: To take a photograph of a session and keep it beside the plan, on your iPhone, iPad and Mac through your own iCloud.
         NSHealthUpdateUsageDescription: AMS Triathlon Training never writes anything to Health. Apple requires this text to be present anyway.
         NSHealthShareUsageDescription: AMS Triathlon Training reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them, and so hikes and gym sessions outside the plan count in your load. Nothing is written to Health.
         LSSupportsOpeningDocumentsInPlace: true

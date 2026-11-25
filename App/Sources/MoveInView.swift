@@ -11,6 +11,9 @@ struct MoveInView: View {
     @EnvironmentObject var store: Store
     @Environment(\.dismiss) private var dismiss
     @State private var switched = false
+    @State private var fromICloud = false
+    @State private var usingICloud = false
+    @State private var cloudProblem: String?
 
     var body: some View {
         ScrollView {
@@ -28,6 +31,10 @@ struct MoveInView: View {
                     .accessibilityIdentifier("movein-title")
                 if switched {
                     finished
+                } else if store.cloud.cloudHasPlan, store.incoming == nil {
+                    // A plan is already in iCloud, moved in on another device: a second import of the
+                    // Excel file would make two plans. This iPhone takes the one in iCloud instead.
+                    useICloud
                 } else {
                     intro
                     if let taken = store.incoming {
@@ -71,6 +78,37 @@ struct MoveInView: View {
             switched = store.planLivesHere
         }
         #endif
+    }
+
+    private var useICloud: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Your plan is already in iCloud — it was moved into the app on another device. Use it here, and this iPhone shows the same plan as your other devices.")
+            Text("Anything still waiting on this iPhone is written into it. Your Excel file is not changed.")
+            Button {
+                guard !usingICloud else { return }
+                usingICloud = true
+                cloudProblem = nil
+                Task {
+                    cloudProblem = await store.cloud.useCloudPlanHere()
+                    usingICloud = false
+                    if cloudProblem == nil { fromICloud = true; switched = true }
+                }
+            } label: {
+                Text(usingICloud ? "Bringing the plan from iCloud…" : "Use the plan from iCloud")
+                    .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent).tint(Theme.today)
+            .accessibilityIdentifier("movein-use-icloud")
+            if let cloudProblem {
+                Text(cloudProblem).font(.footnote).foregroundStyle(Theme.danger)
+                    .accessibilityIdentifier("movein-problem")
+            }
+            Button("Cancel") { dismiss() }
+                .settingsButton(tint: Theme.secondary)
+                .accessibilityIdentifier("movein-cancel")
+        }
+        .font(.subheadline).foregroundStyle(Theme.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var intro: some View {
@@ -199,7 +237,11 @@ struct MoveInView: View {
             Text("Done. The plan lives in this app now.").font(.headline).foregroundStyle(Theme.today)
                 .accessibilityIdentifier("movein-finished")
             Text("Logging, moving and changing sessions now happen here. Nothing is written into your Excel file any more.")
-            Text("Your Excel file stays in Dropbox, untouched. For three weeks Settings › Go back to Excel can return to it.")
+            if fromICloud {
+                Text("It is the same plan as on your other devices. Your Excel file stays in Dropbox, untouched.")
+            } else {
+                Text("Your Excel file stays in Dropbox, untouched. For three weeks Settings › Go back to Excel can return to it.")
+            }
             Button { dismiss() } label: {
                 Text("Done").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }
