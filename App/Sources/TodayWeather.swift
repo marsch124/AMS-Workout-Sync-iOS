@@ -227,7 +227,7 @@ struct WeatherSettingsSection: View {
         Toggle(isOn: $on) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Weather and daylight on Today").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
-                Text("For an outdoor session: the forecast and when it gets dark. Your place is asked only when Today first needs it, and only that place, to one decimal, is sent.")
+                Text("For an outdoor session: the forecast and when it gets dark. Your place is asked only when Today first needs it, and only a rounded place, about 10 km wide, is sent.")
                     .font(.footnote).foregroundStyle(Theme.secondary)
             }
         }

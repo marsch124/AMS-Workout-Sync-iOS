@@ -11,10 +11,20 @@ enum DebugScrollOffset {
             if let sv = firstScroll(in: root) { sv.setContentOffset(CGPoint(x: 0, y: y), animated: false) }
         }
     }
+    /* The scroll view that is really on screen (a tab that is not showing keeps its own, hidden). */
     private static func firstScroll(in v: UIView) -> UIScrollView? {
-        if let s = v as? UIScrollView, s.contentSize.height > s.bounds.height { return s }
-        for c in v.subviews { if let s = firstScroll(in: c) { return s } }
-        return nil
+        var all: [UIScrollView] = []
+        func walk(_ x: UIView) {
+            if x.isHidden || x.alpha < 0.05 { return }
+            if let s = x as? UIScrollView, s.contentSize.height > s.bounds.height, s.window != nil { all.append(s) }
+            x.subviews.forEach(walk)
+        }
+        walk(v)
+        return all.filter { s in
+            guard let w = s.window else { return false }
+            let r = s.convert(s.bounds, to: w).intersection(w.bounds)
+            return r.height > w.bounds.height * 0.5 && r.width > w.bounds.width * 0.5
+        }.last
     }
 }
 #endif
