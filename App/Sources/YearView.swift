@@ -22,7 +22,7 @@ struct YearView: View {
             let raceDay = road?.isRace == true ? road?.raceDay : nil
             let months = PlanOverview.months(from: keys.min() ?? store.today, to: keys.max() ?? store.today)
             VStack(alignment: .leading, spacing: 10) {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 170, maximum: 250), spacing: 10, alignment: .top)],
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150, maximum: 250), spacing: 10, alignment: .top)],
                           alignment: .leading, spacing: 10) {
                     ForEach(months, id: \.self) { m in
                         Button { openMonth(m) } label: {

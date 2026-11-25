@@ -16,6 +16,9 @@ struct ProgressView: View {
     var body: some View {
         NavigationStack {
             ScrollViewReader { reader in
+            GeometryReader { geo in
+            // A wide window (iPad on its side, the Mac) lays the cards in two columns.
+            let two = geo.size.width >= 860
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Progress").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
@@ -25,22 +28,18 @@ struct ProgressView: View {
                         if !p.summary.any {
                             EmptyCard(title: "Nothing has happened yet",
                                       text: "Once sessions are behind you, this is where the patterns in them show up.")
-                        } else {
-                            TrendsCard(trends: p.trends)
-                            FormCard(form: p.form, today: store.today)
-                            // Beside the fitness card, never on Today: minutes
-                            // times how hard, for everything he did.
-                            if let board = LoadBoard.make(store: store, diary: diary) { LoadCard(board: board).id("load") }
-                            WeeksCard(load: p.load, today: store.today)
-                            MixCard(load: p.load)
-                            if p.summary.counted < 12 {
-                                Note(title: "Too early to read much into this.",
-                                     text: "\(p.summary.counted) session\(p.summary.counted == 1 ? " has" : "s have") gone by. The figures below are real, but a fortnight of training is a fortnight — the patterns need more road behind them.")
+                        } else if two {
+                            HStack(alignment: .top, spacing: 14) {
+                                VStack(alignment: .leading, spacing: 14) { fitness(p) }
+                                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                                VStack(alignment: .leading, spacing: 14) { counts(p, mapping) }
+                                    .frame(maxWidth: .infinity, alignment: .topLeading)
                             }
-                            SoFarCard(s: p.summary)
-                            ConsistencyCard(s: p.summary)
-                            SportCard(s: p.summary, mapping: mapping)
-                            MovesCard(s: p.summary)
+                            .accessibilityElement(children: .contain)
+                            .accessibilityIdentifier("progress-two-columns")
+                        } else {
+                            fitness(p)
+                            counts(p, mapping)
                         }
                         Text("Worked out from the sessions in your workbook each time this screen is opened. Nothing here is stored in the plan, and nothing here writes to it — the totals and the chart on your Progress sheet remain the ones Excel keeps.")
                             .font(.caption).foregroundStyle(Theme.secondary)
@@ -49,7 +48,8 @@ struct ProgressView: View {
                     }
                 }
                 .padding(.horizontal, 16).padding(.bottom, 32)
-                .readableWidth(820)
+                .readableWidth(two ? 1280 : 820)
+            }
             }
             .background(Theme.bg.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
@@ -64,6 +64,29 @@ struct ProgressView: View {
             #endif
             }
         }
+    }
+
+    /* How the training is working: pace per heartbeat, fitness and freshness, load. */
+    @ViewBuilder private func fitness(_ p: Store.Progress) -> some View {
+        TrendsCard(trends: p.trends)
+        FormCard(form: p.form, today: store.today)
+        // Beside the fitness card, never on Today: minutes
+        // times how hard, for everything he did.
+        if let board = LoadBoard.make(store: store, diary: diary) { LoadCard(board: board).id("load") }
+    }
+
+    /* What was done: the weeks, the mix, the totals. */
+    @ViewBuilder private func counts(_ p: Store.Progress, _ mapping: Mapping) -> some View {
+        WeeksCard(load: p.load, today: store.today)
+        MixCard(load: p.load)
+        if p.summary.counted < 12 {
+            Note(title: "Too early to read much into this.",
+                 text: "\(p.summary.counted) session\(p.summary.counted == 1 ? " has" : "s have") gone by. The figures below are real, but a fortnight of training is a fortnight — the patterns need more road behind them.")
+        }
+        SoFarCard(s: p.summary)
+        ConsistencyCard(s: p.summary)
+        SportCard(s: p.summary, mapping: mapping)
+        MovesCard(s: p.summary)
     }
 }
 
@@ -97,7 +120,7 @@ struct StatCard<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.headline).foregroundStyle(Theme.text)
-            if !lede.isEmpty { Text(lede).font(.subheadline).foregroundStyle(Theme.text) }
+            if !lede.isEmpty { Text(lede).font(.subheadline).foregroundStyle(Theme.text).fixedSize(horizontal: false, vertical: true) }
             content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -342,8 +365,10 @@ struct TrendsCard: View {
                                 let change = Int((t.change * 100).rounded())
                                 Text("\(change > 0 ? "+" : "")\(change)% · " + verdictText(t.verdict))
                                     .font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                                    .fixedSize(horizontal: false, vertical: true)
                                 Text("\(t.sessions) logged \(t.easyOnly ? "easy sessions" : "sessions of every kind"), the first \(then.sessions) against the last \(now.sessions).")
                                     .font(.caption).foregroundStyle(Theme.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             .padding(.vertical, 4)
                         }
