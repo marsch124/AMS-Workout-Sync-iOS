@@ -63,6 +63,10 @@ public enum RBAnswer: Codable, Equatable, Sendable {
     case keptPlan
     /* Not answered by the end of the day of the first session it changes: closes as "Keep my plan", silently. */
     case closedUnanswered
+    /* Put away unanswered: the plan had changed since the card was made, so it no longer fitted. */
+    case planChanged
+    /* Put away unanswered: he opened the stop sign or said he was ill. */
+    case paused
 }
 
 public struct RBTried: Codable, Equatable, Sendable {
@@ -106,7 +110,7 @@ public struct SuggestionRecord: Codable, Equatable, Sendable, Identifiable {
     public var closedOn: String { answeredOn ?? closesOn }
 
     public var wasKept: Bool {
-        switch answer { case .keptPlan?, .closedUnanswered?: return true; default: return false }
+        switch answer { case .keptPlan?, .closedUnanswered?, .planChanged?, .paused?: return true; default: return false }
     }
 
     public var wasTaken: Bool { if case .took? = answer { return true } else { return false } }

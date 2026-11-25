@@ -182,6 +182,7 @@ struct SessionView: View {
                        mapping.columns["rpe"] != nil, Stats.actualsOf(w, mapping).rpe == 0 {
                         HowHardCard { store.setEffort(w, $0) }
                     }
+                    HurtsAsk(workout: w)
 
                     if w.missed {
                         Text("Marked missed").font(.headline).foregroundStyle(Theme.danger)
@@ -223,6 +224,7 @@ struct SessionView: View {
                     }
 
                     PhotoStrip(owner: PhotoOwner(w))
+                    StopSignButton(showsState: w.dayKey >= store.today)
                 }
                 .padding(16)
             } else {

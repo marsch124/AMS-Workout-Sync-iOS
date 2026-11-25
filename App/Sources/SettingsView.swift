@@ -260,6 +260,13 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("plan-changes")
+        if store.canChangePlan {
+            NavigationLink { SuggestionsSettingsView() } label: {
+                SettingsRow(title: "Suggestions", sub: SuggestionKeeper.shared.keep.isOn ? "On \u{2014} the app suggests, you decide" : "Off", chevron: true)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("settings-suggestions")
+        }
         if store.canGoBack, let until = store.canGoBackUntil {
             SettingsRow(title: "Go back to Excel",
                         sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now into the Excel file in Dropbox.",

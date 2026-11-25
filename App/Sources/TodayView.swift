@@ -74,6 +74,8 @@ struct TodayView: View {
                     withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false }
                 }
             }
+            // The rule book's one card of the day, right under the morning question.
+            SuggestionArea()
             WeekCard(view: view, today: today)
 
             if sessions.isEmpty {
@@ -343,7 +345,7 @@ struct TodayView: View {
             let phase = view.phase(on: today)
             Text(phase.isEmpty ? "Today" : phase).font(.title3.weight(.bold)).foregroundStyle(Theme.today)
             Spacer()
-            if store.planLivesHere { EmptyView() } else if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { DropboxChip(action: goToSettings) }
+            if store.planLivesHere { StopSignButton() } else if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { DropboxChip(action: goToSettings) }
         }
         .padding(.top, 12)
     }

@@ -19,10 +19,12 @@ extension RuleBookWords {
 
     // MARK: why-lines (spec section 4)
 
-    public static let whyPoorMornings = "Why: you felt poor two mornings running."
+    public static let whyPoorMornings = "Why: you felt tired two mornings running."
     public static let whyHardSessions = "Why: two sessions this week felt much harder than planned."
     public static let whyStillTired = "Why: still tired after the rest day."
     public static let whyTiredOverWeek = "Why: tired signs for over a week; your guide brings the easy week forward."
+    /* Step 3 when the easy week cannot be brought forward: the next three days easy instead. */
+    public static let whyTiredLong = "Why: tired signs for over a week."
     public static let whyTwoTiredWeeks = "Why: two tired weeks in a row — your guide says: easy week now."
     public static let whyMissedKey = "Why: you missed 2 days; your guide keeps the key session and drops an easy one."
     public static func whyMissedKey(days: Int) -> String {
@@ -147,8 +149,9 @@ extension RuleBookWords {
         case .l1: return "Friday is your rest day. Move anyway?"
         case .l2: return "That makes two hard days in a row. Change anyway?"
         case .l3: return "That week goes over its planned time. Change anyway?"
+        case .l6 where f.reason.hasPrefix("Sessions in an easy week"): return "It is in your easy week; it is meant to stay."
         case .l6: return "This one is protected in your plan. Change anyway?"
-        case .l8: return "Missed sessions are not made up. Move anyway?"
+        case .l8: return "Missed sessions are gone \u{2014} no catching up needed."
         default: return f.reason
         }
     }

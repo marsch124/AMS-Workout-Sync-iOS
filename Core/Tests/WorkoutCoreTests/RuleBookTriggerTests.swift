@@ -16,7 +16,7 @@ final class RuleBookTriggerTests: XCTestCase {
         XCTAssertEqual(card?.trigger, .t1)
         XCTAssertEqual(card?.moves, [.extraRestDay(day: d(2, 2))])
         XCTAssertEqual(card?.headline, "Wed run: 55 min → rest")
-        XCTAssertEqual(card?.why, "Why: you felt poor two mornings running.")
+        XCTAssertEqual(card?.why, "Why: you felt tired two mornings running.")
         XCTAssertEqual(card?.otherChoices.first?.headline, "Wed run: 55 → 40 min, easy")
         XCTAssertEqual(card?.footer, "Training suggestion — not medical advice.")
     }
@@ -38,23 +38,47 @@ final class RuleBookTriggerTests: XCTestCase {
         XCTAssertEqual(first?.trigger, .t1)
         XCTAssertEqual(first?.step, 1)
         XCTAssertEqual(first?.why, "Why: two sessions this week felt much harder than planned.")
-        // He keeps his plan; four days of quiet, then new evidence within 7 days of closing → step 2.
+        // He keeps his plan; four days of quiet, then new evidence: the SAME step again, never the next.
         var record = first!.record; record.answer = .keptPlan; record.answeredOn = d(2, 2)
         f.log = [record]
         XCTAssertNil(f.suggest(d(2, 3)))
         f.done(f.id(2, "Run with short"), rpe: 8)
         XCTAssertNil(f.suggest(d(2, 5)))                 // still inside the 4-day cool-down
         f.feel.set(.tired, on: d(2, 6)); f.feel.set(.tired, on: d(3, 0))
-        let second = f.suggest(d(3, 0))
-        XCTAssertEqual(second?.step, 2)
-        XCTAssertEqual(second?.why, "Why: still tired after the rest day.")
-        XCTAssertTrue(second?.headline.hasPrefix("Next 3 days easy:") ?? false)
-        var r2 = second!.record; r2.answer = .took(0); r2.answeredOn = d(3, 0)
-        f.log.append(r2)
-        f.feel.set(.bad, on: d(3, 3)); f.feel.set(.bad, on: d(3, 4))
-        let third = f.suggest(d(3, 4))
-        XCTAssertEqual(third?.step, 3)
-        XCTAssertEqual(third?.moves, [.bringEasyWeekForward(from: d(3, 4), easyWeek: 4)])
+        let again = f.suggest(d(3, 0))
+        XCTAssertEqual(again?.step, 1)
+    }
+
+    func testT1ClimbsOnlyAfterATakenStepHasPassed() throws {
+        var f = Fixture.standard()
+        f.allDone(before: d(9, 2))
+        f.feel.set(.tired, on: d(9, 1)); f.feel.set(.bad, on: d(9, 2))
+        let one = try XCTUnwrap(f.suggest(d(9, 2)))
+        XCTAssertEqual(one.step, 1)
+        var r1 = one.record; r1.answer = .took(0); r1.answeredOn = d(9, 2)
+        f.log = [r1]
+        f.feel.set(.bad, on: d(9, 3))
+        // Taken, and its rest day (today) not yet over: nothing new today.
+        XCTAssertNil(RuleBook.evaluate(f.input(d(9, 2), .afterSession)).suggestion)
+        let two = try XCTUnwrap(f.suggest(d(9, 3)))
+        XCTAssertEqual(two.step, 2)
+        XCTAssertEqual(two.why, "Why: still tired after the rest day.")
+        XCTAssertTrue(two.headline.hasPrefix("Next 3 days easy:"))
+        var r2 = two.record; r2.answer = .took(0); r2.answeredOn = d(9, 3)
+        f.log = [r2]
+        f.feel.set(.bad, on: d(9, 5)); f.feel.set(.bad, on: d(9, 6))
+        let three = try XCTUnwrap(f.suggest(d(9, 6)))
+        XCTAssertEqual(three.step, 3)
+        XCTAssertEqual(three.moves, [.bringEasyWeekForward(from: d(9, 6), easyWeek: 12)])
+    }
+
+    func testT1ThreeWeeksOfTiredMorningsAllKeptNeverClimb() {
+        var f = Fixture.standard()
+        for day in 0..<21 { f.feel.set(.tired, on: PlanView.addDays(d(9, 0), day)) }
+        let lines = RuleBook.replay(f.input(d(9, 0)), from: d(9, 0), to: d(11, 6)) { _ in .keptPlan }
+        let cards = lines.compactMap(\.outcome.suggestion).filter { $0.trigger == .t1 }
+        XCTAssertFalse(cards.isEmpty)
+        XCTAssertTrue(cards.allSatisfy { $0.step == 1 }, cards.map { "\($0.record.day) \($0.step) \($0.headline)" }.joined(separator: "\n"))
     }
 
     func testT1TwoTiredWeeksBringTheEasyWeekForward() {
@@ -152,6 +176,8 @@ final class RuleBookTriggerTests: XCTestCase {
 
     func testT6SundayEveningPlanReview() {
         var f = Fixture.standard()
+        XCTAssertNil(f.suggest(d(6, 6), .evening), "the plan review is off for now")
+        f.settings.planReviewOn = true
         f.allDone(before: d(6, 0))
         f.done(f.id(6, "Long ride"))                                // one session in a whole week: under 40 %
         XCTAssertNil(f.suggest(d(6, 6), .morning))

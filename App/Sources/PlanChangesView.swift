@@ -69,6 +69,9 @@ struct PlanChangesView: View {
                 }
             }
             Text(c.title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+            if !c.why.isEmpty {
+                Text(c.why).font(.footnote).foregroundStyle(Theme.secondary)
+            }
             if !c.before.isEmpty {
                 Text("Before: " + c.before).font(.footnote).foregroundStyle(Theme.secondary)
             }

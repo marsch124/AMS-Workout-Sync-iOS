@@ -46,6 +46,20 @@ extension RuleBookWords {
     public static let restLabel = "Rest — not until 48 h symptom-free"
     public static let rowInstead = "Row instead, same minutes, easy"
 
+    /* The one grey line on Today while a pause or the illness steps are on; nil otherwise. */
+    public static func ladderStatus(_ state: RBLadderState, today: String) -> String? {
+        let n = state.from.isEmpty ? 1 : max(1, RuleBook.daysBetween(state.from, today) + 1)
+        switch state.step {
+        case .paused: return "Suggestions are paused \u{2014} Stop sign"
+        case .rest: return "Resting after illness: day \(n) \u{2014} until 48 hours symptom-free"
+        case .easyDays: return "Back after illness: day \(n) \u{2014} easy only"
+        case .cold: return "Cold: day \(n) \u{2014} easy only, shorter"
+        case .week1: return "Back after illness: day \(n) \u{2014} about half, all easy"
+        case .week2: return "Back after illness: day \(n) \u{2014} about three quarters"
+        case .none, .back, .outLong: return nil
+        }
+    }
+
     public static func ladderText(_ step: RBLadder) -> String {
         switch step {
         case .none: return ""
@@ -124,9 +138,11 @@ extension RuleBook {
     /* Week 2 back: three quarters; all easy but the one mid-week quality session of highest priority. */
     static func ladderWeek2(_ input: RuleBookInput, days: [String], rowInstead: Bool = false, tests: Bool = true) -> [Move] {
         let list = ladderSessions(input, days: days, tests: tests)
-        let quality = list.first { $0.slot == .bikeQuality } ?? list.first { $0.slot == .runQuality }
+        let quality = list.first { $0.slot == .bikeQuality && !labels($0).test } ?? list.first { $0.slot == .runQuality && !labels($0).test }
         var moves: [Move] = []
         for s in list {
+            // A test in this time is dropped, not shortened (spec: tests missed then are not repeated).
+            if labels(s).test { moves.append(.drop(session: s.id)); continue }
             moves.append(.shorten(session: s.id, minutes: percent(s.plannedMin, 75)))
             if s.id != quality?.id { moves.append(.makeEasier(session: s.id, instead: rowInstead && s.sport == .run ? .row : nil)) }
         }

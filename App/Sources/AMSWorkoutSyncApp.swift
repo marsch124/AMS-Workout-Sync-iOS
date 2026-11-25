@@ -10,6 +10,7 @@ struct AMSWorkoutSyncApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(store)
+                .onAppear { SuggestionKeeper.shared.attach(store) }
                 .onChange(of: scenePhase) { _, phase in
                     // The plan may have been logged in the web app or edited in
                     // Excel since it was last read.
@@ -99,6 +100,19 @@ struct RootView: View {
             }
             if ProcessInfo.processInfo.environment["AMSWS_CHANGES"] != nil {
                 NavigationStack { PlanChangesView() }
+            }
+            // Suggestions: the stop-sign page, the Settings page with three sample rows, "Something hurts?".
+            if ProcessInfo.processInfo.environment["AMSWS_STOP"] != nil {
+                StopSignView()
+            }
+            if ProcessInfo.processInfo.environment["AMSWS_SUGGEST_LOG"] != nil {
+                let _ = SuggestionKeeper.shared.debugSeedLog()
+                NavigationStack { SuggestionsSettingsView() }
+            }
+            if ProcessInfo.processInfo.environment["AMSWS_HURTS"] != nil, ProcessInfo.processInfo.environment["AMSWS_SESSION"] == nil,
+               let w = store.displayed.first(where: { $0.dayKey <= store.today && $0.discipline.id != "rest" && $0.logged })
+                   ?? store.displayed.first(where: { $0.dayKey == store.today && $0.discipline.id != "rest" }) {
+                NavigationStack { SessionView(key: w.key) }
             }
             if ProcessInfo.processInfo.environment["AMSWS_SAFETY"] != nil {
                 let _ = store.debugSeedSafetyCopies()

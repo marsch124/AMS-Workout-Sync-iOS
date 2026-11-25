@@ -79,10 +79,16 @@ extension RuleBook {
             return i
         }
         func drop(_ i: Int) { out[i].dropped = true; out[i].status = .changed }
+        // What he logged, or marked missed, is never dropped or cut where it stands.
+        // Only a missed session moved forward by the same choice (T2) may be shortened.
+        let movedOn = Set(moves.compactMap { m -> String? in if case .moveToDay(let s, _) = m { return s } else { return nil } })
+        func settled(_ i: Int) -> Bool { out[i].status == .done || out[i].status == .missed }
         for move in moves {
             switch move {
             case .drop(let id):
-                drop(try index(id))
+                let i = try index(id)
+                guard !settled(i) else { throw RuleBookMoveError.notAllowed("\(id) is logged or missed") }
+                drop(i)
             case .swapWithNextEasy(let id, let easy):
                 let a = try index(id), b = try index(easy)
                 let day = out[a].day
@@ -90,6 +96,9 @@ extension RuleBook {
                 out[a].status = out[a].status == .missed ? .changed : out[a].status
             case .shorten(let id, let minutes):
                 let i = try index(id)
+                if out[i].status == .done || (out[i].status == .missed && !movedOn.contains(id)) {
+                    throw RuleBookMoveError.notAllowed("\(id) is logged or missed")
+                }
                 out[i].plannedMin = minutes
                 out[i].status = .changed
             case .makeEasier(let id, let instead):
@@ -111,7 +120,7 @@ extension RuleBook {
                 out[i].day = day
                 out[i].status = .changed
             case .extraRestDay(let day):
-                for i in out.indices where out[i].day == day && !out[i].isRest { drop(i) }
+                for i in out.indices where out[i].day == day && !out[i].isRest && !settled(i) { drop(i) }
             case .bringEasyWeekForward(let from, let easyWeek):
                 out = try bringForward(out, from: from, easyWeek: easyWeek, input: input)
             }
