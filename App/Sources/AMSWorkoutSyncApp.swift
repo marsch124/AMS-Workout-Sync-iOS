@@ -164,6 +164,7 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_MORNING_PLATE"] != nil {
                 MorningNumbersView(numbers: GarminReader.invented(day: store.today), today: store.today)
             }
+            LogExtrasDebug().environmentObject(store)
             if ProcessInfo.processInfo.environment["AMSWS_EXTRAS"] != nil {
                 NavigationStack { ExtrasListView() }
             }

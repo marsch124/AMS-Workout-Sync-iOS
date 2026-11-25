@@ -90,6 +90,7 @@ struct ProgressView: View {
         ConsistencyCard(s: p.summary)
         SportCard(s: p.summary, mapping: mapping)
         MovesCard(s: p.summary)
+        NigglesCard()
     }
 }
 

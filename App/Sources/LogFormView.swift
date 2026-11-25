@@ -31,6 +31,8 @@ struct LogFormView: View {
     /* A photograph added here is already kept; Save has nothing to write. */
     @State private var addedPhoto = false
     @ObservedObject private var health = HealthImport.shared
+    /* Round 28: the four extra notes (shelf), saved with the log. */
+    @State private var extras = LogExtrasDraft()
 
     init(workout: Workout, mapping: Mapping) {
         self.workout = workout
@@ -75,6 +77,10 @@ struct LogFormView: View {
                     // The same for a session: its pictures are added here, behind
                     // the pen, rather than sitting on the session screen at rest.
                     PhotoStrip(owner: PhotoOwner(workout), canAdd: true, onAdded: { addedPhoto = true })
+
+                    LogExtrasSection(workout: workout, draft: $extras,
+                                     seconds: parseDuration(values["actualDuration"]) ?? Plan.plannedSeconds(workout, mapping),
+                                     duration: fields.all.contains { $0.id == "actualDuration" } ? binding("actualDuration") : nil)
 
                     if !showAll && hiddenCount > 0 {
                         Button("Show \(hiddenCount) more field\(hiddenCount == 1 ? "" : "s")") { showAll = true }
@@ -143,6 +149,7 @@ struct LogFormView: View {
     private func load() {
         guard !loaded else { return }
         loaded = true
+        extras = LogExtrasDraft.load(workout.key)
         let waiting = store.queue.last { $0.workoutKey == workout.key }?.entry
         var filled: [String: String] = [:]
         for field in fields.all {
@@ -162,7 +169,9 @@ struct LogFormView: View {
     }
 
     private func save() {
+        let extrasApply = LogExtrasDraft.applies(workout, seconds: parseDuration(values["actualDuration"]) ?? Plan.plannedSeconds(workout, mapping))
         guard !changes.isEmpty else {
+            if extras.apply(to: workout.key, extrasApply, commit: true) { dismiss(); return }
             if addedPhoto { dismiss(); return }
             problem = "Nothing has changed yet — fill in the time you did, or a number you want to correct."
             return
@@ -170,6 +179,7 @@ struct LogFormView: View {
         if usedHealth { HealthMark.remember(workout) }
         let entry = LogForm.entry(from: changes, distanceUnit: distanceUnit)
         store.log(workout, entry)
+        extras.apply(to: workout.key, extrasApply, commit: true)
         dismiss()
     }
 }
