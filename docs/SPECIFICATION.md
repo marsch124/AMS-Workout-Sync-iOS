@@ -2,7 +2,7 @@
 
 > **Name note.** This app was called **Workout Sync** up to version 1.1 (72). From 1.2 (73) the shown name is **AMS Triathlon Training**. It is the same app: same bundle id `com.schabbauer.AMSWorkoutSync`, same URL scheme `amsworkoutsync://`, same repository. Source file names, the Xcode target and the Swift package still say "WorkoutSync" or "WorkoutCore". Where this document quotes a text the app shows, the quote is what the code says today (version 1.2 (73)); section 12.6 records the texts that were renamed in 1.2 and the places that keep the old word on purpose.
 
-This document describes the app **as the code is today** (2.1 build 75, 25 November 2026). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
+This document describes the app **as the code is today** (2.2 build 76, 25 November 2026). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
 
 Source layout:
 
@@ -1261,6 +1261,15 @@ Compiled **only in DEBUG** builds; none exists in a release build. Pass them as 
 | `AMSWS_RIDES` | 2.1: `1` opens "Thursday rides" | settings screens |
 | `AMSWS_GARMIN` | 2.1: `1` opens a session with the Garmin card | session screens |
 | `AMSWS_FEEL` | 1.2: `1` to `5` answers this morning's question with that face; `week` fills the thirteen days before today (pattern 3 4 4 2 3 5 4 3 · 4 2 3 4, one day left unanswered) so the Mornings bars have something to draw | `Diary.swift` |
+| `AMSWS_SIDE` | 2.2: `today`, `week`, `season`, `sessions`, `progress` or `settings` opens the wide look on that row | `WideRoot.swift` |
+| `AMSWS_DEVICE` | 2.2: `phone`, `ipad` or `mac` fakes the kind of device (screens and tests on any simulator) | `Device.swift` |
+| `AMSWS_FAKE_CLOUD` | 2.2: a folder path used as the app's iCloud folder (`Sync/` is made inside it); iCloud is also switched on in a run that has `AMSWS_FILE` or `AMSWS_RESET`, which otherwise run without iCloud; the quiet look is every 3 seconds instead of 30 | `PlanCloud.swift` |
+| `AMSWS_CLOUD_SEED` | 2.2: with `AMSWS_FAKE_CLOUD`, a workbook path; if the fake folder has no `plan.json`, the plan taken in from that workbook is written there, with an invented iPhone device file, as if an iPhone had put it there | `PlanCloud.swift` |
+| `AMSWS_CLOUD_PAGE` | 2.2: `1` opens Settings → iCloud | `SettingsView.swift` |
+| `AMSWS_WAITING` | 2.2: `off`, `working`, `none`, `excel`, `ready`, `update` or `problem` forces one state of the page an iPad or Mac shows before the plan has arrived | `WaitingForPlanView.swift` |
+| `AMSWS_FAKE_GARMIN` | 2.2: invented Garmin numbers (read at 07:12, HRV 64, sleep 7 h 20, resting 47, Body Battery 71, stress 28) and "a key is saved", no network, no key | `GarminKey.swift`, `GarminReader.swift` |
+| `AMSWS_GARMIN_PAGE` | 2.2: `1` opens Settings → Garmin | `AMSWorkoutSyncApp.swift` |
+| `AMSWS_MORNING_PLATE` | 2.2: `1` opens the plate "Garmin, this morning" with invented numbers | `AMSWorkoutSyncApp.swift` |
 
 For a calendar check: `xcrun simctl privacy <udid> grant calendar com.schabbauer.AMSWorkoutSync`, launch with `SIMCTL_CHILD_AMSWS_CALENDAR=1`, then read the simulator's calendar database (`tools/README.md`).
 
@@ -1651,3 +1660,162 @@ Shown whether the plan is in Excel or in the app, on the kinds of session below.
 * No second Thursday option (a run off the bike, a Monday ride) and no strength change.
 * The three new pages offer nothing while the plan lives in Excel.
 * No iPad or Mac app, as in P.12.
+
+## New in 2.2 (76) — iPad and Mac, the same plan everywhere, Garmin in the morning
+
+Three additions, and one rule that holds them together: **nothing leaves the user's own devices except through his own iCloud (the plan, his answers, the iPhone's Health numbers) and, when he has saved a key, a read-only request from the device to Garmin.** Nothing goes to the watch. Nothing the app shows here is advice, and the Garmin numbers never reach the plan. Files: `WideRoot.swift`, `WeekBoard.swift`, `SeasonView.swift` (iPad and Mac); `PlanCloud.swift`, `ICloudPage.swift`, `WaitingForPlanView.swift`, `SyncStatus.swift`, `Device.swift`, `Core/.../BookMerge.swift`, `CloudFiles.swift`, `DiaryDoc.swift`, `HealthShare.swift` (iCloud); `GarminSettingsView.swift`, `MorningNumbersView.swift`, `GarminClient.swift`, `GarminKey.swift`, `GarminReader.swift`, `Core/.../GarminMorning.swift` (Garmin). The words of the screens are in What's new 2.2 and How this works. All numbers and times in examples are invented.
+
+### W.1 Which device is which (`Device.swift`)
+
+One build serves the iPhone, the iPad and the Mac. The Mac runs the iPad app ("Designed for iPad", installed from TestFlight; `ProcessInfo.isiOSAppOnMac`). `Device.kind` is `iPhone`, `iPad` or `Mac` (DEBUG: `AMSWS_DEVICE`). `TARGETED_DEVICE_FAMILY` is `1,2`. `Device.word` is the word the screens use. `Device.rank` orders marks that carry no time: Mac 1, iPad 2, iPhone 3. `Device.id` is this installation's own name, made once and kept in UserDefaults (`sync.deviceID`).
+
+Per device:
+
+| Belongs to | What |
+|---|---|
+| The iPhone only | Dropbox and the copy in Dropbox, the Training calendar, Apple Health (the Mac has none; the iPad only what Health's own iCloud brought), "Go back to Excel" |
+| Each device itself | Photographs (not in iCloud), the safety copies, the spreadsheet copies in that device's Files, the copy from before iCloud, the Garmin key and the last Garmin reading, waiting log (iPhone on Excel only) |
+| Shared through iCloud | The plan (sessions, logs, extras, tests, zones, changes), his morning and how-hard answers, the iPhone's Health numbers (read only on the others), the list of devices |
+
+An iPad or a Mac with no plan of its own has no Excel, no Dropbox and nothing to choose. Settings → Your plan then shows the row "Not on this iPad yet" (`plan-from-icloud`): "Your plan arrives from iCloud by itself. Today says what it is waiting for." (iPad or Mac in place of iPad). Once the plan is there the row says "Lives in this app and in iCloud" (iPhone: "Lives in this app"), with the counts. Settings → Calendar on an iPad or Mac shows "Kept by your iPhone" (`calendar-on-iphone`): "The Training calendar is written by your iPhone and appears in Calendar on this iPad through iCloud." On a Mac, Settings → Apple Health shows "From your iPhone" (`health-from-iphone`): "Apple Health lives on your iPhone; its numbers arrive from there — from iPhone, as of 07:12." Dropbox, "Waiting to sync" and "Copy in Dropbox" are not shown off the iPhone. "Move the plan into this app" is on the iPhone only.
+
+### W.2 The wide look (iPad and Mac)
+
+**When.** `horizontalSizeClass == .regular` and the device is not an iPhone (an iPhone on its side keeps the phone look). `AMSWorkoutSyncApp` then shows `WideRoot` instead of the three-tab bar. Pages inside are held to a reading width of 680 points where they are text (`readableWidth`).
+
+**The side list** (216 points wide, left): the heading "Triathlon" and six rows in order, each word in its part's colour (Today green, Week blue = the plan's blue, Season amber-brown, Sessions blue, Progress purple, Settings grey), identifiers `side-today`, `side-week`, `side-season`, `side-sessions`, `side-progress`, `side-settings`. The row open has a pale box and the selected trait. The app opens on Today. Tapping the open row comes back to that row's first screen (as the phone's bar does); Progress has none. Keyboard (Mac): Command + 1 to 6. At the foot, the sync line (`sync-status`): a dot and its words, see W.4. Pull to refresh works on Today, Week and Season.
+
+**Week** (`WeekPage(season: false)`, board `week-board`). One column per day, Monday to Sunday (`week-day-<day key>`), seven to fill the width, never narrower than 104 points (the board scrolls sideways if it must). Heading (`week-title`): "Week 12 · Build · Easy week" — the week's number, its phase, then "Test week", "Easy week" or the week's tag; with no week number in the plan, the first and last day. Beside it the time: "<planned> planned", or "<done> done of <planned>" once something is done. Buttons, small, green, outlined (they change nothing in the plan): "Previous week" (`week-prev`), "This week" (`week-this`), "Next week" (`week-next`). Week and Season share the chosen week.
+
+* A day column: the heading "Mon 23" (today's heavier and green), the day's training sessions (a rest row is not shown on a day with a session moved onto it; a rest day shows its rest row), under a hairline the day's extras, and "+ Add" (`week-add-<day key>`) at the foot. Today's column is tinted differently.
+* A session card (`week-card-<key>`): its sport's colour as a 4-point edge (hatched once marked missed), its name (two lines), its length ("45 min", "1h 05m"), the green tick in a circle when done (label "Done"), and the red word "Missed" with a red frame when missed. Tapping opens the session page.
+* An extra (`week-extra-<id>`): dotted outline and light ground in its own colour, its words, its length, the paler tick extras carry everywhere; tapping opens the extra's page.
+* **Drag.** The line "Drag a session to another day" (`week-hint`) is shown only when the plan can be changed (`canChangePlan`: it lives in the app and it is not going back). Only a session **still to do** that is not a rest day can be lifted (`draggable`); a done, a missed or a rest session cannot. Dropping on another day's column (`dropDestination`, the column gets a blue outline while targeted) calls `Store.moveSession(key, to:)`: the same change the Change page makes with only the day new, an entry in Changes to the plan. Dropping on its own day, or a drop that is refused, changes nothing. There are no arrow buttons anywhere.
+* **After a move.** A line (`week-moved`) says "<title> moved to Fri 27 Nov" for eight seconds, with the button "Undo" (`week-undo`, shown while that change can still be undone), which undoes exactly that change.
+* **+ Add** opens "New session" (`SessionEditView`, no key) with that day and the sport run chosen. It needs the plan in the app.
+* With no plan loaded the board shows the empty-workbook page.
+
+**Season** (`WeekPage(season: true)`, `season-view`): above the Week board, every plan week up to the race as bars, then the board (column height 250), then the phases.
+
+* **Weeks.** From the book's weeks; a plan read from Excel has none, so they are made from its sessions. Weeks after the race's Monday are left out. Planned time per week is summed from the sessions as they stand now (moves included). Phases are runs of weeks with the same phase name.
+* **Bars** (`season-week-<n>`): height = planned time against the tallest week (at least 4 points); colour = `Theme.phase(index, of: phases)`, cool early, warm near the race, as on Progress; an **easy week** is the same colour at 38 % strength (pale) and shows "Easy" above it where the bar is at least 26 points wide; a **test week** shows "Test". The chosen week has a 2-point outline; tapping a bar chooses that week. A vertical line (`season-today`, label "Today") stands inside the week that holds today at the day's place. Phase names stand under their first week where they have room; one that would run into the name before is left out (the rows below say it).
+* **The race** (`season-race`): at the right above the bars, the race flag, the race's name (or "Race") and its date with the year, in the Season colour. Only when the plan has a race.
+* **Phases** (`season-phase-<index>`), under the board: a heading "Phases", then one row per named phase: its colour chip, name (bold for the phase today is in), first and last day, "<n> week(s)", the planned hours. Each figure sits right beside its name.
+
+**Escape.** On the Mac every page with Cancel has Escape as Cancel (the keyboard shortcut `cancelAction`), including Settings → Garmin and the plate's "Done".
+
+### W.3 iCloud — the files, the meeting, the merge
+
+**Where.** The app's own container `iCloud.com.schabbauer.AMSWorkoutSync` (entitlement `CloudDocuments`; hidden from Files on purpose), folder `Sync/`:
+
+| File | Written by | Holds | Rule |
+|---|---|---|---|
+| `plan.json` | every device that has the plan in the app | the whole plan book | joined at every meeting (W.3.3) |
+| `diary.json` | every device | his morning answers (key `feel:<day key>`) and how-hard answers (key `answer:<Health workout id>`) | the answer with the later mark wins per day or workout; the same mark with two answers, the larger; nothing is ever taken out |
+| `health-from-iphone.json` | the iPhone only | the last 14 days of morning numbers and Health workouts, the workouts the Load card draws, and `writtenAt` | never joined: the newest `writtenAt` wins; read forgivingly (a field a newer app added is passed over, one workout that cannot be read loses only itself) |
+| `devices/<device id>.json` | that device only | kind, app version and build, `lastMet`, `joinedAt`, `home` (`app`, `excel` or `none`) | rewritten when something in it changed, otherwise at most every ten minutes |
+| `plan-original.xlsx` | the first device that has it | the frozen workbook the plan was taken from | written once, never over; a different workbook goes beside it as `plan-original-<ms>.xlsx`; a device without it takes the one whose hash the plan's `origin.originalHash` names (so "Save a copy now" works everywhere) |
+| `plan-left-<unix time>.json` | the only device, when the plan goes back to Excel | the plan put aside | kept; nothing adopts it later |
+
+**W.3.1 When a device meets iCloud.** At launch and whenever the app comes to the front (`start()`); 1.5 seconds after a change here (several quick changes go up together); half a second after iCloud's own notice that something in the folder is new (files not yet here are asked for); every 30 seconds while the app is active (a quiet look in case a notice was missed); "Sync now" on the iCloud page. A meeting that is already running asks for one more afterwards (0.3 s). A device with iCloud off, signed out or a simulator build stays as before 2.1 (status "iCloud is off"). Screen tests and pictures that pass `AMSWS_FILE`, `AMSWS_RESET` or run under XCTest do not meet iCloud, unless `AMSWS_FAKE_CLOUD` hands them a folder.
+
+**W.3.2 What a meeting does, in order.** (1) Reads the devices folder. (2) The plan, by the device's role: *busy* (moving in, going back, or a plan that would not open) — iCloud waits; *Excel* (an iPhone whose plan still lives in Excel) — nothing is shared, and the move-in page offers iCloud's plan; *empty* (an iPad or Mac with no plan) — takes the plan in iCloud without asking, there being nothing here to lose; *member* — joins (below). (3) The diary. (4) Health: the iPhone writes (asked of Health at most every twenty minutes, since the numbers change once a morning), the others read. (5) This device's own file. Then the dot: green if everything settled, amber if something is still on its way, red with words if there is a problem.
+
+**W.3.3 The rules of the join (`BookMerge`).** In plain words:
+
+* A session has two sides, each with its own mark: the plan side (day, sport, words, length) and the log side (what he recorded). Each side comes from the copy that changed it last, so a change of plan on one device and a log on another both stay.
+* Only a "removed" mark takes anything out, and a log made after the removal brings the session back (shown in Changes to the plan as "Came back: logged after it was taken out", already marked undone).
+* Extras are joined by id the same way.
+* A copy that is missing, empty or not yet downloaded is "nothing there yet", never "everything was removed". A file that is there but still on its way is "waiting"; one that cannot be read just now is "waiting", never empty.
+* Same answer whichever copy is named first; joining twice is joining once. A tie on marks goes to the longer text, then the larger.
+* Every conflict copy iCloud parked beside a file is read and joined; after writing, only the conflict copies that were joined are cleared, so one that arrived in the meantime waits for the next meeting.
+* It refuses rather than guesses: a plan from a newer app (`format` higher than this app's) is never written over, and the device says "Update Triathlon on this device". Two plans taken in separately (a different workbook, or the same one taken in at another time) are never joined: the status is "Two different plans — choose one in Settings › iCloud".
+* When the join changes the plan here, it is put in place only if the plan here did not change while the two were being joined (otherwise it joins again in a moment); if there is no room or it cannot be written, nothing changes and nothing goes up: "The plan from your other devices could not be saved on this iPad". A plan or diary iCloud holds that cannot be read is kept on this device (`parkFromICloud`) before anything is written over it.
+* A mark more than five minutes ahead of this device's clock sets "clock behind" (the red line on the iCloud page).
+
+**W.3.4 Before iCloud.** The first time a device is about to meet iCloud it keeps one copy of its plan, diary and waiting log, "for good" (`Application Support/Before iCloud/`: `plan-<stamp>.json`, `diary-<stamp>.json`, `waiting-<stamp>.json`). If there is no room, nothing is shared and the status says "No room for a copy before iCloud, so nothing was shared". Settings → iCloud → "Copy from before iCloud" (`icloud-before-copy`) says "The plan on this iPad as it was before it first met iCloud. Kept for good." with the button "Share"; a device that had no plan then says "None on this iPad: it had no plan of its own before iCloud." Choosing one of two plans keeps the other as `other-plan` in the same folder.
+
+**W.3.5 Going back.** "Go back to Excel" is closed once another device has met iCloud with this plan (`goBackClosed`): Settings shows "Your iPad or Mac uses this plan too — a spreadsheet copy is the way out." (`plan-go-back-closed`). On the only device, going back puts `plan.json` aside as `plan-left-<time>.json`. Safety copies, spreadsheet copies and the iPhone's backup work as in 2.0 and 2.1, per device. (OPEN, in the code: a device that adopted the plan and then sees it gone keeps its own copy and puts it back at its next meeting; that is why going back is closed once another device has joined.)
+
+### W.4 Settings → iCloud, the dot, the waiting page
+
+**The sync dot** (`SyncStatus`): always a dot with words, never alone. Four states: **green** "Same on all devices" (everything settled; the iCloud row adds " · 07:12"); **amber** "On its way" (the colour of the amber extra-hour block, `Theme.extraHour`); **grey** "iCloud is off" (iCloud off, or the device not signed in); **red**, the words say which (a refusal, no room, a plan that cannot be saved, "Update Triathlon on this device", "Two different plans — choose one in Settings › iCloud", "This app's iCloud folder is not available" when the app was built without its iCloud permission). It is shown: at the foot of the side list (iPad and Mac, `sync-status`), on the iCloud row in Settings (above the page), on the iCloud page, and in the waiting page.
+
+**Settings → iCloud** (row `settings-icloud`, the first under "Your plan"; page title `icloud-title` "iCloud"). Top to bottom:
+
+* The dot and its words in a headline (`icloud-status`), and under it one grey line (`icloud-detail`): off — "Sign in to iCloud on this iPad (Settings → your name → iCloud), then open Triathlon again. Until then the plan on this iPad is not shared." (on a Mac: System Settings → your name → iCloud); on its way — "Your plan is on its way between your devices." (an iPhone still on Excel: "Your plan still lives in Excel on this iPhone, so it is not shared yet."); same — "Last met iCloud 07:12." (an iPhone on Excel: "Your morning answers are shared. The plan is shared once it lives in this app."); problem — "Nothing on this iPad was changed. Last met iCloud …" (two plans: "Your iCloud holds a plan from another move into the app. Look at both below and choose the one to keep — the other is kept as a file, not thrown away.").
+* Red line (`icloud-clock-behind`) when the clock is behind: "This iPad's clock is behind. Set it to the right time (Settings → General → Date & Time → Set Automatically), so the newest change always wins."
+* When two plans exist: "Two different plans" with two cards, "On this iPad" (`two-plans-left`) and "In iCloud" (`two-plans-right`): sessions and how many are done, last change, moved in on; each with the green button "Use this one" (`two-plans-left-use`, `two-plans-right-use`). The one not chosen is kept (W.3.4).
+* The full-width button "Sync now" (`icloud-sync-now`).
+* "Your devices" (`icloud-devices`): one row per device (`icloud-device-<kind>`), iPhone first, then iPad, then Mac: "iPad · this one · last seen 07:12 · 2.2 (76)". With none: "None yet. Each iPhone, iPad and Mac appears here once it has met iCloud."
+* "What is shared": "The plan, everything you log and change, and your morning and how-hard answers are the same on your iPhone, iPad and Mac. Apple Health numbers come from your iPhone. The Training calendar and Dropbox stay on your iPhone."
+* "Before iCloud": "Copy from before iCloud" (W.3.4).
+
+**The waiting page** (`WaitingForPlanView`, shown as Today on an iPad or Mac that has no plan yet, and for two seconds after the plan arrives): the plan mark, the title "Your training plan" (`waiting-plan-title`), then one card with a dot and one line (`waiting-plan-<state>`), and a grey note under it. States (identifier suffix; dot colour; line):
+
+| State | Dot | Line |
+|---|---|---|
+| `icloud-off` | grey | "Sign in to iCloud on this iPad (Settings → your name → iCloud), then open Triathlon again." (Mac: "…this Mac (System Settings → your name → iCloud)…") |
+| `working` | amber | "Bringing your plan from iCloud…" and the file's size when known |
+| `none` | amber | "Your plan lives on your iPhone. Open Triathlon there once — it puts the plan in iCloud." |
+| `excel` | amber | "Your plan still lives in Excel. On your iPhone: Settings → Your plan → Move the plan into this app." |
+| `ready` | green | "Plan from your iPhone · 214 sessions · last change 07:12" (or "from iCloud" when no iPhone has met it); the note says "Opening it now." |
+| `update` | red | "Update Triathlon on this device"; the note: "This plan was saved by a newer Triathlon. Nothing here was changed. Update the app in TestFlight, then open it again." |
+| `problem` | red | the words of the problem, or "iCloud could not be reached just now" |
+
+The note under the other states: "Your iPhone, iPad and Mac show the same plan once it is here. Nothing needs choosing on this iPad." (Mac). `excel` is shown when an iPhone's device file says its home is Excel. The page leaves by itself when the plan has arrived (after the two seconds).
+
+**The move-in page on an iPhone.** When iCloud already holds a plan (`cloudHasPlan`) and no Excel file has been taken in this time, "The plan moves in" shows, instead of the Excel steps, "Your plan is already in iCloud — it was moved into the app on another device. Use it here, and this iPhone shows the same plan as your other devices." and "Anything still waiting on this iPhone is written into it. Your Excel file is not changed." with the green button "Use the plan from iCloud" (`movein-use-icloud`; while working "Bringing the plan from iCloud…"). A newer plan: "The plan in iCloud comes from a newer version of Triathlon. Update the app on this iPhone first."; still on its way: "The plan is still on its way from iCloud. Try again in a moment."; unreadable: "The plan in iCloud could not be read. Nothing was changed." The finished page says "It is the same plan as on your other devices. Your Excel file stays in Dropbox, untouched."
+
+**Health numbers on the iPad and Mac.** The Today morning line is the iPhone's, taken from `health-from-iphone.json`, with a grey line under it (`morning-from-iphone`): "from iPhone, as of 07:12"; older than 18 hours: "from iPhone, earlier today 07:12", "from iPhone, yesterday 07:12" or "from iPhone, 22 Nov 07:12", and the row at 60 % strength. The Load card's Health workouts follow the same share.
+
+### W.5 Morning numbers from Garmin
+
+**Settings → Garmin** (all devices; row `settings-garmin` under "Garmin"). The row says "Garmin · not connected" with "Overnight HRV, sleep, Body Battery and stress from your Garmin watch", or "Garmin · connected" with "Today shows your Garmin numbers". The page (`garmin-title` "Garmin"):
+
+* *Not connected:* a grey paragraph (make a personal key once in your Garmin Connect account at connect.garmin.com, paste it here once), a secure field "Paste your Garmin key" (`garmin-key`), a red line (`garmin-problem`) when needed, and **Cancel** (`garmin-cancel`; Escape on a Mac) and **Save** (`garmin-save`, full green; "Checking…" while it asks Garmin). Save with nothing typed: "Nothing typed yet. Paste your Garmin key into the field first." A key Garmin refuses: "Garmin did not accept this key." Other words: "Could not reach Garmin. Try again in a moment.", "Garmin did not answer as expected.", "This device could not keep the key. Try again." A good Save keeps the key, clears the field, and reads the numbers once.
+* *Connected:* a card with "Connected" (green, `garmin-status`), a row of dots (the key is never shown again) and "Last read 07:12"; the red problem line if the last read failed; **Read again now** (`garmin-again`; "Reading…" meanwhile; ignores the half hour) and **Remove the key** (`garmin-remove`, red, asks: "Remove the key?" with "Remove the key" and "Keep it"; "Today stops showing Garmin numbers. You can paste a key again at any time."). Removing deletes the key, forgets the access token, and deletes the numbers file.
+* Always at the foot: "The key stays on this device only. The numbers are shown, they never change your plan."
+
+**The key.** Keychain, service `com.schabbauer.AMSWorkoutSync.garmin`, account `personal-key`, accessible after first unlock, not synchronised. Never in UserDefaults, the plan, a copy, iCloud, a log, an error message, the numbers file, or the repository (it is public). An iPad or a Mac that should show the numbers needs its own key typed there. The access token Garmin gives for it is kept in memory only (about a day; a new one a few minutes before it runs out, or after a 401), and the session has no cache and no cookies.
+
+**What is asked of Garmin** (`GarminClient`, host `personal.connectapi.garmin.com`, read only, six small reads for one morning, a failed one only meaning "no number"; the key, a refused key or no connection end the read): `POST /personalapitoken-service/personal-api/personal-api-key/token` (the key goes in the Authorization header, once, to get the token); then `GET` `/usersummary-service/usersummary/daily?calendarDate=<day>`, `/sleep-service/sleep/dailySleep?date=<day>`, `/hrv-service/hrv/<day>`, `/hrv-service/hrv/daily/<from>/<day before>`, `/sleep-service/sleep/dailySleepSummariesByDate?startDate=<from>&endDate=<day>`, `/usersummary-service/v2/dailysummaries?startDate=<from>&endDate=<day>`. Nothing is ever written to Garmin. The answers are read forgivingly (`GarminMorning`: a missing field, a number as a string or an answer wrapped one level deeper gives "no number", never a crash).
+
+**When it reads** (`GarminReader`): when Today appears, at most once in 30 minutes (`readEvery`); "Read again now" and a good Save at once. The morning's day is today, except before 04:00, when the night that last ended belongs to yesterday. An answer with no numbers (the watch has not sent the night yet) never replaces numbers already held. The last reading is kept in `Application Support/garmin-morning.json` (numbers only, plus Body Battery at waking, one value a day for 20 days, to make its own normal); it shows at once on launch. Removing the key empties it.
+
+**On Today** (`morning-garmin`, one line, two at most): "HRV 64 (+3) · Sleep 7 h 20 · Resting 47 (−1) · Body Battery 71". Names grey, figures bold. A bracket is always there on HRV and Resting: the difference from his own normal as "+3", "−1" or "±0", **green** the good way (HRV higher, resting lower), **red** the other way, **grey** when it is within the larger of 1 and 4 % of the normal, and, while there is no normal yet, grey "(normal in 3 days)" or "(normal tomorrow)". The normal is the average of up to 14 earlier days and exists from the fourth day (`Fortnight.daysNeeded`, as for Health). Sleep and Body Battery carry no bracket. Under the line, the dot and its words (`morning-dot`): **green** "Garmin · this morning, read 07:12"; **grey** "Garmin · older numbers from Mon 23 Nov". The line leaves itself out with no key or no number. Where Garmin has a number Apple Health also has (sleep, HRV, resting), the Health line drops its own (`withoutDuplicates`); with no Health line, the Garmin line sits right under the heading. Tap the line for the plate.
+
+**The plate** (`MorningNumbersView`, `morning-plate`, a sheet that opens at half height or full): "Garmin, this morning" in green; the dot with "From this morning · read 07:12 from Garmin" or "Older numbers from Mon 23 Nov · read 07:12 from Garmin" (`morning-plate-dot`); five cards (`morning-row-hrv`, `-sleep`, `-resting`, `-bodybattery`, `-stress`): "HRV overnight 64 ms (+3)" with "Normal 61 over 13 days · Garmin's balanced range 52–68"; "Sleep last night 7 h 20"; "Resting heart rate 47 bpm (−1)"; "Body Battery on waking 71"; "Stress yesterday 28"; each with the name first and the figure right beside it, and under it "Normal … over N days" or "No normal yet · N of 14 days"; a missing one says "none yet" and "Garmin has not given this one yet."; "Your watch last sent its numbers to Garmin at 07:05."; "Shown only. These numbers never change your plan."; and **Done** (`morning-plate-done`; Escape on a Mac).
+
+**Shown only.** No judgement, no advice, no score, no suggestion, nothing written into the plan; the numbers are not in iCloud and not in any copy.
+
+### W.6 Identifiers, signs, switches, tests
+
+* **Identifiers (new):** `side-today, side-week, side-season, side-sessions, side-progress, side-settings, sync-status · week-board, week-title, week-hint, week-prev, week-this, week-next, week-day-<day key>, week-card-<key>, week-extra-<id>, week-add-<day key>, week-moved, week-undo · season-view, season-race, season-today, season-week-<n>, season-phase-<i> · settings-icloud, icloud-title, icloud-status, icloud-detail, icloud-clock-behind, icloud-sync-now, icloud-devices, icloud-device-<kind>, icloud-before-copy, two-plans-left, two-plans-right, two-plans-left-use, two-plans-right-use · waiting-plan-title, waiting-plan-<icloud-off|working|none|excel|ready|update|problem> · plan-from-icloud, plan-go-back-closed, calendar-on-iphone, health-from-iphone, movein-use-icloud · settings-garmin, garmin-title, garmin-key, garmin-save, garmin-cancel, garmin-status, garmin-again, garmin-remove, garmin-problem · morning-garmin, morning-dot, morning-from-iphone, morning-plate, morning-plate-dot, morning-plate-done, morning-row-<hrv|sleep|resting|bodybattery|stress>`.
+* **DEBUG switches:** see 14.6 (`AMSWS_SIDE`, `AMSWS_DEVICE`, `AMSWS_FAKE_CLOUD`, `AMSWS_CLOUD_SEED`, `AMSWS_CLOUD_PAGE`, `AMSWS_WAITING`, `AMSWS_FAKE_GARMIN`, `AMSWS_GARMIN_PAGE`, `AMSWS_MORNING_PLATE`).
+* **Signs added** (each with words in How this works → Signs in this app):
+  * the **sync dot**: green "Same on all devices", amber "On its way", grey "iCloud is off", red = a problem, the words say which; never without its words;
+  * the **Garmin dot**: green "Garmin · this morning, read …", grey "Garmin · older numbers from …";
+  * a **pale Season bar** = an easy week; the **outline** = the chosen week; the **thin line** = today; the **flag** = the race;
+  * a **grey "from iPhone, as of …"** line = the iPhone's Health numbers, shown on iPad and Mac;
+  * the side list's six coloured words.
+* **Collisions with older signs, checked against "a mark or colour means one thing":**
+  * *Green dot (sync, Garmin) and the green tick.* The tick (a white check in a green disc) means "done" and nothing else; the dots are small plain circles and are always beside their words. They never carry the meaning alone. Same family of green as "today" and "same" (`Theme.today`), as before.
+  * *Amber sync dot and the amber block.* The sync dot's amber is `Theme.extraHour`, the colour of the amber block under the week card (a full hour of extra training time). Different place, size and shape; the dot always has its words. Recorded as the one near-collision of 2.2. The waiting page uses the same amber dot for "waiting".
+  * *Red.* The red dot means a problem, as red words everywhere mean something went wrong; no change in meaning.
+  * *Grey.* The grey sync dot (off) and the grey Garmin dot (older) both mean "not live"; no change.
+  * *Pale.* On the Season, a pale bar means an easy week; on the week card on Today a lighter block means still to do; and "paler tick" means an extra. Three uses of "paler", each in its own place; the Season bar says "Easy" in words where it has room and has a label for the screen reader.
+  * *Blue.* The side list's Week and Sessions share the plan's blue. Both are about the plan.
+  * *Amber-brown* (`Theme.season`, the Season's colour) is a different, darker orange than the amber block.
+* **Tests (new):** `Core/Tests/WorkoutCoreTests/BookMergeTests.swift` and `CloudMeetingTests.swift` (the join, two devices through a plain folder), `GarminMorningTests.swift` (the readers, the normal, the 30 minutes); UI tests `UITests/WideLayoutUITests.swift` (the week board, Season with its phases and race, the phone look unchanged), `ICloudUITests.swift` (the iCloud page, a second device waiting then opening the plan), `GarminMorningUITests.swift` (the line and the plate, no key no line, an empty key refused in words), all with `AMSWS_DEVICE`, `AMSWS_FAKE_CLOUD` and `AMSWS_FAKE_GARMIN`.
+
+### W.7 What 2.2 deliberately does not do
+
+* It never writes to Garmin and puts nothing on the watch; the Garmin numbers never change a plan, and no rule uses them.
+* It gives no advice and says nothing medical.
+* It sends nothing anywhere but the user's own iCloud (and the read-only request to Garmin from a device that has a key).
+* Photographs are not shared between devices; the Garmin key is not shared; safety copies are per device.
+* Dropbox, the Training calendar and Apple Health stay on the iPhone; Apple Health's numbers are shown, not written, on iPad and Mac.
+* It does not join two separately imported plans; he chooses.
+* Going back to Excel is closed once another device uses the plan.
+* The iPad and Mac look has no new editing screens: the board uses New session and Change, and the drag is a Change with a new day.
