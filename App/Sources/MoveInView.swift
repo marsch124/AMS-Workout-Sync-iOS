@@ -15,7 +15,16 @@ struct MoveInView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("The plan moves in").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
+                HStack {
+                    if !switched {
+                        Button("Cancel") { store.cancelTakingIn(); dismiss() }
+                            .foregroundStyle(Theme.today)
+                            .accessibilityIdentifier("movein-cancel-top")
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(.top, 8)
+                Text("The plan moves in").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
                     .accessibilityIdentifier("movein-title")
                 if switched {
                     finished
@@ -47,6 +56,7 @@ struct MoveInView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
+        .interactiveDismissDisabled(store.incoming != nil && !switched)
         #if DEBUG
         .onAppear {
             guard ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] != nil, store.incoming == nil, !store.planLivesHere else { return }
@@ -65,7 +75,7 @@ struct MoveInView: View {
             Text("Now the plan lives in the Excel file in Dropbox. Here it moves into this app.")
             Text("1 · The app takes in the Excel file and counts both sides.")
             Text("2 · You look at the counts.")
-            Text("3 · You tap the switch. The Excel file stays as it is.")
+            Text("3 · You tap Make this app the plan’s home. Until then nothing is saved.")
         }
         .font(.subheadline).foregroundStyle(Theme.secondary)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,13 +86,24 @@ struct MoveInView: View {
         let proof = taken.proof
         SectionHeading(text: "Excel and the app, side by side")
         VStack(spacing: 0) {
+            HStack(spacing: 6) {
+                Spacer(minLength: 0)
+                Text("Excel").frame(width: 46, alignment: .trailing)
+                Text("App").frame(width: 46, alignment: .trailing)
+                Color.clear.frame(width: 52, height: 1)
+            }
+            .font(.caption.weight(.semibold)).foregroundStyle(Theme.secondary)
+            .accessibilityHidden(true)
             ForEach(Array(proof.lines.enumerated()), id: \.offset) { index, line in
-                HStack(spacing: 8) {
-                    Text(line.label).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
-                    Text("Excel \(line.before) · App \(line.after)").font(.subheadline).foregroundStyle(Theme.secondary)
-                    Spacer(minLength: 0)
-                    mark(same: line.same)
+                HStack(spacing: 6) {
+                    Text(line.label).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                        .lineLimit(1).minimumScaleFactor(0.8)
+                    Spacer(minLength: 4)
+                    Text(line.before).frame(width: 46, alignment: .trailing)
+                    Text(line.after).frame(width: 46, alignment: .trailing)
+                    mark(same: line.same).frame(width: 52, alignment: .leading)
                 }
+                .font(.footnote).monospacedDigit().foregroundStyle(Theme.secondary)
                 .padding(.vertical, 6)
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("proof-row-\(index)")
@@ -99,6 +120,7 @@ struct MoveInView: View {
                 ForEach(Array(proof.differences.prefix(10).enumerated()), id: \.offset) { _, words in
                     Text(words).font(.footnote).foregroundStyle(Theme.secondary)
                 }
+                Text("Correct it in the Excel file, then start again.").font(.footnote).foregroundStyle(Theme.text)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -148,6 +170,8 @@ struct MoveInView: View {
             .buttonStyle(.borderedProminent).tint(Theme.today)
             .accessibilityIdentifier("movein-switch")
             .padding(.top, 6)
+            Text("Your Excel file is not changed. You can go back for three weeks.")
+                .font(.caption).foregroundStyle(Theme.secondary)
         }
         Button("Cancel") { store.cancelTakingIn(); dismiss() }
             .settingsButton(tint: Theme.secondary)
@@ -169,7 +193,7 @@ struct MoveInView: View {
             Text("Done. The plan lives in this app now.").font(.headline).foregroundStyle(Theme.today)
                 .accessibilityIdentifier("movein-finished")
             Text("Logging, moving and changing sessions now happen here. Nothing is written into your Excel file any more.")
-            Text("For three weeks you can go back to Excel.")
+            Text("Your Excel file stays in Dropbox, untouched. For three weeks Settings › Go back to Excel can return to it.")
             Button { dismiss() } label: {
                 Text("Done").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }

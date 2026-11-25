@@ -198,17 +198,13 @@ struct SettingsView: View {
     @ViewBuilder
     private var appHomeRows: some View {
         let copies = store.safetyCopies
-        SettingsRow(title: "Lives in this app", sub: store.switchedAt.map { "since " + Self.dayMonthYear($0) } ?? "")
+        SettingsRow(title: "Lives in this app", sub: homeSub)
             .accessibilityIdentifier("plan-home")
-        if let book = store.book {
-            SettingsRow(title: "\(book.sessions.count) sessions · \(book.extras.count) extra workouts",
-                        sub: "All kept on this phone")
-        }
         SettingsRow(title: "Safety copies",
                     sub: copies.count == 0 ? "None yet — the first comes when the plan next changes"
                         : "\(copies.count) day\(copies.count == 1 ? "" : "s"), newest " + (copies.newest.map(Self.dayKeyShort) ?? ""))
         SettingsRow(title: "Spreadsheet copy",
-                    sub: store.lastSpreadsheetCopy.map { "last " + Self.dayMonth($0) } ?? "none yet",
+                    sub: store.lastSpreadsheetCopy.map { "last " + Self.dayMonth($0) } ?? "none yet — the first is made with the next change",
                     action: ("Save a copy now", { copyURL = store.spreadsheetCopy() }), actionID: "plan-copy")
         Text("A copy is also saved every week in Files › On My iPhone › Triathlon.")
             .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
@@ -229,6 +225,19 @@ struct SettingsView: View {
         if let why = store.homeProblem {
             Text(why).font(.footnote).foregroundStyle(Theme.danger).accessibilityIdentifier("plan-problem")
         }
+    }
+
+    /* "since 25 Nov 2026 · 372 training sessions · 49 rest days · 18 extra workouts", counted from the book. */
+    private var homeSub: String {
+        var parts: [String] = []
+        if let at = store.switchedAt { parts.append("since " + Self.dayMonthYear(at)) }
+        if let book = store.book {
+            let rest = book.sessions.filter { $0.discipline.id == "rest" }.count
+            parts.append("\(book.sessions.count - rest) training sessions")
+            parts.append("\(rest) rest days")
+            parts.append("\(book.extras.count) extra workouts")
+        }
+        return parts.joined(separator: " · ")
     }
 
     /* When the copy outside this phone was last written, or why there is none. */

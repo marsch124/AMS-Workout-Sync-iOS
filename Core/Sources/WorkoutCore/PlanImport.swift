@@ -81,15 +81,15 @@ public struct PlanProof: Equatable {
             ProofLine(label: label, before: String(pick(before)), after: String(pick(after)))
         }
         return [
-            line("Sessions", { $0.sessions }),
-            line("Training", { $0.training }),
+            line("Plan days (sessions and rest days)", { $0.sessions }),
+            line("Training sessions", { $0.training }),
             line("Rest days", { $0.rest }),
             line("Done", { $0.done }),
             line("Missed", { $0.missed }),
             line("Still to come", { $0.toCome }),
             line("Extra activities", { $0.extras }),
-            line("Planned min so far", { $0.plannedMinutes }),
-            line("Recorded min so far", { $0.recordedMinutes })
+            line("Planned minutes", { $0.plannedMinutes }),
+            line("Recorded minutes", { $0.recordedMinutes })
         ]
     }
 }

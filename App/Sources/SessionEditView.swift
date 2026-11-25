@@ -24,12 +24,15 @@ struct SessionEditView: View {
     @State private var isKey: Bool
     @State private var problem: String?
     @State private var asking = false
+    @FocusState private var focused: Bool
+    private let initial: SessionDraft
 
     static let sports: [Discipline] = Disciplines.five + Disciplines.compound + [Disciplines.rest, Disciplines.other]
 
     init(key: String?, draft: SessionDraft, onRemoved: @escaping () -> Void = {}) {
         self.key = key
         self.onRemoved = onRemoved
+        self.initial = draft
         _day = State(initialValue: parseDayKey(draft.dayKey) ?? Date())
         _sport = State(initialValue: draft.sport)
         _title = State(initialValue: draft.title)
@@ -69,30 +72,34 @@ struct SessionEditView: View {
                         }
                         .accessibilityIdentifier("edit-sport")
                     }
-                    labelled("Words") {
+                    labelled("What you do") {
                         TextField("What the session is", text: $title, axis: .vertical)
                             .lineLimit(1...2)
-                            .padding(10).background(box)
+                            .focused($focused)
+                            .padding(10).background(box(title != initial.title))
                             .accessibilityIdentifier("edit-title")
                     }
                     HStack(alignment: .top, spacing: 12) {
                         labelled("Length (minutes)") {
                             TextField("40", text: $minutes)
                                 .keyboardType(.decimalPad)
-                                .padding(10).background(box)
+                                .focused($focused)
+                                .padding(10).background(box(minutes != (initial.minutes.map { jsNumberString($0) } ?? "")))
                                 .accessibilityIdentifier("edit-minutes")
                         }
                         labelled("Zone or effort") {
-                            TextField("Z2 or RPE 6", text: $zone)
+                            TextField("Like Z2 or Z4–Z5", text: $zone)
                                 .autocorrectionDisabled()
-                                .padding(10).background(box)
+                                .focused($focused)
+                                .padding(10).background(box(zone != initial.intensity))
                                 .accessibilityIdentifier("edit-zone")
                         }
                     }
                     labelled("Purpose") {
                         TextField("What it is for", text: $purpose, axis: .vertical)
-                            .lineLimit(3...6)
-                            .padding(10).background(box)
+                            .lineLimit(2...6)
+                            .focused($focused)
+                            .padding(10).background(box(purpose != initial.purpose))
                             .accessibilityIdentifier("edit-purpose")
                     }
                     Toggle("Key session", isOn: $isKey)
@@ -117,6 +124,10 @@ struct SessionEditView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }.accessibilityIdentifier("edit-cancel")
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { focused = false }.accessibilityIdentifier("edit-keyboard-done")
+                }
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
@@ -138,9 +149,15 @@ struct SessionEditView: View {
                 Button("Take out", role: .destructive) { remove() }
                 Button("Keep it", role: .cancel) {}
             } message: {
-                Text("It stays in Changes to the plan, where you can take it back.")
+                Text("It stays in Settings › Changes to the plan, where Undo brings it back.")
             }
         }
+    }
+
+    private func box(_ changed: Bool) -> some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(changed && !adding ? Theme.today : Theme.border, lineWidth: changed && !adding ? 2 : 1))
     }
 
     private var box: some View {
@@ -158,7 +175,7 @@ struct SessionEditView: View {
 
     private func save() {
         let words = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        if words.isEmpty && adding {
+        if words.isEmpty {
             problem = "Write a few words for the session first."
             return
         }
