@@ -242,6 +242,7 @@ final class Store: ObservableObject {
         open()
         // iCloud is looked for once the plan here is open; never before, never instead.
         Diary.shared.onChange = { [weak self] in self?.cloud.localChanged() }
+        ShelfStore.shared.onChange = { [weak self] in self?.cloud.localChanged() }
         Task { @MainActor [weak self] in self?.cloud.start() }
     }
 
@@ -1271,7 +1272,7 @@ final class Store: ObservableObject {
         let stamp = Store.stampNow()
         do {
             try fm.createDirectory(at: beforeICloudURL, withIntermediateDirectories: true)
-            for (from, name) in [(bookURL, "plan"), (supportURL.appendingPathComponent("diary.json"), "diary"), (queueURL, "waiting")] {
+            for (from, name) in [(bookURL, "plan"), (supportURL.appendingPathComponent("diary.json"), "diary"), (queueURL, "waiting"), (supportURL.appendingPathComponent("shelf.json"), "shelf")] {
                 guard fm.fileExists(atPath: from.path) else { continue }
                 try fm.copyItem(at: from, to: beforeICloudURL.appendingPathComponent("\(name)-\(stamp).json"))
             }

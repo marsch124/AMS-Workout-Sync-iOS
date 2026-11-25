@@ -21,6 +21,7 @@ import WorkoutCore
  *   diary.json               morning and how-hard answers (every device)
  *   health-from-iphone.json  Apple Health numbers (the iPhone only)
  *   pause.json               Stop sign and "I'm ill" (every device; 2.3, PauseShare)
+ *   shelf.json               small things that follow him (every device; round 28, ShelfDoc)
  *   devices/<id>.json        one per device (that device only)
  *   plan-original.xlsx       the frozen workbook (written once, never over)
  */
@@ -481,6 +482,9 @@ final class PlanCloud: ObservableObject {
         // 4. Stop sign and "I'm ill": the same on every device.
         if await pauseShare(root.appendingPathComponent("pause.json")) == false { settled = false }
 
+        // 4b. The shelf (round 28): small things that follow him, never part of the plan; after the plan, so it never delays it.
+        if await shelf(root.appendingPathComponent(ShelfStore.fileName)) == false { settled = false }
+
         // 5. This device's own file.
         await writeDeviceFile(devicesFolder)
 
@@ -693,6 +697,42 @@ final class PlanCloud: ObservableObject {
         let share = joined
         let written = await Task.detached(priority: .utility) { () -> Date? in
             guard let data = try? share.encoded() else { return nil }
+            return CloudFiles.write(data, to: url, resolving: merged)
+        }.value
+        return written != nil
+    }
+
+    // MARK: the shelf (round 28)
+
+    /*
+     * Like the diary: read the file and its conflict copies, join them with this
+     * device's shelf (ShelfDoc.merge: newest per key, removals kept), put the
+     * result in place here, write it up when iCloud lacks something. A file that
+     * cannot be read is kept on this device before it is written over. False
+     * when it must wait. Nothing here can stop or change the plan's meeting.
+     */
+    private func shelf(_ url: URL) async -> Bool {
+        let shelf = ShelfStore.shared
+        guard shelf.travels else { return true }
+        let read = await Task.detached(priority: .utility) { CloudFiles.read(url) }.value
+        var cloud: [ShelfDoc] = []
+        var there = false
+        var merged: [Data] = []
+        switch read {
+        case .waiting: return false
+        case .absent: break
+        case .found(let data, let conflicts, _):
+            if let doc = try? ShelfDoc.decoded(data) { cloud.append(doc); there = true } else { store.parkFromICloud(data, name: ShelfStore.fileName) }
+            for bytes in conflicts {
+                if let doc = try? ShelfDoc.decoded(bytes) { cloud.append(doc); merged.append(bytes) }
+            }
+        }
+        let join = ShelfDoc.join(local: shelf.doc, cloud: cloud, cloudFileThere: there)
+        if join.changesLocal { shelf.takeFromCloud(join.doc) }
+        guard join.changesCloud else { return true }
+        let doc = join.doc
+        let written = await Task.detached(priority: .utility) { () -> Date? in
+            guard let data = try? doc.encoded() else { return nil }
             return CloudFiles.write(data, to: url, resolving: merged)
         }.value
         return written != nil
