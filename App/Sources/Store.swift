@@ -979,7 +979,80 @@ final class Store: ObservableObject {
         }
     }
 
+    // MARK: tests and zones
+
+    /* The test blocks, in order. Empty until the plan lives here. */
+    var tests: [TestResult] { book?.tests ?? [] }
+
+    /* A test's numbers entered in the app; the zones follow the last numbers there are. */
+    @discardableResult
+    func recordTest(_ test: TestResult) -> Bool {
+        guard var book else { return false }
+        book.record(test)
+        return save(book)
+    }
+
+    // MARK: putting a safety copy back
+
+    /* The days there is a safety copy for, newest first. */
+    var safetyCopyDays: [String] {
+        ((try? FileManager.default.contentsOfDirectory(atPath: backupsURL.path)) ?? [])
+            .filter { $0.hasPrefix("plan-") && $0.hasSuffix(".json") }
+            .map { String($0.dropFirst(5).dropLast(5)) }.sorted().reversed()
+    }
+
+    /* What a safety copy holds, for the list: nil if it will not open. */
+    func safetyCopySummary(_ day: String) -> (sessions: Int, done: Int, changes: Int)? {
+        guard let data = try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json")),
+              let copy = try? PlanBook.decoded(data) else { return nil }
+        let done = copy.sessions.filter { $0.discipline.id != "rest" && $0.loggedInSheet && !$0.missed }.count
+        return (copy.sessions.count, done, copy.changes.count)
+    }
+
+    /*
+     * The plan as it was at the start of that day, put back. The plan as it
+     * is now is kept beside it first (plan-before-restore-…), so putting a
+     * copy back can itself be put right.
+     */
+    @discardableResult
+    func restoreSafetyCopy(_ day: String) -> Bool {
+        guard home == .app, !goingBack,
+              let data = try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json")),
+              let copy = try? PlanBook.decoded(data) else {
+            lastProblem = "That safety copy could not be opened. Nothing was changed."
+            return false
+        }
+        let fm = FileManager.default
+        let aside = supportURL.appendingPathComponent("plan-before-restore-\(Int(Date().timeIntervalSince1970)).json")
+        do {
+            if fm.fileExists(atPath: bookURL.path) { try fm.copyItem(at: bookURL, to: aside) }
+            try data.write(to: bookURL, options: .atomic)
+        } catch {
+            lastProblem = "The safety copy could not be put back (\(error.localizedDescription)). Nothing was changed."
+            return false
+        }
+        queue = []
+        saveQueue()
+        publish(copy)
+        copyToDropboxSoon()
+        return true
+    }
+
     // MARK: changing the plan itself
+
+    /* Several sessions added in one go — one save, so it is all of them or none. Returns how many. */
+    @discardableResult
+    func addSessions(_ drafts: [SessionDraft], why: String) -> Int {
+        guard var book, !drafts.isEmpty else { return 0 }
+        do {
+            for draft in drafts { try book.add(draft, why: why) }
+            return save(book) ? drafts.count : 0
+        } catch {
+            lastProblem = error.localizedDescription
+            return 0
+        }
+    }
+
 
     /* Sessions can be changed, added and taken out only once the plan lives here. */
     var canChangePlan: Bool { home == .app && book != nil && !goingBack }
