@@ -26,7 +26,7 @@ final class SafetyCopiesUITests: XCTestCase {
         let put = app.buttons.matching(identifier: "safety-put-back").firstMatch
         XCTAssertTrue(put.waitForExistence(timeout: 5), "no button to put a copy back")
         put.tap()
-        let confirm = app.buttons["safety-confirm"]
+        let confirm = app.buttons.matching(identifier: "safety-confirm").firstMatch
         XCTAssertTrue(confirm.waitForExistence(timeout: 5), "it did not ask first")
         confirm.tap()
         XCTAssertTrue(app.staticTexts["safety-done"].waitForExistence(timeout: 5), "no word that the plan is back")

@@ -375,12 +375,15 @@ private struct GarminCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                // The whole heading, never cut: it takes a second line before the button gives way.
                 Text("Build it like this in Garmin Connect").font(.subheadline.weight(.semibold))
                     .foregroundStyle(Theme.text)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Button(open ? "Hide the steps" : "Show the steps") { open.toggle() }
                     .settingsButton(tint: Theme.today)
+                    .fixedSize()
                     .accessibilityIdentifier("garmin-card")
             }
             if open {

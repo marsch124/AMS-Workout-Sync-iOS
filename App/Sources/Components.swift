@@ -167,7 +167,7 @@ struct FlowRow: Layout {
         var x: CGFloat = 0, y: CGFloat = 0, line: CGFloat = 0, widest: CGFloat = 0
         for view in subviews {
             let size = view.sizeThatFits(.unspecified)
-            if x > 0, x + size.width > limit {
+            if x > 0, x + size.width > limit + 0.5 {
                 widest = max(widest, x - spacing)
                 x = 0; y += line + spacing; line = 0
             }
@@ -182,7 +182,10 @@ struct FlowRow: Layout {
         var x = bounds.minX, y = bounds.minY, line: CGFloat = 0
         for view in subviews {
             let size = view.sizeThatFits(.unspecified)
-            if x > bounds.minX, x + size.width > bounds.maxX {
+            // Half a point of give: the row's own width comes back rounded to the
+            // screen's grid, and without it the last pill of a row that just fits
+            // dropped to a second line nobody had made room for.
+            if x > bounds.minX, x + size.width > bounds.maxX + 0.5 {
                 x = bounds.minX; y += line + spacing; line = 0
             }
             view.place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: ProposedViewSize(size))

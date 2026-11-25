@@ -19,7 +19,8 @@ final class TestEntryUITests: XCTestCase {
 
         let enter = app.buttons["test-enter"]
         XCTAssertTrue(enter.waitForExistence(timeout: 15), "the zones page has no way to enter a test")
-        let before = app.otherElements.matching(identifier: "test-row").count
+        let rows = app.descendants(matching: .any).matching(identifier: "test-row")
+        let before = rows.count
         enter.tap()
 
         // Nothing typed: refused in one red line, and the page stays.
@@ -39,7 +40,7 @@ final class TestEntryUITests: XCTestCase {
         save.tap()
 
         XCTAssertFalse(app.buttons["test-save"].waitForExistence(timeout: 3), "the page did not close")
-        XCTAssertTrue(app.otherElements["test-row"].firstMatch.waitForExistence(timeout: 5), "the new test is not in the list")
-        XCTAssertGreaterThanOrEqual(app.otherElements.matching(identifier: "test-row").count, max(before, 1))
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 5), "the new test is not in the list")
+        XCTAssertEqual(rows.count, before + 1, "exactly one more test with numbers")
     }
 }

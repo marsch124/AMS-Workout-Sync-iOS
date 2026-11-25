@@ -191,6 +191,7 @@ struct TestsList: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("tests-list")
     }
 
