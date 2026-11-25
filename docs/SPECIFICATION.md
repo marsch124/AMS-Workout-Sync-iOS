@@ -2136,7 +2136,7 @@ Version shown: 2.6 (82), 25 November 2026. The base is the released 2.5 (81). On
 ### B.2 The page (identifier `body-page`)
 
 * **Top line:** the day and when the numbers were read, "Wed 25 Nov · read 17:31".
-* **Head card "Body Battery"** (`body-hero`): filled with raspberry, white words. The number now (example 41) with the word "now"; beside it "Highest today 82" and, when there were workouts, "2 workouts took 27" (the points the day's workouts cost, the sum of the workouts' drains). Under it the curve from midnight to now, an hour scale 00 · 06 · 12 · 18 · 24, a dotted line from now to midnight (the part of the day still to come), and each of today's workouts as a lighter band on the curve with its name and what it cost above it ("Run −18", "Swim −9"). A workout whose cost Garmin does not give (`drain` is nil) shows its name only.
+* **Head card "Body Battery"** (`body-hero`): filled with raspberry, white words. The number now (example 41) with the word "now"; beside it "Highest today 82" and, when there were workouts, "2 workouts took 27" (the points the day's workouts cost: the sum of the drains of the workouts whose cost Garmin gives, others are not counted). Under it the curve from midnight to now, ending at a white dot (now); the rest of the day stays empty, no dotted line. An hour scale 00 · 06 · 12 · 18 · 24, and each of today's workouts as a lighter band on the curve with its name and what it cost above it ("Run −18", "Swim −9"). A workout whose cost Garmin does not give (`drain` is nil) shows its name only.
 * **Four tiles**, each with the name in small capitals, the figure right beside its unit, one grey line and seven slim bars for the last seven days with the weekday letters under them:
 
 | Tile | Identifier | Figure | Grey line |
@@ -2146,15 +2146,16 @@ Version shown: 2.6 (82), 25 November 2026. The base is the released 2.5 (81). On
 | Resting pulse | `body-tile-resting` | today's, "52 beats" | "your normal 51" |
 | Stress | `body-tile-stress` | today's average, "31 average" | "highest today 74" |
 
-* A day without a reading shows a small dashed mark instead of a bar, never a zero (`DayValue.value` is nil). Today's bar is the last one; its weekday letter is bold.
+* All seven bars are the same full raspberry (no paler bars). A day without a reading shows a small grey dash "–" where its bar would be, never a zero (`DayValue.value` is nil). Today's bar is the last one; its weekday letter is bold and raspberry.
+* Lengths are written as everywhere in the app (`formatDuration`): "6h 10m", never "6 h 10".
 * **Sleep is shown only.** It never leads to a suggestion (the owner's own decision).
-* **Tap a tile** (`body-peek`): a small page with that instrument's seven days in numbers, newest first; a day without data reads "no reading". Button Done (`body-peek-done`); on a Mac Escape closes it.
+* **Tap a tile** (`body-peek`): a small page with that instrument's seven days in numbers, newest first; title e.g. "Sleep · last 7 days"; the first row reads "Today" (for Sleep and HRV "Last night"); a day without data reads "no reading". Button Done (`body-peek-done`); on a Mac Escape closes it.
 * **Foot:** "Tap a tile for its 7 days in numbers." and "From your Garmin watch · shown only, it changes no plan."
 * **Between midnight and about 04:00** the curve can be empty (the day has only begun); sleep and HRV then still show the night before (`nightDay`).
 
 ### B.3 Empty states
 
-* **No Garmin key** (`body-connect`): "Connect your Garmin key to see your body's numbers here." and a full-colour button "Open Garmin settings" that goes to Settings → Garmin.
+* **No Garmin key** (`body-connect`): "Connect your Garmin key to see your body's numbers here." and a full-colour button "Open Garmin settings" that opens the Garmin settings page right there on the Body page (the same page as Settings → Garmin).
 * **A key but no numbers yet** (`body-empty`): "No numbers from Garmin yet. Wear the watch, sync it in Garmin Connect, then pull down here."
 
 ### B.4 Where the numbers come from
@@ -2175,9 +2176,9 @@ Version shown: 2.6 (82), 25 November 2026. The base is the released 2.5 (81). On
 
 * Raspberry = the Body page (heading, head card, tab). A heart with a pulse line = Body (the small plain heart on Log details still means "Apple Health holds numbers from your watch").
 * A lighter band on the Body Battery curve = a workout, with its name and points above it. (Elsewhere a lighter block means "still to do"; the two never share a screen.)
-* A dotted line after the white dot = the rest of today, still to come.
-* A small dashed mark in a tile's row of bars = no reading that day.
-* A bold weekday letter = today (on Body only; elsewhere today is green).
+* The white dot at the end of the curve = now; the rest of the day stays empty.
+* A small grey dash "–" in a tile's row of bars = no reading that day.
+* A bold raspberry weekday letter = today (on Body only; elsewhere today is green).
 
 ### B.7 Behind the scenes
 
