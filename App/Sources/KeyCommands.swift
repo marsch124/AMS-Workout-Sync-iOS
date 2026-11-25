@@ -98,7 +98,7 @@ struct KeysPlate: View {
                 .foregroundStyle(Color.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 14).padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.settings))
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.settingsFill))
 
                 ForEach(Array(KeyGuide.rows.enumerated()), id: \.offset) { index, row in
                     HStack(alignment: .firstTextBaseline, spacing: 10) {

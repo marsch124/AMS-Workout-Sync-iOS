@@ -90,12 +90,14 @@ struct ProgressRound28: View {
                 HStack(alignment: .top, spacing: 14) {
                     MonthReviewCard(plan: plan, mapping: mapping, today: store.today, feel: diary.feel,
                                     zones: store.zones, tests: store.tests)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                     VStack(alignment: .leading, spacing: 14) {
                         SteadyWeeksCard(plan: plan, today: store.today)
                         PersonalBestsCard(plan: plan, mapping: mapping, today: store.today)
                         TestHistoryCard(tests: shownTests)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             } else {
@@ -207,4 +209,9 @@ struct ProgTileGrid: Layout {
             y += rh + spacing; i += n
         }
     }
+}
+
+/* The Settings head card's fill: slate, dark enough for white words by day and by night (Theme.settings turns pale at night). */
+extension Theme {
+    static let settingsFill = Color.dynamic(light: 0x5A6B7B, dark: 0x3E4C5A)
 }
