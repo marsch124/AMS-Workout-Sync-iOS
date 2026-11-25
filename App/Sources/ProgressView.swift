@@ -97,11 +97,8 @@ struct ProgressView: View {
 private func percent(_ v: Double?) -> String { v.map { "\(Int(($0 * 100).rounded()))%" } ?? "—" }
 
 private func hoursShort(_ seconds: Double) -> String {
-    if seconds < 60 { return "0" }
-    let hours = Int(seconds / 3600)
-    let minutes = Int(((seconds - Double(hours) * 3600) / 60).rounded())
-    if hours == 0 { return "\(minutes)m" }
-    return minutes > 0 ? "\(hours)h \(minutes)m" : "\(hours)h"
+    // The one way the app writes a length of time: "66h 08m", "45m".
+    seconds < 60 ? "0m" : formatDuration((seconds / 60).rounded() * 60)
 }
 
 private func paceText(_ sport: String, _ kmh: Double) -> String {
@@ -324,7 +321,7 @@ struct RoadCard: View {
             // had been; a third of the row each, with the figure shrinking to
             // stay on one line, is enough.
             HStack(alignment: .top, spacing: 10) {
-                Figure(value: "\(road.done)", label: "done of \(road.sessions)")
+                Figure(value: "\(road.done)", label: "done so far, of \(road.sessions) in the plan")
                 Figure(value: hours(road.doneSeconds), label: "banked of \(hours(road.plannedSoFar)) due")
                 Figure(value: hours(road.plannedAll), label: "the whole build")
             }
@@ -580,16 +577,17 @@ struct MixCard: View {
                 ForEach(sports) { s in
                     HStack(spacing: 8) {
                         Circle().fill(Theme.sport(s.sport)).frame(width: 10, height: 10)
-                        Text(label(s.sport)).font(.subheadline).foregroundStyle(Theme.text)
-                        Spacer()
-                        Text(hoursShort(s.actual)).font(.subheadline.monospacedDigit()).foregroundStyle(Theme.secondary)
-                        Text("\(Int((s.shareActual * 100).rounded()))%").font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.text).frame(width: 44, alignment: .trailing)
+                        // The figures right beside the name, never at the far edge.
+                        Text(label(s.sport)).font(.subheadline).foregroundStyle(Theme.text).frame(width: 74, alignment: .leading)
+                        Text("\(Int((s.shareActual * 100).rounded()))%").font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.text).frame(width: 40, alignment: .leading)
+                        Text(hoursShort(s.actual)).font(.subheadline.monospacedDigit()).foregroundStyle(Theme.secondary).frame(width: 78, alignment: .leading)
                         if s.sharePlanned > 0 {
                             Text("plan \(Int((s.sharePlanned * 100).rounded()))%" + (abs(drift(s)) >= 5 ? " \(drift(s) > 0 ? "+" : "")\(drift(s))" : ""))
                                 .font(.caption.monospacedDigit()).foregroundStyle(abs(drift(s)) >= 5 ? Theme.danger : Theme.secondary)
-                                .frame(width: 82, alignment: .trailing)
                         }
+                        Spacer(minLength: 0)
                     }
+                    .lineLimit(1)
                 }
                 Text(drifted.isEmpty
                      ? "The balance is within five points of what the plan asked for on every sport."
@@ -606,9 +604,9 @@ struct SoFarCard: View {
     let s: Stats.Summary
     var body: some View {
         StatCard(title: "So far",
-                 lede: "\(s.done) of \(s.counted) sessions behind you were completed" + (s.unlogged > 0 ? ", and \(s.unlogged) \(s.unlogged == 1 ? "was" : "were") never answered either way" : "") + ".") {
+                 lede: "Of the \(s.counted) sessions due up to yesterday, \(s.done) \(s.done == 1 ? "was" : "were") done" + (s.unlogged > 0 ? ", and \(s.unlogged) \(s.unlogged == 1 ? "was" : "were") never answered either way" : "") + ".") {
             HStack(spacing: 8) {
-                Figure(value: "\(s.done)", label: "completed")
+                Figure(value: "\(s.done)", label: "done")
                 Figure(value: "\(s.missed)", label: "missed")
                 Figure(value: "\(s.unlogged)", label: "unanswered")
             }
@@ -651,6 +649,9 @@ struct SportCard: View {
                 HStack(spacing: 8) {
                     Circle().fill(Theme.sport(row.id)).frame(width: 10, height: 10)
                     Text(row.label).font(.subheadline).foregroundStyle(Theme.text).frame(width: 74, alignment: .leading)
+                    // The figures right beside the name; the bar keeps the rest of the row.
+                    Text(percent(row.rate)).font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.text).frame(width: 44, alignment: .leading)
+                    Text("\(row.done)/\(row.planned)").font(.caption.monospacedDigit()).foregroundStyle(Theme.secondary).frame(width: 44, alignment: .leading)
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule().fill(Theme.surface2)
@@ -658,8 +659,6 @@ struct SportCard: View {
                         }
                     }
                     .frame(height: 8)
-                    Text(percent(row.rate)).font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.text).frame(width: 44, alignment: .trailing)
-                    Text("\(row.done)/\(row.planned)").font(.caption.monospacedDigit()).foregroundStyle(Theme.secondary).frame(width: 44, alignment: .trailing)
                 }
             }
         }

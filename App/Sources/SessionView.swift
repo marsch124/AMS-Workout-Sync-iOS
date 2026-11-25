@@ -158,7 +158,7 @@ struct SessionView: View {
                                             Text("Done · \(formatDuration(planned))")
                                         }
                                     }
-                                    .settingsButton(tint: Theme.today, filled: true)
+                                    .mainSmallButton()
                                     .accessibilityIdentifier("session-done-as-planned")
                                 }
                                 Button { logging = true } label: {

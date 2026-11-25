@@ -34,31 +34,34 @@ struct TestEntryView: View {
                         .settingsButton(tint: Theme.today)
                         .accessibilityIdentifier("test-same")
                     }
-                    fieldRow("Threshold pulse", unit: "beats a minute") {
-                        numberBox("160", text: $fields.lthr, id: "test-lthr", pad: .decimalPad)
-                    }
-                    fieldRow("Bike power (FTP)", unit: "watts") {
-                        numberBox("200", text: $fields.ftp, id: "test-ftp", pad: .decimalPad)
-                    }
-                    fieldRow("Swim pace per 100 m", unit: "min:sec") {
-                        numberBox("1:50", text: $fields.swim, id: "test-swim", pad: .numbersAndPunctuation)
-                    }
-                    fieldRow("Weight", unit: "kg") {
-                        numberBox("70", text: $fields.weight, id: "test-weight", pad: .decimalPad)
-                    }
-                    HStack(spacing: 8) {
-                        Text("First day").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
-                        DatePicker("First day", selection: $first, displayedComponents: .date)
-                            .labelsHidden().environment(\.timeZone, utc)
-                            .accessibilityIdentifier("test-first")
-                        Spacer(minLength: 0)
-                    }
-                    HStack(spacing: 8) {
-                        Text("Last day").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
-                        DatePicker("Last day", selection: $last, in: first..., displayedComponents: .date)
-                            .labelsHidden().environment(\.timeZone, utc)
-                            .accessibilityIdentifier("test-last")
-                        Spacer(minLength: 0)
+                    // One column: every box starts at the same place, whatever the label's length.
+                    Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 12) {
+                        fieldRow("Threshold pulse", unit: "beats a minute") {
+                            numberBox("160", text: $fields.lthr, id: "test-lthr", pad: .decimalPad)
+                        }
+                        fieldRow("Bike power (FTP)", unit: "watts") {
+                            numberBox("200", text: $fields.ftp, id: "test-ftp", pad: .decimalPad)
+                        }
+                        fieldRow("Swim pace per 100 m", unit: "min:sec") {
+                            numberBox("1:50", text: $fields.swim, id: "test-swim", pad: .numbersAndPunctuation)
+                        }
+                        fieldRow("Weight", unit: "kg") {
+                            numberBox("70", text: $fields.weight, id: "test-weight", pad: .decimalPad)
+                        }
+                        GridRow(alignment: .center) {
+                            Text("First day").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                            DatePicker("First day", selection: $first, displayedComponents: .date)
+                                .labelsHidden().environment(\.timeZone, utc)
+                                .accessibilityIdentifier("test-first")
+                                .gridCellColumns(2)
+                        }
+                        GridRow(alignment: .center) {
+                            Text("Last day").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                            DatePicker("Last day", selection: $last, in: first..., displayedComponents: .date)
+                                .labelsHidden().environment(\.timeZone, utc)
+                                .accessibilityIdentifier("test-last")
+                                .gridCellColumns(2)
+                        }
                     }
                     labelled("Notes") {
                         TextField("Anything worth keeping", text: $fields.notes, axis: .vertical)
@@ -97,7 +100,7 @@ struct TestEntryView: View {
                     Button(action: save) {
                         Text("Save").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     }
-                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                     .accessibilityIdentifier("test-save")
                 }
                 .padding(16)
@@ -136,11 +139,10 @@ struct TestEntryView: View {
 
     /* One row per box: the name, the box right beside it, the unit in grey after it. */
     private func fieldRow<Content: View>(_ title: String, unit: String, @ViewBuilder _ content: () -> Content) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(title).font(.body.weight(.semibold)).foregroundStyle(Theme.text)
-            content().frame(maxWidth: 110)
-            Text(unit).font(.footnote).foregroundStyle(Theme.secondary)
-            Spacer(minLength: 0)
+        GridRow(alignment: .firstTextBaseline) {
+            Text(title).font(.body.weight(.semibold)).foregroundStyle(Theme.text).fixedSize()
+            content().frame(width: 84)
+            Text(unit).font(.footnote).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
         }
     }
 

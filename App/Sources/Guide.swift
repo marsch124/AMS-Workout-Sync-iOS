@@ -270,9 +270,21 @@ struct GuideView: View {
             VStack(alignment: .leading, spacing: 18) {
                 ForEach(Self.parts) { part in
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(part.id).font(.headline).foregroundStyle(Theme.text)
+                        // Real headings, so the long page can be scanned: the part's name
+                        // large and green, and a paragraph's own first-line title in bold.
+                        Text(part.id).font(.title3.weight(.bold)).foregroundStyle(Theme.today)
+                            .accessibilityAddTraits(.isHeader)
                         ForEach(part.body, id: \.self) { p in
-                            Text(p).font(.body).foregroundStyle(Theme.text)
+                            if let (title, rest) = Self.split(p) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(title).font(.headline).foregroundStyle(Theme.text)
+                                        .accessibilityAddTraits(.isHeader)
+                                    Text(rest).font(.body).foregroundStyle(Theme.text)
+                                }
+                                .padding(.top, 4)
+                            } else {
+                                Text(p).font(.body).foregroundStyle(Theme.text)
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -285,6 +297,14 @@ struct GuideView: View {
         .background(Theme.bg.ignoresSafeArea())
         .navigationTitle("How this works")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /* A paragraph that opens with a short title line ("Claude (Settings → Claude)") and a list under it. */
+    static func split(_ p: String) -> (String, String)? {
+        guard let cut = p.firstIndex(of: "\n") else { return nil }
+        let title = String(p[..<cut]), rest = String(p[p.index(after: cut)...])
+        guard title.count <= 60, !title.hasSuffix("."), !title.hasSuffix(":"), rest.hasPrefix("•") else { return nil }
+        return (title, rest)
     }
 }
 
@@ -733,9 +753,10 @@ struct WhatsNewView: View {
                 ForEach(Self.releases) { r in
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(alignment: .firstTextBaseline) {
+                            // The date right beside the version, never at the far edge.
                             Text(r.version).font(.headline).foregroundStyle(Theme.text)
-                            Spacer()
                             Text(r.date).font(.caption).foregroundStyle(Theme.secondary)
+                            Spacer(minLength: 0)
                         }
                         Text(r.headline).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.today)
                         ForEach(r.items, id: \.self) { item in

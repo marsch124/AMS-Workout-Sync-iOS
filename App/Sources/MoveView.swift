@@ -70,7 +70,7 @@ struct MoveView: View {
                         } label: {
                             Text("Move the session").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
                         }
-                        .buttonStyle(.borderedProminent).tint(Theme.today)
+                        .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                     }
                     Text(chosenKey == workout.dayKey
                          ? "Pick a different day first."

@@ -33,8 +33,6 @@ struct GarminSettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Garmin").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 8)
-                    .accessibilityIdentifier("garmin-title")
                 if reader.keySaved { connected } else { notConnected }
                 Text("The key stays on this device only. The numbers are shown, they never change your plan.")
                     .font(.caption).foregroundStyle(Theme.secondary)
@@ -47,6 +45,13 @@ struct GarminSettingsView: View {
         .background(Theme.bg.ignoresSafeArea())
         .scrollDismissesKeyboard(.interactively)
         .navigationBarTitleDisplayMode(.inline)
+        // The small centred title every other Settings page has.
+        .navigationTitle("Garmin")
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Garmin").font(.headline).foregroundStyle(Theme.text).accessibilityIdentifier("garmin-title")
+            }
+        }
         .confirmationDialog("Remove the key?", isPresented: $confirmRemove, titleVisibility: .visible) {
             Button("Remove the key", role: .destructive) {
                 GarminKey.remove()
@@ -81,7 +86,7 @@ struct GarminSettingsView: View {
                 .keyboardShortcut(.cancelAction)
                 .accessibilityIdentifier("garmin-cancel")
             Button(saving ? "Checking…" : "Save") { Task { await save() } }
-                .settingsButton(tint: Theme.today, filled: true)
+                .mainSmallButton()
                 .accessibilityIdentifier("garmin-save")
         }
     }

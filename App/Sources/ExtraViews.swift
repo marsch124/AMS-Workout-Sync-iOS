@@ -138,7 +138,7 @@ struct ExtraFormView: View {
                           hint: "Just a number means minutes. Or 1:15, 1h20, 90min.")
                     if Extras.wantsMetrics(activity) {
                         field("Distance (km)", id: ExtraField.distance, text: $distance, placeholder: "e.g. 4.2", keys: .decimalPad)
-                        field("Average heart rate (bpm)", id: ExtraField.avgHr, text: $avgHr, placeholder: "", keys: .numberPad)
+                        field("Average heart rate (bpm)", id: ExtraField.avgHr, text: $avgHr, placeholder: "e.g. 135", keys: .numberPad)
                         field("Effort (1–10)", id: ExtraField.effort, text: $effort, placeholder: "1 easy — 10 all out", keys: .numberPad)
                     }
                     labelled("Counts as training?") {
@@ -182,7 +182,7 @@ struct ExtraFormView: View {
                     Button(action: save) {
                         Text(saveLabel).font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     }
-                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                     .accessibilityIdentifier("extra-save")
                 }
                 .padding(16).background(Theme.bg)
@@ -191,7 +191,7 @@ struct ExtraFormView: View {
     }
 
     private var saveLabel: String {
-        guard editing != nil else { return "Save it" }
+        guard editing != nil else { return "Save" }
         let n = changes.count
         if n == 0 { return addedPhoto ? "Done" : "Save" }
         return "Save \(n) change\(n == 1 ? "" : "s")"

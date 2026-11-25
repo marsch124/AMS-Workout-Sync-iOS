@@ -103,11 +103,16 @@ struct LogFormView: View {
                     Button(action: save) {
                         Text(saveLabel).font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     }
-                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                     .accessibilityIdentifier("log-save")
                 }
                 .padding(16)
                 .background(Theme.bg)
+                // A soft fade above Save: a box running under it reads as "more below", not as cut off.
+                .background(alignment: .top) {
+                    LinearGradient(colors: [Theme.bg.opacity(0), Theme.bg], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 28).offset(y: -28).allowsHitTesting(false)
+                }
             }
             .onAppear(perform: load)
             .task(id: health.inUse) {
@@ -298,7 +303,7 @@ struct HealthSuggestions: View {
                     Spacer()
                     Button("Use") { use(w) }
                         .accessibilityIdentifier("health-use-" + w.sport)
-                        .buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.today)
+                        .buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.mainButton)
                 }
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))

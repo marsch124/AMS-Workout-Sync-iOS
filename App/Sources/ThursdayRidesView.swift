@@ -42,14 +42,9 @@ struct ThursdayRidesView: View {
     }()
 
     private func day(_ key: String) -> String { parseDayKey(key).map(Self.dayFormat.string(from:)) ?? key }
-    private func minutes(_ m: Double) -> String { "\(Int(m.rounded())) min" }
-    /* Hours and minutes: "5 h", "5 h 45 min", "45 min". */
-    private func hoursMinutes(_ m: Double) -> String {
-        let total = Int(m.rounded())
-        let h = total / 60, r = total % 60
-        if h == 0 { return "\(r) min" }
-        return r == 0 ? "\(h) h" : "\(h) h \(r) min"
-    }
+    private func minutes(_ m: Double) -> String { formatDuration(m.rounded() * 60) }
+    /* Written as every other length of time in the app: "5h 45m", "45m". */
+    private func hoursMinutes(_ m: Double) -> String { formatDuration(m.rounded() * 60) }
 
     var body: some View {
         let list = drafts
@@ -115,7 +110,7 @@ struct ThursdayRidesView: View {
                 } label: {
                     Text("Add \(list.count) rides").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                 }
-                .buttonStyle(.borderedProminent).tint(Theme.today)
+                .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                 .accessibilityIdentifier("rides-add")
                 }
                 .padding(16)

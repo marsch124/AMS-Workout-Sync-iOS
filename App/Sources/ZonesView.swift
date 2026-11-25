@@ -18,7 +18,7 @@ struct ZonesView: View {
                     Button { entering = true } label: {
                         Text("Enter a test result").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     }
-                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                     .accessibilityIdentifier("test-enter")
                     if !store.tests.isEmpty { TestsList() }
                 }
@@ -118,15 +118,15 @@ struct ZoneTableCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(table.title).font(.caption.weight(.bold)).tracking(0.6).foregroundStyle(Theme.secondary)
                 ForEach(Array(table.rows.enumerated()), id: \.offset) { _, row in
-                    HStack(alignment: .firstTextBaseline) {
+                    // The figure right beside its name, never at the far edge.
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text(row.label).font(.body).foregroundStyle(Theme.text)
-                        Spacer(minLength: 12)
                         if row.value.isEmpty {
                             Text(waiting ? "—" : "not entered yet").font(.footnote).foregroundStyle(Theme.secondary)
                         } else {
                             Text(row.value).font(.body.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
-                                .multilineTextAlignment(.trailing)
                         }
+                        Spacer(minLength: 0)
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("zone-row")
@@ -162,6 +162,8 @@ struct ZoneSheet: View {
     @EnvironmentObject var store: Store
     @Environment(\.dismiss) private var dismiss
     let ask: ZoneAsk
+    /* The sheet is as tall as what it says, not half a screen with nothing in it. */
+    @State private var contentHeight: CGFloat = 0
 
     var body: some View {
         NavigationStack {
@@ -203,10 +205,11 @@ struct ZoneSheet: View {
                     }
                 }
                 .padding(16).padding(.bottom, 24)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
             }
             .background(Theme.bg.ignoresSafeArea())
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents(contentHeight > 0 ? [.height(contentHeight + 64), .large] : [.medium, .large])
     }
 }

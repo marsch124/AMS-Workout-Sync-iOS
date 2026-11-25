@@ -36,8 +36,6 @@ struct ClaudeSettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Claude").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 8)
-                    .accessibilityIdentifier("claude-title")
                 explanation
                 if client.keySaved { keySaved } else { keyField }
                 switchRow
@@ -55,6 +53,13 @@ struct ClaudeSettingsView: View {
         .background(Theme.bg.ignoresSafeArea())
         .scrollDismissesKeyboard(.interactively)
         .navigationBarTitleDisplayMode(.inline)
+        // The small centred title every other Settings page has.
+        .navigationTitle("Claude")
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Claude").font(.headline).foregroundStyle(Theme.text).accessibilityIdentifier("claude-title")
+            }
+        }
         .sheet(item: $payload) { p in ActivitySheet(items: p.items) }
         .confirmationDialog("Remove the key?", isPresented: $confirmRemove, titleVisibility: .visible) {
             Button("Remove the key", role: .destructive) {
@@ -99,7 +104,7 @@ struct ClaudeSettingsView: View {
                 .keyboardShortcut(.cancelAction)
                 .accessibilityIdentifier("claude-cancel")
             Button(saving ? "Checking…" : "Save") { Task { await save() } }
-                .settingsButton(tint: Theme.today, filled: true)
+                .mainSmallButton()
                 .accessibilityIdentifier("claude-save")
         }
     }

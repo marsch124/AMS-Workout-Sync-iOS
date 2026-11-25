@@ -11,9 +11,8 @@ import WorkoutCore
 enum GarminWords {
     /* 7.33 hours as "7 h 20". */
     static func sleep(_ hours: Double) -> String {
-        let total = Int((hours * 60).rounded())
-        let h = total / 60, m = total % 60
-        return m == 0 ? "\(h) h" : "\(h) h \(String(format: "%02d", m))"
+        // Written as every other length of time in the app: "7h 20m".
+        formatDuration((hours * 60).rounded() * 60)
     }
 
     static func whole(_ v: Double) -> String { "\(Int(v.rounded()))" }
@@ -44,10 +43,15 @@ struct GarminMorningRow: View {
         if let g = reader.shown {
             let fresh = GarminMorning.isFromThisMorning(g, today: today)
             VStack(alignment: .leading, spacing: 1) {
-                line(g)
+                // When the figures do not fit one line, the break falls between two of
+                // them, so no line ends on a stray "·".
+                ViewThatFits(in: .horizontal) {
+                    ForEach(Array(breaks(g).enumerated()), id: \.offset) { _, at in
+                        line(g, breakBefore: at).fixedSize(horizontal: true, vertical: false)
+                    }
+                    line(g, breakBefore: 2).lineLimit(3).minimumScaleFactor(0.8)
+                }
                     .font(.footnote)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 2)
                     .accessibilityElement(children: .ignore)
@@ -84,15 +88,28 @@ struct GarminMorningRow: View {
         return Text("\u{00A0}(\(d.figure))").foregroundStyle(d.colour)
     }
 
-    private func line(_ g: MorningNumbers) -> Text {
+    /* Where the line may break: nowhere first, then before the last figure, then earlier. */
+    private func breaks(_ g: MorningNumbers) -> [Int] {
+        let n = parts(g).count
+        return [n] + stride(from: n - 1, to: 0, by: -1).map { $0 }
+    }
+
+    private func line(_ g: MorningNumbers, breakBefore: Int) -> Text {
+        let parts = parts(g)
+        guard var out = parts.first else { return Text("") }
+        for (i, part) in parts.enumerated().dropFirst() {
+            out = out + (i == breakBefore ? Text("\n") : Text(" · ").foregroundStyle(Theme.secondary)) + part
+        }
+        return out
+    }
+
+    private func parts(_ g: MorningNumbers) -> [Text] {
         var parts: [Text] = []
         if let f = g.hrv { parts.append(name("HRV\u{00A0}") + value(GarminWords.whole(f.value)) + bracket(f, lowerIsBetter: false)) }
         if let f = g.sleepHours { parts.append(name("Sleep\u{00A0}") + value(GarminWords.sleep(f.value).replacingOccurrences(of: " ", with: "\u{00A0}"))) }
         if let f = g.resting { parts.append(name("Resting\u{00A0}") + value(GarminWords.whole(f.value)) + bracket(f, lowerIsBetter: true)) }
         if let f = g.bodyBattery { parts.append(name("Body\u{00A0}Battery\u{00A0}") + value(GarminWords.whole(f.value))) }
-        guard var out = parts.first else { return Text("") }
-        for part in parts.dropFirst() { out = out + Text(" · ").foregroundStyle(Theme.secondary) + part }
-        return out
+        return parts
     }
 
     private func spoken(_ g: MorningNumbers) -> String {
@@ -135,10 +152,10 @@ struct MorningNumbersView: View {
 
     var body: some View {
         let fresh = GarminMorning.isFromThisMorning(numbers, today: today)
+        NavigationStack {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 Text("Garmin, this morning").font(.title3.weight(.bold)).foregroundStyle(Theme.today)
-                    .padding(.top, 16)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     GarminDot(fresh: fresh)
                     Text(fresh ? "From this morning · read \(GarminWords.time(numbers.readAt)) from Garmin"
@@ -162,10 +179,6 @@ struct MorningNumbersView: View {
                 }
                 Text("Shown only. These numbers never change your plan.")
                     .font(.caption).foregroundStyle(Theme.secondary)
-                Button("Done") { dismiss() }
-                    .settingsButton(tint: Theme.today, filled: true)
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier("morning-plate-done")
                     .padding(.bottom, 12)
             }
             .padding(.horizontal, 16)
@@ -173,6 +186,16 @@ struct MorningNumbersView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .accessibilityIdentifier("morning-plate")
+        // Done at the top right, as on every other sheet.
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Done") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("morning-plate-done")
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        }
     }
 
     /* One number: its name with the figure right beside it, and under it the normal. */

@@ -91,7 +91,11 @@ struct SessionCard: View {
                     if let seconds = Plan.plannedSeconds(workout, mapping), seconds > 0 {
                         Pill(text: formatDuration(seconds))
                     }
-                    if !workout.planned.intensity.isEmpty { Pill(text: workout.planned.intensity) }
+                    // A rest day's "—" says nothing: no empty pill.
+                    if !workout.planned.intensity.isEmpty, workout.discipline.id != "rest",
+                       !["—", "–", "-"].contains(workout.planned.intensity.trimmingCharacters(in: .whitespaces)) {
+                        Pill(text: workout.planned.intensity)
+                    }
                     if workout.missed { Pill(text: "Missed", tint: Theme.danger) }
                     if let label = workout.waitingLabel { Pill(text: label, tint: Theme.secondary) }
                     if cornerRoom == 0 {

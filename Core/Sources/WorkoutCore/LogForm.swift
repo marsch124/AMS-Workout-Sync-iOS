@@ -67,7 +67,10 @@ public enum LogForm {
             return FormField(id: id, label: p.label, unit: p.unit, placeholder: p.placeholder, keys: p.keys, hint: "")
         case "rpe":
             return FormField(id: id, label: label, unit: "1-10", placeholder: "1 easy — 10 all out", keys: .digits, hint: "")
-        case "avgHr", "maxHr", "cadence":
+        case "avgHr":
+            // A grey example like every other box.
+            return FormField(id: id, label: label, unit: units[id] ?? "", placeholder: "e.g. 135", keys: .digits, hint: "")
+        case "maxHr", "cadence":
             return FormField(id: id, label: label, unit: units[id] ?? "", placeholder: "", keys: .digits, hint: "")
         case "notes":
             return FormField(id: id, label: label, unit: "", placeholder: "How it felt, conditions, anything worth remembering", keys: .multiline, hint: "")
