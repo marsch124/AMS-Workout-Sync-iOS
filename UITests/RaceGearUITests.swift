@@ -40,8 +40,15 @@ final class RaceGearUITests: XCTestCase {
 
         // Untick all asks first.
         any(app, "race-untick-all").tap()
-        XCTAssertTrue(app.buttons["Untick all"].waitForExistence(timeout: 5), "no question")
-        app.buttons["Keep them"].tap()
+        // (The page's own button is also labelled "Untick all", so the question is found by its title.)
+        let afterTick = count.label
+        let question = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'packed items?'")).firstMatch
+        XCTAssertTrue(question.waitForExistence(timeout: 5), "no question")
+        // The question is a small sheet with no Cancel button on this iOS: a tap outside keeps the ticks.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.5)).tap()
+        Thread.sleep(forTimeInterval: 1.5)
+        XCTAssertFalse(question.exists, "the question did not close")
+        XCTAssertEqual(count.label, afterTick, "keeping them should leave the ticks")
 
         // The times page has Cancel and Save.
         app.swipeDown(); app.swipeDown(); app.swipeDown()

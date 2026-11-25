@@ -11,7 +11,8 @@ final class GarminActivityUITests: XCTestCase {
 
     private func launch(_ extra: [String: String]) -> XCUIApplication {
         let app = XCUIApplication()
-        let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
+        // plan-done.xlsx: the invented plan with four sessions logged (the plain plan has none, so no session page is "done").
+        let plan = Bundle(for: Self.self).url(forResource: "plan-done", withExtension: "xlsx")!
         app.launchEnvironment["AMSWS_FILE"] = plan.path
         app.launchEnvironment["AMSWS_TODAY"] = "2026-09-16"
         app.launchEnvironment["AMSWS_RESET"] = "1"

@@ -11,6 +11,14 @@ final class BodyUITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
 
+    /* The tiles sit in a lazy grid: scroll until the one asked for is in the tree. */
+    private func scrolled(_ app: XCUIApplication, to id: String) -> XCUIElement {
+        let e = any(app, id)
+        var n = 0
+        while !e.exists && n < 8 { app.swipeUp(); n += 1 }
+        return e
+    }
+
     /* The tab opens the page: the head card, the four tiles, and a tile's seven days with Done. */
     func testTheBodyTabShowsTheCardTheTilesAndSevenDays() {
         let app = XCUIApplication()
@@ -30,7 +38,7 @@ final class BodyUITests: XCTestCase {
         XCTAssertTrue(hero.label.contains("Body Battery 40 now"), "the card said \(hero.label)")
         XCTAssertTrue(hero.label.contains("Run −17"), "the workout is not on the card: \(hero.label)")
         for name in ["sleep", "hrv", "resting", "stress", "steps", "intensity"] {
-            XCTAssertTrue(any(app, "body-tile-" + name).exists, "no tile for \(name)")
+            XCTAssertTrue(scrolled(app, to: "body-tile-" + name).exists, "no tile for \(name)")
         }
 
         any(app, "body-tile-hrv").tap()
@@ -38,6 +46,8 @@ final class BodyUITests: XCTestCase {
         XCTAssertTrue(any(app, "body-peek-row-0").label.contains("64 ms"), "the newest day should be 64 ms")
         XCTAssertTrue(any(app, "body-peek-row-6").exists, "seven rows were expected")
         app.buttons["body-peek-done"].tap()
+        var up = 0
+        while !hero.exists && up < 8 { app.swipeDown(); up += 1 }
         XCTAssertTrue(hero.waitForExistence(timeout: 5))
         XCTAssertFalse(any(app, "body-peek-row-0").exists, "Done did not close the seven days")
     }
@@ -95,8 +105,9 @@ final class BodyUITests: XCTestCase {
         XCTAssertTrue(any(app, "body-week-day-3").label.contains("no Body Battery readings"), "the day without readings should say so")
 
         // The two new tiles, with their seven days in numbers.
-        XCTAssertTrue(any(app, "body-tile-steps").label.contains("8,400") || any(app, "body-tile-steps").label.contains("9,300"), "steps tile: \(any(app, "body-tile-steps").label)")
-        any(app, "body-tile-intensity").tap()
+        let steps = scrolled(app, to: "body-tile-steps")
+        XCTAssertTrue(steps.label.contains("8,400") || steps.label.contains("9,300"), "steps tile: \(steps.label)")
+        scrolled(app, to: "body-tile-intensity").tap()
         XCTAssertTrue(any(app, "body-peek-row-6").waitForExistence(timeout: 5), "intensity minutes: seven rows were expected")
         app.buttons["body-peek-done"].tap()
 

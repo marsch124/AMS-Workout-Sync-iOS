@@ -28,7 +28,11 @@ final class FavouritesUITests: XCTestCase {
         XCTAssertTrue(any(app, "favourite-row-2").exists, "three favourites were expected")
         XCTAssertTrue(any(app, "favourite-handle-0").exists, "no handle to drag")
         any(app, "favourite-remove-0").tap()
-        XCTAssertTrue(app.buttons["Keep it"].waitForExistence(timeout: 5), "no question before removing")
+        // The question comes as a small sheet (on this iOS it has no Cancel button: a tap outside is "Keep it").
+        XCTAssertTrue(app.staticTexts["Remove this favourite?"].waitForExistence(timeout: 5), "no question before removing")
+        XCTAssertTrue(app.buttons["Remove"].exists, "no Remove button in the question")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.5)).tap()
+        XCTAssertTrue(any(app, "favourite-row-0").waitForExistence(timeout: 5), "keeping it should leave the list as it was")
     }
 
     func testTheAddPageShowsTheFavouritesBlockAndATapFillsTheTitle() {
