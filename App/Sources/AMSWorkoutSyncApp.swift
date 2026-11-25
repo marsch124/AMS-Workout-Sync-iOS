@@ -82,7 +82,7 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] != nil {
                 NavigationStack { MoveInView() }
             }
-            if ProcessInfo.processInfo.environment["AMSWS_ZONES"] != nil {
+            if ProcessInfo.processInfo.environment["AMSWS_ZONES"] != nil || ProcessInfo.processInfo.environment["AMSWS_TEST"] != nil {
                 NavigationStack { ZonesView() }
             }
             // Screen walks: Settings → Extra activities, or the first extra's own screen.
