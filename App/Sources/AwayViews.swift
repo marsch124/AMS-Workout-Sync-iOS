@@ -135,7 +135,7 @@ struct AwayPage: View {
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.settings))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.dynamic(light: 0x5A6B7B, dark: 0x465668)))
     }
 
     private func dayRow(_ title: String, _ day: Binding<String>, id: String) -> some View {

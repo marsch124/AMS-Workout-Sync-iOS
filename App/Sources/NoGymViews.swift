@@ -8,6 +8,9 @@ import WorkoutCore
  * logs the strength session as usual. The app's own strength sessions normally
  * point to his other app Workouts (that link stays); this is for no gym.
  */
+/* The strength colour as a fill white words stand on, by day and by night. */
+enum NoGymLook { static let fill = Color.dynamic(light: 0x8B4A0F, dark: 0x9A5413) }
+
 struct NoGymEntry: View {
     @EnvironmentObject private var store: Store
     @ObservedObject private var shelf = ShelfStore.shared
@@ -15,23 +18,39 @@ struct NoGymEntry: View {
     let minutes: Int
     @State private var showing = false
 
+    /* DEBUG: AMSWS_NOGYM_MIN=<n> shows the card for a session of n minutes (a short or a long one for a picture). */
+    private var shownMinutes: Int {
+        #if DEBUG
+        if let v = ProcessInfo.processInfo.environment["AMSWS_NOGYM_MIN"], let n = Int(v) { return n }
+        #endif
+        return minutes
+    }
+
     private var firstChoice: Bool {
         guard let p = AwayStore.current(today: store.today), p.contains(workout.dayKey) else { return false }
         return Away.lacking(Away.need(sport: .strength, text: workout.title), in: p) != nil
     }
 
     var body: some View {
-        HStack(spacing: 8) {
-            Button("No-gym version") { showing = true }
-                .settingsButton(tint: Theme.sportInk("strength"), filled: firstChoice)
-                .accessibilityIdentifier("nogym-open")
+        VStack(alignment: .leading, spacing: 4) {
             if firstChoice {
+                Button { showing = true } label: {
+                    Text("No-gym version").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                        .padding(.horizontal, 16).padding(.vertical, 9)
+                        .background(Capsule().fill(NoGymLook.fill))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("nogym-open")
                 Text("First choice while away without a gym").font(.footnote).foregroundStyle(Theme.secondary)
                     .accessibilityIdentifier("nogym-first-choice")
+            } else {
+                Button("No-gym version") { showing = true }
+                    .settingsButton(tint: Theme.sportInk("strength"))
+                    .accessibilityIdentifier("nogym-open")
             }
-            Spacer(minLength: 0)
         }
-        .sheet(isPresented: $showing) { NoGymCard(minutes: minutes) }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .sheet(isPresented: $showing) { NoGymCard(minutes: shownMinutes) }
         #if DEBUG
         .onAppear { if ProcessInfo.processInfo.environment["AMSWS_NOGYM"] != nil { showing = true } }
         #endif
@@ -58,7 +77,7 @@ struct NoGymCard: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
-                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(tint))
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(NoGymLook.fill))
 
                 line(c.warmUp)
                 VStack(alignment: .leading, spacing: 6) {
@@ -76,7 +95,7 @@ struct NoGymCard: View {
                 .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                 line(c.coolDown)
 
-                Text("Move at a pace you can hold; stop a move that hurts and do an easier one. This changes nothing in your plan: log the strength session as usual.")
+                Text("Move at a pace you can hold, and swap any move that feels wrong for an easier one. This changes nothing in your plan: log the strength session as usual.")
                     .font(.footnote).foregroundStyle(Theme.secondary)
             }
             .padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 76)
