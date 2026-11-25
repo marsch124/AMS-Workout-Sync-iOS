@@ -213,6 +213,7 @@ struct TodayView: View {
      */
     private struct MorningLine: View {
         @ObservedObject private var health = HealthImport.shared
+        @ObservedObject private var garmin = GarminReader.shared
         let today: String
         /* This morning's answer to "How do you feel?", once given. */
         var feel: Feel? = nil
@@ -220,9 +221,12 @@ struct TodayView: View {
         var body: some View {
             // On the iPad and the Mac the numbers may be the iPhone's: then they say so, and when.
             let shown = health.shownMorning(today: today)
-            let m = shown.morning
-            if !m.isEmpty || feel != nil {
+            // Garmin's numbers take the place of Health's for the same thing: never two numbers side by side.
+            let m = garmin.withoutDuplicates(of: shown.morning)
+            let healthLine = !m.isEmpty || feel != nil
+            if healthLine || garmin.shown != nil {
                 VStack(alignment: .leading, spacing: 1) {
+                if healthLine {
                 // One row, not three stacked readings: the figure, and beside it
                 // in brackets how far it sits from his own fortnight — always,
                 // so a missing trend never looks like a fault (his ask, 28
@@ -248,9 +252,13 @@ struct TodayView: View {
                             .accessibilityIdentifier("morning-from-iphone")
                     }
                 }
+                GarminMorningRow(today: today, alone: !healthLine)
+                }
                 .task { await health.readMorning() }
+                .task { await garmin.readIfDue(today: today) }
             } else {
                 Color.clear.frame(height: 0).task { await health.readMorning() }
+                    .task { await garmin.readIfDue(today: today) }
             }
         }
 
