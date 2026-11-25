@@ -22,4 +22,6 @@ This version has forty-one new things. Please try these ten first. Say what you 
 
 10. Print and PDF. Print a week and a month from the Sessions page, and make Report as PDF on the Progress month card. Is the page full and readable?
 
+Also new: Settings > Your two neighbour apps shares today's session with Deck Mate and PARAGON. Deck Mate's key and PARAGON's line are not in this version, so there is nothing to see there yet.
+
 Only your own devices can prove these, so please try them: Siri and Spotlight, the hardware keys, real notices and their three buttons, the location question and live weather, Garmin's real answers (route, laps, zones, steps), dragging with a real finger and pointer, the shelf meeting between two devices through iCloud (favourites, away, gear and race page on the iPhone and the Mac), printing and the PDFs, and Claude's real answers.
