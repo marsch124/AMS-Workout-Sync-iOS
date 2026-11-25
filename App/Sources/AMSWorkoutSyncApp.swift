@@ -168,6 +168,7 @@ struct RootView: View {
                 MorningNumbersView(numbers: GarminReader.invented(day: store.today), today: store.today)
             }
             ProgressRound28Debug()
+            LogExtrasDebug().environmentObject(store)
             if ProcessInfo.processInfo.environment["AMSWS_EXTRAS"] != nil {
                 NavigationStack { ExtrasListView() }
             }
