@@ -17,6 +17,8 @@ struct PlanTab: View {
     @State private var adjusting: SessionKey?
     /* The extra being mended from the list. */
     @State private var adjustingExtra: ExtraSummary?
+    /* Round 28: the words in the search field. */
+    @State private var query = SessionSearchField.startWords
 
     /*
      * A day's work, whether or not the plan asked for it.
@@ -64,6 +66,7 @@ struct PlanTab: View {
                             Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
                                 .accessibilityIdentifier("sessions-title")
                             Spacer(minLength: 0)
+                            PlanPrintButton()
                             if store.canChangePlan {
                                 Button("+ Session") { addingSession = true }
                                     .settingsButton(tint: Theme.plan)
@@ -71,6 +74,12 @@ struct PlanTab: View {
                             }
                         }
                         .padding(.top, 12).padding(.horizontal, 16)
+                        SessionSearchField(query: $query)
+                            .padding(.horizontal, 16)
+                        if SessionSearch.isActive(query) {
+                            SessionSearchResults(query: query, openExtra: { openExtra = $0 })
+                                .padding(.horizontal, 16).padding(.bottom, 32)
+                        } else {
                         Section {
                             let days = grouped(shown(view), newestFirst: newestFirst)
                             VStack(alignment: .leading, spacing: 12) {
@@ -134,6 +143,7 @@ struct PlanTab: View {
                             .padding(.bottom, 32)
                         } header: {
                             filters(view)
+                        }
                         }
                     }
                     .readableWidth(720)

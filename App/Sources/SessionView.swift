@@ -45,6 +45,8 @@ struct SessionView: View {
                                 .accessibilityIdentifier("session-change")
                         }
                     }
+                    SessionWhyLine(workout: w)
+                    if w.discipline.id == "swim" { PoolCardButton(workout: w) }
 
                     FlowRow(spacing: 6) {
                         if let s = Plan.plannedSeconds(w, mapping), s > 0 {

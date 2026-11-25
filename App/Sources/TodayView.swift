@@ -104,7 +104,7 @@ struct TodayView: View {
                     let shots = Array(PhotoStore.shared.photos(for: PhotoOwner(w)).prefix(3))
                     ZStack(alignment: .bottomTrailing) {
                         NavigationLink(value: w.key) {
-                            SessionCard(workout: w, mapping: view.mapping,
+                            SessionCard(workout: w, mapping: view.mapping, showsWhy: true,
                                         cornerRoom: shots.isEmpty ? 0 : CGFloat(shots.count) * 36 + 4)
                         }
                         .accessibilityIdentifier("today-session-\(w.dayKey)-\(w.discipline.id)")
