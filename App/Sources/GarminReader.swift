@@ -20,6 +20,9 @@ final class GarminReader: ObservableObject {
     /* The Body page's numbers: the same half-hour rule, its own file. */
     @Published private(set) var body: BodyDay?
     @Published private(set) var readingBody = false
+    /* The days kept day by day for the 4- and 12-week views (2.8). */
+    @Published private(set) var history = BodyHistory()
+    @Published private(set) var readingHistory = false
 
     private var file = GarminMorningFile()
     private var bodyFile = GarminBodyFile()
@@ -40,6 +43,7 @@ final class GarminReader: ObservableObject {
         if let data = try? Data(contentsOf: Self.bodyFileURL), let f = try? JSONDecoder().decode(GarminBodyFile.self, from: data) {
             bodyFile = f
             body = f.body
+            history = f.history ?? BodyHistory()
         }
         if let data = try? Data(contentsOf: Self.fileURL), let f = try? JSONDecoder().decode(GarminMorningFile.self, from: data) {
             file = f
@@ -49,7 +53,9 @@ final class GarminReader: ObservableObject {
         if GarminKey.isFake {
             let day = ProcessInfo.processInfo.environment["AMSWS_TODAY"] ?? GarminMorning.morningDay(now: Date())
             numbers = Self.invented(day: day)
-            body = Self.inventedBody(day: ProcessInfo.processInfo.environment["AMSWS_TODAY"] ?? GarminMorning.dayKey(Date()))
+            let invented = ProcessInfo.processInfo.environment["AMSWS_TODAY"] ?? GarminMorning.dayKey(Date())
+            body = Self.inventedBody(day: invented)
+            history = Self.inventedHistory(day: invented)
         }
         #endif
     }
@@ -65,6 +71,7 @@ final class GarminReader: ObservableObject {
             file = GarminMorningFile()
             try? FileManager.default.removeItem(at: Self.fileURL)
             body = nil
+            history = BodyHistory()
             bodyFile = GarminBodyFile()
             try? FileManager.default.removeItem(at: Self.bodyFileURL)
         }
@@ -120,11 +127,17 @@ final class GarminReader: ObservableObject {
         do {
             // Yesterday's curve is read once a day: when the whole of it is held for this day, it is not asked for again.
             let held = body?.day == day ? body?.battery?.yesterday : nil
-            let fresh = try await GarminClient.shared.body(day: day, yesterday: GarminBody.yesterdayIsWhole(held, day: day) ? held : nil)
+            let heldWeek = body?.day == day ? body?.batteryWeek : nil
+            let fresh = try await GarminClient.shared.body(day: day, yesterday: GarminBody.yesterdayIsWhole(held, day: day) ? held : nil,
+                                                           week: heldWeek)
             // An empty answer never replaces numbers already held.
             if !fresh.isEmpty || body == nil {
                 body = fresh
                 bodyFile.body = fresh
+                // The seven days of this read are kept day by day too.
+                history.absorb(fresh)
+                history.prune(before: GarminMorning.addDays(day, -90))
+                bodyFile.history = history
             }
         } catch let f as GarminFailure {
             problem = f.words
@@ -133,6 +146,29 @@ final class GarminReader: ObservableObject {
         }
         if let data = try? JSONEncoder().encode(bodyFile) { try? data.write(to: Self.bodyFileURL, options: .atomic) }
         readingBody = false
+    }
+
+    /*
+     * The 4- and 12-week views: read only when he picks one, at most once in
+     * 30 minutes per view, and only from the first day still missing.
+     */
+    func readHistoryIfDue(_ span: BodyPage.Span, today: String) async {
+        guard span != .week, keySaved, !GarminKey.isFake, !readingHistory,
+              GarminMorning.mayRead(lastTried: history.tried[span.rawValue], now: Date()) else { return }
+        readingHistory = true
+        history.tried[span.rawValue] = Date()
+        let day = ProcessInfo.processInfo.environment["AMSWS_TODAY"] != nil ? today : GarminMorning.dayKey(Date())
+        do {
+            let from = min(history.readFrom(span, today: day), day)
+            let more = try await GarminClient.shared.history(from: from, to: day)
+            history.merge(more)
+            history.prune(before: GarminMorning.addDays(day, -90))
+        } catch {
+            // A failed longer read leaves what is held; the half hour still counts.
+        }
+        bodyFile.history = history
+        if let data = try? JSONEncoder().encode(bodyFile) { try? data.write(to: Self.bodyFileURL, options: .atomic) }
+        readingHistory = false
     }
 
     private func save() {
@@ -183,13 +219,52 @@ final class GarminReader: ObservableObject {
         func line(_ v: [Double?]) -> [BodyDay.DayValue] {
             v.enumerated().map { BodyDay.DayValue(day: GarminMorning.addDays(day, $0.offset - (v.count - 1)), value: $0.element) }
         }
+        // The week: a charge in the night, a slow drain after; one day the watch was off.
+        func week(_ off: Int, low: Double, high: Double) -> BodyDay.BatteryDay {
+            let d = GarminMorning.addDays(day, off)
+            if off == -3 { return BodyDay.BatteryDay(day: d) }
+            let pts = stride(from: 0.0, through: 23.0, by: 1.5).map { h -> BodyDay.Point in
+                let v = h < 6.5 ? low + (high - low) * (h / 6.5) : high - (high - low) * ((h - 6.5) / 17)
+                return BodyDay.Point(time: at(h + Double(off) * 24), value: v)
+            }
+            return BodyDay.BatteryDay(day: d, points: pts, high: pts.map(\.value).max(), low: pts.map(\.value).min())
+        }
+        let batteryWeek = [week(-6, low: 22, high: 79), week(-5, low: 30, high: 88), week(-4, low: 18, high: 71), week(-3, low: 0, high: 0),
+                           week(-2, low: 26, high: 84), week(-1, low: 24, high: 66),
+                           BodyDay.BatteryDay(day: day, points: points, high: points.map(\.value).max(), low: points.map(\.value).min())]
+        var activity = GarminBody.ActivityDays()
+        let stepDays: [Double] = [7400, 9900, 6100, 10200, 8600, 7300, 9300]   // averages 8,400
+        let vigorous: [Double] = [5, 0, 10, 5, 0, 10, 5], moderate: [Double] = [10, 0, 25, 20, 0, 15, 15]
+        for k in 0..<7 {
+            let d = GarminMorning.addDays(day, k - 6)
+            activity.steps[d] = stepDays[k]; activity.moderate[d] = moderate[k]; activity.vigorous[d] = vigorous[k]
+            activity.intensity[d] = moderate[k] + 2 * vigorous[k]
+        }
+        activity.weeklyGoal = 150; activity.stepGoal = 8000
         return BodyDay(day: day, readAt: at(13.6),
                        battery: .init(points: points, workouts: [run, strength],
                                       yesterday: ProcessInfo.processInfo.environment["AMSWS_BODY_NO_YESTERDAY"] != nil ? nil : yesterday),
                        sleep: .init(lastNight: 7.3, nights: line(sleepNights.map { Optional($0) }.enumerated().map { $0.offset == 2 ? nil : $0.element })),
                        hrv: .init(lastNight: 64, rangeLow: 52, rangeHigh: 68, stillLearning: false, days: line(hrvDays.map { Double($0) })),
                        resting: .init(today: 47, normal: 48.5, days: line(restDays.map { Double($0) })),
-                       stress: .init(average: 26, highest: 71, days: line(stressDays.map { Double($0) })))
+                       stress: .init(average: 26, highest: 71, days: line(stressDays.map { Double($0) })),
+                       steps: GarminBody.steps(activity, day: day), intensity: GarminBody.intensity(activity, day: day),
+                       batteryWeek: batteryWeek)
+    }
+
+    /* Invented, for pictures: twelve weeks of days (some without a reading) behind the 4- and 12-week views. */
+    static func inventedHistory(day: String) -> BodyHistory {
+        var h = BodyHistory()
+        for k in 0..<90 {
+            let d = GarminMorning.addDays(day, -k)
+            if k % 9 != 4 { h.sleep[d] = 6.2 + Double((k * 37) % 15) / 10 }
+            if k % 13 != 6 { h.hrv[d] = 54 + Double((k * 13) % 17) }
+            h.resting[d] = 46 + Double((k * 7) % 7)
+            h.stress[d] = 24 + Double((k * 11) % 14)
+            h.steps[d] = 6500 + Double((k * 911) % 4500)
+            h.intensity[d] = Double((k * 17) % 60)
+        }
+        return h
     }
 
     #endif

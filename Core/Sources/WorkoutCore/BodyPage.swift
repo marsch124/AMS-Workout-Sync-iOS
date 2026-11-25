@@ -5,9 +5,9 @@ import Foundation
  * test can read them. Shown only: nothing here reaches the plan.
  */
 public enum BodyPage {
-    /* The four tiles, in the order they stand. */
+    /* The six tiles, in the order they stand (steps and intensity minutes came in 2.8). */
     public enum Instrument: String, CaseIterable, Identifiable, Sendable {
-        case sleep, hrv, resting, stress
+        case sleep, hrv, resting, stress, steps, intensity
         public var id: String { rawValue }
         public var title: String {
             switch self {
@@ -15,6 +15,8 @@ public enum BodyPage {
             case .hrv: return "HRV"
             case .resting: return "Resting pulse"
             case .stress: return "Stress"
+            case .steps: return "Steps"
+            case .intensity: return "Intensity minutes"
             }
         }
     }
@@ -26,6 +28,8 @@ public enum BodyPage {
         public var unit: String
         public var note: String
         public var days: [BodyDay.DayValue]
+        /* His normal as a band behind the bars, in the bars' own units (HRV and resting pulse only). */
+        public var band: ClosedRange<Double>? = nil
     }
 
     /* One row of a tile's seven days in numbers. A day without a reading has no value. */
@@ -77,7 +81,43 @@ public enum BodyPage {
         return v.isEmpty ? nil : v.reduce(0, +) / Double(v.count)
     }
 
-    public static func tile(_ i: Instrument, _ b: BodyDay) -> Tile {
+    /*
+     * One tile for the chosen span. The seven-day span is the tile as it
+     * always was; four and twelve weeks swap the bars for weekly averages
+     * of the days held (the figure stays today's or last night's) and the
+     * grey line for the span's average.
+     */
+    public static func tile(_ i: Instrument, _ b: BodyDay, span: Span = .week, history: BodyHistory = BodyHistory()) -> Tile {
+        var t = sevenDayTile(i, b)
+        switch i {
+        case .hrv:
+            if let lo = b.hrv?.rangeLow, let hi = b.hrv?.rangeHigh, lo <= hi { t.band = Double(lo)...Double(hi) }
+        case .resting:
+            if let n = b.resting?.normal, n > 0 { t.band = (n * 0.96)...(n * 1.04) }
+        default: break
+        }
+        guard let weeks = span.weeks else { return t }
+        var h = history
+        h.absorb(b)
+        let values = h.values(i)
+        t.days = weekly(values, weeks: weeks, endingOn: b.day)
+        t.note = spanAverage(values, weeks: weeks, endingOn: b.day).map { "\(weeks)-week average \(plain(i, $0))" } ?? "no \(weeks) weeks yet"
+        return t
+    }
+
+    /* A value written alone (no unit word that would repeat): "6h 50m", "61 ms", "8,400". */
+    public static func plain(_ i: Instrument, _ v: Double) -> String {
+        switch i {
+        case .sleep: return sleep(v)
+        case .hrv: return "\(whole(v)) ms"
+        case .resting: return "\(whole(v)) beats"
+        case .stress: return whole(v)
+        case .steps: return grouped(v)
+        case .intensity: return "\(whole(v)) a day"
+        }
+    }
+
+    static func sevenDayTile(_ i: Instrument, _ b: BodyDay) -> Tile {
         switch i {
         case .sleep:
             let s = b.sleep
@@ -99,6 +139,16 @@ public enum BodyPage {
             let s = b.stress
             return Tile(instrument: i, figure: s?.average.map(whole) ?? "–", unit: s?.average == nil ? "" : "average",
                         note: s?.highest.map { "highest today \(whole($0))" } ?? "", days: s?.days ?? [])
+        case .steps:
+            let s = b.steps
+            return Tile(instrument: i, figure: s?.today.map(grouped) ?? "–", unit: s?.today == nil ? "" : "steps",
+                        note: average(s?.days ?? []).map { "7-day average \(grouped($0))" } ?? "", days: s?.days ?? [])
+        case .intensity:
+            let n = b.intensity
+            let hasGoal = (n?.goal ?? 0) > 0
+            let unit = n?.weekTotal == nil ? "" : (hasGoal ? "of \(whole(n?.goal ?? 0))" : "this week")
+            let note = n?.weekTotal == nil ? "" : "moderate \(whole(n?.moderate ?? 0)) · vigorous \(whole(n?.vigorous ?? 0))"
+            return Tile(instrument: i, figure: n?.weekTotal.map(whole) ?? "–", unit: unit, note: note, days: n?.days ?? [])
         }
     }
 
@@ -109,13 +159,16 @@ public enum BodyPage {
         case .hrv: return "\(whole(v)) ms"
         case .resting: return "\(whole(v)) beats"
         case .stress: return "\(whole(v)) average"
+        case .steps: return "\(grouped(v)) steps"
+        case .intensity: return "\(whole(v)) min"
         }
     }
 
     /* The seven days in numbers, newest first. */
-    public static func rows(_ i: Instrument, _ b: BodyDay) -> [Row] {
-        tile(i, b).days.reversed().map { d in
-            Row(day: d.day, value: d.value.flatMap { $0.isFinite ? value(i, $0) : nil })
+    public static func rows(_ i: Instrument, _ b: BodyDay, span: Span = .week, history: BodyHistory = BodyHistory()) -> [Row] {
+        tile(i, b, span: span, history: history).days.reversed().map { d in
+            // A week's row is its average; the days' rows are the day's own number.
+            Row(day: d.day, value: d.value.flatMap { $0.isFinite ? (span == .week ? value(i, $0) : plain(i, $0)) : nil })
         }
     }
 
@@ -124,14 +177,31 @@ public enum BodyPage {
      * reading. Measured from a little under the lowest day, so a pulse of 47
      * and one of 52 do not stand as two equal bars.
      */
-    public static func bars(_ days: [BodyDay.DayValue]) -> [Double?] {
+    public static func bars(_ days: [BodyDay.DayValue]) -> [Double?] { bars(days, band: nil).heights }
+
+    /*
+     * The same, with his normal as a band behind the bars: the scale takes the
+     * band in, so each bar reads against it. The band comes back as its low
+     * and high as fractions of the room (0…1), nil when there is none or no
+     * bar to stand against it.
+     */
+    public static func bars(_ days: [BodyDay.DayValue], band: ClosedRange<Double>?) -> (heights: [Double?], band: ClosedRange<Double>?) {
         let v = days.compactMap(\.value).filter { $0.isFinite && $0 >= 0 }
-        guard let hi = v.max(), let lo = v.min(), hi > 0 else { return days.map { _ in nil } }
+        guard let vhi = v.max(), let vlo = v.min() else { return (days.map { _ in nil }, nil) }
+        let b = band.flatMap { $0.lowerBound.isFinite && $0.upperBound.isFinite && $0.lowerBound >= 0 ? $0 : nil }
+        let hi = max(vhi, b?.upperBound ?? vhi), lo = min(vlo, b?.lowerBound ?? vlo)
+        let heights: [Double?]
+        guard hi > 0 else {
+            // Only zeros (a quiet week of intensity minutes): a short bar each, not a dash.
+            return (days.map { d in (d.value.map { $0.isFinite && $0 >= 0 } ?? false) ? 0.15 : nil }, nil)
+        }
         let floor = lo * 0.6
-        return days.map { d in
+        func f(_ x: Double) -> Double { hi > floor ? min(1, max(0, (x - floor) / (hi - floor))) : 1 }
+        heights = days.map { d in
             guard let x = d.value, x.isFinite, x >= 0 else { return nil }
             guard hi > floor else { return 1 }
             return min(1, max(0.15, (x - floor) / (hi - floor)))
         }
+        return (heights, b.map { f($0.lowerBound)...f($0.upperBound) })
     }
 }
