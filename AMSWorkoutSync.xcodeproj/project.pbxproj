@@ -77,6 +77,7 @@
 		8E4D8D3B2B649981B2C06B5B /* NigglesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F830082B6724012E7CAB6628 /* NigglesCard.swift */; };
 		91C1FADA2BAC3DCB8681900D /* SpotlightIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4050A7154CFB8357CC22F817 /* SpotlightIndex.swift */; };
 		9340669904E7DB477DE5D179 /* NeighbourUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E63B9B271B07D3FEA0FDBE0 /* NeighbourUITests.swift */; };
+		9855C0E3B4F55BA89C69C035 /* DebugScrollOffset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79713C5C62FCD109E55E95E /* DebugScrollOffset.swift */; };
 		9B5D2417943ED124065919BD /* TrainingCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */; };
 		9BB7DB341CF6567250BFDCE1 /* WeekBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D65F7293009826029A454FA /* WeekBoard.swift */; };
 		A0D62DC2AF3F5DF276E92881 /* PlanCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38E390EC5399EDD0A3C0D74 /* PlanCloud.swift */; };
@@ -218,6 +219,7 @@
 		A500418BE406E5EED0261B44 /* TestHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHistory.swift; sourceTree = "<group>"; };
 		A5A2454D99D607D5E8D4E8C3 /* AMSWorkoutSyncUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AMSWorkoutSyncUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6C2E906C05F4CBDC1115AE9 /* SessionAdviceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAdviceUITests.swift; sourceTree = "<group>"; };
+		A79713C5C62FCD109E55E95E /* DebugScrollOffset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugScrollOffset.swift; sourceTree = "<group>"; };
 		A8B9FBB415EA1C7819A2BA32 /* PlanHomeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanHomeUITests.swift; sourceTree = "<group>"; };
 		A9895C58C6C9022C875A2DAC /* MonthReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthReview.swift; sourceTree = "<group>"; };
 		A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanTab.swift; sourceTree = "<group>"; };
@@ -370,6 +372,7 @@
 				AE612C3DFD66333CAE79A92C /* ClaudeReviewView.swift */,
 				698543645804785D12272ACB /* ClaudeSettingsView.swift */,
 				201A884ED7294E23A8047706 /* Components.swift */,
+				A79713C5C62FCD109E55E95E /* DebugScrollOffset.swift */,
 				338EA2CFBED1B8532ED07B0A /* Device.swift */,
 				29C8793044EA9500B757D610 /* Diary.swift */,
 				B3C2BBB856FF30E206B55975 /* DoneSessionGarmin.swift */,
@@ -586,6 +589,7 @@
 				172F6086D04FC27566DBB5B0 /* ClaudeReviewView.swift in Sources */,
 				6D2A31B2638080C9D69FBFE6 /* ClaudeSettingsView.swift in Sources */,
 				860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */,
+				9855C0E3B4F55BA89C69C035 /* DebugScrollOffset.swift in Sources */,
 				66D43D228DD0E678D8D24C97 /* Device.swift in Sources */,
 				163E5A3AD7A1CA3083484F37 /* Diary.swift in Sources */,
 				378ED2FACF2AEF2AC6C27DCA /* DoneSessionGarmin.swift in Sources */,

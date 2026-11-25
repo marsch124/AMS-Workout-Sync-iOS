@@ -163,7 +163,7 @@ struct SettingsView: View {
 
                     SectionHeading(text: "Reminders")
                     NavigationLink { RemindersSettingsView() } label: {
-                        SettingsRow(title: "Reminders", sub: ReminderCentre.shared.settings.anyOn ? "On \u{2014} evening, Sunday and missed-session notes" : "Off \u{2014} evening, Sunday and missed-session notes", chevron: true)
+                        SettingsRow(title: "Reminders", sub: ReminderCentre.shared.settings.anyOn ? "On \u{2014} evening, Sunday, missed session" : "Off \u{2014} evening, Sunday, missed session", chevron: true)
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings-reminders-row")
@@ -222,6 +222,7 @@ struct SettingsView: View {
             .navigationDestination(isPresented: $openICloud) { ICloudPage() }
             #if DEBUG
             .onAppear {
+                DebugScrollOffset.applyFromEnvironment()
                 // A screenshot of one section, far down the page.
                 if let id = ProcessInfo.processInfo.environment["AMSWS_SCROLL"] {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { proxy.scrollTo(id, anchor: .top) }
