@@ -51,11 +51,13 @@ public struct PlanChange: Codable, Equatable, Identifiable {
     /* The session as it was, so the change can be taken back. Nil for an added one. */
     public var undo: Workout?
     public var undone: Bool = false
+    /* The day the change left the session on: an undo moves it back only if it is still there. */
+    public var afterDay: String?
 
     public init(id: String = UUID().uuidString, at: Date, kind: String, key: String, title: String,
-                before: String, after: String, why: String, undo: Workout?) {
+                before: String, after: String, why: String, undo: Workout?, afterDay: String? = nil) {
         self.id = id; self.at = at; self.kind = kind; self.key = key; self.title = title
-        self.before = before; self.after = after; self.why = why; self.undo = undo
+        self.before = before; self.after = after; self.why = why; self.undo = undo; self.afterDay = afterDay
     }
 
     public init(from decoder: Decoder) throws {
@@ -70,6 +72,7 @@ public struct PlanChange: Codable, Equatable, Identifiable {
         why = (try? c.decode(String.self, forKey: .why)) ?? ""
         undo = try? c.decodeIfPresent(Workout.self, forKey: .undo)
         undone = (try? c.decodeIfPresent(Bool.self, forKey: .undone)) ?? false
+        afterDay = try? c.decodeIfPresent(String.self, forKey: .afterDay)
     }
 }
 
@@ -108,13 +111,17 @@ public enum BookError: Error, LocalizedError, Equatable {
     case noExtra(String)
     case badDay(String)
     case nothingToUndo
+    case newerChange
+    case newerApp
 
     public var errorDescription: String? {
         switch self {
         case .noSession(let title): return "\u{201C}\(title)\u{201D} is no longer in the plan."
         case .noExtra(let label): return "That \(label) is no longer among your extra workouts."
         case .badDay(let key): return "\u{201C}\(key)\u{201D} is not a day."
-        case .nothingToUndo: return "There is nothing to take back."
+        case .nothingToUndo: return "There is nothing to undo."
+        case .newerChange: return "This session was changed again later. Undo the newest change to it first."
+        case .newerApp: return "This plan was saved by a newer version of the app. Update the app on this device first; nothing was changed."
         }
     }
 }
@@ -141,6 +148,8 @@ public struct PlanBook: Codable, Equatable {
     /* Sessions taken out of the plan, and when: so another device does not bring one back. */
     public var removed: [String: Date] = [:]
     public var counter: Int = 0
+    /* The entries already written in, by their ids: one that comes round again is not written twice. */
+    public var applied: [String] = []
 
     public init(sessions: [Workout], extras: [ExtraRecord], zones: Zones?, weeks: [PlanWeek],
                 mapping: Mapping, origin: PlanOrigin) {
@@ -162,17 +171,29 @@ public struct PlanBook: Codable, Equatable {
             read[i].missed = read[i].results["done"].map { normalise($0.text) == missedWord } ?? false
         }
         sessions = read
-        extras = (try? c.decode([ExtraRecord].self, forKey: .extras)) ?? []
-        zones = try? c.decodeIfPresent(Zones.self, forKey: .zones)
-        tests = (try? c.decode([TestResult].self, forKey: .tests)) ?? []
-        weeks = (try? c.decode([PlanWeek].self, forKey: .weeks)) ?? []
-        origin = (try? c.decode(PlanOrigin.self, forKey: .origin))
+        // A field that is absent is an older book and gets its default. A
+        // field that is there and cannot be read is damage: it throws, so the
+        // app turns to a safety copy instead of opening without his extras
+        // and then saving that emptiness over them.
+        extras = try c.decodeIfPresent([ExtraRecord].self, forKey: .extras) ?? []
+        zones = try c.decodeIfPresent(Zones.self, forKey: .zones)
+        tests = try c.decodeIfPresent([TestResult].self, forKey: .tests) ?? []
+        weeks = try c.decodeIfPresent([PlanWeek].self, forKey: .weeks) ?? []
+        origin = try c.decodeIfPresent(PlanOrigin.self, forKey: .origin)
             ?? PlanOrigin(fileName: "", takenAt: Date(timeIntervalSince1970: 0), sessions: sessions.count, extras: extras.count)
-        changes = (try? c.decode([PlanChange].self, forKey: .changes)) ?? []
-        stamps = (try? c.decode([String: Date].self, forKey: .stamps)) ?? [:]
-        removed = (try? c.decode([String: Date].self, forKey: .removed)) ?? [:]
-        counter = (try? c.decode(Int.self, forKey: .counter)) ?? 0
+        changes = try c.decodeIfPresent([PlanChange].self, forKey: .changes) ?? []
+        stamps = try c.decodeIfPresent([String: Date].self, forKey: .stamps) ?? [:]
+        removed = try c.decodeIfPresent([String: Date].self, forKey: .removed) ?? [:]
+        counter = try c.decodeIfPresent(Int.self, forKey: .counter) ?? 0
+        applied = try c.decodeIfPresent([String].self, forKey: .applied) ?? []
+        // A change kept for undoing holds a session as it was; its missed mark is settled the same way.
+        for i in changes.indices {
+            if let done = changes[i].undo?.results["done"] { changes[i].undo?.missed = normalise(done.text) == missedWord }
+        }
     }
+
+    /* Written by a newer app: it may hold things this one does not know and would drop on saving. */
+    public var isFromNewerApp: Bool { format > PlanBook.currentFormat }
 
     // MARK: on disk
 
@@ -180,12 +201,16 @@ public struct PlanBook: Codable, Equatable {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .millisecondsSince1970
         encoder.outputFormatting = [.sortedKeys]
+        // No call should let a number that is not a number in; if one ever
+        // gets there, the plan must still save rather than refuse every save after it.
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
         return try encoder.encode(self)
     }
 
     public static func decoded(_ data: Data) throws -> PlanBook {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .millisecondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
         return try decoder.decode(PlanBook.self, from: data)
     }
 
@@ -217,9 +242,19 @@ public struct PlanBook: Codable, Equatable {
      * decided twice.
      */
     public mutating func apply(_ queued: QueuedEntry, now: Date = Date()) throws -> Applied {
-        if let extra = queued.extra { return try apply(extra: extra, now: now) }
+        // Written already (the app was stopped between saving the plan and
+        // clearing the entry): once is enough.
+        if applied.contains(queued.id) { return .written }
+        if let extra = queued.extra {
+            let how = try apply(extra: extra, now: now)
+            remember(queued.id)
+            return how
+        }
 
-        guard let found = Sync.findWorkout(for: queued, in: sessions) ?? session(queued.workoutKey),
+        // A session's name is for good here, so the name is asked first; the
+        // looser search by day and wording is only for an entry made before
+        // the plan moved in.
+        guard let found = session(queued.workoutKey) ?? Sync.findWorkout(for: queued, in: sessions),
               let i = sessions.firstIndex(where: { $0.key == found.key }) else {
             throw BookError.noSession(queued.title)
         }
@@ -250,14 +285,20 @@ public struct PlanBook: Codable, Equatable {
         sessions[i] = w
         sessions = PlanBook.inOrder(sessions)
         stamps[w.key] = now
+        remember(queued.id)
         return .written
+    }
+
+    private mutating func remember(_ id: String) {
+        applied.append(id)
+        if applied.count > 300 { applied.removeFirst(applied.count - 300) }
     }
 
     /* A written cell, as Sheet would hand it back. */
     static func readBack(_ value: EditValue) -> ResultValue? {
         switch value {
         case .number(let n):
-            return n.isNaN ? nil : ResultValue(text: jsNumberString(n), number: n, date: nil)
+            return n.isFinite ? ResultValue(text: jsNumberString(n), number: n, date: nil) : nil
         case .text(let t):
             let trimmed = t.trimmingCharacters(in: .whitespacesAndNewlines)
             return trimmed.isEmpty ? nil : ResultValue(text: trimmed, number: nil, date: nil)
@@ -270,7 +311,8 @@ public struct PlanBook: Codable, Equatable {
 
     // MARK: extras
 
-    private static func text(_ n: Double?) -> String { n.map(jsNumberString) ?? "" }
+    private static func text(_ n: Double?) -> String { finite(n).map(jsNumberString) ?? "" }
+    static func finite(_ n: Double?) -> Double? { n.flatMap { $0.isFinite ? $0 : nil } }
 
     func extraIndex(_ target: ExtraTarget) -> Int? {
         let byRow = extras.indices.sorted { extras[$0].row < extras[$1].row }
@@ -304,7 +346,7 @@ public struct PlanBook: Codable, Equatable {
                 activity: activityChanged ? PlanBook.activityID(forLabel: label) : r.activity,
                 label: activityChanged ? label : r.label,
                 what: pick(ExtraField.what, x.what, r.what),
-                minutes: pick(ExtraField.duration, x.minutes, r.minutes),
+                minutes: pick(ExtraField.duration, PlanBook.finite(x.minutes), r.minutes),
                 distance: pick(ExtraField.distance, PlanBook.text(x.distance), r.distance),
                 avgHr: pick(ExtraField.avgHr, PlanBook.text(x.avgHr), r.avgHr),
                 effort: pick(ExtraField.effort, PlanBook.text(x.effort), r.effort),
@@ -322,7 +364,7 @@ public struct PlanBook: Codable, Equatable {
         let row = (extras.map(\.row).max() ?? 1) + 1
         let record = ExtraRecord(
             row: row, date: x.date, activity: PlanBook.activityID(forLabel: label), label: label,
-            what: x.what.trimmingCharacters(in: .whitespacesAndNewlines), minutes: x.minutes,
+            what: x.what.trimmingCharacters(in: .whitespacesAndNewlines), minutes: PlanBook.finite(x.minutes),
             distance: PlanBook.text(x.distance), avgHr: PlanBook.text(x.avgHr), effort: PlanBook.text(x.effort),
             isTraining: x.isTraining, notes: x.notes.trimmingCharacters(in: .whitespacesAndNewlines), ref: x.ref)
         extras.append(record)
@@ -371,7 +413,8 @@ public struct PlanBook: Codable, Equatable {
         w.disciplineRaw = PlanBook.rawSport(d.sport, keeping: w)
         w.discipline = Disciplines.classify(w.disciplineRaw)
         if !title.isEmpty { w.title = title }
-        w.planned.durationRaw = d.minutes.map { durationToCell($0 * 60, mapping.units.duration) }
+        // A length is a number of minutes that is not negative; anything else is no length.
+        w.planned.durationRaw = d.minutes.flatMap { $0.isFinite && $0 >= 0 ? durationToCell($0 * 60, mapping.units.duration) : nil }
         w.planned.intensity = d.intensity.trimmingCharacters(in: .whitespacesAndNewlines)
         w.planned.description = d.purpose.trimmingCharacters(in: .whitespacesAndNewlines)
         // One plain block of words under the heading, as a simple plan has it.
@@ -419,7 +462,15 @@ public struct PlanBook: Codable, Equatable {
 
     private mutating func record(_ change: PlanChange) {
         changes.append(change)
-        if changes.count > 400 { changes.removeFirst(changes.count - 400) }
+        // The list is kept short, but a removal is never dropped from it: it
+        // is the only place a taken-out session — and what was logged on it — still lives.
+        var over = changes.count - 400
+        if over > 0 {
+            changes = changes.filter { c in
+                if over > 0 && c.kind != "remove" && c.id != change.id { over -= 1; return false }
+                return true
+            }
+        }
     }
 
     /* Change a planned session. Returns nil when the draft says what the plan already says. */
@@ -444,7 +495,7 @@ public struct PlanBook: Codable, Equatable {
         stamps[key] = now
         let diff = PlanBook.difference(was, d)
         let change = PlanChange(at: now, kind: "edit", key: key, title: old.title,
-                                before: diff.before, after: diff.after, why: why, undo: old)
+                                before: diff.before, after: diff.after, why: why, undo: old, afterDay: d.dayKey)
         record(change)
         return change
     }
@@ -491,24 +542,47 @@ public struct PlanBook: Codable, Equatable {
         return change
     }
 
-    /* Take one change back: an edited session reads as before, a removed one returns, an added one goes. */
+    /* Only the newest change to a session can be undone: undoing an older one would quietly take the later ones with it. */
+    public func canUndo(_ changeID: String) -> Bool {
+        guard let c = changes.firstIndex(where: { $0.id == changeID }), !changes[c].undone else { return false }
+        return !changes[(c + 1)...].contains { $0.key == changes[c].key && !$0.undone }
+    }
+
+    /*
+     * Undo one change: an edited session reads as before, a removed one
+     * returns, an added one goes. What was logged is never lost by it — an
+     * added session that has been logged since is taken out the way any
+     * session is, so it stays in the list and can come back.
+     */
     public mutating func undo(_ changeID: String, now: Date = Date()) throws {
         guard let c = changes.firstIndex(where: { $0.id == changeID }), !changes[c].undone else {
             throw BookError.nothingToUndo
         }
+        guard canUndo(changeID) else { throw BookError.newerChange }
         let change = changes[c]
         switch change.kind {
         case "add":
+            if let made = session(change.key), made.loggedInSheet {
+                changes[c].undone = true
+                try remove(change.key, why: "Undo of adding it", now: now)
+                return
+            }
             sessions.removeAll { $0.key == change.key }
             removed[change.key] = now
         default:
             guard var old = change.undo else { throw BookError.nothingToUndo }
+            old.missed = old.results["done"].map { normalise($0.text) == normalise(mapping.missedValue) } ?? false
+            old.loggedInSheet = Plan.isLogged(old.results)
+            old.logged = old.loggedInSheet
             if let i = sessions.firstIndex(where: { $0.key == change.key }) {
+                let current = sessions[i]
                 // What was logged since stays; only the plan's side goes back.
-                old.results = sessions[i].results
-                old.loggedInSheet = sessions[i].loggedInSheet
-                old.logged = sessions[i].logged
-                old.missed = sessions[i].missed
+                old.results = current.results
+                old.loggedInSheet = current.loggedInSheet
+                old.logged = current.logged
+                old.missed = current.missed
+                // Moved again since the change: it stays on the day he put it.
+                if let after = change.afterDay, current.dayKey != after { old = old.on(current.date, current.dayKey) }
                 sessions[i] = old
             } else {
                 sessions.append(old)
@@ -589,21 +663,22 @@ extension Workout: Codable {
         guard let date = parseDayKey(dayKey) else {
             throw DecodingError.dataCorruptedError(forKey: .dayKey, in: c, debugDescription: "not a day: \(dayKey)")
         }
-        let raw = (try? c.decode(String.self, forKey: .disciplineRaw)) ?? ""
-        let results = (try? c.decode([String: ResultValue].self, forKey: .results)) ?? [:]
-        let row = (try? c.decode(Int.self, forKey: .row)) ?? 0
+        let raw = try c.decodeIfPresent(String.self, forKey: .disciplineRaw) ?? ""
+        // Absent is an older book; present and unreadable is damage, and throws.
+        let results = try c.decodeIfPresent([String: ResultValue].self, forKey: .results) ?? [:]
+        let row = try c.decodeIfPresent(Int.self, forKey: .row) ?? 0
         self.init(
-            key: key, sheet: (try? c.decode(String.self, forKey: .sheet)) ?? "", row: row,
-            rows: (try? c.decode([Int].self, forKey: .rows)) ?? [row], date: date, dayKey: dayKey,
+            key: key, sheet: try c.decodeIfPresent(String.self, forKey: .sheet) ?? "", row: row,
+            rows: try c.decodeIfPresent([Int].self, forKey: .rows) ?? [row], date: date, dayKey: dayKey,
             disciplineRaw: raw, discipline: Disciplines.classify(raw),
-            title: (try? c.decode(String.self, forKey: .title)) ?? "",
-            phase: (try? c.decode(String.self, forKey: .phase)) ?? "",
-            sections: (try? c.decode([Section].self, forKey: .sections)) ?? [],
-            planned: (try? c.decode(Planned.self, forKey: .planned))
+            title: try c.decodeIfPresent(String.self, forKey: .title) ?? "",
+            phase: try c.decodeIfPresent(String.self, forKey: .phase) ?? "",
+            sections: try c.decodeIfPresent([Section].self, forKey: .sections) ?? [],
+            planned: try c.decodeIfPresent(Planned.self, forKey: .planned)
                 ?? Planned(durationRaw: nil, distanceRaw: nil, intensity: "", description: ""),
             results: results, loggedInSheet: Plan.isLogged(results), missed: false)
         logged = loggedInSheet
-        source = try? c.decodeIfPresent([String: String].self, forKey: .source)
+        source = try c.decodeIfPresent([String: String].self, forKey: .source)
     }
 
     public func encode(to encoder: Encoder) throws {
