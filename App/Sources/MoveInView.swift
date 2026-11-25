@@ -154,11 +154,11 @@ struct MoveInView: View {
             .accessibilityIdentifier("movein-cancel")
     }
 
-    /* The green tick means "the same" here; a difference is said in words, in red. */
+    /* Said in words, both ways: the tick means done in this app and nothing else. */
     @ViewBuilder
     private func mark(same: Bool) -> some View {
         if same {
-            DoneTick().scaleEffect(0.8).frame(width: 22, height: 22)
+            Text("same").font(.caption.weight(.bold)).foregroundStyle(Theme.today)
         } else {
             Text("differs").font(.caption.weight(.bold)).foregroundStyle(Theme.danger)
         }

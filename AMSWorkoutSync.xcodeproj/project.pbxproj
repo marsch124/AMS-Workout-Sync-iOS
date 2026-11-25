@@ -33,7 +33,9 @@
 		AF72E6B63B39A76B4CE3FD46 /* MoveInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31BD686DB20769B48D01346 /* MoveInView.swift */; };
 		B26A348E8757F3F57C510F55 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD39982CFB85EDA1755222A /* ShareText.swift */; };
 		C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6525576D143C59A4723612 /* DropboxViews.swift */; };
+		CF2044C1DC2BB66227A6EB49 /* PlanChangeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */; };
 		CFB5629FD0291B55CE501A48 /* WorkoutSyncUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901F20941815D8CBD3B54485 /* WorkoutSyncUITests.swift */; };
+		D1E894971B80D8FDD28D6814 /* SessionEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E761F4FA612AABC7C820139 /* SessionEditView.swift */; };
 		DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B0778365FA2EAD6A05938A /* ExtraViews.swift */; };
 		ED9703E609284BEC66E8FF0F /* FeelViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B976AF5AD0AB85D2218A6C22 /* FeelViews.swift */; };
 		F152713F3C49201271BBD36B /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A03855A2195F5FD77B7F7C /* SessionView.swift */; };
@@ -59,6 +61,7 @@
 		29C8793044EA9500B757D610 /* Diary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diary.swift; sourceTree = "<group>"; };
 		2E6525576D143C59A4723612 /* DropboxViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxViews.swift; sourceTree = "<group>"; };
 		3BFFF43913961BBC438C16AF /* LogFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFormView.swift; sourceTree = "<group>"; };
+		3E761F4FA612AABC7C820139 /* SessionEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEditView.swift; sourceTree = "<group>"; };
 		4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingCalendar.swift; sourceTree = "<group>"; };
 		4CD39982CFB85EDA1755222A /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
@@ -82,6 +85,7 @@
 		C4D1347269B601D5C3B5B64A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D6E3DEEE01504BE66D135FE3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		D792EDD85C5F7F7301F60490 /* HealthMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMark.swift; sourceTree = "<group>"; };
+		D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanChangeUITests.swift; sourceTree = "<group>"; };
 		E7A03855A2195F5FD77B7F7C /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 		E8B0778365FA2EAD6A05938A /* ExtraViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraViews.swift; sourceTree = "<group>"; };
 		E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
@@ -112,6 +116,7 @@
 		441A12163782FBD9175BF099 /* UITests */ = {
 			isa = PBXGroup;
 			children = (
+				D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */,
 				A8B9FBB415EA1C7819A2BA32 /* PlanHomeUITests.swift */,
 				901F20941815D8CBD3B54485 /* WorkoutSyncUITests.swift */,
 				E234DFAF2A8355631210C352 /* Fixtures */,
@@ -176,6 +181,7 @@
 				9322A1646D1ECEA8833A2D6C /* PlanChangesView.swift */,
 				A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */,
 				8173903887939F8A3DB90D8D /* ProgressView.swift */,
+				3E761F4FA612AABC7C820139 /* SessionEditView.swift */,
 				E7A03855A2195F5FD77B7F7C /* SessionView.swift */,
 				70231C046226474A30263864 /* SettingsView.swift */,
 				4CD39982CFB85EDA1755222A /* ShareText.swift */,
@@ -324,6 +330,7 @@
 				893F6F5D26884B326DCF7B16 /* PlanChangesView.swift in Sources */,
 				F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */,
 				37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */,
+				D1E894971B80D8FDD28D6814 /* SessionEditView.swift in Sources */,
 				F152713F3C49201271BBD36B /* SessionView.swift in Sources */,
 				7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */,
 				B26A348E8757F3F57C510F55 /* ShareText.swift in Sources */,
@@ -339,6 +346,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF2044C1DC2BB66227A6EB49 /* PlanChangeUITests.swift in Sources */,
 				69340F5D7DB031BC2C4C514E /* PlanHomeUITests.swift in Sources */,
 				CFB5629FD0291B55CE501A48 /* WorkoutSyncUITests.swift in Sources */,
 			);
