@@ -41,11 +41,13 @@ final class ClaudeClient: ObservableObject {
     static let shared = ClaudeClient()
 
     private static let onKey = "claude-on"
+    private static let refusedKey = "claude-refused"
 
     @Published private(set) var meter: ClaudeMeter
     @Published private(set) var log: [ClaudeLogEntry]
     @Published private(set) var keySaved: Bool
-    @Published private(set) var rejectedKey = false
+    /* What Anthropic last refused for a reason that does not pass by itself; kept across restarts. */
+    @Published private(set) var refused: ClaudeTrouble?
 
     private let session: URLSession
 
@@ -65,6 +67,7 @@ final class ClaudeClient: ObservableObject {
         keySaved = ClaudeKey.isSaved
         meter = (try? JSONDecoder().decode(ClaudeMeter.self, from: Data(contentsOf: Self.meterURL))) ?? .fresh()
         log = (try? JSONDecoder().decode([ClaudeLogEntry].self, from: Data(contentsOf: Self.logURL))) ?? []
+        refused = UserDefaults.standard.string(forKey: Self.refusedKey).flatMap(ClaudeTrouble.init(rawValue:))
         #if DEBUG
         if ClaudeKey.isFake {
             meter = ClaudeMeter(month: ClaudeMeter.monthKey(Date()), inputTokens: 7300, outputTokens: 420, dollars: 0.12, answers: 6)
@@ -82,6 +85,30 @@ final class ClaudeClient: ObservableObject {
         }
     }
 
+    /*
+     * Why Claude cannot choose just now, for the line on Settings → Claude and
+     * on the suggestion card. nil while it is off (nothing to say) or all is well.
+     */
+    var trouble: ClaudeTrouble? {
+        #if DEBUG
+        // AMSWS_CLAUDE_TROUBLE=key|credit|cap shows the line for a picture.
+        switch ProcessInfo.processInfo.environment["AMSWS_CLAUDE_TROUBLE"] {
+        case "key": return .keyRefused
+        case "credit": return .noCredit
+        case "cap": return .capReached
+        default: break
+        }
+        #endif
+        guard isOn else { return nil }
+        return refused ?? (meter.canSpend() ? nil : .capReached)
+    }
+
+    private func setRefused(_ trouble: ClaudeTrouble?) {
+        guard refused != trouble else { return }
+        refused = trouble
+        UserDefaults.standard.set(trouble?.rawValue, forKey: Self.refusedKey)
+    }
+
     var monthLine: String {
         let m = meter.current()
         let n = m.answers == 1 ? "1 answer" : "\(m.answers) answers"
@@ -90,7 +117,7 @@ final class ClaudeClient: ObservableObject {
 
     func keyChanged() {
         keySaved = ClaudeKey.isSaved
-        rejectedKey = false
+        setRefused(nil)
         if !keySaved { UserDefaults.standard.set(false, forKey: Self.onKey) }
         objectWillChange.send()
     }
@@ -111,12 +138,15 @@ final class ClaudeClient: ObservableObject {
             note("No answer from Anthropic (timed out or offline)", menu: menu)
             return nil
         }
-        if status == 401 { rejectedKey = true }
         guard status == 200 else {
             // An error reply is not billed: one line in the log, nothing on the meter.
-            note(status == 401 ? "Anthropic did not accept the key (401)" : "Anthropic answered with error \(status)", menu: menu)
+            // A refusal only he can set right is remembered and said on the page and the card; a hiccup is not.
+            let trouble = ClaudeTrouble.read(status: status, body: data)
+            if let trouble { setRefused(trouble) }
+            note((trouble?.logWords ?? "Anthropic answered with an error") + " (\(status))", menu: menu)
             return nil
         }
+        setRefused(nil)
 
         let answer = ClaudePick.read(data, menuCount: ClaudePick.menuCount(for: suggestion))
         // What was asked for is paid for, usable or not.

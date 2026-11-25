@@ -42,6 +42,7 @@ struct SuggestionArea: View {
 
 struct SuggestionCardView: View {
     @ObservedObject private var keeper = SuggestionKeeper.shared
+    @ObservedObject private var claude = ClaudeClient.shared
     let entry: SuggestionEntry
     @State private var showingOthers = false
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -60,6 +61,12 @@ struct SuggestionCardView: View {
                 Text("Picked by Claude from the rule book\u{2019}s choices")
                     .font(.caption).foregroundStyle(Theme.secondary)
                     .accessibilityIdentifier("suggestion-claude")
+            } else if !entry.isReview, let trouble = claude.trouble {
+                // Claude is on but could not choose, and only he can set it right: one calm line, the card works as ever.
+                Text(trouble.cardLine)
+                    .font(.caption).foregroundStyle(Theme.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("suggestion-claude-trouble")
             }
 
             let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))

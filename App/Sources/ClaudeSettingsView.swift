@@ -7,7 +7,7 @@ struct ClaudeSettingsEntry: View {
     var body: some View {
         NavigationLink { ClaudeSettingsView() } label: {
             SettingsRow(title: "Claude",
-                        sub: client.isOn ? "On · \(client.monthLine)"
+                        sub: client.isOn ? (client.trouble.map { "On, but not choosing · " + $0.rowWords } ?? "On · \(client.monthLine)")
                                          : "Off · lets Claude choose among the suggestions, and shares your plan as text",
                         chevron: true)
         }
@@ -113,8 +113,11 @@ struct ClaudeSettingsView: View {
                     .accessibilityHidden(true)
             }
         }
-        if client.rejectedKey {
-            Text("Anthropic did not accept this key.").font(.footnote).foregroundStyle(Theme.danger)
+        if let trouble = client.trouble {
+            // Red only where he must do something; the month's cap ends by itself.
+            Text(trouble.pageLine).font(.footnote).foregroundStyle(trouble.needsHim ? Theme.danger : Theme.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 2)
                 .accessibilityIdentifier("claude-problem")
         }
         Button("Remove the key") { confirmRemove = true }

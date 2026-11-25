@@ -113,11 +113,13 @@ final class Neighbours: ObservableObject {
             && notes?.feel?.value == own?.rawValue
         if let taken = NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: own, today: day,
                                                    ownAnswerWasTakenOver: marked || sameAsTheirs) {
-            Diary.shared.setFeel(taken, on: day)
+            Diary.shared.setFeel(taken, on: day, from: notes?.feel?.from)
             UserDefaults.standard.set(day, forKey: Self.takenOverKey)
         } else if sameAsTheirs {
             UserDefaults.standard.set(day, forKey: Self.takenOverKey)
-        } else if let own {
+            if let from = notes?.feel?.from { Diary.shared.noteFeelFrom(from, on: day) }
+        } else if let own, Diary.shared.feelFrom[day] == nil {
+            // An answer that reached this device through iCloud from another app is not handed on as this app's own.
             writeFeel(own, day: day)
         }
     }
@@ -145,8 +147,11 @@ final class Neighbours: ObservableObject {
 
     /* "from Magic Morning" when today's answer in the diary is the one another app gave. */
     func feelSource(today day: String, answer: Feel?) -> String? {
-        guard let answer, let f = notes?.feel, f.day == day, f.value == answer.rawValue else { return nil }
-        switch f.from {
+        guard let answer else { return nil }
+        // This device's own note first; without one (an iPad or Mac that got the answer through iCloud) what the diary carries.
+        let from = (notes?.feel).flatMap { $0.day == day && $0.value == answer.rawValue && $0.from != "training" ? $0.from : nil }
+            ?? Diary.shared.feelFrom[day]
+        switch from {
         case "morning": return "Magic Morning"
         case "workouts": return "Workouts"
         default: return nil

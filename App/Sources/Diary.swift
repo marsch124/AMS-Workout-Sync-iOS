@@ -23,6 +23,8 @@ final class Diary: ObservableObject {
     @Published private(set) var found: [Load.Found] = []
     /* When each answer was given ("feel:<day>", "answer:<id>"), so the newest wins between devices. */
     private var stamps: [String: Date] = [:]
+    /* Day → the other app that gave that morning's answer ("morning" = Magic Morning); none when he answered here. */
+    @Published private(set) var feelFrom: [String: String] = [:]
 
     /* A change here: iCloud is met a moment later. */
     var onChange: (() -> Void)?
@@ -32,9 +34,10 @@ final class Diary: ObservableObject {
         var answers: [String: Double] = [:]
         var found: [Load.Found] = []
         var stamps: [String: Date] = [:]
+        var feelFrom: [String: String] = [:]
 
-        init(feel: FeelLog, answers: [String: Double], found: [Load.Found], stamps: [String: Date]) {
-            self.feel = feel; self.answers = answers; self.found = found; self.stamps = stamps
+        init(feel: FeelLog, answers: [String: Double], found: [Load.Found], stamps: [String: Date], feelFrom: [String: String]) {
+            self.feel = feel; self.answers = answers; self.found = found; self.stamps = stamps; self.feelFrom = feelFrom
         }
 
         /* A field that is missing is an older file, and gets its default — never "unreadable, start empty". */
@@ -44,6 +47,7 @@ final class Diary: ObservableObject {
             answers = try c.decodeIfPresent([String: Double].self, forKey: .answers) ?? [:]
             found = (try? c.decodeIfPresent([Load.Found].self, forKey: .found)) ?? []
             stamps = (try? c.decodeIfPresent([String: Date].self, forKey: .stamps)) ?? [:]
+            feelFrom = (try? c.decodeIfPresent([String: String].self, forKey: .feelFrom)) ?? [:]
         }
     }
 
@@ -66,6 +70,7 @@ final class Diary: ObservableObject {
             answers = saved.answers
             found = saved.found
             stamps = saved.stamps
+            feelFrom = saved.feelFrom
         }
         #if DEBUG
         // AMSWS_FEEL=4 answers this morning's question for a picture; "week"
@@ -85,19 +90,28 @@ final class Diary: ObservableObject {
     }
 
     private func save() {
-        let saved = Saved(feel: feel, answers: answers, found: found, stamps: stamps)
+        let saved = Saved(feel: feel, answers: answers, found: found, stamps: stamps, feelFrom: feelFrom)
         if let data = try? JSONEncoder().encode(saved) { try? data.write(to: fileURL, options: .atomic) }
     }
 
     /* One tap: this morning's answer. A second tap the same day replaces it. */
-    func setFeel(_ value: Feel, on day: String) {
+    func setFeel(_ value: Feel, on day: String, from: String? = nil) {
         var doc = self.doc
-        doc.setFeel(value.rawValue, on: day)
+        doc.setFeel(value.rawValue, on: day, from: from)
         feel.set(value, on: day)
         stamps = doc.stamps
+        feelFrom = doc.feelFrom
         save()
         onChange?()
         Neighbours.shared.writeFeel(value, day: day)
+    }
+
+    /* Today's answer is the one another app gave: say so to the other devices too (the answer itself stays). */
+    func noteFeelFrom(_ from: String, on day: String) {
+        guard feelFrom[day] != from, feel.answer(on: day) != nil else { return }
+        feelFrom[day] = from
+        save()
+        onChange?()
     }
 
     /* How hard a workout from Health was. */
@@ -114,13 +128,14 @@ final class Diary: ObservableObject {
     // MARK: iCloud (2.1)
 
     /* The answers as they travel. */
-    var doc: DiaryDoc { DiaryDoc(feel: feel.days, answers: answers, stamps: stamps) }
+    var doc: DiaryDoc { DiaryDoc(feel: feel.days, answers: answers, stamps: stamps, feelFrom: feelFrom) }
 
     /* The answers joined with the other devices', put in place here. */
     func takeFromCloud(_ joined: DiaryDoc) {
         feel = FeelLog(days: joined.feel)
         answers = joined.answers
         stamps = joined.stamps
+        feelFrom = joined.feelFrom
         save()
     }
 
