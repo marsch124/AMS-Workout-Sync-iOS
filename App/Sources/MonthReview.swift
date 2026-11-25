@@ -29,7 +29,7 @@ struct MonthReviewCard: View {
             let f = MonthReview.facts(plan, mapping, month: month, today: today, feel: feel)
             VStack(alignment: .leading, spacing: 8) {
                 head(f, newest: month == newest)
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                ProgTileGrid {
                     ProgTile(name: "Hours", id: "month-hours") {
                         ProgFigure(figure: formatDuration(f.hours.done))
                         ProgNote(text: "done of \(formatDuration(f.hours.planned)) planned")

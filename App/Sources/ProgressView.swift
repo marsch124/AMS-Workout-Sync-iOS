@@ -13,19 +13,27 @@ struct ProgressView: View {
     /* The morning answers and the workouts Health holds, for the Load card. */
     @ObservedObject private var diary = Diary.shared
 
+    /* DEBUG picture switch AMSWS_FORCE_TWO: the two-column layout on a window that is a little too narrow (an iPad held upright). */
+    private static var forceTwo: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["AMSWS_FORCE_TWO"] != nil
+        #else
+        return false
+        #endif
+    }
+
     var body: some View {
         NavigationStack {
             ScrollViewReader { reader in
             GeometryReader { geo in
             // A wide window (iPad on its side, the Mac) lays the cards in two columns.
-            let two = geo.size.width >= 860
+            let two = geo.size.width >= 860 || Self.forceTwo
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Progress").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
                         .accessibilityIdentifier("progress-title")
                     if let p = store.progress, let mapping = store.mapping {
                         if let road = p.road { RoadCard(road: road, today: store.today) }
-                        ProgressRound28()
                         if !p.summary.any {
                             EmptyCard(title: "Nothing has happened yet",
                                       text: "Once sessions are behind you, this is where the patterns in them show up.")
@@ -42,6 +50,7 @@ struct ProgressView: View {
                             fitness(p)
                             counts(p, mapping)
                         }
+                        ProgressRound28(wide: two).id("round28")
                         Text(store.planLivesHere
                              ? "Worked out from your sessions each time this screen is opened. Nothing here is stored in the plan, and nothing here changes it."
                              : "Worked out from the sessions in your workbook each time this screen is opened. Nothing here is stored in the plan, and nothing here writes to it — the totals and the chart on your Progress sheet remain the ones Excel keeps.")
@@ -60,9 +69,9 @@ struct ProgressView: View {
             #if DEBUG
             // AMSWS_SCROLL=load opens Progress at the Load card, for a picture.
             .task {
-                guard ProcessInfo.processInfo.environment["AMSWS_SCROLL"] == "load" else { return }
+                guard let target = ProcessInfo.processInfo.environment["AMSWS_SCROLL"] else { return }
                 try? await Task.sleep(nanoseconds: 900_000_000)
-                reader.scrollTo("load", anchor: .top)
+                reader.scrollTo(target, anchor: .top)
             }
             #endif
             }

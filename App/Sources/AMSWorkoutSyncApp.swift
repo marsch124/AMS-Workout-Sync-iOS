@@ -118,6 +118,7 @@ struct RootView: View {
     /* Screen walks, DEBUG only: one page opened straight away, for a picture. */
     @ViewBuilder private var debugScreens: some View {
         #if DEBUG
+            if ProcessInfo.processInfo.environment["AMSWS_FAKE_DONE"] != nil { let _ = store.debugSeedDone() }
             if let key = ProcessInfo.processInfo.environment["AMSWS_SESSION"] {
                 NavigationStack { SessionView(key: key) }
             }

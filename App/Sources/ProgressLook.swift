@@ -24,7 +24,7 @@ struct ProgTile<Content: View>: View {
                 .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.progress)
             content
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 11).padding(.vertical, 9)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(ProgressLook.tile))
         .accessibilityElement(children: .contain)
@@ -49,7 +49,7 @@ struct ProgNote: View {
     let text: String
     var body: some View {
         Text(text).font(.caption).foregroundStyle(Theme.secondary)
-            .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+            .lineLimit(4).fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -74,15 +74,39 @@ struct ProgBar: View {
 struct ProgressRound28: View {
     @EnvironmentObject var store: Store
     @ObservedObject private var diary = Diary.shared
+    /* A wide window: the month in review on the left, the other cards in a column on the right. */
+    var wide = false
+    private var shownTests: [TestResult] {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FAKE_TESTS"] != nil { return ProgressRound28Debug.sampleTests }
+        #endif
+        return store.tests
+    }
 
     var body: some View {
         if let mapping = store.mapping {
             let plan = store.displayed
-            MonthReviewCard(plan: plan, mapping: mapping, today: store.today, feel: diary.feel,
-                            zones: store.zones, tests: store.tests)
-            SteadyWeeksCard(plan: plan, today: store.today)
-            PersonalBestsCard(plan: plan, mapping: mapping, today: store.today)
-            TestHistoryCard(tests: store.tests)
+            if wide {
+                HStack(alignment: .top, spacing: 14) {
+                    MonthReviewCard(plan: plan, mapping: mapping, today: store.today, feel: diary.feel,
+                                    zones: store.zones, tests: store.tests)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                    VStack(alignment: .leading, spacing: 14) {
+                        SteadyWeeksCard(plan: plan, today: store.today)
+                        PersonalBestsCard(plan: plan, mapping: mapping, today: store.today)
+                        TestHistoryCard(tests: shownTests)
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+            } else {
+                MonthReviewCard(plan: plan, mapping: mapping, today: store.today, feel: diary.feel,
+                                zones: store.zones, tests: store.tests)
+                SteadyWeeksCard(plan: plan, today: store.today)
+                PersonalBestsCard(plan: plan, mapping: mapping, today: store.today)
+                TestHistoryCard(tests: shownTests)
+            }
         }
     }
 }
@@ -101,10 +125,10 @@ struct ProgressRound28Debug: View {
     private let env = ProcessInfo.processInfo.environment
 
     var body: some View {
-        if env["AMSWS_MONTH_REVIEW"] != nil || env["AMSWS_BESTS"] != nil || env["AMSWS_TESTS_CARD"] != nil
+        if env["AMSWS_MONTH_REVIEW"] != nil || env["AMSWS_REPORT_MAKE"] != nil || env["AMSWS_BESTS"] != nil || env["AMSWS_TESTS_CARD"] != nil
             || env["AMSWS_STEADY"] != nil || env["AMSWS_REPORT"] != nil, let mapping = store.mapping {
             let plan = store.displayed
-            let tests = store.tests.isEmpty ? Self.sampleTests : store.tests
+            let tests = Self.sampleTests
             ZStack {
                 Theme.bg.ignoresSafeArea()
                 NavigationStack {
@@ -127,6 +151,13 @@ struct ProgressRound28Debug: View {
                     .toolbar(.hidden, for: .navigationBar)
                 }
             }
+            // AMSWS_REPORT_MAKE: the real PDF is written to the app's temporary folder, for a look.
+            .onAppear {
+                guard env["AMSWS_REPORT_MAKE"] != nil else { return }
+                _ = MonthReportMaker.make(plan: plan, mapping: mapping,
+                                          month: MonthReview.months(plan, today: store.today, includingCurrent: true).last ?? PlanOverview.month(of: store.today),
+                                          today: store.today, feel: sampleFeel(plan), zones: store.zones, tests: tests)
+            }
         }
     }
 
@@ -146,3 +177,41 @@ struct ProgressRound28Debug: View {
     }
 }
 #endif
+
+/* Tiles in rows of equal height: two across on a phone, more when the window is wide. */
+struct ProgTileGrid: Layout {
+    var spacing: CGFloat = 8
+    var minTile: CGFloat = 190
+    func columns(_ width: CGFloat) -> Int {
+        guard width.isFinite else { return 2 }   // an unbounded proposal (inside a stack) must not crash the sum
+        return max(2, min(4, Int((width + spacing) / (minTile + spacing))))
+    }
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let w = (proposal.width.map { $0.isFinite ? $0 : 380 }) ?? 380
+        let n = columns(w), cw = (w - spacing * CGFloat(n - 1)) / CGFloat(n)
+        var h: CGFloat = 0, row: CGFloat = 0
+        for (i, s) in subviews.enumerated() {
+            row = max(row, s.sizeThatFits(ProposedViewSize(width: cw, height: nil)).height)
+            if i % n == n - 1 || i == subviews.count - 1 { h += row + (h > 0 ? spacing : 0); row = 0 }
+        }
+        return CGSize(width: w, height: h)
+    }
+    func placeSubviews(in b: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let n = columns(b.width), cw = (b.width - spacing * CGFloat(n - 1)) / CGFloat(n)
+        var y = b.minY, i = 0
+        while i < subviews.count {
+            let rowViews = subviews[i..<min(i + n, subviews.count)]
+            let rh = rowViews.map { $0.sizeThatFits(ProposedViewSize(width: cw, height: nil)).height }.max() ?? 0
+            for (k, s) in rowViews.enumerated() {
+                s.place(at: CGPoint(x: b.minX + CGFloat(k) * (cw + spacing), y: y), anchor: .topLeading,
+                        proposal: ProposedViewSize(width: cw, height: rh))
+            }
+            y += rh + spacing; i += n
+        }
+    }
+}
+
+/* The Settings head card's fill: slate, dark enough for white words by day and by night (Theme.settings turns pale at night). */
+extension Theme {
+    static let settingsFill = Color.dynamic(light: 0x5A6B7B, dark: 0x3E4C5A)
+}

@@ -49,7 +49,7 @@ struct RemindersSettingsView: View {
                 Text("Nothing is sent while the stop sign or an illness is on. These switches belong to this \(Device.word): your other devices have their own. Reminders are worked out on the device from your plan; nothing goes through a server.")
                     .font(.caption).foregroundStyle(Theme.secondary)
             }
-            .padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 24)
+            .padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 24).readableWidth(680)
         }
         .background(Theme.settings.opacity(0.07).background(Theme.bg).ignoresSafeArea())
         .navigationTitle("Reminders")
@@ -86,7 +86,7 @@ struct RemindersSettingsView: View {
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.settings))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.settingsFill))
     }
 
     private var onCount: Int { [draft.eveningOn, draft.sundayOn, draft.missedOn].filter { $0 }.count }

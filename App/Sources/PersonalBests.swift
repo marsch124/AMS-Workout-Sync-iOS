@@ -17,7 +17,7 @@ struct PersonalBestsCard: View {
         if !bests.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Your bests").font(.headline).foregroundStyle(Theme.progress)
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                ProgTileGrid {
                     ForEach(bests) { b in
                         if let key = b.key {
                             NavigationLink { SessionView(key: key) } label: { tile(b) }
@@ -55,6 +55,6 @@ struct PersonalBestsCard: View {
 
     /* "62.4 km", and a swim in metres: "2,000 m". */
     static func distance(_ km: Double, swim: Bool) -> String {
-        swim ? "\(Int((km * 1000).rounded())) m" : jsNumberString((km * 10).rounded() / 10) + " km"
+        swim ? "\(Int((km * 1000).rounded()).formatted(.number.locale(Locale(identifier: "en_GB")))) m" : jsNumberString((km * 10).rounded() / 10) + " km"
     }
 }

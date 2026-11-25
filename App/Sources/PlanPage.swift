@@ -170,7 +170,7 @@ struct PlanPage: View {
     }
 
     @ViewBuilder private var steps: some View {
-        PlanPrintButton()
+        PlanPrintButton(stepLook: true)
         switch mode {
         case .week:
             StepButton(words: "Previous week", id: "week-prev") { weekStart = PlanView.addDays(monday, -7) }

@@ -1199,6 +1199,26 @@ final class Store: ObservableObject {
     }
 
 #if DEBUG
+    /* Picture switch (AMSWS_FAKE_DONE): every planned session before today is logged as done, a little short of its plan; every sixth is marked missed. Once. */
+    func debugSeedDone() {
+        guard queue.isEmpty, let mapping else { return }
+        var n = 0
+        for w in displayed where w.dayKey < today && w.discipline.id != "rest" && !w.logged {
+            guard let seconds = Plan.plannedSeconds(w, mapping), seconds > 0 else { continue }
+            n += 1
+            var e = LogEntry()
+            if n % 6 == 0 { e.missed = true } else {
+                e.actualDuration = String(Int(seconds / 60 * (n % 3 == 0 ? 1.1 : 0.95)))
+                let km: Double? = ["run": 8.0, "bike": 42.0, "swim": 1.5].first(where: { w.discipline.id.lowercased().contains($0.key) })?.value
+                if let km { e.actualDistance = String(mapping.units.distance == "m" ? km * 1000 : km) }
+                e.avgHr = String(132 + n % 9); e.rpe = String(4 + n % 3)
+            }
+            queue.append(QueuedEntry(workout: w, entry: e))
+        }
+    }
+#endif
+
+#if DEBUG
     /* Picture and screen-test switch only: make sure two safety copies exist (the plan as it is, filed under the two days before today). */
     func debugSeedSafetyCopies() {
         let fm = FileManager.default

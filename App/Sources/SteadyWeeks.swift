@@ -35,10 +35,22 @@ struct SteadyWeeksCard: View {
                                 Text(s.isNow ? "now" : " ").font(.caption2.weight(s.isNow ? .bold : .regular))
                                     .foregroundStyle(Theme.progress)
                             }
-                            .frame(maxWidth: .infinity)
+                            .frame(maxWidth: 44)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 6)
+                    HStack(spacing: 6) {
+                        RoundedRectangle(cornerRadius: 3, style: .continuous).fill(Theme.progress).frame(width: 12, height: 12)
+                        Text("followed").font(.caption).foregroundStyle(Theme.secondary)
+                        RoundedRectangle(cornerRadius: 3, style: .continuous).strokeBorder(Theme.progress, lineWidth: 1.4).frame(width: 12, height: 12)
+                            .padding(.leading, 8)
+                        Text("not followed").font(.caption).foregroundStyle(Theme.secondary)
+                    }
+                    .padding(.top, 2)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Full square: followed. Outlined square: not followed.")
+                    .accessibilityIdentifier("steady-key")
                     ProgNote(text: "A full square is a week with at least \(SteadyWeeks.threshold) % of its due sessions done, as in Plan followed. An outlined square is a week below that. The last twelve weeks, oldest on the left.")
                         .padding(.top, 2)
                 }
