@@ -303,7 +303,7 @@ struct HealthSuggestions: View {
                     Spacer()
                     Button("Use") { use(w) }
                         .accessibilityIdentifier("health-use-" + w.sport)
-                        .buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.mainButton)
+                        .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)   // only Save is full colour on this page
                 }
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))

@@ -42,7 +42,7 @@ struct StateFill: View {
             // A plain block of the sport's colour, lighter than a done one —
             // the frame said nothing the colour was not already saying
             // (his ask, 2026-09-30).
-            shape.fill(colour.opacity(0.34))
+            shape.fill(Theme.stillToDo(sport))   // the same tint as the Year squares, brighter at night
         case .missed:
             shape.fill(Color.clear)
                 .overlay(Hatch().stroke(colour, lineWidth: 1.4).clipShape(shape))

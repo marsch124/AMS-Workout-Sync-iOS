@@ -43,11 +43,14 @@ struct ICloudPage: View {
                     }
                 }
 
+                // With iCloud off there is nothing to sync with: no button that cannot work.
+                if cloud.status != .off {
                 Button { cloud.syncNow() } label: {
                     Text("Sync now").font(.headline).frame(maxWidth: .infinity, minHeight: 40)
                 }
                 .buttonStyle(.borderedProminent).tint(Theme.mainButton)   // the main button is never grey
                 .accessibilityIdentifier("icloud-sync-now")
+                }
 
                 SectionHeading(text: "Your devices")
                 VStack(alignment: .leading, spacing: 0) {

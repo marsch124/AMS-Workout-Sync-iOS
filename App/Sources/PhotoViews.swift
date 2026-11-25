@@ -284,7 +284,7 @@ struct PhotoSettings: View {
         let orphans = photos.orphans(owners: owners).count
         let mb = Double(photos.totalBytes) / 1_048_576
         SettingsRow(title: "\(photos.index.count) photo\(photos.index.count == 1 ? "" : "s") · \(String(format: "%.1f", mb)) MB",
-                    sub: "On this phone only, and in the iPhone's own backup. Not in the workbook, not in Dropbox."
+                    sub: (Device.isPhone ? "On this phone only, and in the iPhone's own backup." : "On this device only.") + " Not in iCloud, not in Dropbox."
                         + (orphans > 0 ? " \(orphans) belong to a session that has since changed — still here, still exported." : ""))
             .accessibilityIdentifier("photos-count")
         HStack(spacing: 8) {

@@ -625,8 +625,8 @@ struct ConsistencyCard: View {
         StatCard(title: "Consistency",
                  lede: s.streakCurrent > 0 ? "\(s.streakCurrent) in a row right now." : "The run ended at the last session. Longest so far is \(s.streakLongest).") {
             HStack(spacing: 8) {
-                Figure(value: "\(s.streakCurrent)", label: "current run")
-                Figure(value: "\(s.streakLongest)", label: "longest run")
+                Figure(value: "\(s.streakCurrent)", label: "in a row now")
+                Figure(value: "\(s.streakLongest)", label: "most in a row")
                 Figure(value: percent(overall), label: "of those answered")
             }
         }

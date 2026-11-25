@@ -230,7 +230,7 @@ struct SettingsView: View {
     @ViewBuilder
     private var appHomeRows: some View {
         let copies = store.safetyCopies
-        SettingsRow(title: Device.isPhone ? "Lives in this app" : "Lives in this app and in iCloud", sub: homeSub)
+        SettingsRow(title: Device.isPhone ? "Lives in this app" : (store.cloud.status == .off ? "Lives in this app — iCloud is off" : "Lives in this app and in iCloud"), sub: homeSub)
             .accessibilityIdentifier("plan-home")
         NavigationLink { SafetyCopiesView() } label: {
             SettingsRow(title: "Safety copies",
