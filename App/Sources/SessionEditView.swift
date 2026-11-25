@@ -138,7 +138,7 @@ struct SessionEditView: View {
                 Button("Take out", role: .destructive) { remove() }
                 Button("Keep it", role: .cancel) {}
             } message: {
-                Text("It stays in Changes to the plan and can be brought back.")
+                Text("It stays in Changes to the plan, where you can take it back.")
             }
         }
     }

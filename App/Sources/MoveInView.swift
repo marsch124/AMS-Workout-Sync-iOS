@@ -62,10 +62,10 @@ struct MoveInView: View {
 
     private var intro: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Today the plan lives in the Excel file in Dropbox. Here it moves into this app.")
-            Text("1 · The app takes the file in and counts both sides.")
+            Text("Now the plan lives in the Excel file in Dropbox. Here it moves into this app.")
+            Text("1 · The app takes in the Excel file and counts both sides.")
             Text("2 · You look at the counts.")
-            Text("3 · You tap the switch. The Excel file is left exactly as it is.")
+            Text("3 · You tap the switch. The Excel file stays as it is.")
         }
         .font(.subheadline).foregroundStyle(Theme.secondary)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -134,7 +134,7 @@ struct MoveInView: View {
                     .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.surface))
                     .accessibilityIdentifier("proof-odd-\(index)")
             }
-            Text("Taken in exactly as written. Nothing was changed; correct any of them later with the pen.")
+            Text("Taken in as written. Correct them later with the pen.")
                 .font(.caption).foregroundStyle(Theme.secondary)
         }
 
@@ -168,8 +168,8 @@ struct MoveInView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Done. The plan lives in this app now.").font(.headline).foregroundStyle(Theme.today)
                 .accessibilityIdentifier("movein-finished")
-            Text("Logging, moving and changing sessions all happen here. Your Excel file is no longer read or written.")
-            Text("The Excel file stays where it is, untouched. For three weeks you can go back.")
+            Text("Logging, moving and changing sessions now happen here. Nothing is written into your Excel file any more.")
+            Text("For three weeks you can go back to Excel.")
             Button { dismiss() } label: {
                 Text("Done").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }

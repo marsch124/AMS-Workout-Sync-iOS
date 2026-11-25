@@ -269,7 +269,7 @@ final class Store: ObservableObject {
             }
             // The flag says the plan lives here and the book will not open:
             // say so, and fall back to the last workbook read rather than show nothing.
-            lastProblem = "The plan kept in this app could not be opened. Its safety copies are untouched — see Settings."
+            lastProblem = "The plan in this app could not be opened. Its safety copies are safe — see Settings."
         }
         if let data = try? Data(contentsOf: cacheURL) {
             parse(data, cached: true)
@@ -695,7 +695,7 @@ final class Store: ObservableObject {
     func takePlanIn() {
         guard !takingIn else { return }
         if !queue.isEmpty {
-            homeProblem = "\(queue.count) entr\(queue.count == 1 ? "y is" : "ies are") still waiting to go to Dropbox. Send \(queue.count == 1 ? "it" : "them") first, so nothing you logged is left behind."
+            homeProblem = "\(queue.count) entr\(queue.count == 1 ? "y is" : "ies are") still waiting for Dropbox. Send \(queue.count == 1 ? "it" : "them") first."
             return
         }
         takingIn = true
@@ -726,7 +726,7 @@ final class Store: ObservableObject {
         }
         if let data = try? Data(contentsOf: cacheURL) { return (data, fileName) }
         throw NSError(domain: "AMSWorkoutSync", code: 2, userInfo: [
-            NSLocalizedDescriptionKey: "There is no workbook to take in yet."])
+            NSLocalizedDescriptionKey: "There is no Excel file to take in yet."])
     }
 
     func cancelTakingIn() {
@@ -776,7 +776,7 @@ final class Store: ObservableObject {
             do {
                 let there = try await Dropbox.shared.download(path)
                 guard there.data == original else {
-                    self.homeProblem = "The Excel file in Dropbox was changed after the plan moved into the app. Going back would overwrite those changes, so nothing was done."
+                    self.homeProblem = "The Excel file in Dropbox changed after the plan moved into the app. Going back would overwrite it, so nothing was done."
                     return
                 }
                 let bytes = try PlanExport.workbook(book, template: original)
@@ -790,7 +790,7 @@ final class Store: ObservableObject {
                 self.rev = uploaded.rev
                 self.parse(uploaded.data, cached: false)
             } catch {
-                self.homeProblem = "Going back did not work just now: \(error.localizedDescription) The plan still lives in the app; nothing was changed."
+                self.homeProblem = "Going back did not work just now: \(error.localizedDescription) The plan still lives in this app. Nothing was changed."
             }
         }
     }

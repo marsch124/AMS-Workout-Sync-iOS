@@ -201,20 +201,20 @@ struct SettingsView: View {
         SettingsRow(title: "Lives in this app", sub: store.switchedAt.map { "since " + Self.dayMonthYear($0) } ?? "")
             .accessibilityIdentifier("plan-home")
         if let book = store.book {
-            SettingsRow(title: "\(book.sessions.count) sessions · \(book.extras.count) extra activities",
-                        sub: "Everything in the plan, kept on this phone")
+            SettingsRow(title: "\(book.sessions.count) sessions · \(book.extras.count) extra workouts",
+                        sub: "All kept on this phone")
         }
         SettingsRow(title: "Safety copies",
-                    sub: copies.count == 0 ? "None yet — the first is made when the plan next changes"
+                    sub: copies.count == 0 ? "None yet — the first comes when the plan next changes"
                         : "\(copies.count) day\(copies.count == 1 ? "" : "s"), newest " + (copies.newest.map(Self.dayKeyShort) ?? ""))
         SettingsRow(title: "Spreadsheet copy",
                     sub: store.lastSpreadsheetCopy.map { "last " + Self.dayMonth($0) } ?? "none yet",
                     action: ("Save a copy now", { copyURL = store.spreadsheetCopy() }), actionID: "plan-copy")
-        Text("A copy is also kept every week in Files › On My iPhone › Triathlon.")
+        Text("A copy is also saved every week in Files › On My iPhone › Triathlon.")
             .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
         SettingsRow(title: "Copy in Dropbox", sub: dropboxCopyLine)
             .accessibilityIdentifier("plan-dropbox-copy")
-        Text("The plan as a spreadsheet, named \u{201C}Triathlon plan from the app\u{201D}, beside the old Excel file — a copy outside this phone. The app writes it and never reads it.")
+        Text("A spreadsheet named \u{201C}Triathlon plan from the app\u{201D}, saved beside your Excel file. It is a copy outside this phone.")
             .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
         NavigationLink { PlanChangesView() } label: {
             SettingsRow(title: "Changes to the plan", sub: "\(store.planChanges.count) so far", chevron: true)
@@ -223,7 +223,7 @@ struct SettingsView: View {
         .accessibilityIdentifier("plan-changes")
         if store.canGoBack, let until = store.canGoBackUntil {
             SettingsRow(title: "Go back to Excel",
-                        sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now back into the Excel file in Dropbox.",
+                        sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now into the Excel file in Dropbox.",
                         action: ("Go back to Excel", { confirmGoBack = true }), actionID: "plan-go-back")
         }
         if let why = store.homeProblem {
@@ -236,8 +236,8 @@ struct SettingsView: View {
         guard Dropbox.shared.isConnected, store.dropboxCopyPath != nil else {
             return "Dropbox is not connected, so there is no copy outside this phone"
         }
-        if let why = store.dropboxCopyProblem { return "Could not be written just now (\(why)). Tried again when the app is next opened." }
-        guard let at = store.copiedToDropboxAt else { return "The first follows shortly after the plan next changes" }
+        if let why = store.dropboxCopyProblem { return "Could not be saved just now (\(why)). It will try again when you next open the app." }
+        guard let at = store.copiedToDropboxAt else { return "The first comes soon after the plan next changes" }
         return "last " + Self.dayMonth(at) + ", " + at.formatted(date: .omitted, time: .shortened)
     }
 
