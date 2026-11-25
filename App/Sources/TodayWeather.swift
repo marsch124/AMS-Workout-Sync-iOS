@@ -163,8 +163,8 @@ struct TodayWeatherLine: View {
         Group {
             if parts.0 != nil || parts.1 != nil {
                 ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 8) { texts(parts) }
-                    VStack(alignment: .leading, spacing: 1) { texts(parts) }
+                    HStack(spacing: 8) { texts(parts, dot: true) }.fixedSize(horizontal: true, vertical: false)
+                    VStack(alignment: .leading, spacing: 1) { texts(parts, dot: false) }
                 }
                 .font(.footnote).foregroundStyle(Theme.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -179,9 +179,9 @@ struct TodayWeatherLine: View {
     }
 
     @ViewBuilder
-    private func texts(_ parts: (String?, String?)) -> some View {
+    private func texts(_ parts: (String?, String?), dot: Bool) -> some View {
         if let w = parts.0 { Text(w).accessibilityIdentifier("today-weather") }
-        if parts.0 != nil, parts.1 != nil { Text("\u{00B7}").accessibilityHidden(true) }
+        if dot, parts.0 != nil, parts.1 != nil { Text("\u{00B7}").accessibilityHidden(true) }
         if let d = parts.1 { Text(d).accessibilityIdentifier("today-daylight") }
     }
 

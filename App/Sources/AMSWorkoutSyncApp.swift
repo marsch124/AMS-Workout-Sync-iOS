@@ -131,6 +131,9 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_STOP"] != nil {
                 StopSignView()
             }
+            if ProcessInfo.processInfo.environment["AMSWS_ILL"] != nil {
+                IllnessView()
+            }
             if ProcessInfo.processInfo.environment["AMSWS_SUGGEST_LOG"] != nil {
                 let _ = SuggestionKeeper.shared.debugSeedLog()
                 NavigationStack { SuggestionsSettingsView() }
@@ -162,7 +165,7 @@ struct RootView: View {
                 NavigationStack { ClaudeSettingsView() }.environmentObject(store)
             }
             if ClaudeDebug.ask != nil {
-                NavigationStack { ClaudeAskView() }.environmentObject(store)
+                NavigationStack { ClaudeAskView(inSheet: true) }.environmentObject(store)
             }
             if ProcessInfo.processInfo.environment["AMSWS_MORNING_PLATE"] != nil {
                 MorningNumbersView(numbers: GarminReader.invented(day: store.today), today: store.today)

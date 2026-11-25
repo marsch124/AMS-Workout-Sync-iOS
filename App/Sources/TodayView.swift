@@ -45,6 +45,7 @@ struct TodayView: View {
             .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
             #if DEBUG
             .onAppear {
+                DebugScrollOffset.applyFromEnvironment()
                 // AMSWS_EXTRAFORM=1 opens the form on today; a day key opens it on that day.
                 if let flag = ProcessInfo.processInfo.environment["AMSWS_EXTRAFORM"] {
                     addingExtra = ExtraDay(key: parseDayKey(flag) != nil ? flag : store.today)
@@ -63,7 +64,6 @@ struct TodayView: View {
 
         VStack(alignment: .leading, spacing: 14) {
             header(view, today)
-            SundayCardArea()
             if !store.planLivesHere, let waited = store.waitedTooLong { WaitingWarning(text: waited) }
             // "Feeling good" joins the night's numbers on the one line; a tap
             // on the line brings the question back to change the answer.
@@ -81,8 +81,6 @@ struct TodayView: View {
             }
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()
-            ReturnLadderCard(onToday: true)
-            ClaudeReviewCard()
             if view.plan.isEmpty {
                 // First run, no plan yet: no empty week drawing, one plain line saying where it comes from.
                 Text("No plan yet — Settings → Your plan brings it in.")
@@ -141,6 +139,10 @@ struct TodayView: View {
                     }
                 }
             }
+            // Round 28: the new cards sit under today's session, so today stays near the top.
+            SundayCardArea()
+            ReturnLadderCard(onToday: true)
+            ClaudeReviewCard()
             // No Tomorrow block (the plan's last day): the pill stands alone on the right.
             if store.canLog && tomorrow.isEmpty {
                 HStack { Spacer(); extraButton }
