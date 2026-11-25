@@ -13,6 +13,8 @@ struct MonthGrid: View {
     @EnvironmentObject var store: Store
     /* "2026-11". */
     let month: String
+    /* The room under the heading on a wide window; when the full titles would not fit it, the chips say the sport. nil: width alone decides. */
+    var fitHeight: CGFloat? = nil
     /* A tap on "+2 more": that day's week on the board. */
     let openWeek: (String) -> Void
 
@@ -20,6 +22,8 @@ struct MonthGrid: View {
     @State private var openExtra: ExtraSummary?
     /* The grid's width: below about a hundred points a cell, the chips say the sport instead of the title. */
     @State private var width: CGFloat = 900
+    /* How tall the weeks stand with full titles, measured on a hidden copy. */
+    @State private var fullHeight: CGFloat = 0
 
     static let weekColumn: CGFloat = 74
     /* The most chips a cell shows; with more, the last line says how many more there are. */
@@ -28,6 +32,17 @@ struct MonthGrid: View {
     private static let monthName: DateFormatter = Dates.formatter("MMMMyyyy")
 
     /* "November 2026". */
+    /* The scroll place of a week's row, so the Plan page can bring today's week into view. */
+    static func rowID(_ monday: String) -> String { "month-row-" + monday }
+
+    /* Short sport words when a cell is narrow, or when the month with full titles would not fit the room. */
+    private var compact: Bool {
+        if (width - Self.weekColumn - 28) / 7 < 100 { return true }
+        // The day names' line and the moved line's room above and below the weeks.
+        if let fitHeight, fullHeight > 0, fullHeight + 24 > fitHeight { return true }
+        return false
+    }
+
     static func title(_ month: String) -> String {
         parseDayKey(PlanOverview.firstDay(month)).map { monthName.string(from: $0) } ?? month
     }
@@ -43,8 +58,26 @@ struct MonthGrid: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                ForEach(PlanOverview.grid(month), id: \.self) { row in
-                    weekRow(row, view)
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(PlanOverview.grid(month), id: \.self) { row in
+                        weekRow(row, view, compact: compact)
+                            .id(Self.rowID(row[0]))
+                    }
+                }
+                // The same weeks with full titles, never seen: their height decides whether the full titles fit.
+                .background(alignment: .topLeading) {
+                    if fitHeight != nil {
+                        VStack(alignment: .leading, spacing: 4) {
+                            ForEach(PlanOverview.grid(month), id: \.self) { row in
+                                weekRow(row, view, compact: false)
+                            }
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { fullHeight = $0 }
+                        .hidden()
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                    }
                 }
                 MovedLine(moved: $moved)
             } else {
@@ -57,7 +90,7 @@ struct MonthGrid: View {
         .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
     }
 
-    private func weekRow(_ row: [String], _ view: PlanView) -> some View {
+    private func weekRow(_ row: [String], _ view: PlanView, compact: Bool) -> some View {
         let monday = row[0]
         let days = view.week(of: monday, today: store.today)
         return HStack(alignment: .top, spacing: 4) {
@@ -65,7 +98,7 @@ struct MonthGrid: View {
                 .frame(width: Self.weekColumn, alignment: .leading)
             ForEach(days) { day in
                 MonthDayCell(day: day, sessions: shown(day), inMonth: day.dayKey.hasPrefix(month),
-                             compact: (width - Self.weekColumn - 28) / 7 < 100,
+                             compact: compact,
                              mapping: view.mapping, canChange: store.canChangePlan,
                              more: { openWeek(day.dayKey) },
                              openExtra: { openExtra = $0 },
@@ -139,7 +172,7 @@ struct MonthDayCell: View {
                 MonthChip(workout: w, mapping: mapping, movable: canChange, compact: compact)
             }
             ForEach(showExtras) { x in
-                Button { openExtra(x) } label: { MonthExtraChip(extra: x) }
+                Button { openExtra(x) } label: { MonthExtraChip(extra: x, compact: compact) }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("month-extra-\(x.id)")
             }
@@ -193,12 +226,13 @@ struct MonthChip: View {
 
     private var minutes: String? {
         guard let s = Plan.plannedSeconds(workout, mapping), s > 0 else { return nil }
-        return s < 3600 ? "\(Int((s / 60).rounded())) min" : formatDuration(s)
+        // One way of writing a length everywhere: "45m", "1h 10m".
+        return formatDuration((s / 60).rounded() * 60)
     }
 
     /* In a narrow cell the sport's own word ("Run", "Swim"), which always fits; else the session's short title. */
     private var name: String {
-        compact && workout.discipline.id != "rest" ? workout.discipline.label : Self.chipTitle(workout.title)
+        compact && workout.discipline.id != "rest" ? workout.discipline.label : BoardCard.keepTogether(Self.chipTitle(workout.title))
     }
 
     /* Shorter still than the board's: the words before a comma or a plus, when that leaves something to read. */
@@ -274,30 +308,32 @@ struct MonthChip: View {
 /* An extra in a month cell: dotted outline in its own colour and the paler tick, as extras carry everywhere. */
 struct MonthExtraChip: View {
     let extra: ExtraSummary
+    var compact = false
 
     var body: some View {
         let colour = Theme.sport(Extras.activity(extra.activity).colorId)
         let shape = RoundedRectangle(cornerRadius: 6, style: .continuous)
-        return HStack(alignment: .bottom, spacing: 3) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text(Extras.activity(extra.activity).label)
-                    .font(.caption.weight(.semibold)).foregroundStyle(Theme.text)
-                    .lineLimit(1).minimumScaleFactor(0.7)
+        // The name has the chip's whole width; the length and the paler tick share the line under it, as on a session chip.
+        return VStack(alignment: .leading, spacing: 0) {
+            Text(Extras.activity(extra.activity).label)
+                .font(.caption.weight(.semibold)).foregroundStyle(Theme.text)
+                .lineLimit(1).minimumScaleFactor(compact ? 0.6 : 0.7)
+            HStack(spacing: 3) {
                 if let m = extra.minutes {
                     Text(formatDuration(m * 60)).font(.caption2.monospacedDigit()).foregroundStyle(Theme.secondary)
                         .lineLimit(1).minimumScaleFactor(0.8)
                 }
+                Spacer(minLength: 0)
+                ZStack {
+                    Circle().fill(Theme.today.opacity(0.6))
+                    Glyph(name: "icon-check", size: 7).foregroundStyle(Color.white)
+                }
+                .frame(width: 12, height: 12)
+                .accessibilityLabel("Done")
             }
-            Spacer(minLength: 0)
-            ZStack {
-                Circle().fill(Theme.today.opacity(0.6))
-                Glyph(name: "icon-check", size: 8).foregroundStyle(Color.white)
-            }
-            .frame(width: 13, height: 13)
-            .padding(.top, 1)
-            .accessibilityLabel("Done")
         }
-        .padding(.horizontal, 5).padding(.vertical, 3)
+        .padding(.leading, 5).padding(.trailing, 4).padding(.vertical, 3)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(shape.fill(colour.opacity(0.16)))
         .overlay(shape.strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [3, 2])).foregroundStyle(colour))
         .contentShape(shape)

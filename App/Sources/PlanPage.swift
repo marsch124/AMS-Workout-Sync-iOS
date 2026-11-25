@@ -35,15 +35,24 @@ struct PlanPage: View {
     static let numbersWidth: CGFloat = 290
     static let besideFrom: CGFloat = 1150
 
+    /* The height of everything above the view (season, heading, hint), so the month knows the room left under it. */
+    @State private var topHeight: CGFloat = 0
+
     private var monday: String { weekStart.isEmpty ? PlanView.weekStart(store.today) : weekStart }
     private var shownMonth: String { month.isEmpty ? PlanOverview.month(of: store.today) : month }
 
     var body: some View {
         NavigationStack(path: $path) {
             GeometryReader { geo in
-                ScrollView {
-                    page(width: geo.size.width - 32, height: geo.size.height)
-                        .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 24)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        page(width: geo.size.width - 32, height: geo.size.height)
+                            .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 24)
+                    }
+                    // When the month cannot fit the window, it opens with today's week in view.
+                    .onAppear { showTodaysWeek(proxy) }
+                    .onChange(of: mode) { showTodaysWeek(proxy) }
+                    .onChange(of: shownMonth) { showTodaysWeek(proxy) }
                 }
             }
             .background(Theme.bg.ignoresSafeArea())
@@ -60,26 +69,29 @@ struct PlanPage: View {
         if let view = store.view {
             let beside = width >= Self.besideFrom
             VStack(alignment: .leading, spacing: 10) {
-                SeasonView(weekStart: $weekStart, chosenWeeks: chosenWeeks, pick: { picked in
-                    weekStart = picked
-                    mode = .week
-                })
-                head(view)
-                // The board says it itself, with "swipe sideways" beside it when not all days fit.
-                if store.canChangePlan && mode == .month {
-                    Text("Drag a session to another day")
-                        .font(.footnote).foregroundStyle(Theme.secondary)
-                        .accessibilityIdentifier("plan-hint")
+                VStack(alignment: .leading, spacing: 10) {
+                    SeasonView(weekStart: $weekStart, chosenWeeks: chosenWeeks, pick: { picked in
+                        weekStart = picked
+                        mode = .week
+                    })
+                    head(view)
+                    // The board says it itself, with "swipe sideways" beside it when not all days fit.
+                    if store.canChangePlan && mode == .month {
+                        Text("Drag a session to another day")
+                            .font(.footnote).foregroundStyle(Theme.secondary)
+                            .accessibilityIdentifier("plan-hint")
+                    }
                 }
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { topHeight = $0 }
                 if beside {
                     HStack(alignment: .top, spacing: 14) {
-                        content(columnHeight: max(260, height - 330))
+                        content(columnHeight: max(260, height - 330), fitHeight: height - topHeight - 12 - 10 - 24)
                             .frame(maxWidth: .infinity, alignment: .topLeading)
                         PlanNumbers(from: range(view).from, to: range(view).to, scope: scopeWords, columns: 1)
                             .frame(width: Self.numbersWidth)
                     }
                 } else {
-                    content(columnHeight: 260)
+                    content(columnHeight: 260, fitHeight: height - topHeight - 12 - 10 - 24)
                     PlanNumbers(from: range(view).from, to: range(view).to, scope: scopeWords, columns: 2)
                 }
             }
@@ -133,15 +145,9 @@ struct PlanPage: View {
                                          : "\(formatDuration(hours.planned)) planned")
             .font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.secondary)
             .lineLimit(1)
-        // One line when it fits; else the switch and the buttons take a line of their own; the title is never cut.
+        // The switch and the buttons on one line, the title always on its own line under them, so it keeps
+        // one place whatever week or month is shown; on a narrow window everything stacks; the title is never cut.
         return ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: 12) {
-                PlanSwitch(mode: $mode)
-                title.lineLimit(1).fixedSize()
-                figure.fixedSize()
-                Spacer(minLength: 8)
-                HStack(spacing: 6) { steps }
-            }
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 12) {
                     PlanSwitch(mode: $mode)
@@ -180,12 +186,12 @@ struct PlanPage: View {
     // MARK: the view and the numbers
 
     @ViewBuilder
-    private func content(columnHeight: CGFloat) -> some View {
+    private func content(columnHeight: CGFloat, fitHeight: CGFloat?) -> some View {
         switch mode {
         case .week:
             WeekBoard(weekStart: $weekStart, columnHeight: columnHeight, showsHead: false)
         case .month:
-            MonthGrid(month: shownMonth, openWeek: { day in
+            MonthGrid(month: shownMonth, fitHeight: fitHeight, openWeek: { day in
                 weekStart = PlanView.weekStart(day)
                 mode = .week
             })
@@ -194,6 +200,15 @@ struct PlanPage: View {
                 month = m
                 mode = .month
             })
+        }
+    }
+
+    /* Today's week row brought into view in the Month when it is this month; a row already in view does not move. */
+    private func showTodaysWeek(_ proxy: ScrollViewProxy) {
+        guard mode == .month, shownMonth == PlanOverview.month(of: store.today) else { return }
+        let row = MonthGrid.rowID(PlanView.weekStart(store.today))
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            proxy.scrollTo(row, anchor: .bottom)
         }
     }
 

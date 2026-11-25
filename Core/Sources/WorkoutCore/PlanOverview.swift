@@ -141,6 +141,18 @@ public enum PlanOverview {
         return Followed(done: due.filter { $0.logged && !$0.missed }.count, due: due.count)
     }
 
+    /*
+     * Sessions in the stretch recorded as done on a day still to come: they
+     * count in the hours done, but not in "Plan followed", which only counts
+     * what was due by today. The Plan page names them so the two agree.
+     */
+    public static func doneAhead(_ plan: [Workout], from: String, to: String, today: String) -> Int {
+        plan.filter { w in
+            w.dayKey >= from && w.dayKey <= to && w.dayKey > today && w.discipline.id != "rest"
+                && w.logged && !w.missed
+        }.count
+    }
+
     /* The day's main session: the longest planned one that is not rest; nil on a rest day or an empty one. */
     public static func main(_ sessions: [Workout], _ mapping: Mapping) -> Workout? {
         sessions.filter { $0.discipline.id != "rest" }

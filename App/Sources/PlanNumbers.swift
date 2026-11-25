@@ -61,8 +61,9 @@ struct PlanNumbers: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(s.label).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
-                        Text(s.hours.done > 0 ? "\(formatDuration(s.hours.done)) of \(formatDuration(s.hours.planned))"
-                                              : formatDuration(s.hours.planned))
+                        // Said in the heading's words: done of planned, or planned alone while nothing is done.
+                        Text(s.hours.done > 0 ? "\(formatDuration(s.hours.done)) done of \(formatDuration(s.hours.planned))"
+                                              : "\(formatDuration(s.hours.planned)) planned")
                             .font(.caption.monospacedDigit()).foregroundStyle(Theme.secondary)
                     }
                     // Planned as the pale bar, done as the solid part, as the week strip draws them.
@@ -92,7 +93,8 @@ struct PlanNumbers: View {
         let usual = Load.usual(weeks, firstDay: items.map(\.dayKey).min())
         let tallest = max(weeks.map(\.total).max() ?? 0, 1)
         let now = weeks.last?.total ?? 0
-        return card("Load, last 12 weeks", id: "plan-load") {
+        // Always about now, whatever week is chosen above: the twelve weeks up to today.
+        return card("Load", note: "last 12 weeks, up to today", id: "plan-load") {
             HStack(alignment: .bottom, spacing: 3) {
                 ForEach(Array(weeks.enumerated()), id: \.offset) { i, w in
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
@@ -102,8 +104,11 @@ struct PlanNumbers: View {
                 }
             }
             .frame(height: 44, alignment: .bottom)
-            Text("This week \(Int(now.rounded()))" + (usual.map { " \u{00B7} usual \(Int($0.rounded()))" } ?? ""))
+            // The Progress page's Load card words: this week so far, usual week, minutes × how hard.
+            Text("This week so far \(Self.figure(now))" + (usual.map { " \u{00B7} usual week \(Self.figure($0))" } ?? ""))
                 .font(.caption.monospacedDigit()).foregroundStyle(Theme.secondary)
+            Text("Load = minutes \u{00D7} how hard (1\u{2013}10)")
+                .font(.caption2).foregroundStyle(Theme.secondary)
         }
     }
 
@@ -111,14 +116,19 @@ struct PlanNumbers: View {
 
     private func followed(_ view: PlanView) -> some View {
         let f = PlanOverview.followed(view.plan, from: from, to: to, today: store.today)
+        let ahead = PlanOverview.doneAhead(view.plan, from: from, to: to, today: store.today)
         return card("Plan followed", note: scope, id: "plan-followed") {
             if let percent = f.percent {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text("\(f.done) of \(f.due) sessions").font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                    Text("\(f.done) of \(f.due) sessions due so far").font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
                     Text("\(percent) %").font(.footnote.monospacedDigit()).foregroundStyle(Theme.secondary)
                 }
             } else {
                 Text("Nothing due yet").font(.footnote).foregroundStyle(Theme.secondary)
+            }
+            // A session recorded on a day still to come is not due yet, so it is named, not counted.
+            if ahead > 0 {
+                Text("\(ahead) more done ahead of its day").font(.caption).foregroundStyle(Theme.secondary)
             }
         }
     }
@@ -136,6 +146,20 @@ struct PlanNumbers: View {
                 }
             }
         }
+    }
+
+    /* One number style with Progress: "1,671", and a real minus sign. */
+    private static let number: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.locale = Locale(identifier: "en_GB")
+        f.maximumFractionDigits = 0
+        f.minusSign = "\u{2212}"
+        return f
+    }()
+
+    static func figure(_ n: Double) -> String {
+        number.string(from: NSNumber(value: n.rounded())) ?? "\(Int(n.rounded()))"
     }
 
     private func raceDate(_ day: String) -> String {

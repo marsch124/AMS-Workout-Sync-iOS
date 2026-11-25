@@ -33,7 +33,7 @@ struct YearView: View {
                     }
                 }
                 key(hasRace: raceDay != nil)
-                SeasonPhases()
+                SeasonPhases(columns: 2)
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("year-view")
@@ -51,12 +51,8 @@ struct YearView: View {
                                              : formatDuration(hours.planned))
                 .font(.caption2.monospacedDigit()).foregroundStyle(Theme.secondary)
                 .lineLimit(1)
-            // The hours beside the name when they fit, else just under it; never cut.
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) { name.fixedSize(); figure.fixedSize() }
-                VStack(alignment: .leading, spacing: 1) { name.fixedSize(); figure.fixedSize() }
-                VStack(alignment: .leading, spacing: 1) { name.minimumScaleFactor(0.8); figure.minimumScaleFactor(0.8) }
-            }
+            // The hours always on the line under the name, in the same place on every month.
+            VStack(alignment: .leading, spacing: 1) { name.minimumScaleFactor(0.8); figure.minimumScaleFactor(0.8) }
             VStack(spacing: 3) {
                 HStack(spacing: 3) {
                     ForEach(Array(["M", "T", "W", "T", "F", "S", "S"].enumerated()), id: \.offset) { _, d in
@@ -64,13 +60,23 @@ struct YearView: View {
                             .frame(maxWidth: .infinity)
                     }
                 }
-                ForEach(PlanOverview.grid(month), id: \.self) { row in
+                let rows = PlanOverview.grid(month)
+                ForEach(rows, id: \.self) { row in
                     HStack(spacing: 3) {
                         ForEach(row, id: \.self) { day in
                             square(day, inMonth: day.hasPrefix(month), sessions: byDay[day] ?? [],
                                    mapping: view.mapping, raceDay: raceDay)
                         }
                     }
+                }
+                // Every month as tall as one of six weeks, so the cards line up in an even grid.
+                ForEach(rows.count..<6, id: \.self) { _ in
+                    HStack(spacing: 3) {
+                        ForEach(0..<7, id: \.self) { _ in
+                            Color.clear.aspectRatio(1, contentMode: .fit).frame(maxWidth: .infinity)
+                        }
+                    }
+                    .accessibilityHidden(true)
                 }
             }
         }
@@ -92,7 +98,7 @@ struct YearView: View {
             } else if day == raceDay {
                 shape.fill(Theme.sport("race"))
             } else if let main = PlanOverview.main(sessions, mapping) {
-                StateFill(sport: main.discipline.id, state: main.state, corner: 2.5)
+                yearFill(main.discipline.id, main.state)
             } else {
                 shape.strokeBorder(Theme.border, lineWidth: 1)
             }
@@ -108,11 +114,21 @@ struct YearView: View {
         }
     }
 
+    /* As the week strip fills its bars; "still to do" in the night-raised tint (Theme.stillToDo), so sports read apart at night. */
+    @ViewBuilder
+    private func yearFill(_ sport: String, _ state: SessionState) -> some View {
+        if state == .todo {
+            RoundedRectangle(cornerRadius: 2.5, style: .continuous).fill(Theme.stillToDo(sport))
+        } else {
+            StateFill(sport: sport, state: state, corner: 2.5)
+        }
+    }
+
     /* The meanings in words, small and grey, with the same squares. */
     private func key(hasRace: Bool) -> some View {
         FlowRow(spacing: 12) {
             keyItem(StateFill(sport: "run", state: .done, corner: 2.5), "Recorded")
-            keyItem(StateFill(sport: "run", state: .todo, corner: 2.5), "Still to do")
+            keyItem(yearFill("run", .todo), "Still to do")
             keyItem(StateFill(sport: "run", state: .missed, corner: 2.5), "Missed")
             keyItem(RoundedRectangle(cornerRadius: 2.5).strokeBorder(Theme.border, lineWidth: 1), "Rest day")
             if hasRace { keyItem(RoundedRectangle(cornerRadius: 2.5).fill(Theme.sport("race")), "Race day") }

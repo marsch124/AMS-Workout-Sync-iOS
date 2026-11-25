@@ -61,6 +61,16 @@ enum Theme {
 
     static func sport(_ id: String) -> Color { Color(hex: sportHex(id)) }
 
+    /*
+     * A sport's "still to do" tint: the colour at a third by day (as before), raised at
+     * night, where a third of it on the dark teal ground went murky and sports could not
+     * be told apart. Done is the full colour, so it stays clearly stronger.
+     */
+    static func stillToDo(_ id: String) -> Color {
+        let base = UIColor(Color(hex: sportHex(id)))
+        return Color(UIColor { $0.userInterfaceStyle == .dark ? base.withAlphaComponent(0.58) : base.withAlphaComponent(0.34) })
+    }
+
     /* Readable as text: the same hue, darker by day. */
     static func sportInk(_ id: String) -> Color {
         let hex = sportHex(id)

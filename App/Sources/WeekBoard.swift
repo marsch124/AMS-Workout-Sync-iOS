@@ -21,6 +21,8 @@ struct WeekBoard: View {
     @State private var openExtra: ExtraSummary?
     /* How many day columns stand side by side at once: seven when the window is wide enough. */
     @State private var visibleColumns = 7
+    /* The board's own width, for the choice between one row of seven and two rows. */
+    @State private var boardWidth: CGFloat = 0
 
     struct DayKey: Identifiable { let id: String }
 
@@ -42,6 +44,7 @@ struct WeekBoard: View {
                 EmptyWorkbook()
             }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { boardWidth = $0 }
         .accessibilityIdentifier("week-board")
         .sheet(item: $addingOn) { day in
             SessionEditView(key: nil, draft: SessionDraft(dayKey: day.id, sport: "run"))
@@ -56,6 +59,15 @@ struct WeekBoard: View {
     static let narrowest: CGFloat = 118
     static let gap: CGFloat = 6
 
+    /*
+     * When seven columns do not fit but four do (an iPad upright), the week stands in two rows,
+     * Monday to Thursday over Friday to Sunday, so every day is in view without a sideways swipe.
+     */
+    static func twoRows(in width: CGFloat) -> Bool {
+        let n = columns(in: width)
+        return n >= 4 && n < 7
+    }
+
     /* Whole columns only: as many as fit (at most seven), sharing the width exactly, so no heading is ever cut in half. */
     static func columns(in width: CGFloat) -> Int {
         min(7, max(1, Int((width + gap) / (narrowest + gap))))
@@ -64,13 +76,33 @@ struct WeekBoard: View {
     private var hint: String? {
         var parts: [String] = []
         if store.canChangePlan { parts.append("Drag a session to another day") }
-        if visibleColumns < 7 { parts.append("swipe sideways for the other days") }
+        if visibleColumns < 7 && !Self.twoRows(in: boardWidth) { parts.append("swipe sideways for the other days") }
         guard !parts.isEmpty else { return nil }
         let line = parts.joined(separator: " \u{00B7} ")
         return line.prefix(1).uppercased() + line.dropFirst()
     }
 
+    @ViewBuilder
     private func board(_ days: [PlanDay], _ view: PlanView) -> some View {
+        if Self.twoRows(in: boardWidth) {
+            let w = (boardWidth - Self.gap * 3) / 4
+            VStack(alignment: .leading, spacing: Self.gap) {
+                ForEach([Array(days.prefix(4)), Array(days.dropFirst(4))], id: \.first?.dayKey) { row in
+                    HStack(alignment: .top, spacing: Self.gap) {
+                        ForEach(row) { day in
+                            column(day, view, height: max(150, columnHeight * 0.6))
+                                .frame(width: w)
+                        }
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        } else {
+            sideways(days, view)
+        }
+    }
+
+    private func sideways(_ days: [PlanDay], _ view: PlanView) -> some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: Self.gap) {
@@ -165,10 +197,10 @@ struct WeekBoard: View {
 
     // MARK: a day
 
-    private func column(_ day: PlanDay, _ view: PlanView) -> some View {
+    private func column(_ day: PlanDay, _ view: PlanView, height: CGFloat? = nil) -> some View {
         let sessions = shown(day)
         return DayColumn(day: day, sessions: sessions, mapping: view.mapping,
-                         canChange: store.canChangePlan, height: columnHeight,
+                         canChange: store.canChangePlan, height: height ?? columnHeight,
                          add: { addingOn = DayKey(id: day.dayKey) },
                          openExtra: { openExtra = $0 },
                          drop: { key in drop(key, on: day.dayKey) })
@@ -279,9 +311,18 @@ struct DayColumn: View {
 
     @State private var targeted = false
 
+    /* "Mon 22 Mar" on the Monday and on the 1st of a month, so the month is always on the board; "Tue 23" between. */
+    private var heading: String {
+        let words = String(Dates.weekday.string(from: day.date).prefix(3)) + " " + String(utc.component(.day, from: day.date))
+        let showMonth = utc.component(.weekday, from: day.date) == 2 || utc.component(.day, from: day.date) == 1
+        return showMonth ? words + " " + DayColumn.monthName.string(from: day.date) : words
+    }
+
+    private static let monthName = Dates.formatter("MMM")
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(String(Dates.weekday.string(from: day.date).prefix(3)) + " " + String(utc.component(.day, from: day.date)))
+            Text(heading)
                 .font(.footnote.weight(day.isToday ? .heavy : .semibold))
                 .foregroundStyle(day.isToday ? Theme.today : Theme.secondary)
             ForEach(sessions) { w in
@@ -342,7 +383,8 @@ struct BoardCard: View {
 
     private var minutes: String? {
         guard let s = Plan.plannedSeconds(workout, mapping), s > 0 else { return nil }
-        return s < 3600 ? "\(Int((s / 60).rounded())) min" : formatDuration(s)
+        // One way of writing a length everywhere: "45m", "1h 10m".
+        return formatDuration((s / 60).rounded() * 60)
     }
 
     /*
@@ -370,11 +412,28 @@ struct BoardCard: View {
         return t.isEmpty ? raw : t
     }
 
+    /*
+     * A range or a term never breaks over two lines: "95–105 rpm", "Z3–low Z4", "4×3 min". The dash or
+     * times sign between two words is joined to both, and a space before a unit or a zone is a fixed one.
+     */
+    static func keepTogether(_ text: String) -> String {
+        let joiner = "\u{2060}"
+        var t = text
+        for (pattern, template) in [
+            ("(?<=\\S)([\u{2013}\u{2014}\u{00D7}x-])(?=\\S)", joiner + "$1" + joiner),
+            ("(?<=[0-9]) (?=(min|mins|rpm|bpm|km|m|s|h|W|sec|x|\u{00D7}|%)\\b)", "\u{00A0}"),
+            (" (?=Z[0-9])", "\u{00A0}"),
+        ] {
+            t = t.replacingOccurrences(of: pattern, with: template, options: .regularExpression)
+        }
+        return t
+    }
+
     private var face: some View {
         let sport = Theme.sport(workout.discipline.id)
         let shape = RoundedRectangle(cornerRadius: 8, style: .continuous)
         return VStack(alignment: .leading, spacing: 1) {
-            Text(Self.boardTitle(workout.title))
+            Text(Self.keepTogether(Self.boardTitle(workout.title)))
                 .font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
                 .lineLimit(4).multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)

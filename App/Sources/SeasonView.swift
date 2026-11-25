@@ -177,7 +177,7 @@ struct SeasonView: View {
                 }
                 outline(data, chosen: chosen, barW: barW, tallest: tallest)
                 if let x = todayX(data, barW: barW) {
-                    todayMark(x: x, width: geo.size.width)
+                    todayMark(x: x, width: geo.size.width, skip: letterSpan(data, tallest: tallest))
                 }
             }
             .onAppear { lettersShown = barW < Self.wordWidth }
@@ -205,11 +205,24 @@ struct SeasonView: View {
     }
 
     /* Today: a thin green line through the bars, its word once at the top. */
-    private func todayMark(x: CGFloat, width: CGFloat) -> some View {
+    /* Where the E or T of today's week stands (top and bottom), so the Today line can leave it clear. */
+    private func letterSpan(_ data: SeasonData, tallest: Double) -> ClosedRange<CGFloat>? {
+        let today = store.today
+        guard let w = data.weeks.first(where: { today >= $0.monday && today <= PlanView.addDays($0.monday, 6) }),
+              w.isEasy || w.isTest else { return nil }
+        let bottom = barArea - barHeight(w, tallest: tallest)
+        return (bottom - Self.markHeight - 1)...(bottom)
+    }
+
+    private func todayMark(x: CGFloat, width: CGFloat, skip: ClosedRange<CGFloat>? = nil) -> some View {
         let wordLeft = x + 50 > width
+        // The line stops short of the week's letter and goes on under it, never through it.
+        let segments: [(top: CGFloat, bottom: CGFloat)] = skip.map { [(2, $0.lowerBound), ($0.upperBound, barArea)] } ?? [(2, barArea)]
         return ZStack(alignment: .topLeading) {
-            Rectangle().fill(Theme.today).frame(width: 1.5, height: barArea - 2)
-                .offset(x: x - 0.75, y: 2)
+            ForEach(Array(segments.enumerated()), id: \.offset) { _, seg in
+                Rectangle().fill(Theme.today).frame(width: 1.5, height: max(0, seg.bottom - seg.top))
+                    .offset(x: x - 0.75, y: seg.top)
+            }
             Text("Today")
                 .font(.caption2.weight(.semibold)).foregroundStyle(Theme.today)
                 .fixedSize()
@@ -332,19 +345,60 @@ struct PhaseNameRow: Layout {
 /* The phases as compact rows under the board: the name with room to be read, then dates, weeks and hours beside it. */
 struct SeasonPhases: View {
     @EnvironmentObject var store: Store
+    /* Two on the Year view, so the phases use the width rather than its left half. */
+    var columns = 1
 
     var body: some View {
         if let data = SeasonData.make(store) {
+            let named = data.phases.filter { !$0.name.isEmpty }
+            let perColumn = max(1, (named.count + columns - 1) / columns)
             VStack(alignment: .leading, spacing: 4) {
                 Text("Phases").font(.footnote.weight(.semibold)).foregroundStyle(Theme.secondary)
-                Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 14, verticalSpacing: 5) {
-                    ForEach(data.phases.filter { !$0.name.isEmpty }) { phase in
-                        row(phase, data)
+                if columns > 1 {
+                    // Side by side, each phase on two lines: its name, then dates, weeks and hours under it.
+                    HStack(alignment: .top, spacing: 24) {
+                        ForEach(Array(stride(from: 0, to: named.count, by: perColumn)), id: \.self) { start in
+                            VStack(alignment: .leading, spacing: 6) {
+                                ForEach(named[start..<min(named.count, start + perColumn)]) { phase in
+                                    stacked(phase, data)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                        }
+                    }
+                } else {
+                    Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 14, verticalSpacing: 5) {
+                        ForEach(named) { phase in
+                            row(phase, data)
+                        }
                     }
                 }
             }
             .padding(.top, 4)
         }
+    }
+
+    private func stacked(_ phase: SeasonData.Phase, _ data: SeasonData) -> some View {
+        let now = store.today >= phase.first && store.today <= phase.last
+        let dates = Dates.short(phase.first) + " \u{2013} " + Dates.short(phase.last)
+        let weeks = "\(phase.weeks) week\(phase.weeks == 1 ? "" : "s")"
+        let hours = formatDuration(phase.seconds)
+        return HStack(alignment: .firstTextBaseline, spacing: 8) {
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(Theme.phase(phase.index, of: max(data.phases.count, 2)))
+                .frame(width: 14, height: 10)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(phase.name)
+                    .font(.subheadline.weight(now ? .bold : .semibold)).foregroundStyle(Theme.text)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text([dates, weeks, hours].joined(separator: " \u{00B7} "))
+                    .font(.footnote.monospacedDigit()).foregroundStyle(Theme.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(phase.name), \(dates), \(weeks), \(hours)\(now ? ", now" : "")")
+        .accessibilityIdentifier("season-phase-\(phase.index)")
     }
 
     private func row(_ phase: SeasonData.Phase, _ data: SeasonData) -> some View {
