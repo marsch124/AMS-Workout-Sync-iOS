@@ -104,7 +104,7 @@ struct SessionView: View {
                     }
 
                     if let label = w.waitingLabel {
-                        Text("Logged on this phone · " + label.lowercased()).font(.headline).foregroundStyle(Theme.today)
+                        Text("Logged on this phone · " + label.lowercased()).font(.headline).foregroundStyle(Theme.secondary)
                     }
                     if store.canLog, w.discipline.id != "rest" {
                         if w.state == .done {
@@ -248,7 +248,9 @@ struct SessionView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if store.workout(key) != nil {
-                    Button { sharing = true } label: { Glyph(name: "icon-share", size: 22) }
+                    Button { sharing = true } label: {
+                        HStack(spacing: 4) { Glyph(name: "icon-share", size: 22); Text("Send").font(.caption.weight(.semibold)) }
+                    }
                         .accessibilityLabel("Send it to somebody")
                 }
             }

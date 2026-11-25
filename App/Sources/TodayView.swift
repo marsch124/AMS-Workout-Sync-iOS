@@ -396,7 +396,7 @@ struct WaitingWarning: View {
             Text("Logging has not reached Dropbox").font(.headline).foregroundStyle(Theme.text)
             Text(text).font(.subheadline).foregroundStyle(Theme.secondary)
             Button(store.syncing ? "Sending…" : "Send it now") { store.syncNow() }
-                .font(.subheadline.weight(.semibold)).buttonStyle(.bordered).controlSize(.small).tint(Theme.danger)
+                .font(.subheadline.weight(.semibold)).buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.today)
                 .disabled(store.syncing)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

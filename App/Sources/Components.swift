@@ -93,7 +93,7 @@ struct SessionCard: View {
                     }
                     if !workout.planned.intensity.isEmpty { Pill(text: workout.planned.intensity) }
                     if workout.missed { Pill(text: "Missed", tint: Theme.danger) }
-                    if let label = workout.waitingLabel { Pill(text: label, tint: Theme.today) }
+                    if let label = workout.waitingLabel { Pill(text: label, tint: Theme.secondary) }
                     if cornerRoom == 0 {
                         PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(workout)))
                     }
@@ -247,9 +247,17 @@ struct ExtraCard: View {
                     // there. One that does not count shows nothing (his pick
                     // C1, 2026-09-30).
                     if extra.isTraining {
-                        MarkPill(icon: "icon-counts", spoken: "Counts as training")
+                        HStack(spacing: 4) {
+                            Glyph(name: "icon-counts", size: 15)
+                            Text("Counts as training").font(.caption.weight(.semibold))
+                        }
+                        .foregroundStyle(Theme.secondary)
+                        .padding(.horizontal, 9).padding(.vertical, 5)
+                        .background(Capsule().fill(Theme.surface2))
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Counts as training")
                     }
-                    if extra.pending { Pill(text: "Waiting to sync", tint: Theme.today) }
+                    if extra.pending { Pill(text: "Waiting to sync", tint: Theme.secondary) }
                     if cornerRoom == 0 {
                         PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(extra: extra)))
                     }

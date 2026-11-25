@@ -52,7 +52,7 @@ struct MoveView: View {
                                 store.move(workout, to: tomorrow)
                                 dismiss()
                             } label: {
-                                Text("+1").font(.caption.weight(.bold).monospacedDigit())
+                                Text("+1 day").font(.caption.weight(.bold).monospacedDigit())
                             }
                             .buttonStyle(.bordered).controlSize(.small).tint(Theme.today)
                             .accessibilityIdentifier("move-tomorrow")

@@ -80,6 +80,7 @@ enum Theme {
         // A moon, never the tick: the tick means done and nothing else
         // (his yes of 19 November 2026). The drawing is the icon library's "Night".
         case "rest": return "icon-rest"
+        case "race": return "icon-race"
         default: return "icon-other"
         }
     }

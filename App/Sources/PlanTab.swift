@@ -179,7 +179,7 @@ struct PlanTab: View {
                 Button { withAnimation(.easeInOut(duration: 0.12)) { range = r } } label: {
                     VStack(spacing: 1) {
                         Text(r.rawValue).font(.caption.weight(.semibold))
-                        Text("\(rows(r, view).count)").font(.title3.weight(.bold).monospacedDigit())
+                        Text("\(filterCount(r, view))").font(.title3.weight(.bold).monospacedDigit())
                     }
                     .frame(maxWidth: .infinity, minHeight: 50)
                     .foregroundStyle(chosen ? Theme.plan : Theme.secondary)
@@ -295,6 +295,12 @@ struct PlanTab: View {
      * about the plan, which an extra is never part of: it is logged at the
      * moment it is made.
      */
+    /* The number on a filter: All leaves rest days out, so the filters add up to the plan bar. */
+    private func filterCount(_ range: Range, _ view: PlanView) -> Int {
+        guard range == .all else { return rows(range, view).count }
+        return PlanOverview.countedInAll(disciplineIds: list(.all, view).map(\.discipline.id), extras: view.extras.count)
+    }
+
     private func rows(_ range: Range, _ view: PlanView) -> [Row] {
         let sessions = list(range, view).map(Row.session)
         guard range == .done || range == .all else { return sessions }
