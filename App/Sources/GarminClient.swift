@@ -144,4 +144,23 @@ actor GarminClient {
                                    restingDays: byDay.resting, stressDays: byDay.stress,
                                    bodyBatteryDays: bodyBatteryDays)
     }
+    /* The Body page's numbers: six small reads, any one of which may fail without losing the rest. */
+    func body(day: String) async throws -> BodyDay {
+        let now = Date()
+        let from = GarminMorning.addDays(day, -GarminBody.history)
+        let weekAgo = GarminMorning.addDays(day, -(GarminBody.shownDays - 1))
+        let nightDay = GarminMorning.morningDay(now: now)
+        let curve = try await tolerant("/wellness-service/wellness/bodyBattery/reports/daily", ["startDate": day, "endDate": day])
+        let workouts = try await tolerant("/activitylist-service/activities/search/activities",
+                                          ["startDate": day, "endDate": day, "limit": "99", "start": "0"])
+        let sleepRange = try await tolerant("/sleep-service/sleep/dailySleepSummariesByDate", ["startDate": weekAgo, "endDate": day])
+        let hrvNight = try await tolerant("/hrv-service/hrv/" + nightDay)
+        let hrvRange = try await tolerant("/hrv-service/hrv/daily/\(weekAgo)/\(day)")
+        let summaries = try await tolerant("/usersummary-service/v2/dailysummaries", ["startDate": from, "endDate": day])
+        return GarminBody.build(day: day, nightDay: nightDay, readAt: now,
+                                battery: GarminBody.battery(curve, activities: workouts, day: day, now: now),
+                                sleepDays: GarminBody.sleepDays(sleepRange),
+                                hrv: GarminMorning.hrv(hrvNight), hrvDays: GarminBody.hrvDays(hrvRange),
+                                summaries: GarminBody.summaryDays(summaries))
+    }
 }
