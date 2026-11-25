@@ -82,9 +82,15 @@ public struct PlanOrigin: Codable, Equatable {
     public var takenAt: Date
     public var sessions: Int
     public var extras: Int
+    /* Format 2: the last row the imported Extras sheet had; extras made in the app are numbered after it. Nil in an older book. */
+    public var extrasLastRow: Int? = nil
+    /* Format 2: SHA-256 of the frozen original workbook, filled by the Store. */
+    public var originalHash: String? = nil
 
-    public init(fileName: String, takenAt: Date, sessions: Int, extras: Int) {
+    public init(fileName: String, takenAt: Date, sessions: Int, extras: Int,
+                extrasLastRow: Int? = nil, originalHash: String? = nil) {
         self.fileName = fileName; self.takenAt = takenAt; self.sessions = sessions; self.extras = extras
+        self.extrasLastRow = extrasLastRow; self.originalHash = originalHash
     }
 }
 
@@ -129,7 +135,7 @@ public enum BookError: Error, LocalizedError, Equatable {
 public enum Applied: Equatable { case written, dropped }
 
 public struct PlanBook: Codable, Equatable {
-    public static let currentFormat = 1
+    public static let currentFormat = 2
     public static let appSheet = "App"
 
     public var format: Int = PlanBook.currentFormat
@@ -150,11 +156,15 @@ public struct PlanBook: Codable, Equatable {
     public var counter: Int = 0
     /* The entries already written in, by their ids: one that comes round again is not written twice. */
     public var applied: [String] = []
+    /* Format 2: the move log (a session moved from one day to another), so every device reads the same one. */
+    public var moves: [String: MoveRecord] = [:]
 
     public init(sessions: [Workout], extras: [ExtraRecord], zones: Zones?, weeks: [PlanWeek],
                 mapping: Mapping, origin: PlanOrigin) {
         self.sessions = sessions; self.extras = extras; self.zones = zones; self.weeks = weeks
         self.mapping = mapping; self.origin = origin
+        // A book taken in just now: every extra it holds is the workbook's own, so the line is its last row.
+        if self.origin.extrasLastRow == nil { self.origin.extrasLastRow = max(extras.map(\.row).max() ?? 1, 1) }
     }
 
     public init(from decoder: Decoder) throws {
@@ -186,9 +196,19 @@ public struct PlanBook: Codable, Equatable {
         removed = try c.decodeIfPresent([String: Date].self, forKey: .removed) ?? [:]
         counter = try c.decodeIfPresent(Int.self, forKey: .counter) ?? 0
         applied = try c.decodeIfPresent([String].self, forKey: .applied) ?? []
+        moves = try c.decodeIfPresent([String: MoveRecord].self, forKey: .moves) ?? [:]
         // A change kept for undoing holds a session as it was; its missed mark is settled the same way.
         for i in changes.indices {
             if let done = changes[i].undo?.results["done"] { changes[i].undo?.missed = normalise(done.text) == missedWord }
+        }
+        // Format 1 -> 2: nothing is stamped "now". What was logged takes the stamp the session had
+        // (it was the only one), and the line between imported and app-made extras is drawn.
+        if format < 2 {
+            for w in sessions where !w.results.isEmpty {
+                if let t = stamps[w.key], stamps["log:" + w.key] == nil { stamps["log:" + w.key] = t }
+            }
+            format = 2
+            if origin.extrasLastRow == nil { origin.extrasLastRow = extrasBoundary }
         }
     }
 
@@ -270,14 +290,16 @@ public struct PlanBook: Codable, Equatable {
         let edits = Plan.buildEdits(w, entry, mapping)
         if edits.isEmpty { return .dropped }
 
+        var movedDay = false, wroteLog = false
         for edit in edits {
             switch edit.field {
             case "date":
-                if case .date(let day) = edit.value, let key = dayKey(day) { w = w.on(day, key) }
+                if case .date(let day) = edit.value, let key = dayKey(day) { w = w.on(day, key); movedDay = true }
             case "weekday":
                 break
             default:
                 w.results[edit.field] = PlanBook.readBack(edit.value)
+                wroteLog = true
             }
         }
         w.loggedInSheet = Plan.isLogged(w.results)
@@ -287,7 +309,10 @@ public struct PlanBook: Codable, Equatable {
         w.pendingMove = nil
         sessions[i] = w
         sessions = PlanBook.inOrder(sessions)
-        stamps[w.key] = now
+        // Two sides, two marks: what was planned (the day) and what was logged (the boxes) are
+        // merged apart between devices, so a log never overwrites a change of plan, nor the reverse.
+        if movedDay { stamps[w.key] = now }
+        if wroteLog || !movedDay { stamps["log:" + w.key] = now }
         remember(queued.id)
         return .written
     }
