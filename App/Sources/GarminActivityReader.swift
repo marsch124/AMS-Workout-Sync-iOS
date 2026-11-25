@@ -118,9 +118,11 @@ final class GarminActivityReader: ObservableObject {
             let t = Double(i) / 150
             return Int(128 + 22 * sin(t * 9) * (0.4 + t) + 8 * t)
         }
-        let laps = (1...6).map { n in
-            GarminLap(number: n, metres: 1000, seconds: 300 + Double(n * 4), avgHr: Double(132 + n * 3),
-                      speedMps: sport == "swim" ? nil : 3.3 - Double(n) * 0.01, powerW: sport == "bike" ? Double(180 + n * 3) : nil)
+        let swim = sport == "swim"
+        let lapCount = Int(ProcessInfo.processInfo.environment["AMSWS_FAKE_LAPS"] ?? "") ?? (swim ? 12 : 6)
+        let laps = (1...lapCount).map { n in
+            GarminLap(number: n, metres: swim ? 100 : 1000, seconds: swim ? 104 + Double(n % 4) * 3 : 300 + Double(n * 4), avgHr: Double(132 + (n % 8) * 3),
+                      speedMps: swim ? nil : 3.3 - Double(n % 8) * 0.01, powerW: sport == "bike" ? Double(180 + (n % 8) * 3) : nil)
         }
         return GarminActivityDetail(activityId: 0, typeKey: sport == "swim" ? "lap_swimming" : "running", avgHr: 138, maxHr: 156,
                                     recording: GarminRecording(track: sport == "swim" ? [] : track, pulse: pulse, laps: laps))

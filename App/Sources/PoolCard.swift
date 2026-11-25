@@ -13,7 +13,10 @@ import WorkoutCore
 extension Workout {
     /* The session's own words read as a set: its sections first, its title when the sections hold no distance. */
     var swimSet: SwimSet {
-        var set = SwimSet.parse(sections: sections.map { ($0.label, $0.text) })
+        var set = SwimSet.parse(sections: sections
+            // The plan's own purpose and notes are words about the session, not steps of the set.
+            .filter { !["purpose", "why", "note", "notes"].contains($0.label.lowercased().trimmingCharacters(in: .whitespaces)) }
+            .map { ($0.label, $0.text) })
         if !set.hasDistance {
             let fromTitle = SwimSet.parse(title)
             if fromTitle.hasDistance { set = SwimSet(steps: fromTitle.steps + set.steps) }
@@ -42,7 +45,13 @@ struct PoolCardView: View {
     let title: String
     let set: SwimSet
     let close: () -> Void
-    @State private var current = 0
+    @State private var current: Int = {
+        #if DEBUG
+        return Int(ProcessInfo.processInfo.environment["AMSWS_POOL_STEP"] ?? "") ?? 0
+        #else
+        return 0
+        #endif
+    }()
 
     private var swim: Color { Theme.sport("swim") }
     private var last: Int { max(0, set.steps.count - 1) }
