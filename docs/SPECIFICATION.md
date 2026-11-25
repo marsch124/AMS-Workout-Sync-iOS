@@ -2136,7 +2136,7 @@ Version shown: 2.6 (82), 25 November 2026. The base is the released 2.5 (81). On
 ### B.2 The page (identifier `body-page`)
 
 * **Top line:** the day and when the numbers were read, "Wed 25 Nov · read 17:31".
-* **Head card "Body Battery"** (`body-hero`): filled with raspberry, white words. The number now (example 41) with the word "now"; beside it "Highest today 82" and, when there were workouts, "2 workouts took 27" (the points the day's workouts cost: the sum of the drains of the workouts whose cost Garmin gives, others are not counted). Under it the curve from midnight to now, ending at a white dot (now); the rest of the day stays empty, no dotted line. An hour scale 00 · 06 · 12 · 18 · 24, and each of today's workouts as a short solid white bar above the curve, as long as the workout lasted, with its words above it and a thin white line down from each end ("Run −18", "Swim −9"; the bar runs from the workout's `start` to its `end`; no lighter or pale band). A workout whose cost Garmin does not give (`drain` is nil) shows its name only.
+* **Head card "Body Battery"** (`body-hero`): filled with raspberry, white words. The number now (example 41) with the word "now"; beside it "Highest today 82" and, when there were workouts, "2 workouts took 27" (the points the day's workouts cost: the sum of the drains of the workouts whose cost Garmin gives, others are not counted). Under it the curve from midnight to now, ending at a white dot (now); the rest of the day stays empty, no dotted line. An hour scale 00 · 06 · 12 · 18 · 24, and each of today's workouts as a short solid white bar above the curve (until 2.6 a tap on it did nothing; since 2.7 it opens a page, see "New in 2.7"), as long as the workout lasted, with its words above it and a thin white line down from each end ("Run −18", "Swim −9"; the bar runs from the workout's `start` to its `end`; no lighter or pale band). A workout whose cost Garmin does not give (`drain` is nil) shows its name only.
 * **Four tiles**, each with the name in small capitals, the figure right beside its unit, one grey line and seven slim bars for the last seven days with the weekday letters under them:
 
 | Tile | Identifier | Figure | Grey line |
@@ -2150,7 +2150,7 @@ Version shown: 2.6 (82), 25 November 2026. The base is the released 2.5 (81). On
 * Lengths are written as everywhere in the app (`formatDuration`): "6h 10m", never "6 h 10".
 * **Sleep is shown only.** It never leads to a suggestion (the owner's own decision).
 * **Tap a tile** (`body-peek`): a small page with that instrument's seven days in numbers, newest first; title e.g. "Sleep · last 7 days"; the first row reads "Today" (for Sleep and HRV "Last night"); a day without data reads "no reading". Button Done (`body-peek-done`); on a Mac Escape closes it.
-* **Foot:** "Tap a tile for its 7 days in numbers." and "From your Garmin watch · shown only, it changes no plan."
+* **Foot** (until 2.6: "Tap a tile for its 7 days in numbers."; since 2.7 see "New in 2.7"): and "From your Garmin watch · shown only, it changes no plan."
 * **Between midnight and about 04:00** the curve can be empty (the day has only begun); sleep and HRV then still show the night before (`nightDay`).
 
 ### B.3 Empty states
@@ -2195,3 +2195,51 @@ It does not change any plan, make any suggestion (sleep least of all), write any
 ### B.10 Tests
 
 Small data tests for `BodyDay` and `GarminBody` (the readers, the workouts' costs, nil never 0). One screen test finds the Body page by `body-page`, its head card by `body-hero` and the four tiles by their identifiers.
+
+## New in 2.7 (83) — tap a workout on the Body page, yesterday's line
+
+Version shown: 2.7 (83), 25 November 2026. The base is the released 2.6 (82). Two additions to the Body page. Where the 2.6 section says otherwise (a tap on a workout does nothing; the old foot line; today's curve alone), this section is the newer. The page is still shown only: a tap writes nothing and changes no plan.
+
+### C.1 Tap a workout
+
+* **Before (until 2.6):** the workouts on the curve only showed; a tap did nothing. **Now:** tap a workout and a page opens.
+* **Tap area.** The workout's words, its bar, or anywhere in the column under them, at least **44 points** wide. Neighbouring workouts share the room: where two tap areas would overlap they are cut halfway between the two workouts.
+* **Identifiers.** `body-workout-0`, `body-workout-1`, … on the tap areas, in time order.
+* **What opens, in this order** (the first that matches wins):
+  1. **A planned session.** The plan has a session of that sport on that day: that session's page opens, right there on the Body page (the same session page as from Today), with the back arrow at the top left leading back to Body. Two workouts of one sport and two sessions of that sport on the day: the first workout opens the first session, the second the second.
+  2. **An extra.** Otherwise, an extra of that kind on that day (for example a Walk extra for a walk from the watch): that extra's page opens, the same plate as when an extra is tapped on Today.
+  3. **A looser match.** Otherwise, a walk or hike opens that day's run session; a swim, ride or run opens that day's Brick or Race session.
+  4. **The facts plate.** Otherwise a small plate (`body-workout-plate`) with the workout's own facts from Garmin: its name as the title (example "Morning run"), then "Started 06:45 · Lasted 1h 00m · Body Battery −17" (or "no cost from Garmin" when Garmin gives none), one grey line "Not in your plan and not among your extras for this day.", and Done (`body-workout-done`) at the top right; on a Mac Escape closes it.
+* **Same day only.** Only the same calendar day counts. A rest day never matches.
+* **The sport** is taken from Garmin's own sport name: swim, bike, run, strength, rowing, mobility (yoga, pilates, stretching), walk (walk or hike). Anything else is "other" and goes to the facts plate.
+* **Opens only.** The tap logs nothing, writes nothing and changes no plan.
+
+### C.2 Yesterday's line
+
+* **Before (until 2.6):** the card showed today's Body Battery only. **Now:** yesterday's Body Battery is drawn too, as a thin line across the whole 24 hours, behind today's curve, with no fill under it. Today's curve is unchanged: the thick white line with a soft fill; the white dot is now.
+* **Label.** At the top right of the card stands a short piece of the same line and the word "yesterday" (`body-yesterday`).
+* **Look.** <!-- LOOK27 --> A thin dark line, a deep plum, darker than the card.
+* **Why not pale and not dotted.** In this app pale already means "still to do" and dotted already means "an extra outside the plan", so yesterday's line is neither.
+* **No readings.** A day without yesterday's readings (watch not worn, or the first day) shows no second line and no word "yesterday".
+* **Read.** One more small read from Garmin: yesterday's curve. **Kept.** Yesterday's curve cannot change any more, so it is read once a day and then kept on the device. The rule "at most one read in half an hour, pull down to read now" is unchanged. The readings are cut to yesterday's own 24 hours. Still shown only; nothing is written to Garmin.
+
+### C.3 The foot of the page
+
+Before: "Tap a tile for its 7 days in numbers." Now: "Tap a workout or a tile for more." The second line is unchanged: "From your Garmin watch · shown only, it changes no plan."
+
+### C.4 Identifiers (new)
+
+`body-workout-0`, `body-workout-1`, … (tap areas, in time order); `body-yesterday` (the word on the card); `body-workout-plate` and `body-workout-done` (the facts plate and its Done button).
+
+### C.5 Signs added
+
+* A white bar over the curve = one of today's workouts; tap it to open its session, its extra or its facts.
+* A thin line behind today's curve with the word "yesterday" = yesterday's Body Battery, for comparison only; neither pale nor dotted (reasons in C.2).
+
+### C.6 Version history
+
+* 2.7 (83), 25 November 2026: tap a workout on the Body page; yesterday's line; the new foot line.
+
+### C.7 Tests
+
+`BodyTapTests` (data): the matching order (session, extra, looser match, facts plate), the same-day rule, and the shared tap room (areas cut halfway between neighbours). `BodyDayTests` (data): yesterday's readings are cut to yesterday's 24 hours. One screen test finds a tap area by `body-workout-0`.
