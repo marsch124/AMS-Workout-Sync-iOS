@@ -7,6 +7,7 @@ import WorkoutCore
  */
 struct PlanChangesView: View {
     @EnvironmentObject var store: Store
+    @State private var undoing: PlanChange?
 
     var body: some View {
         ScrollView {
@@ -26,6 +27,15 @@ struct PlanChangesView: View {
         .background(Theme.bg.ignoresSafeArea())
         .navigationTitle("Changes to the plan")
         .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog("Undo this change?", isPresented: Binding(get: { undoing != nil }, set: { if !$0 { undoing = nil } }), titleVisibility: .visible) {
+            Button("Undo", role: undoing?.kind == "add" ? .destructive : nil) {
+                if let c = undoing { store.undoChange(c.id) }
+                undoing = nil
+            }
+            Button("Keep it", role: .cancel) { undoing = nil }
+        } message: {
+            if undoing?.kind == "add" { Text("The session is taken out of the plan again.") }
+        }
     }
 
     private func kindWord(_ kind: String) -> String {
@@ -45,11 +55,11 @@ struct PlanChangesView: View {
                     .font(.caption).foregroundStyle(Theme.secondary)
                 Spacer(minLength: 0)
                 if c.undone {
-                    Text("Taken back").font(.caption.weight(.semibold)).foregroundStyle(Theme.secondary)
+                    Text("Undone").font(.caption.weight(.semibold)).foregroundStyle(Theme.secondary)
                         .accessibilityIdentifier("change-undone-\(index)")
                 } else {
-                    Button("Take back") { store.undoChange(c.id) }
-                        .settingsButton(tint: Theme.today)
+                    Button("Undo") { undoing = c }
+                        .settingsButton(tint: c.kind == "add" ? Theme.danger : Theme.today)
                         .accessibilityIdentifier("change-undo-\(index)")
                 }
             }
