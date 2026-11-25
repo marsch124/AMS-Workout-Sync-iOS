@@ -1,0 +1,25 @@
+AMS Triathlon Training 2.8 (84) - what to test
+
+This version has forty-one new things. Please try these ten first. Say what you saw if anything looks wrong.
+
+1. Reminders. Settings > Reminders. Switch on the evening reminder, the Sunday notice and the missed-session question. Press Send a test now. Next day, see whether the evening notice names tomorrow's session, and whether Skip it, Move to today and It is done each open the app and do the right thing.
+
+2. Weather and daylight. Open Today on a day with an outdoor session. iOS asks for your place once. Look for the grey line with temperature, wind, rain and "Light until". Settings > Weather switches it off.
+
+3. Away. Settings > Your plan > Away. Say you are away for a week with no pool. Look for the grey chip on swims, the grey line on Today, and whether a swap card comes. Does the card read plainly?
+
+4. Body. Look for Body Battery · last 7 days, "Charged +… overnight", the calm line, the grey "normal" box behind HRV and pulse, the 7 days / 4 weeks / 12 weeks switch, the Steps and Intensity minutes tiles, and the Share button.
+
+5. From your watch. Open a done run or ride (with your Garmin key saved): route, pulse, Laps and Last time. Check that the numbers match Garmin Connect.
+
+6. Race page. Settings > Race and kit > Race. Type your times, add a fuel row, tick the kit list. Drag the handles (three lines) with your finger, and on the Mac with the pointer.
+
+7. Notes beside a log. Log a brick, a long session and a swim: brick times, Stomach OK?, a niggle, open-water notes. Then look at Progress for the Niggles card and at Fuel notes.
+
+8. Claude. On Sunday evening, Your week with Claude on Today. Also Ask about your plan. Do the five lines read calmly, and does a real answer pass the app's check? Costs count toward the 5 US dollars.
+
+9. Siri, Spotlight and keys. Say "What's my session today in Triathlon" and "Log today's run as done in Triathlon". Search for a session in Spotlight. On an iPad or Mac try Command N, the arrows, Command T, Space on a session and Command F.
+
+10. Print and PDF. Print a week and a month from the Sessions page, and make Report as PDF on the Progress month card. Is the page full and readable?
+
+Only your own devices can prove these, so please try them: Siri and Spotlight, the hardware keys, real notices and their three buttons, the location question and live weather, Garmin's real answers (route, laps, zones, steps), dragging with a real finger and pointer, the shelf meeting between two devices through iCloud (favourites, away, gear and race page on the iPhone and the Mac), printing and the PDFs, and Claude's real answers.
