@@ -97,7 +97,7 @@ struct ThursdayRidesView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button(added > 0 ? "Done" : "Cancel") { dismiss() }.accessibilityIdentifier("rides-cancel")
+                Button(added > 0 ? "Done" : "Cancel") { dismiss() }.keyboardShortcut(.cancelAction).accessibilityIdentifier("rides-cancel")
             }
         }
         .safeAreaInset(edge: .bottom) {

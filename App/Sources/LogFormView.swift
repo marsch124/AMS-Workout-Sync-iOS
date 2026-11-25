@@ -88,7 +88,7 @@ struct LogFormView: View {
             .navigationTitle(adjusting ? "Adjust logged data" : "How did it go?")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
             }
             .safeAreaInset(edge: .bottom) {
                 // Never grey: the button that does the thing is always the

@@ -59,6 +59,21 @@ final class PlanBookTests: XCTestCase {
         XCTAssertEqual(book.draft(of: w.key)?.minutes, minutesBefore)
     }
 
+    /* A drop on the week board: only the day is new. The key stays, the session moves, one change is recorded. */
+    func testADropOnTheWeekBoardOnlyMovesTheDay() throws {
+        var book = try book()
+        let w = try XCTUnwrap(book.sessions.first { $0.discipline.id != "rest" && !$0.loggedInSheet })
+        var draft = try XCTUnwrap(book.draft(of: w.key))
+        let changesBefore = book.changes.count
+        draft.dayKey = PlanView.addDays(w.dayKey, 2)
+        let change = try XCTUnwrap(try book.change(w.key, to: draft))
+        let moved = try XCTUnwrap(book.session(w.key))
+        XCTAssertEqual(moved.dayKey, draft.dayKey)
+        XCTAssertEqual(moved.title, w.title)
+        XCTAssertEqual(book.changes.count, changesBefore + 1)
+        XCTAssertEqual(change.afterDay, draft.dayKey)
+    }
+
     func testASessionCanBeAddedLoggedAndRemoved() throws {
         var book = try book()
         let count = book.sessions.count

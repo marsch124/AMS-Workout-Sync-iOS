@@ -181,3 +181,20 @@ enum Dates {
     static func long(_ key: String) -> String { parseDayKey(key).map { long.string(from: $0) } ?? key }
     static func short(_ key: String) -> String { parseDayKey(key).map { short.string(from: $0) } ?? key }
 }
+
+/*
+ * The wide look (iPad and Mac): the colours of its two own pages and of the
+ * side list. Each is a light and a dark pair, so the page reads by day and by
+ * night. The Week page is blue because it is where the plan is changed
+ * (blue means that, everywhere); the Season page has its own warm amber.
+ */
+extension Theme {
+    static let week = plan
+    static let season = Color.dynamic(light: 0xB45309, dark: 0xF59E0B)
+    /* Today's column on the week board: a pale green that is a place, not a state. */
+    static let todayColumn = Color.dynamic(light: 0xDDEFE6, dark: 0x0F3A30)
+    /* A day column that is not today. */
+    static let dayColumn = Color.dynamic(light: 0xEBF1F1, dark: 0x132B2B)
+    /* The side list's panel; the chosen row's plate is Theme.surface. */
+    static let sidePanel = Color.dynamic(light: 0xE9EFEF, dark: 0x0F2828)
+}

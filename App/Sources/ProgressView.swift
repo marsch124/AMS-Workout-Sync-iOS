@@ -49,6 +49,7 @@ struct ProgressView: View {
                     }
                 }
                 .padding(.horizontal, 16).padding(.bottom, 32)
+                .readableWidth(820)
             }
             .background(Theme.bg.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
