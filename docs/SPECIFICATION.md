@@ -2,7 +2,7 @@
 
 > **Name note.** This app was called **Workout Sync** up to version 1.1 (72). From 1.2 (73) the shown name is **AMS Triathlon Training**. It is the same app: same bundle id `com.schabbauer.AMSWorkoutSync`, same URL scheme `amsworkoutsync://`, same repository. Source file names, the Xcode target and the Swift package still say "WorkoutSync" or "WorkoutCore". Where this document quotes a text the app shows, the quote is what the code says today (version 1.2 (73)); section 12.6 records the texts that were renamed in 1.2 and the places that keep the old word on purpose.
 
-This document describes the app **as the code is today** (2.5 build 81, 25 November 2026). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
+This document describes the app **as the code is today** (2.6 build 82, 25 November 2026). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
 
 Source layout:
 
@@ -1243,7 +1243,7 @@ Compiled **only in DEBUG** builds; none exists in a release build. Pass them as 
 | `AMSWS_FAKE_PHOTOS` | With a session key as value: creates two invented pictures for it if the index is empty | `Photos.swift` |
 | `AMSWS_FAKE_SPORT` | The sport those fake pictures carry (default run) | `Photos.swift` |
 | `AMSWS_CALENDAR` | Switches the Training calendar on at launch (if iOS already granted access) | `TrainingCalendar.swift` |
-| `AMSWS_TAB` | Opens on `today`, `plan`, `progress` or `settings` | `AMSWorkoutSyncApp.swift` |
+| `AMSWS_TAB` | Opens on `today`, `plan`, `body`, `progress` or `settings` (`body` since 2.6) | `AMSWorkoutSyncApp.swift` |
 | `AMSWS_LIST` | Opens Sessions on `Upcoming`, `Done`, `Missed` or `All` | `PlanTab.swift` |
 | `AMSWS_SESSION` | Overlays a session screen for this session key | `AMSWorkoutSyncApp.swift` |
 | `AMSWS_LOGFORM` | Opens the log form when a session screen appears | `SessionView.swift` |
@@ -1264,7 +1264,7 @@ Compiled **only in DEBUG** builds; none exists in a release build. Pass them as 
 | `AMSWS_RIDES` | 2.1: `1` opens "Thursday rides" | settings screens |
 | `AMSWS_GARMIN` | 2.1: `1` opens a session with the Garmin card | session screens |
 | `AMSWS_FEEL` | 1.2: `1` to `5` answers this morning's question with that face; `week` fills the thirteen days before today (pattern 3 4 4 2 3 5 4 3 · 4 2 3 4, one day left unanswered) so the Mornings bars have something to draw | `Diary.swift` |
-| `AMSWS_SIDE` | 2.2: `today`, `plan`, `sessions`, `progress` or `settings` opens the wide look on that row | `WideRoot.swift` |
+| `AMSWS_SIDE` | 2.2: `today`, `plan`, `sessions`, `body` (2.6), `progress` or `settings` opens the wide look on that row | `WideRoot.swift` |
 | `AMSWS_PLAN` | 2.2: `week`, `month` or `year` opens the Plan page on that view | `WideRoot.swift` |
 | `AMSWS_DEVICE` | 2.2: `phone`, `ipad` or `mac` fakes the kind of device (screens and tests on any simulator) | `Device.swift` |
 | `AMSWS_FAKE_CLOUD` | 2.2: a folder path used as the app's iCloud folder (`Sync/` is made inside it); iCloud is also switched on in a run that has `AMSWS_FILE` or `AMSWS_RESET`, which otherwise run without iCloud; the quiet look is every 3 seconds instead of 30 | `PlanCloud.swift` |
@@ -1687,7 +1687,7 @@ An iPad or a Mac with no plan of its own has no Excel, no Dropbox and nothing to
 
 **When.** `horizontalSizeClass == .regular` and the device is not an iPhone (an iPhone on its side keeps the phone look). `AMSWorkoutSyncApp` then shows `WideRoot` instead of the three-tab bar. Pages inside are held to a reading width of 680 points where they are text (`readableWidth`; Today and Sessions 760).
 
-**The side list** (216 points wide, left): the heading "Triathlon" and **five** rows in order, each word in its part's colour (Today green, Plan blue = the plan's blue, Sessions blue, Progress purple, Settings grey), identifiers `side-today`, `side-plan`, `side-sessions`, `side-progress`, `side-settings`. There is no separate Week page and no separate Season page: both are on Plan. The row open has a pale box and the selected trait. The app opens on Today. Tapping the open row comes back to that row's first screen (as the phone's bar does); Progress has none. Keyboard (Mac): Command + 1 to 5. At the foot, the sync line (`sync-status`): a dot and its words, see W.4. Pull to refresh works on Today and Plan.
+**The side list** (216 points wide, left): the heading "Triathlon" and **five** rows in order, each word in its part's colour (Today green, Plan blue = the plan's blue, Sessions blue, Progress purple, Settings grey), identifiers `side-today`, `side-plan`, `side-sessions`, `side-progress`, `side-settings`. There is no separate Week page and no separate Season page: both are on Plan. The row open has a pale box and the selected trait. The app opens on Today. Tapping the open row comes back to that row's first screen (as the phone's bar does); Progress has none. Keyboard (Mac): Command + 1 to 5 (2.6: to 6, see section B). At the foot, the sync line (`sync-status`): a dot and its words, see W.4. Pull to refresh works on Today and Plan.
 
 **Plan** (`PlanPage.swift`; `SideRow.plan`). One scrolling page, top to bottom:
 
@@ -2122,3 +2122,76 @@ How this works, What's new 2.2 and this specification had wrong or old sentences
 ### Tests
 
 New small data tests: Thursday rides (`ThursdayRidesTests`), the taken-over morning moment (`NeighbourNotesTests`), an Excel-days entry (`PlanBookTests`), `trainingCount` (`PlanOverviewCountTests`), `doneAhead` (`PlanOverviewTests`). `ReadingTests` follows the new `formatDuration` ("0m" for nothing). No new screen test; the existing ones find their things by the same identifiers.
+
+## New in 2.6 (82) — the Body page
+
+Version shown: 2.6 (82), 25 November 2026. The base is the released 2.5 (81). One new page, **Body**, and one behind-the-scenes fix. Where an older section says otherwise (four tabs, five rows in the side list), this section is the newer. The page is shown only: it changes no plan and makes no suggestion.
+
+### B.1 Where it sits
+
+* **iPhone.** A fifth tab in the middle of the bar. Before: Today · Sessions · Progress · Settings (`today`, `plan`, `progress`, `settings`). Now: Today · Sessions · Body · Progress · Settings, the new id `body`. Each cell is a fifth of the bar. Identifier `tab-body`. Pressing the Body tab again does nothing special.
+* **iPad and Mac.** Its own row in the side list. Before: Today · Plan · Sessions · Progress · Settings. Now: Today · Plan · Sessions · Body · Progress · Settings (six rows). Identifier `side-body`. On a Mac, Command + 1 to 6 choose a row.
+* **Mark and colour.** A heart with a pulse line. The colour is raspberry, a deep pink, for the page's heading, its head card and its tab; no other part of the app uses it. (Exact values: see the code, `Theme`.)
+
+### B.2 The page (identifier `body-page`)
+
+* **Top line:** the day and when the numbers were read, "Wed 25 Nov · read 17:31".
+* **Head card "Body Battery"** (`body-hero`): filled with raspberry, white words. The number now (example 41) with the word "now"; beside it "Highest today 82" and, when there were workouts, "2 workouts took 27" (the points the day's workouts cost: the sum of the drains of the workouts whose cost Garmin gives, others are not counted). Under it the curve from midnight to now, ending at a white dot (now); the rest of the day stays empty, no dotted line. An hour scale 00 · 06 · 12 · 18 · 24, and each of today's workouts as a short solid white bar above the curve, as long as the workout lasted, with its words above it and a thin white line down from each end ("Run −18", "Swim −9"; the bar runs from the workout's `start` to its `end`; no lighter or pale band). A workout whose cost Garmin does not give (`drain` is nil) shows its name only.
+* **Four tiles**, each with the name in small capitals, the figure right beside its unit, one grey line and seven slim bars for the last seven days with the weekday letters under them:
+
+| Tile | Identifier | Figure | Grey line |
+|---|---|---|---|
+| Sleep | `body-tile-sleep` | last night's time, "6h 10m" | "7-night average 5h 50m" |
+| HRV | `body-tile-hrv` | last night's value, "48 ms" | "your normal 42–55"; while Garmin gives no range yet (`stillLearning`), "still learning your normal" (Garmin needs about three weeks of nights) |
+| Resting pulse | `body-tile-resting` | today's, "52 beats" | "your normal 51" |
+| Stress | `body-tile-stress` | today's average, "31 average" | "highest today 74" |
+
+* All seven bars are the same full raspberry (no paler bars). A day without a reading shows a small grey dash "–" where its bar would be, never a zero (`DayValue.value` is nil). Today's bar is the last one; its weekday letter is bold and green (`Theme.today`, today's green everywhere).
+* Lengths are written as everywhere in the app (`formatDuration`): "6h 10m", never "6 h 10".
+* **Sleep is shown only.** It never leads to a suggestion (the owner's own decision).
+* **Tap a tile** (`body-peek`): a small page with that instrument's seven days in numbers, newest first; title e.g. "Sleep · last 7 days"; the first row reads "Today" (for Sleep and HRV "Last night"); a day without data reads "no reading". Button Done (`body-peek-done`); on a Mac Escape closes it.
+* **Foot:** "Tap a tile for its 7 days in numbers." and "From your Garmin watch · shown only, it changes no plan."
+* **Between midnight and about 04:00** the curve can be empty (the day has only begun); sleep and HRV then still show the night before (`nightDay`).
+
+### B.3 Empty states
+
+* **No Garmin key** (`body-connect`): "Connect your Garmin key to see your body's numbers here." and a full-colour button "Open Garmin settings" that opens the Garmin settings page right there on the Body page (the same page as Settings → Garmin).
+* **A key but no numbers yet** (`body-empty`): "No numbers from Garmin yet. Wear the watch, sync it in Garmin Connect, then pull down here."
+
+### B.4 Where the numbers come from
+
+* **The key** is the personal key saved in Settings → Garmin, the same key the morning numbers on Today use (one key, two places; nothing new is stored for the key).
+* **The calls** are `GarminClient.body(day:)` in `App/Sources/GarminClient.swift`: six small reads, any one of which may fail without losing the rest: the day's Body Battery report (`/wellness-service/wellness/bodyBattery/reports/daily`, with its activity events for the workouts' costs), the day's workouts (`/activitylist-service/activities/search/activities`), the sleep range, the HRV night and the HRV range, and the daily summaries (resting pulse, stress). Read only; nothing is written to Garmin.
+* **The model** is `BodyDay` in `Core/Sources/WorkoutCore/BodyDay.swift`: `day` ("2026-11-25"), `readAt`, and the optional parts `battery` (`points`, `workouts` with `id`, `name`, `type`, `start`, `end`, `drain`; `now`, `highest`, `lowest`), `sleep` (`lastNight` in hours, `nights`), `hrv` (`lastNight`, `rangeLow`, `rangeHigh`, `stillLearning`, `days`), `resting` (`today`, `normal`, `days`) and `stress` (`average`, `highest`, `days`). `DayValue` is a day with a value or nil. `GarminBody.build` puts the pieces together; it forgives: a missing piece is nil or an empty list, never 0, never NaN. `GarminBody.drain` is the Board's rule for a workout's cost: Garmin's own activity event within 10 minutes of the start, else the reading at the start minus the reading at the end. `GarminBody.shownDays` = 7; the pulse's own normal looks back the same fortnight as the morning's.
+* **When:** read when the page opens, at most once in 30 minutes; pull down to read now.
+* **Kept on the device:** the last reading is saved in `garmin-body.json` (`GarminBodyFile`: the `BodyDay` and the time of the last try), so the page shows at once. Numbers only; the key is not in it. Nothing leaves the device except the question to Garmin.
+* **The Mac Board keeps running.** The page shows four of the AMS Garmin Board's instruments (Sleep, HRV, Resting pulse, Stress) and its Body Battery, in the app's own look; it does not replace it.
+
+### B.5 Switches and identifiers
+
+* **Identifiers (new):** `tab-body`, `side-body`, `body-page`, `body-hero`, `body-tile-sleep`, `body-tile-hrv`, `body-tile-resting`, `body-tile-stress`, `body-peek`, `body-peek-done`, `body-connect`, `body-empty`.
+* **DEBUG switches (new):** `AMSWS_FAKE_GARMIN` also gives the Body page invented numbers (see 14.6); `AMSWS_TAB=body` opens the iPhone on Body; `AMSWS_SIDE=body` opens the wide layout on Body.
+
+### B.6 Signs added
+
+* Raspberry = the Body page (heading, head card, tab). A heart with a pulse line = Body (the small plain heart on Log details still means "Apple Health holds numbers from your watch").
+* A white bar over the Body Battery curve, with its words above it and a thin white line down from each end = a workout. (Lighter and pale keep their one meaning, still to do.)
+* The white dot at the end of the curve = now; the rest of the day stays empty.
+* A small grey dash "–" in a tile's row of bars = no reading that day.
+* A bold green weekday letter under a tile's last bar = today (green is today everywhere).
+
+### B.7 Behind the scenes
+
+GitHub's test run (`.github/workflows/tests.yml`) gives up on a test machine that never starts after 20 minutes (before: 30).
+
+### B.8 Version history
+
+* 2.6 (82), 25 November 2026: the Body page; the key in Settings → Garmin feeds Today's morning line and Body; the test run's start-up limit 20 minutes.
+
+### B.9 What 2.6 deliberately does not do
+
+It does not change any plan, make any suggestion (sleep least of all), write anything to Garmin, or replace the Mac's AMS Garmin Board.
+
+### B.10 Tests
+
+Small data tests for `BodyDay` and `GarminBody` (the readers, the workouts' costs, nil never 0). One screen test finds the Body page by `body-page`, its head card by `body-hero` and the four tiles by their identifiers.
