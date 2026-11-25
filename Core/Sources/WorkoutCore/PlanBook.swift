@@ -112,7 +112,7 @@ public enum BookError: Error, LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .noSession(let title): return "\u{201C}\(title)\u{201D} is no longer in the plan."
-        case .noExtra(let label): return "That \(label) is no longer among the extra activities."
+        case .noExtra(let label): return "That \(label) is no longer among your extra workouts."
         case .badDay(let key): return "\u{201C}\(key)\u{201D} is not a day."
         case .nothingToUndo: return "There is nothing to take back."
         }

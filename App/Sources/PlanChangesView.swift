@@ -13,7 +13,7 @@ struct PlanChangesView: View {
             let changes = store.planChanges
             VStack(alignment: .leading, spacing: 8) {
                 if changes.isEmpty {
-                    Text("No changes yet. Change a session with the Change button on its page.")
+                    Text("No changes yet. Open a session and tap Change.")
                         .font(.callout).foregroundStyle(Theme.secondary)
                         .accessibilityIdentifier("changes-empty")
                 }

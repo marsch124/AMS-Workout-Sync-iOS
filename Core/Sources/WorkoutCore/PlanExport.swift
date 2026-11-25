@@ -19,7 +19,7 @@ public enum PlanExport {
         public var errorDescription: String? {
             switch self {
             case .doesNotMatch(let why):
-                return "The spreadsheet copy did not read back the same as the plan in the app (\(why.prefix(3).joined(separator: "; "))). It was not saved."
+                return "The spreadsheet copy did not match the plan in the app (\(why.prefix(3).joined(separator: "; "))). It was not saved."
             }
         }
     }
