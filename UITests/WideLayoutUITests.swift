@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 
 /*
@@ -9,6 +10,11 @@ import XCTest
  */
 final class WideLayoutUITests: XCTestCase {
     override func setUp() { continueAfterFailure = false }
+
+    /* The side list exists only on an iPad: on an iPhone simulator (GitHub's run) these tests are skipped, not failed. */
+    private func needsIPad() throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "The wide look is tested on an iPad simulator")
+    }
 
     private func launch(side: String? = nil, planView: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
@@ -24,7 +30,8 @@ final class WideLayoutUITests: XCTestCase {
     }
 
     /* The five rows and the sync words; the Plan page's week as seven day columns, Monday to Sunday. */
-    func testPlanWeekShowsTheWeek() {
+    func testPlanWeekShowsTheWeek() throws {
+        try needsIPad()
         let app = launch(side: "plan", planView: "week")
         for row in ["today", "plan", "sessions", "progress", "settings"] {
             XCTAssertTrue(app.buttons["side-\(row)"].waitForExistence(timeout: 15), "side-\(row) is missing")
@@ -46,7 +53,8 @@ final class WideLayoutUITests: XCTestCase {
     }
 
     /* The month as a calendar; the switch moves between the three views; a bar chooses its week. */
-    func testPlanMonthYearAndTheSeasonBars() {
+    func testPlanMonthYearAndTheSeasonBars() throws {
+        try needsIPad()
         let app = launch(side: "plan", planView: "month")
         XCTAssertTrue(app.descendants(matching: .any)["month-grid"].waitForExistence(timeout: 15), "no month grid")
         XCTAssertTrue(app.descendants(matching: .any)["month-day-2026-09-16"].exists, "no cell for today")
@@ -69,7 +77,8 @@ final class WideLayoutUITests: XCTestCase {
     }
 
     /* On a wide window (an iPad on its side) Progress stands in two columns. */
-    func testProgressStandsInTwoColumns() {
+    func testProgressStandsInTwoColumns() throws {
+        try needsIPad()
         XCUIDevice.shared.orientation = .landscapeLeft
         let app = launch(side: "progress")
         XCTAssertTrue(app.descendants(matching: .any)["progress-two-columns"].waitForExistence(timeout: 15),
