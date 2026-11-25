@@ -19,6 +19,9 @@ settings:
 packages:
   WorkoutCore:
     path: Core
+  # TODO main agent: pin to the pushed revision (url: https://github.com/marsch124/AMS-Icons, revision: <hash>) before release
+  AMSIcons:
+    path: ../../AMS-Icons
 targets:
   AMSWorkoutSync:
     type: application
@@ -38,6 +41,7 @@ targets:
         com.apple.developer.ubiquity-container-identifiers: [iCloud.com.schabbauer.AMSWorkoutSync]
     dependencies:
       - package: WorkoutCore
+      - package: AMSIcons
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.schabbauer.AMSWorkoutSync
