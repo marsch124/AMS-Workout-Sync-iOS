@@ -112,6 +112,13 @@ struct RootView: View {
                 NavigationStack { ZonesView() }
             }
             // Screen walks: Settings → Extra activities, or the first extra's own screen.
+            // Garmin's morning numbers: the settings page, or the plate with invented numbers.
+            if ProcessInfo.processInfo.environment["AMSWS_GARMIN_PAGE"] != nil {
+                NavigationStack { GarminSettingsView() }.environmentObject(store)
+            }
+            if ProcessInfo.processInfo.environment["AMSWS_MORNING_PLATE"] != nil {
+                MorningNumbersView(numbers: GarminReader.invented(day: store.today), today: store.today)
+            }
             if ProcessInfo.processInfo.environment["AMSWS_EXTRAS"] != nil {
                 NavigationStack { ExtrasListView() }
             }

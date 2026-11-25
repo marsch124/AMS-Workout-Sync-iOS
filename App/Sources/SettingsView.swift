@@ -143,6 +143,9 @@ struct SettingsView: View {
                     SectionHeading(text: "Apple Health")
                     HealthSettings()
 
+                    SectionHeading(text: "Garmin")
+                    GarminSettingsEntry()
+
                     SectionHeading(text: "Calendar").id("calendar")
                     if Device.isPhone {
                         CalendarSettings()
