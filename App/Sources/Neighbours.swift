@@ -108,12 +108,14 @@ final class Neighbours: ObservableObject {
         }
         let own = Diary.shared.feel.answer(on: day)
         // The marker says which day's answer in the diary came from the notes, not from this app.
-        let marked = UserDefaults.standard.string(forKey: Self.takenOverKey) == day
+        // An answer he gave in this app on another device may have replaced it since (a merge leaves no "from"): that one stays.
+        let marked = UserDefaults.standard.string(forKey: Self.takenOverKey) == day && Diary.shared.feelFrom[day] != nil
         let sameAsTheirs = own != nil && notes?.feel?.day == day && notes?.feel?.from != "training"
             && notes?.feel?.value == own?.rawValue
         if let taken = NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: own, today: day,
                                                    ownAnswerWasTakenOver: marked || sameAsTheirs) {
-            Diary.shared.setFeel(taken, on: day, from: notes?.feel?.from)
+            // Marked with the note's own time, not now: an answer he gave later in this app on another device stays newer.
+            Diary.shared.setFeel(taken, on: day, from: notes?.feel?.from, at: NeighbourRules.takenOverMoment(notes?.feel))
             UserDefaults.standard.set(day, forKey: Self.takenOverKey)
         } else if sameAsTheirs {
             UserDefaults.standard.set(day, forKey: Self.takenOverKey)

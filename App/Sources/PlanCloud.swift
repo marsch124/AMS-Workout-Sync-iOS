@@ -527,7 +527,7 @@ final class PlanCloud: ObservableObject {
             case .success(let book)?:
                 guard store.adoptFromCloud(book) || store.adoptOverOldWorkbook(book) else { return .waiting }
                 let from = devices.contains { $0.kind == Device.Kind.iPhone.rawValue && $0.id != Device.id } ? "your iPhone" : "iCloud"
-                planState = .arrived(sessions: book.sessions.count, lastChange: book.stamps.values.filter { $0.timeIntervalSince1970 > 1_600_000_000 }.max(), from: from)
+                planState = .arrived(sessions: book.trainingCount, lastChange: book.stamps.values.filter { $0.timeIntervalSince1970 > 1_600_000_000 }.max(), from: from)
                 showingArrival = true
                 Task { [weak self] in
                     try? await Task.sleep(nanoseconds: 2_000_000_000)

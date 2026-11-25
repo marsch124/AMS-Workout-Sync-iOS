@@ -196,6 +196,21 @@ public enum NeighbourRules {
     static func addDays(_ key: String, _ days: Int) -> String { PlanView.addDays(key, days) }
 
     /*
+     * When an answer taken over from the notes was given: the note's own time,
+     * never later than now (a clock ahead elsewhere), now when the note has no
+     * time that reads. So an answer he gave later in this app, on another
+     * device, still wins by its mark.
+     */
+    public static func takenOverMoment(_ feel: NeighbourFeel?, now: Date = Date()) -> Date {
+        guard let at = feel?.at else { return now }
+        let plain = ISO8601DateFormatter()
+        let fine = ISO8601DateFormatter()
+        fine.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        guard let when = plain.date(from: at) ?? fine.date(from: at) else { return now }
+        return min(when, now)
+    }
+
+    /*
      * He answered in another app: this morning's answer for the diary. Taken
      * when the diary holds no answer for today. An answer that was itself
      * taken over from the notes (`ownAnswerWasTakenOver`) is not his own: the

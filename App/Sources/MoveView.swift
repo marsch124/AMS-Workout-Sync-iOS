@@ -114,7 +114,7 @@ struct MoveView: View {
             .background(Theme.bg.ignoresSafeArea())
             .navigationTitle("Move")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction) } }
             .confirmationDialog(swapTitle, isPresented: Binding(get: { swapWith != nil }, set: { if !$0 { swapWith = nil } }), titleVisibility: .visible) {
                 Button("Swap these two") {
                     if let other = swapWith { store.swap(workout, other) }

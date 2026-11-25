@@ -26,7 +26,7 @@ struct ZonesView: View {
                     let known = z.current.filter { !$0.value.isEmpty }
                     SectionHeading(text: "In use")
                     if known.isEmpty {
-                        Card { Text("No test result is entered in the sheet yet.").font(.body).foregroundStyle(Theme.secondary) }
+                        Card { Text(store.planLivesHere ? "No test result is entered yet." : "No test result is entered in the sheet yet.").font(.body).foregroundStyle(Theme.secondary) }
                     } else {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                             ForEach(known, id: \.label) { row in
@@ -59,7 +59,9 @@ struct ZonesView: View {
                             }
                         }
                     }
-                    Text("Read from the sheet " + z.sheet + " in your workbook. The app never works a zone out itself.")
+                    Text(store.planLivesHere
+                         ? "Worked out from your latest test result."
+                         : "Read from the sheet " + z.sheet + " in your workbook. The app never works a zone out itself.")
                         .font(.caption).foregroundStyle(Theme.secondary)
                 } else {
                     Card {

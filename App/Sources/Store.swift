@@ -465,7 +465,9 @@ final class Store: ObservableObject {
         #endif
         // While the plan is being written back into Excel nothing may change under it.
         if home == .app { return !goingBack && book != nil }
-        return dropboxPath != nil && Dropbox.shared.isConnected
+        // An iPad or Mac never held the Excel plan: what it logged there would be lost when it takes
+        // iCloud's plan (2.4.1, within moments). Only the iPhone logs into the workbook.
+        return Device.isPhone && dropboxPath != nil && Dropbox.shared.isConnected
     }
 
     func isWaiting(_ key: String) -> Bool { queue.contains { $0.workoutKey == key } }
@@ -697,9 +699,13 @@ final class Store: ObservableObject {
     /* For three weeks after the switch Excel can become the home again. */
     var canGoBackUntil: Date? { switchedAt.map { $0.addingTimeInterval(21 * 86400) } }
     private var goBackWindowOpen: Bool { home == .app && Device.isPhone && (canGoBackUntil.map { $0 > Date() } ?? false) }
-    /* Closed once an iPad or Mac uses the plan too: going back would leave them with a plan nobody writes. */
-    var canGoBack: Bool { goBackWindowOpen && dropboxPath != nil && Dropbox.shared.isConnected && !cloud.otherDevicesUsePlan }
-    var goBackClosed: Bool { goBackWindowOpen && cloud.otherDevicesUsePlan }
+    /* Closed once an iPad or Mac uses the plan too (for good, not only while their files are in view):
+       going back would leave them with a plan nobody writes. */
+    var canGoBack: Bool { goBackWindowOpen && dropboxPath != nil && Dropbox.shared.isConnected && !planIsShared && cloudChecked }
+    var goBackClosed: Bool { goBackWindowOpen && planIsShared }
+    /* Not yet known whether an iPad or Mac uses the plan: iCloud not found, or no meeting finished since the app opened. */
+    var goBackWaits: Bool { goBackWindowOpen && !planIsShared && !cloudChecked }
+    private var cloudChecked: Bool { cloud.root != nil && cloud.lastMet != nil }
 
     /* Counts every plan put on screen, so a meeting can tell the plan changed while it was joining. */
     private(set) var bookVersion = 0
@@ -760,10 +766,15 @@ final class Store: ObservableObject {
         for old in all.dropLast(30) { try? fm.removeItem(at: old) }
     }
 
-    /* The newest safety copy that still opens. */
+    /* The newest safety copy that still opens: by the moment it was made, as the list orders them
+       ("plan-<day>-before-0912" is newer than the start-of-day "plan-<day>", though it sorts before it by name). */
     private func newestSafetyCopy() -> (book: PlanBook, data: Data, day: String)? {
         let names = ((try? FileManager.default.contentsOfDirectory(atPath: backupsURL.path)) ?? [])
-            .filter { $0.hasPrefix("plan-") && $0.hasSuffix(".json") }.sorted().reversed()
+            .filter { $0.hasPrefix("plan-") && $0.hasSuffix(".json") }
+            .sorted {
+                let a = Store.copyMoment(String($0.dropFirst(5).dropLast(5))), b = Store.copyMoment(String($1.dropFirst(5).dropLast(5)))
+                return a != b ? a > b : $0 > $1
+            }
         for name in names {
             if let data = try? Data(contentsOf: backupsURL.appendingPathComponent(name)),
                let book = try? PlanBook.decoded(data) {
@@ -934,11 +945,17 @@ final class Store: ObservableObject {
               let original = try? Data(contentsOf: originalURL) else { return }
         goingBack = true
         homeProblem = nil
+        let startedAt = bookVersion
         Task {
             defer { self.goingBack = false }
             do {
                 let bytes = try PlanExport.workbook(book, template: original)
                 let there = try await Dropbox.shared.download(path)
+                // A meeting landed while the workbook was fetched: the Excel file is not touched with a plan that is no longer the one here.
+                guard self.bookVersion == startedAt else {
+                    self.homeProblem = "The plan changed while it was being written back. Nothing was switched; try again."
+                    return
+                }
                 // Already written back by an earlier try that was cut short: only the switch is left to do.
                 let alreadyThere = there.data == bytes
                 guard alreadyThere || there.data == original else {
@@ -1106,7 +1123,7 @@ final class Store: ObservableObject {
         guard let data = try? Data(contentsOf: copyURL(day)),
               let copy = try? PlanBook.decoded(data) else { return nil }
         let done = copy.sessions.filter { $0.discipline.id != "rest" && $0.loggedInSheet && !$0.missed }.count
-        return (copy.sessions.count, done, copy.changes.count)
+        return (copy.trainingCount, done, copy.changes.count)
     }
 
     /* Another device has met this plan in iCloud (now or ever): a copy put back then keeps what was logged since. */
@@ -1439,7 +1456,10 @@ final class Store: ObservableObject {
     func addSessions(_ drafts: [SessionDraft], why: String) -> Int {
         guard var book, !drafts.isEmpty else { return 0 }
         do {
-            for draft in drafts { try book.add(draft, why: why) }
+            // The Thursday rides have one name per week on every device: added on two at once, they are one ride.
+            for draft in drafts {
+                try book.add(draft, why: why, fixedKey: why == ThursdayRides.why ? ThursdayRides.key(for: draft) : nil)
+            }
             return save(book) ? drafts.count : 0
         } catch {
             lastProblem = error.localizedDescription

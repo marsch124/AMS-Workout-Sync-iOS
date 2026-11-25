@@ -95,9 +95,9 @@ final class Diary: ObservableObject {
     }
 
     /* One tap: this morning's answer. A second tap the same day replaces it. */
-    func setFeel(_ value: Feel, on day: String, from: String? = nil) {
+    func setFeel(_ value: Feel, on day: String, from: String? = nil, at: Date = Date()) {
         var doc = self.doc
-        doc.setFeel(value.rawValue, on: day, from: from)
+        doc.setFeel(value.rawValue, on: day, from: from, now: at)
         feel.set(value, on: day)
         stamps = doc.stamps
         feelFrom = doc.feelFrom

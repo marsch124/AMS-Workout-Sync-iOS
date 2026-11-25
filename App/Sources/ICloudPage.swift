@@ -202,13 +202,13 @@ struct TwoPlansView: View {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_GB")
         f.dateFormat = "EEE d MMM yyyy, HH:mm"
-        return "\(book.sessions.count) sessions, \(done(book)) done, last change \(f.string(from: last(book)))"
+        return "\(book.trainingCount) sessions, \(done(book)) done, last change \(f.string(from: last(book)))"
     }
 
     private func side(_ title: String, _ book: PlanBook, id: String, use: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
-            Text("\(book.sessions.count) sessions · \(Self.done(book)) done").font(.footnote).foregroundStyle(Theme.secondary)
+            Text("\(book.trainingCount) sessions · \(Self.done(book)) done").font(.footnote).foregroundStyle(Theme.secondary)
             Text("last change " + WaitingForPlanView.when(Self.last(book))).font(.footnote).foregroundStyle(Theme.secondary)
             Text("moved in " + SettingsView.dayMonthYear(book.origin.takenAt)).font(.footnote).foregroundStyle(Theme.secondary)
             Button(action: use) {

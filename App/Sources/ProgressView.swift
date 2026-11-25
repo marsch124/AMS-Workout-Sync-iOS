@@ -41,7 +41,9 @@ struct ProgressView: View {
                             fitness(p)
                             counts(p, mapping)
                         }
-                        Text("Worked out from the sessions in your workbook each time this screen is opened. Nothing here is stored in the plan, and nothing here writes to it — the totals and the chart on your Progress sheet remain the ones Excel keeps.")
+                        Text(store.planLivesHere
+                             ? "Worked out from your sessions each time this screen is opened. Nothing here is stored in the plan, and nothing here changes it."
+                             : "Worked out from the sessions in your workbook each time this screen is opened. Nothing here is stored in the plan, and nothing here writes to it — the totals and the chart on your Progress sheet remain the ones Excel keeps.")
                             .font(.caption).foregroundStyle(Theme.secondary)
                     } else {
                         EmptyCard(title: "Nothing loaded", text: "Choose your plan in Settings and this fills itself in.")
@@ -268,7 +270,7 @@ struct RoadCard: View {
                         .frame(width: geo.size.width, alignment: .leading)
                         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                         if road.started && road.through <= 1 {
-                            Rectangle().fill(Theme.text).frame(width: 2, height: 22)
+                            Rectangle().fill(Theme.today).frame(width: 2, height: 22)
                                 .offset(x: geo.size.width * road.through - 1)
                         }
                     }
@@ -665,6 +667,7 @@ struct SportCard: View {
 }
 
 struct MovesCard: View {
+    @EnvironmentObject var store: Store
     let s: Stats.Summary
     var body: some View {
         let lead: String = s.moved > 0
@@ -675,7 +678,9 @@ struct MovesCard: View {
                 Figure(value: "\(s.moved)", label: "moved and kept")
                 Figure(value: "\(s.movesMissed)", label: "missed")
             }
-            Text("Moving a session rewrites its date in the workbook, so the sheet keeps no record that it ever moved. This app remembers its own moves" +
+            Text(store.planLivesHere
+                 ? "Counted from this app's own list of moves" + (s.movesSince.map { " since " + Dates.short.string(from: $0) } ?? "") + ", kept on this device only."
+                 : "Moving a session rewrites its date in the workbook, so the sheet keeps no record that it ever moved. This app remembers its own moves" +
                  (s.movesSince.map { " since " + Dates.short.string(from: $0) } ?? "") + ", on this phone only. Anything rescheduled in Excel or in the web app is invisible here.")
                 .font(.caption).foregroundStyle(Theme.secondary)
         }

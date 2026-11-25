@@ -378,7 +378,13 @@ struct TodayView: View {
             let phase = view.phase(on: today)
             Text(phase.isEmpty ? "Today" : phase).font(.title3.weight(.bold)).foregroundStyle(Theme.today)
             Spacer()
-            if store.canLog && !store.planLivesHere { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else if !store.planLivesHere && !store.canLog { DropboxChip(action: goToSettings) }
+            if store.canLog && !store.planLivesHere { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) }
+            else if !store.planLivesHere && !Device.isPhone {
+                // An iPad or Mac does not log into the workbook; it takes the plan from iCloud by itself.
+                Text("The plan is on its way from iCloud").font(.caption).foregroundStyle(Theme.secondary)
+                    .accessibilityIdentifier("today-plan-on-its-way")
+            }
+            else if !store.planLivesHere && !store.canLog { DropboxChip(action: goToSettings) }
         }
         .padding(.top, 12)
     }

@@ -279,6 +279,11 @@ struct SettingsView: View {
             Text("Your iPad or Mac uses this plan too — a spreadsheet copy is the way out.")
                 .font(.footnote).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
                 .accessibilityIdentifier("plan-go-back-closed")
+        } else if store.goBackWaits {
+            // Until iCloud has been checked, an iPad or Mac may use this plan without the iPhone knowing.
+            Text("Going back to Excel is offered once iCloud has checked whether your iPad or Mac uses this plan too.")
+                .font(.footnote).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
+                .accessibilityIdentifier("plan-go-back-waits")
         }
         if let why = store.homeProblem {
             Text(why).font(.footnote).foregroundStyle(Theme.danger).accessibilityIdentifier("plan-problem")

@@ -28,6 +28,11 @@ public enum ThursdayRides {
         public let title: String
     }
 
+    /* The ride's name in the plan, the same on every device: "App!thu-<its Monday>". */
+    public static func key(for draft: SessionDraft) -> String {
+        PlanBook.appSheet + "!thu-" + PlanView.weekStart(draft.dayKey)
+    }
+
     /* One plan week, before and after, in minutes. */
     public struct WeekMinutes: Equatable, Identifiable {
         public var id: Int { number }

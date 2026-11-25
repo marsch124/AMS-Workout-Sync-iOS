@@ -134,4 +134,23 @@ final class ThursdayRidesTests: XCTestCase {
         for i in 0..<3 { w.append(PlanWeek(number: i + 1, monday: PlanView.addDays("2030-01-07", 7 * i), phase: phases[i], tag: tags[i])) }
         XCTAssertEqual(minutes(ThursdayRides.drafts(weeks: w, sessions: b.sessions, from: "2030-01-01")), [50, 30, 55])
     }
+
+    /* Two devices add the season's rides before iCloud has carried either set across: one ride per Thursday after the merge. */
+    func testTwoDevicesAddingTheRidesMakeOneRidePerThursday() throws {
+        let start = try book()
+        let w = weeks()
+        let drafts = ThursdayRides.drafts(weeks: w, sessions: start.sessions, changes: start.changes, from: "2030-01-01")
+        XCTAssertFalse(drafts.isEmpty)
+        var phone = start, pad = start
+        for d in drafts { try phone.add(d, why: ThursdayRides.why, fixedKey: ThursdayRides.key(for: d)) }
+        for d in drafts { try pad.add(d, why: ThursdayRides.why, fixedKey: ThursdayRides.key(for: d)) }
+        // Adding again on one device adds nothing.
+        let count = phone.sessions.count
+        for d in drafts { try phone.add(d, why: ThursdayRides.why, fixedKey: ThursdayRides.key(for: d)) }
+        XCTAssertEqual(phone.sessions.count, count)
+        let joined = try BookMerge.merged(phone, pad)
+        for d in drafts {
+            XCTAssertEqual(joined.sessions.filter { $0.dayKey == d.dayKey && ThursdayRides.holdsARide($0) }.count, 1, d.dayKey)
+        }
+    }
 }

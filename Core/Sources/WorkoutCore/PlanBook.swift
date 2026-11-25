@@ -284,7 +284,11 @@ public struct PlanBook: Codable, Equatable {
         // An entry that names a session means that session and no other: if it
         // has been taken out of the plan, the entry is refused rather than
         // written into a neighbour that happens to read alike.
-        let found = queued.workoutKey.isEmpty ? Sync.findWorkout(for: queued, in: sessions) : session(queued.workoutKey)
+        // An entry made in the Excel days names a row of the workbook as it was then: rows may have
+        // been put in since, so the row is used only if it is still the same session (sport, and day
+        // or wording), else the session is looked for nearby, else the entry waits with its reason.
+        let fromExcelDays = queued.createdAt < origin.takenAt
+        let found = queued.workoutKey.isEmpty || fromExcelDays ? Sync.findWorkout(for: queued, in: sessions) : session(queued.workoutKey)
         guard let found, let i = sessions.firstIndex(where: { $0.key == found.key }) else {
             throw BookError.noSession(queued.title)
         }
@@ -292,7 +296,8 @@ public struct PlanBook: Codable, Equatable {
         var entry = queued.entry
         // The weekday is worked out from the date now, not kept beside it.
         entry.weekdayNames = nil
-        if entry.moveTo == nil && entry.completedAt == nil { entry.completedAt = now }
+        // Done when it was logged: for an entry from the Excel days that is when he made it, not now.
+        if entry.moveTo == nil && entry.completedAt == nil { entry.completedAt = fromExcelDays ? queued.createdAt : now }
 
         let edits = Plan.buildEdits(w, entry, mapping)
         if edits.isEmpty { return .dropped }
@@ -541,17 +546,23 @@ public struct PlanBook: Codable, Equatable {
         return change
     }
 
-    /* A new session, made in the app. */
+    /*
+     * A new session, made in the app. `fixedKey`: a session a rule makes (a Thursday ride) has the
+     * same name on every device, so two devices adding it make one session that the merge joins;
+     * when this book already holds it, nothing is added. Such a name starts with a letter after the
+     * "!", an ordinary one with its number, so the two never meet.
+     */
     @discardableResult
-    public mutating func add(_ draft: SessionDraft, why: String = "", now: Date = Date()) throws -> Workout {
+    public mutating func add(_ draft: SessionDraft, why: String = "", fixedKey: String? = nil, now: Date = Date()) throws -> Workout {
         guard let date = parseDayKey(draft.dayKey), let day = dayKey(date) else { throw BookError.badDay(draft.dayKey) }
+        if let fixedKey, let there = session(fixedKey) { return there }
         var draft = draft
         draft.dayKey = day
         counter += 1
         let alphabet = Array("0123456789abcdefghijklmnopqrstuvwxyz")
         let tail = String((0..<6).map { _ in alphabet[Int.random(in: 0..<36)] })
         let row = 100_000 + counter
-        let key = PlanBook.appSheet + "!" + String(counter) + tail
+        let key = fixedKey ?? PlanBook.appSheet + "!" + String(counter) + tail
         let label = PlanBook.rawSport(draft.sport, keeping: nil)
         let blank = Workout(
             key: key, sheet: PlanBook.appSheet, row: row, rows: [row], date: date, dayKey: draft.dayKey,
@@ -749,4 +760,9 @@ extension Workout: Codable {
         try c.encode(results, forKey: .results)
         try c.encodeIfPresent(source, forKey: .source)
     }
+}
+
+public extension PlanBook {
+    /* Sessions the way every screen counts them: a rest day is not a session (the same number as the Sessions tab). */
+    var trainingCount: Int { sessions.filter { $0.discipline.id != "rest" }.count }
 }

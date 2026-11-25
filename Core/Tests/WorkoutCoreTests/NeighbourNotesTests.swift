@@ -109,4 +109,14 @@ final class NeighbourNotesTests: XCTestCase {
         XCTAssertEqual(NeighbourRules.doneLine(note, timeZone: TimeZone(identifier: "UTC")!), "Done in Workouts at 07:40 · 35 min")
         XCTAssertEqual(NeighbourRules.doneLine(NeighbourDone(id: "b", day: today, kind: "strength")), "Done in Workouts")
     }
+
+    /* An answer taken over from the notes keeps the note's own time, never later than now. */
+    func testATakenOverAnswerKeepsTheNotesOwnTime() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let early = NeighbourFeel(day: today, value: 4, at: "2027-01-15T07:00:00Z", from: "morning")
+        XCTAssertEqual(NeighbourRules.takenOverMoment(early, now: now), ISO8601DateFormatter().date(from: "2027-01-15T07:00:00Z"))
+        let ahead = NeighbourFeel(day: today, value: 4, at: "2030-01-01T07:00:00.250Z", from: "morning")
+        XCTAssertEqual(NeighbourRules.takenOverMoment(ahead, now: now), now)
+        XCTAssertEqual(NeighbourRules.takenOverMoment(NeighbourFeel(day: today, value: 4, at: nil, from: "morning"), now: now), now)
+    }
 }

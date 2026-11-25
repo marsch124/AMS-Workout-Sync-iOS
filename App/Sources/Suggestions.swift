@@ -199,7 +199,7 @@ final class SuggestionKeeper: ObservableObject {
               asked.record.choices == s.record.choices else { return }
         keep.markAsked(asked.id)
         let context = ClaudeContext.make(from: input)
-        let planVersion = version(book)
+        let planVersion = version(book) + "|\(store?.bookVersion ?? 0)"
         let askedAt = Date()
         // Started on the main actor, so the answer is handled there too.
         Task { @MainActor [weak self] in
@@ -217,7 +217,7 @@ final class SuggestionKeeper: ObservableObject {
     private func claudeAnswered(_ answer: ClaudeAnswer?, to asked: SuggestionEntry, planVersion: String, askedAt: Date) {
         guard ClaudePick.mayUse(askedAt: askedAt, now: Date(), touched: touchedCards.contains(asked.id)) else { return }
         guard readable, cardsOn, !quiet, ladder.step == .none, let answer, let book = store?.book,
-              version(book) == planVersion, let input = input(.afterSession) else { return }
+              version(book) + "|\(store?.bookVersion ?? 0)" == planVersion, let input = input(.afterSession) else { return }
         if keep.applyClaude(answer, to: asked, on: today, input: input) { save() }
     }
 
@@ -242,7 +242,7 @@ final class SuggestionKeeper: ObservableObject {
 
     func input(_ moment: RBMoment) -> RuleBookInput? {
         guard let store, let book = store.book, store.canChangePlan else { return nil }
-        let key = version(book) + "|" + store.today + "|" + String(describing: keep.settings) + "|\(Diary.shared.found.count)"
+        let key = version(book) + "|\(store.bookVersion)|" + store.today + "|" + String(describing: keep.settings) + "|\(Diary.shared.found.count)"
         var base: RuleBookInput
         if let cached, cached.key == key {
             base = cached.input

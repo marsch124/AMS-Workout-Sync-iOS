@@ -20,4 +20,13 @@ final class PlanOverviewCountTests: XCTestCase {
     func testAllCountLeavesRestDaysOut() {
         XCTAssertEqual(PlanOverview.countedInAll(disciplineIds: ["run", "rest", "swim", "rest"], extras: 2), 4)
     }
+
+    func testTrainingCountLeavesRestDaysOut() throws {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "Fixtures/plan", withExtension: "xlsx"))
+        var book = try PlanImport.read(try Data(contentsOf: url), fileName: "plan.xlsx", today: "2026-09-16").book
+        let rest = try XCTUnwrap(book.sessions.first { $0.discipline.id == "rest" })
+        let run = try XCTUnwrap(book.sessions.first { $0.discipline.id != "rest" })
+        book.sessions = [run, rest, run, rest, rest]
+        XCTAssertEqual(book.trainingCount, 2)
+    }
 }

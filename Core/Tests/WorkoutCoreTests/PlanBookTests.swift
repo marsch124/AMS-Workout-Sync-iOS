@@ -131,4 +131,20 @@ final class PlanBookTests: XCTestCase {
         XCTAssertEqual(PlanImport.monday(of: "28 Dec – 03 Jan 2027"), "2026-12-28")
         XCTAssertNil(PlanImport.monday(of: "2026-09-10"))
     }
+
+    /* An entry from the Excel days names a row as it was then: if that row is now another session, it is not written there. */
+    func testAnEntryFromTheExcelDaysIsNotWrittenIntoAnotherSession() throws {
+        var book = try book()
+        let w = try XCTUnwrap(book.sessions.first { $0.discipline.id == "run" && $0.results.isEmpty })
+        var entry = LogEntry(); entry.actualDuration = "41"
+        // Made the day before the plan moved in, for a swim far away that the row no longer holds.
+        let old = QueuedEntry(workoutKey: w.key, sheet: w.sheet, row: w.row, dayKey: "2001-01-01", disciplineId: "swim",
+                              title: "Invented swim", entry: entry, now: book.origin.takenAt.addingTimeInterval(-86400))
+        XCTAssertThrowsError(try book.apply(old))
+        XCTAssertTrue(try XCTUnwrap(book.session(w.key)).results.isEmpty, "the run was left alone")
+        // The same entry made after the move-in names the session for good, as before.
+        let fresh = QueuedEntry(workoutKey: w.key, sheet: w.sheet, row: w.row, dayKey: "2001-01-01", disciplineId: "swim",
+                                title: "Invented swim", entry: entry, now: book.origin.takenAt.addingTimeInterval(60))
+        XCTAssertEqual(try book.apply(fresh), .written)
+    }
 }
