@@ -45,6 +45,8 @@ struct WeekBoard: View {
             }
         }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { boardWidth = $0 }
+        // A container, so each day keeps its own name under it (in two rows there is no scroll view to do that).
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("week-board")
         .sheet(item: $addingOn) { day in
             SessionEditView(key: nil, draft: SessionDraft(dayKey: day.id, sport: "run"))
