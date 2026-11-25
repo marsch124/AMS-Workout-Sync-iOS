@@ -2208,20 +2208,22 @@ Version shown: 2.7 (83), 25 November 2026. The base is the released 2.6 (82). Tw
 * **What opens, in this order** (the first that matches wins):
   1. **A planned session.** The plan has a session of that sport on that day: that session's page opens, right there on the Body page (the same session page as from Today), with the back arrow at the top left leading back to Body. Two workouts of one sport and two sessions of that sport on the day: the first workout opens the first session, the second the second.
   2. **An extra.** Otherwise, an extra of that kind on that day (for example a Walk extra for a walk from the watch): that extra's page opens, the same plate as when an extra is tapped on Today.
-  3. **A looser match.** Otherwise, a walk or hike opens that day's run session; a swim, ride or run opens that day's Brick or Race session.
+  3. **A looser match.** Otherwise, a walk or hike opens that day's run session; a swim, ride or run, or a multisport recording, opens that day's Brick or Race session.
   4. **The facts plate.** Otherwise a small plate (`body-workout-plate`) with the workout's own facts from Garmin: its name as the title (example "Morning run"), then "Started 06:45 · Lasted 1h 00m · Body Battery −17" (or "no cost from Garmin" when Garmin gives none), one grey line "Not in your plan and not among your extras for this day.", and Done (`body-workout-done`) at the top right; on a Mac Escape closes it.
 * **Same day only.** Only the same calendar day counts. A rest day never matches.
 * **The sport** is taken from Garmin's own sport name: swim, bike, run, strength, rowing, mobility (yoga, pilates, stretching), walk (walk or hike). Anything else is "other" and goes to the facts plate.
 * **Opens only.** The tap logs nothing, writes nothing and changes no plan.
+* **The session's page** opened from Body looks as it does from Today (its own green); only the back arrow belongs to Body.
+* **The rule** is `BodyTap.targets` in the core (a pure function): it follows the rule a session's page already uses to offer the day's watch workouts for its log form (same day, same sport, a walk may be the run), but stricter, because here a wrong match would open the wrong page.
 
 ### C.2 Yesterday's line
 
 * **Before (until 2.6):** the card showed today's Body Battery only. **Now:** yesterday's Body Battery is drawn too, as a thin line across the whole 24 hours, behind today's curve, with no fill under it. Today's curve is unchanged: the thick white line with a soft fill; the white dot is now.
 * **Label.** At the top right of the card stands a short piece of the same line and the word "yesterday" (`body-yesterday`).
-* **Look.** <!-- LOOK27 --> A thin dark line, a deep plum, darker than the card.
+* **Look.** A thin dark line, a deep plum, darker than the card (`Theme.bodyYesterday`, `0x4E0A2C` by day, `0x45082A` at night; 1.8 points). Martin picked it on 25 November 2026 from one picture with three looks; the other two were a thin white line and white dashes.
 * **Why not pale and not dotted.** In this app pale already means "still to do" and dotted already means "an extra outside the plan", so yesterday's line is neither.
 * **No readings.** A day without yesterday's readings (watch not worn, or the first day) shows no second line and no word "yesterday".
-* **Read.** One more small read from Garmin: yesterday's curve. **Kept.** Yesterday's curve cannot change any more, so it is read once a day and then kept on the device. The rule "at most one read in half an hour, pull down to read now" is unchanged. The readings are cut to yesterday's own 24 hours. Still shown only; nothing is written to Garmin.
+* **Read.** One more small read from Garmin: yesterday's curve. **Kept.** Yesterday's curve cannot change any more, so it is read once a day and then kept on the device. It counts as whole when its last reading lies in the last half hour before midnight; a shorter one (the watch had not sent the evening yet) is read again at the next reading. Today's own read is exactly as in 2.6; yesterday is asked for by itself. The rule "at most one read in half an hour, pull down to read now" is unchanged. The readings are cut to yesterday's own 24 hours. Still shown only; nothing is written to Garmin.
 
 ### C.3 The foot of the page
 
@@ -2229,7 +2231,9 @@ Before: "Tap a tile for its 7 days in numbers." Now: "Tap a workout or a tile fo
 
 ### C.4 Identifiers (new)
 
-`body-workout-0`, `body-workout-1`, … (tap areas, in time order); `body-yesterday` (the word on the card); `body-workout-plate` and `body-workout-done` (the facts plate and its Done button).
+`body-workout-0`, `body-workout-1`, … (tap areas, in time order); `body-yesterday` (the word on the card); `body-workout-plate` and `body-workout-done` (the facts plate's grey line and its Done button); `body-workout-row-0`, `-1`, `-2` (the plate's rows: Started, Lasted, Body Battery); `body-foot` (the foot line). `body-hero` now sits on the card's row of figures (it still speaks the whole card), so the tap areas inside the card can be found.
+
+Picture switches (test builds only): `AMSWS_BODY_WORKOUT=0|1…` opens that workout as a tap would; `AMSWS_BODY_NO_YESTERDAY=1` leaves yesterday's readings out of the invented day. The invented day now has two workouts (a morning run, strength at noon) and a day before it.
 
 ### C.5 Signs added
 
@@ -2242,4 +2246,4 @@ Before: "Tap a tile for its 7 days in numbers." Now: "Tap a workout or a tile fo
 
 ### C.7 Tests
 
-`BodyTapTests` (data): the matching order (session, extra, looser match, facts plate), the same-day rule, and the shared tap room (areas cut halfway between neighbours). `BodyDayTests` (data): yesterday's readings are cut to yesterday's 24 hours. One screen test finds a tap area by `body-workout-0`.
+`BodyTapTests` (data): the matching order (session, extra, looser match, facts plate), the same-day rule, and the shared tap room (areas cut halfway between neighbours). `BodyDayTests` (data): yesterday's readings are cut to yesterday's 24 hours. Also there: a curve that stops in the evening is not kept as whole, an older kept file without yesterday still reads, and the facts plate's rows. Screen test `testAWorkoutOnTheCurveOpensItsSessionOrItsFacts`: the word yesterday and the foot line are there, the run's tap area is at least a finger wide and high and opens the run's session with a way back, the strength workout opens its facts and Done closes them.

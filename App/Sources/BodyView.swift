@@ -226,25 +226,13 @@ struct BodyHero: View {
 
 /*
  * How yesterday's line is drawn, in one place for the curve and for its
- * word's sample. Not pale (pale means still to do) and not dotted (dotted
- * means an extra): a thin line in a colour of its own.
+ * word's sample (his pick from three looks, 25 Nov 2026): a thin dark line,
+ * a deep plum. Not pale (pale means still to do) and not dotted or dashed
+ * (dotted means an extra).
  */
 enum YesterdayLine {
-    /* 1 = thin dark line (the one built in), 2 = thin white line, 3 = white dashes. 2 and 3 only for the picture he chose from (DEBUG). */
-    static var look: Int {
-        #if DEBUG
-        if let n = ProcessInfo.processInfo.environment["AMSWS_YESTERDAY_LOOK"].flatMap({ Int($0) }) { return n }
-        #endif
-        return 1
-    }
-    static var colour: Color { look == 1 ? Theme.bodyYesterday : .white }
-    static var stroke: StrokeStyle {
-        switch look {
-        case 2: return StrokeStyle(lineWidth: 1.1, lineCap: .round, lineJoin: .round)
-        case 3: return StrokeStyle(lineWidth: 1.4, lineCap: .butt, lineJoin: .round, dash: [7, 5])
-        default: return StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round)
-        }
-    }
+    static let colour = Theme.bodyYesterday
+    static let stroke = StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round)
     static var sample: some View {
         Canvas { ctx, size in
             var p = Path()
