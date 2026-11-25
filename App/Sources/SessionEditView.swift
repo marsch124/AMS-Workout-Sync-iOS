@@ -25,6 +25,7 @@ struct SessionEditView: View {
     @State private var problem: String?
     @State private var asking = false
     @State private var repeatUntil: String?   // nil = does not repeat (the Repeat row)
+    @State private var saved = false          // a second tap on Save while the page closes adds nothing again
     @FocusState private var focused: Bool
     private let initial: SessionDraft
 
@@ -231,7 +232,8 @@ struct SessionEditView: View {
             store.changeSession(key, to: draft)
             dismiss()
         } else if let until = repeatUntil {
-            if RepeatSession.save(draft, until: until, store: store, includingBase: true) { dismiss() }
+            guard !saved else { return }
+            if RepeatSession.save(draft, until: until, store: store, includingBase: true) { saved = true; dismiss() }
             else { problem = store.lastProblem ?? "The sessions could not be added." }
         } else if store.addSession(draft) != nil {
             dismiss()

@@ -15,6 +15,8 @@ struct SessionView: View {
     @State private var zoneAsk: ZoneAsk?
     @State private var sharing = false
     @State private var payload: SharePayload?
+    /* Round 28 safety: the Space key on "Done" only while no sheet, alert or dialog of this page is up. */
+    private var spaceLogs: Bool { !logging && !moving && !changing && !askingMissed && zoneAsk == nil && !sharing && payload == nil }
     @ObservedObject private var neighbours = Neighbours.shared
 
     var body: some View {
@@ -167,7 +169,9 @@ struct SessionView: View {
                                         }
                                     }
                                     .mainSmallButton()
-                                    .keyboardShortcut(.space, modifiers: [])
+                                    // Space = this button, but only while nothing is laid over the page: a space typed
+                                    // in a box on a sheet or an alert (the missed note) must never log the session.
+                                    .keyboardShortcut(spaceLogs ? KeyboardShortcut(.space, modifiers: []) : nil)
                                     .accessibilityIdentifier("session-done-as-planned")
                                 }
                                 Button { logging = true } label: {

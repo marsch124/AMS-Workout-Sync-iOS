@@ -33,6 +33,8 @@ struct LogFormView: View {
     @ObservedObject private var health = HealthImport.shared
     /* Round 28: the four extra notes (shelf), saved with the log. */
     @State private var extras = LogExtrasDraft()
+    /* A second tap on Save while the page closes logs nothing again. */
+    @State private var saved = false
 
     init(workout: Workout, mapping: Mapping) {
         self.workout = workout
@@ -169,18 +171,28 @@ struct LogFormView: View {
     }
 
     private func save() {
+        guard !saved else { return }
         let extrasApply = LogExtrasDraft.applies(workout, seconds: parseDuration(values["actualDuration"]) ?? Plan.plannedSeconds(workout, mapping))
-        guard !changes.isEmpty else {
-            if extras.apply(to: workout.key, extrasApply, commit: true) { dismiss(); return }
-            if addedPhoto { dismiss(); return }
+        // Round 28 safety: the notes beside the log are kept FIRST. If they cannot be kept, nothing is logged and he
+        // is told, so a second Save never queues the log twice; notes alone never touch the log (LogSave.step).
+        let notKept = "The notes beside the log could not be saved on this device, so nothing was saved. Try again, or clear the notes."
+        switch LogSave.step(logChanges: !changes.isEmpty, notesDiffer: extras.differs(for: workout.key, extrasApply), photoAdded: addedPhoto) {
+        case .nothingChanged:
             problem = "Nothing has changed yet — fill in the time you did, or a number you want to correct."
-            return
+        case .closeOnly:
+            dismiss()
+        case .notesOnly:
+            guard extras.apply(to: workout.key, extrasApply) else { problem = notKept; return }
+            saved = true
+            dismiss()
+        case .logAndNotes:
+            guard extras.apply(to: workout.key, extrasApply) else { problem = notKept; return }
+            if usedHealth { HealthMark.remember(workout) }
+            let entry = LogForm.entry(from: changes, distanceUnit: distanceUnit)
+            store.log(workout, entry)
+            saved = true
+            dismiss()
         }
-        if usedHealth { HealthMark.remember(workout) }
-        let entry = LogForm.entry(from: changes, distanceUnit: distanceUnit)
-        store.log(workout, entry)
-        extras.apply(to: workout.key, extrasApply, commit: true)
-        dismiss()
     }
 }
 

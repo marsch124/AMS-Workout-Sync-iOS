@@ -125,7 +125,10 @@ final class TodayWeatherModel: NSObject, ObservableObject, CLLocationManagerDele
         let (data, _) = try await URLSession.shared.data(for: request)
         guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let h = root["hourly"] as? [String: Any], let times = h["time"] as? [String] else { return [] }
-        func column(_ k: String) -> [Double?] { (h[k] as? [Any] ?? []).map { ($0 as? NSNumber)?.doubleValue } }
+        // Round 28 safety: only figures that can be weather (an odd answer never crashes the rounding on Today).
+        func column(_ k: String) -> [Double?] {
+            (h[k] as? [Any] ?? []).map { ($0 as? NSNumber)?.doubleValue }.map { $0.flatMap { $0.isFinite && abs($0) <= 200 ? $0 : nil } }
+        }
         let t = column("temperature_2m"), f = column("apparent_temperature")
         let r = column("precipitation_probability"), w = column("wind_speed_10m")
         var out: [WeatherHour] = []

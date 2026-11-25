@@ -111,7 +111,8 @@ struct AwayPage: View {
 
     private func save() {
         if on {
-            _ = shelf.set(AwayPeriod(from: from, until: max(from, until), has: period.has), for: AwayStore.key)
+            // Not kept (the shelf says so): the page stays open with his choices, nothing is lost.
+            guard shelf.set(AwayPeriod(from: from, until: max(from, until), has: period.has), for: AwayStore.key) else { return }
         } else if shelf.has(AwayStore.key) {
             shelf.remove(for: AwayStore.key)
         }

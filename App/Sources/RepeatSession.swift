@@ -162,6 +162,8 @@ struct RepeatSheet: View {
     let key: String
     @State private var until: String?
     @State private var failed = false
+    /* A second tap while the page closes adds nothing again. */
+    @State private var added = false
 
     private var base: SessionDraft? { store.draft(of: key) }
 
@@ -193,7 +195,8 @@ struct RepeatSheet: View {
                 if let base {
                     let count = until.map { RepeatSession.result(base, until: $0, store: store).days.count } ?? 0
                     Button {
-                        if let u = until, RepeatSession.save(base, until: u, store: store, includingBase: false) { dismiss() } else { failed = true }
+                        guard !added else { return }
+                        if let u = until, RepeatSession.save(base, until: u, store: store, includingBase: false) { added = true; dismiss() } else { failed = true }
                     } label: {
                         Text(count == 0 ? "Add sessions" : "Add \(count) session\(count == 1 ? "" : "s")")
                             .font(.headline).frame(maxWidth: .infinity, minHeight: 52)
@@ -216,7 +219,13 @@ struct RepeatChangeRow: View {
     let index: Int
     @State private var asking = false
 
-    private var undoable: [PlanChange] { changes.filter { !$0.undone && store.canUndo($0.id) } }
+    private var undoable: [PlanChange] {
+        RepeatRule.undoable(changes, canUndo: { store.canUndo($0) }, loggedSince: { key in
+            store.isWaiting(key) || (store.workout(key).map { $0.logged || $0.missed } ?? false)
+        })
+    }
+    /* Sessions of this repeat logged since: Undo leaves them in the plan. */
+    private var keptLogged: Int { changes.filter { !$0.undone && store.canUndo($0.id) }.count - undoable.count }
     private var allUndone: Bool { changes.allSatisfy(\.undone) }
 
     var body: some View {
@@ -255,7 +264,7 @@ struct RepeatChangeRow: View {
             Button("Undo", role: .destructive) { for c in undoable { store.undoChange(c.id) } }
             Button("Keep them", role: .cancel) {}
         } message: {
-            Text("\(undoable.count) sessions are taken out of the plan again.")
+            Text("\(undoable.count) session\(undoable.count == 1 ? " is" : "s are") taken out of the plan again." + (keptLogged > 0 ? " The \(keptLogged) you have logged since stay\(keptLogged == 1 ? "s" : "")." : ""))
         }
     }
 }

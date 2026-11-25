@@ -38,6 +38,8 @@ extension ForegroundContinuableIntent {
 }
 
 struct TodaysSessionIntent: AppIntent, ForegroundContinuableIntent {
+    /* Round 28 safety: only on an unlocked device, so the plan's files can be read (never a half-read plan). */
+    static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
     static var title: LocalizedStringResource = "What is my session"
     static var description = IntentDescription("Says today's or tomorrow's session, or that it is a rest day.")
 
@@ -56,6 +58,8 @@ struct TodaysSessionIntent: AppIntent, ForegroundContinuableIntent {
 }
 
 struct LogTodaysSessionIntent: AppIntent, ForegroundContinuableIntent {
+    /* Round 28 safety: only on an unlocked device, so the plan's files can be read (never a half-read plan). */
+    static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
     static var title: LocalizedStringResource = "Log today's session as done"
     static var description = IntentDescription("Logs today's planned session of one sport as done as planned. Nothing else is changed.")
 
@@ -89,6 +93,8 @@ struct LogTodaysSessionIntent: AppIntent, ForegroundContinuableIntent {
 }
 
 struct HowIsMyWeekIntent: AppIntent, ForegroundContinuableIntent {
+    /* Round 28 safety: only on an unlocked device, so the plan's files can be read (never a half-read plan). */
+    static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
     static var title: LocalizedStringResource = "How is my week"
     static var description = IntentDescription("Says this week's hours done of the hours planned.")
 

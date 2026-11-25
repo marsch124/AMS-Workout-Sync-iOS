@@ -189,6 +189,8 @@ final class ReminderCentre: NSObject, ObservableObject, UNUserNotificationCenter
                                           nowMinutes: (c.hour ?? 0) * 60 + (c.minute ?? 0),
                                           settings: self.settings, paused: self.paused)
             for r in list {
+                // A newer plan of the reminders has started: it lays its own, this one stops (no stale ones left behind).
+                guard !Task.isCancelled else { return }
                 guard let day = parseDayKey(r.day) else { continue }
                 // The day key is a UTC date; its calendar parts are read as written.
                 var utc = Calendar(identifier: .gregorian)

@@ -113,7 +113,41 @@ public struct SuggestionKeep: Codable, Equatable, Sendable {
 
     public init() {}
 
-    enum CodingKeys: String, CodingKey { case format, on, settings, entries, health, hurtDays, hurtAsked, plan, stopStamp, illStamp }
+    enum CodingKeys: String, CodingKey { case format, on, settings, entries, health, hurtDays, hurtAsked, plan, stopStamp, illStamp, later }
+
+    /*
+     * Cards of a trigger that builds before round 28 do not know (the away card, "AW").
+     * An older build reading such a card in `entries` would call the whole file unreadable
+     * and rest every suggestion (and stop sharing the pause) on this device. So they are
+     * written apart, under "later", each with its place in the list; an older build skips
+     * that key and reads the rest as always. Read back, every card is in its place again.
+     */
+    public static let triggersOlderBuildsKnow: Set<RBTrigger> = [.section5, .cameInBreaking, .t1, .t2, .t3, .t4, .t5, .t6, .hurts, .backToBack]
+
+    struct Later: Codable, Equatable {
+        var at: Int
+        var entry: SuggestionEntry
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(format, forKey: .format)
+        try c.encodeIfPresent(on, forKey: .on)
+        try c.encode(settings, forKey: .settings)
+        var classic: [SuggestionEntry] = []
+        var later: [Later] = []
+        for (i, e) in entries.enumerated() {
+            if Self.triggersOlderBuildsKnow.contains(e.record.trigger) { classic.append(e) } else { later.append(Later(at: i, entry: e)) }
+        }
+        try c.encode(classic, forKey: .entries)
+        if !later.isEmpty { try c.encode(later, forKey: .later) }
+        try c.encode(health, forKey: .health)
+        try c.encode(hurtDays, forKey: .hurtDays)
+        try c.encode(hurtAsked, forKey: .hurtAsked)
+        try c.encodeIfPresent(plan, forKey: .plan)
+        try c.encode(stopStamp, forKey: .stopStamp)
+        try c.encode(illStamp, forKey: .illStamp)
+    }
 
     /* The stop sign and illness taps as they are shared through iCloud. */
     public var pause: PauseShare { PauseShare(health: health, stop: stopStamp, ill: illStamp) }
@@ -144,6 +178,10 @@ public struct SuggestionKeep: Codable, Equatable, Sendable {
         on = try c.decodeIfPresent(Bool.self, forKey: .on)
         settings = try c.decodeIfPresent(RuleBookSettings.self, forKey: .settings) ?? RuleBookSettings()
         entries = try c.decodeIfPresent([SuggestionEntry].self, forKey: .entries) ?? []
+        // Cards written apart for older builds, put back in their places (an older build that wrote the file since has dropped them).
+        for l in (try c.decodeIfPresent([Later].self, forKey: .later) ?? []).sorted(by: { $0.at < $1.at }) {
+            entries.insert(l.entry, at: min(max(0, l.at), entries.count))
+        }
         health = try c.decodeIfPresent(RBHealthTaps.self, forKey: .health) ?? RBHealthTaps()
         hurtDays = try c.decodeIfPresent([String].self, forKey: .hurtDays) ?? []
         hurtAsked = try c.decodeIfPresent([String: String].self, forKey: .hurtAsked) ?? [:]

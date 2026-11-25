@@ -231,3 +231,30 @@ public struct OpenWaterNote: Codable, Equatable {
                              line: line.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 }
+
+/*
+ * What Save on the log form does (round 28 safety). The notes beside the log
+ * live on the shelf, never in the plan: notes alone never write, re-stamp or
+ * clear the session's log and never queue one; only changed log boxes do.
+ */
+public enum LogSave {
+    public enum Step: Equatable {
+        /* Changed log boxes: the notes are kept first, then the log is queued once. */
+        case logAndNotes
+        /* Only the notes changed: they are kept; the plan and the waiting log are not touched. */
+        case notesOnly
+        /* Only a photograph was added (already kept): the page closes. */
+        case closeOnly
+        /* Nothing at all: the page says so. */
+        case nothingChanged
+    }
+
+    public static func step(logChanges: Bool, notesDiffer: Bool, photoAdded: Bool) -> Step {
+        if logChanges { return .logAndNotes }
+        if notesDiffer { return .notesOnly }
+        return photoAdded ? .closeOnly : .nothingChanged
+    }
+
+    /* Whether a step queues a log in the plan. */
+    public static func queuesLog(_ s: Step) -> Bool { s == .logAndNotes }
+}

@@ -230,12 +230,17 @@ public enum GarminActivity {
  */
 public enum GarminFit {
 
+    /* A recorded session is a few MB at most; anything larger (or a zip that claims more) is not read at all. */
+    public static let maxBytes = 32 * 1024 * 1024
+
     public static func recording(fromDownload data: Data) -> GarminRecording {
+        guard data.count <= maxBytes else { return GarminRecording() }
         var bytes = data
-        if data.count > 4, data[data.startIndex] == 0x50, data[data.startIndex + 1] == 0x4B,
-           let zip = try? ZipArchive(data: data),
-           let name = zip.entries.map({ $0.name }).first(where: { $0.lowercased().hasSuffix(".fit") }),
-           let inner = try? zip.bytes(name) {
+        if data.count > 4, data[data.startIndex] == 0x50, data[data.startIndex + 1] == 0x4B {
+            guard let zip = try? ZipArchive(data: data),
+                  let entry = zip.entries.first(where: { $0.name.lowercased().hasSuffix(".fit") }),
+                  entry.uncompressedSize <= maxBytes, entry.compressedSize <= maxBytes,
+                  let inner = try? zip.bytes(entry.name) else { return GarminRecording() }
             bytes = inner
         }
         return parse(bytes)
@@ -326,7 +331,7 @@ public enum GarminFit {
                         case 9: lapMetres = Double(v) / 100
                         case 13 where lapSpeed == nil: lapSpeed = Double(v) / 1000
                         case 110: lapSpeed = Double(v) / 1000
-                        case 15: lapHr = Int(v)
+                        case 15: lapHr = Int(exactly: v)     // never a crash on an odd field size
                         case 19: lapPower = Double(v)
                         default: break
                         }

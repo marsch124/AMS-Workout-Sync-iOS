@@ -148,8 +148,10 @@ public enum GarminMorning {
     // MARK: - Reading Garmin's answers (forgiving)
 
     static func number(_ any: Any?) -> Double? {
-        if let n = any as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID() { return n.doubleValue }
-        if let s = any as? String { return Double(s.trimmingCharacters(in: .whitespaces)) }
+        // Round 28 safety: "NaN", "inf" or an absurd figure from the service is no number (it would crash a rounding to Int).
+        func sane(_ v: Double?) -> Double? { v.flatMap { $0.isFinite && abs($0) < 1e15 ? $0 : nil } }
+        if let n = any as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID() { return sane(n.doubleValue) }
+        if let s = any as? String { return sane(Double(s.trimmingCharacters(in: .whitespaces))) }
         return nil
     }
 

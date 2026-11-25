@@ -50,24 +50,30 @@ struct LogExtrasDraft: Equatable {
         return s % 60 == 0 ? base : base + String(format: ":%02d", s % 60)
     }
 
-    /* Writes what differs from the shelf (and removes what he cleared). Returns true when anything differed. */
+    /* Whether anything differs from the shelf (nothing is written). */
+    @MainActor func differs(for key: String, _ a: Applies) -> Bool { write(to: key, a, commit: false).differs }
+
+    /* Writes what differs from the shelf (and removes what he cleared). False when a note could not be kept: he must be told. */
     @MainActor @discardableResult
-    func apply(to key: String, _ a: Applies, commit: Bool) -> Bool {
+    func apply(to key: String, _ a: Applies) -> Bool { write(to: key, a, commit: true).kept }
+
+    @MainActor private func write(to key: String, _ a: Applies, commit: Bool) -> (differs: Bool, kept: Bool) {
         let shelf = ShelfStore.shared
         var differs = false
+        var kept = true
         func sync<T: Codable & Equatable>(_ new: T?, _ fact: String) {
             let k = LogExtrasKeys.key(key, fact)
             let old = shelf.value(T.self, for: k)
             guard new != old else { return }
             differs = true
             guard commit else { return }
-            if let new { shelf.set(new, for: k) } else { shelf.remove(for: k) }
+            if let new { if !shelf.set(new, for: k) { kept = false } } else { shelf.remove(for: k) }
         }
         if a.brick { sync(BrickLog.make(bike: bike, change: change, run: run), "brick") }
         if a.stomach { sync(StomachNote.make(answer: stomach, line: stomachLine), "stomach") }
         sync(niggle, "niggle")
         if a.water { sync(OpenWaterNote.make(on: waterOn, wetsuit: wetsuit, temp: temp, line: waterLine), "openwater") }
-        return differs
+        return (differs, kept)
     }
 
     var brickNow: BrickLog? { BrickLog.make(bike: bike, change: change, run: run) }
@@ -425,7 +431,7 @@ struct SessionNotesBlock: View {
                 .navigationTitle("Notes on this session").navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { editing = false }.keyboardShortcut(.cancelAction) } }
                 .safeAreaInset(edge: .bottom) {
-                    Button { draft.apply(to: workout.key, a, commit: true); editing = false } label: {
+                    Button { if draft.apply(to: workout.key, a) { editing = false } } label: {
                         Text("Save").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     }
                     .buttonStyle(.borderedProminent).tint(Theme.mainButton)

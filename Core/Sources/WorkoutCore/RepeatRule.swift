@@ -72,6 +72,15 @@ public enum RepeatRule {
         return String(why[r.upperBound...])
     }
 
+    /*
+     * The changes one Undo of a repeat takes back (round 28 safety): not undone yet, still the
+     * newest change to their session, and never a session logged (or marked missed, or with a
+     * log still waiting) since it was added — those stay in the plan as they are.
+     */
+    public static func undoable(_ changes: [PlanChange], canUndo: (String) -> Bool, loggedSince: (String) -> Bool) -> [PlanChange] {
+        changes.filter { !$0.undone && canUndo($0.id) && !loggedSince($0.key) }
+    }
+
     /* The reason line as he reads it, without the batch mark. */
     public static func shownWhy(_ why: String) -> String {
         guard batch(of: why) != nil, let r = why.range(of: " #", options: .backwards) else { return why }

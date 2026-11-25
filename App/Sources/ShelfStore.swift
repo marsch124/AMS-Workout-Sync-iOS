@@ -24,6 +24,16 @@ final class ShelfStore: ObservableObject {
     private(set) var doc = ShelfDoc()
     /* The file here could not be read and could not be put aside: nothing is written over it, nothing travels. */
     private(set) var blocked = false
+    /* The file was there but could not be read (not: could not be understood): read again before the next use. */
+    private var readFailed = false
+
+    private func readAgainIfNeeded() {
+        guard readFailed else { return }
+        readFailed = false
+        blocked = false
+        load()
+        if !blocked { revision += 1 }
+    }
 
     /* A change here: iCloud is met a moment later (set by Store, as for the diary). */
     var onChange: (() -> Void)?
@@ -51,7 +61,10 @@ final class ShelfStore: ObservableObject {
     private func load() {
         let url = fileURL
         guard FileManager.default.fileExists(atPath: url.path) else { return }
-        if let data = try? Data(contentsOf: url), let read = try? ShelfDoc.decoded(data) {
+        // Round 28 safety: a file that cannot be READ just now (locked device, a passing error) is not
+        // a broken file: nothing is moved or written this time, and nothing travels until the next launch.
+        guard let data = try? Data(contentsOf: url) else { blocked = true; readFailed = true; return }
+        if let read = try? ShelfDoc.decoded(data) {
             doc = read
             return
         }
@@ -86,24 +99,48 @@ final class ShelfStore: ObservableObject {
     /* False when it was not kept (a key that is empty or too long, a value over 64 KB, or no room to save). */
     @discardableResult
     func set<T: Encodable>(_ value: T, for key: String) -> Bool {
+        readAgainIfNeeded()
         var new = doc
-        do { try new.set(value, for: key, device: Device.id) } catch { return false }
-        guard keep(new) else { return false }
+        do { try new.set(value, for: key, device: Device.id) } catch { tellNotKept(); return false }
+        guard keep(new) else { tellNotKept(); return false }
         onChange?()
         return true
     }
 
     func remove(for key: String) {
+        readAgainIfNeeded()
         var new = doc
         new.remove(key, device: Device.id)
-        guard new != doc, keep(new) else { return }
+        guard new != doc else { return }
+        guard keep(new) else { tellNotKept(); return }
         onChange?()
+    }
+
+    /*
+     * Round 28 safety: a change that was not kept is never lost in silence. One calm
+     * message over whatever is on screen (a sheet included); the page itself may say more.
+     */
+    private var telling = false
+    private func tellNotKept() {
+        guard !telling else { return }
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_RESET"] != nil { return }
+        #endif
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        guard var top = scenes.flatMap(\.windows).first(where: \.isKeyWindow)?.rootViewController else { return }
+        while let next = top.presentedViewController, !next.isBeingDismissed { top = next }
+        let alert = UIAlertController(title: "Not saved",
+                                      message: "This change could not be saved on this \(Device.word), so it was not made. Your plan is untouched. Try again in a moment.",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in self?.telling = false })
+        telling = true
+        top.present(alert, animated: true)
     }
 
     // MARK: iCloud (PlanCloud meets it after the plan, the diary and the pause)
 
     /* False while nothing may travel: an unreadable file here that could not be put aside. */
-    var travels: Bool { !blocked }
+    var travels: Bool { readAgainIfNeeded(); return !blocked }
 
     /* The shelf joined with the other devices', put in place here (joined again with this one, so a tap in between is kept). */
     func takeFromCloud(_ joined: ShelfDoc) {
