@@ -378,7 +378,7 @@ final class WorkoutSyncUITests: XCTestCase {
 
         let whatsNew = app.buttons["settings-whats-new"]
         XCTAssertTrue(whatsNew.waitForExistence(timeout: 5))
-        XCTAssertNotNil(whatsNew.label.range(of: #"AMS Triathlon Training \d+\.\d+ \(\d+\)"#, options: .regularExpression),
+        XCTAssertNotNil(whatsNew.label.range(of: #"AMS Triathlon Training \d+(\.\d+)+ \(\d+\)"#, options: .regularExpression),
                         "the version is missing from What's new: \(whatsNew.label)")
     }
 
