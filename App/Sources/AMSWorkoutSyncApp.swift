@@ -132,6 +132,9 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_GARMIN_PAGE"] != nil {
                 NavigationStack { GarminSettingsView() }.environmentObject(store)
             }
+            if ProcessInfo.processInfo.environment["AMSWS_CLAUDE_PAGE"] != nil {
+                NavigationStack { ClaudeSettingsView() }.environmentObject(store)
+            }
             if ProcessInfo.processInfo.environment["AMSWS_MORNING_PLATE"] != nil {
                 MorningNumbersView(numbers: GarminReader.invented(day: store.today), today: store.today)
             }

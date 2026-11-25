@@ -146,6 +146,9 @@ struct SettingsView: View {
                     SectionHeading(text: "Garmin")
                     GarminSettingsEntry()
 
+                    SectionHeading(text: "Claude")
+                    ClaudeSettingsEntry()
+
                     SectionHeading(text: "Calendar").id("calendar")
                     if Device.isPhone {
                         CalendarSettings()
