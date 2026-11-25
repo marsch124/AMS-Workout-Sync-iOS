@@ -273,12 +273,15 @@ public struct RuleBookInput {
     /* The day the plan was taken into the app: sessions that came in already breaking a limit get one card then. */
     public var importDay: String?
     public var settings: RuleBookSettings
+    /* Away mode: where he is and what he has there (nil = not away). */
+    public var away: AwayPeriod?
 
     public init(sessions: [RBSession], weeks: [RBWeek], planStart: String, weekCaps: [Int: Int]? = nil,
                 extras: [RBExtra] = [], feel: FeelLog = FeelLog(), today: String, moment: RBMoment = .morning,
                 log: [SuggestionRecord] = [], health: RBHealthTaps = RBHealthTaps(), hurtDays: [String] = [],
                 highPulseDays: [String] = [], hrvLowDays: [String] = [], hrvNights: Int = 0,
-                importDay: String? = nil, settings: RuleBookSettings = RuleBookSettings()) {
+                importDay: String? = nil, settings: RuleBookSettings = RuleBookSettings(), away: AwayPeriod? = nil) {
+        self.away = away
         self.sessions = sessions; self.weeks = weeks; self.planStart = planStart
         self.weekCaps = weekCaps ?? RuleBook.weekCaps(sessions)
         self.extras = extras; self.feel = feel; self.today = today; self.moment = moment; self.log = log

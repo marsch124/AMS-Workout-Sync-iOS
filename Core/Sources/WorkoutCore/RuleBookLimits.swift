@@ -226,7 +226,7 @@ extension RuleBook {
     static let menu: [RBTrigger: Set<String>] = [
         .section5: ["M1", "M3", "M4"], .cameInBreaking: ["M1"], .t1: ["M2", "M3", "M4", "M6", "M7"],
         .t2: ["M1", "M3", "M5"], .t3: ["M1", "M3", "M4"], .t4: ["M3", "M4"], .t5: ["M3", "M4"], .t6: [],
-        .hurts: ["M1", "M4"], .backToBack: ["M2", "M5"]
+        .hurts: ["M1", "M4"], .backToBack: ["M2", "M5"], .away: ["M1", "M2", "M5"]
     ]
 
     static func l12MenuOnly(_ c: LimitCase) -> LimitFailure? {

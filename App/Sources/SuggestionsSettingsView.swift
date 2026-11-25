@@ -43,6 +43,7 @@ struct SuggestionsSettingsView: View {
                 switchRow("Suggest changes to my plan",
                           "The app suggests, you decide: nothing in your plan changes until you tap Take it.",
                           $on, id: "suggest-on")
+                AwayLinkButton()
 
                 SectionHeading(text: "Your answers")
                 switchRow("Keep hard bike and hard run on days in a row",

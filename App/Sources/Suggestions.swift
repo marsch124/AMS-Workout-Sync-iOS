@@ -169,7 +169,8 @@ final class SuggestionKeeper: ObservableObject {
         guard cardsOn, planReady, let store, let book = store.book else { return }
         let key = [moment.rawValue, today, version(book), String(describing: Diary.shared.feel.answer(on: today)),
                    String(describing: keep.health), "\(keep.hurtDays.count)|\(keep.entries.count)|\(keep.isOn)",
-                   String(describing: keep.settings), "\(Diary.shared.found.count)"].joined(separator: "#")
+                   String(describing: keep.settings), "\(Diary.shared.found.count)",
+                   String(describing: AwayStore.current(today: today))].joined(separator: "#")
         guard key != lastCheck else { return }
         lastCheck = key
         let was = keep
@@ -258,6 +259,7 @@ final class SuggestionKeeper: ObservableObject {
         base.log = keep.log
         base.health = keep.health
         base.hurtDays = keep.hurtDays
+        base.away = AwayStore.current(today: store.today)
         return base
     }
 

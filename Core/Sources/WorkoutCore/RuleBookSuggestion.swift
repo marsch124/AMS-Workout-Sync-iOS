@@ -12,6 +12,7 @@ public enum RBTrigger: String, Codable, Equatable, Sendable, CaseIterable {
     case t1 = "T1", t2 = "T2", t3 = "T3", t4 = "T4", t5 = "T5", t6 = "T6"
     /* "Something hurts" (Q2). */ case hurts = "Q2"
     /* Back-to-back quality, only when Q1 asks for it. */ case backToBack = "Q1"
+    /* Away mode (round 28): a session that cannot be done where he is. */ case away = "AW"
 }
 
 public enum RBLimit: String, Codable, Equatable, Sendable, CaseIterable {
