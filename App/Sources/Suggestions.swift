@@ -190,20 +190,24 @@ final class SuggestionKeeper: ObservableObject {
      */
     private func askClaude(_ s: Suggestion, input: RuleBookInput) {
         let client = ClaudeClient.shared
-        guard client.isOn, s.review == nil, let asked = keep.askable(on: today), asked.id == s.record.id else { return }
+        guard client.isOn, s.review == nil, !quiet, let book = store?.book,
+              let asked = keep.askable(on: today, ladder: ladder.step), asked.id == s.record.id,
+              asked.record.choices == s.record.choices else { return }
         keep.markAsked(asked.id)
         let context = ClaudeContext.make(from: input)
-        Task { [weak self] in
+        let planVersion = version(book)
+        // Started on the main actor, so the answer is handled there too.
+        Task { @MainActor [weak self] in
             let answer = await client.pick(for: s, context: context)
-            self?.claudeAnswered(answer, to: asked)
+            self?.claudeAnswered(answer, to: asked, planVersion: planVersion)
         }
     }
 
-    private func claudeAnswered(_ answer: ClaudeAnswer?, to asked: SuggestionEntry) {
-        guard readable, cardsOn, let answer, let current = keep.openEntry(on: today), current.id == asked.id,
-              let trial = current.applyingClaude(answer),
-              let input = input(.afterSession), SuggestionApply.fits(trial, choice: 0, input: input) else { return }
-        if keep.applyClaude(answer, to: asked, on: today) { save() }
+    /* Used only if nothing moved meanwhile: same day, same plan, same card, no pause. */
+    private func claudeAnswered(_ answer: ClaudeAnswer?, to asked: SuggestionEntry, planVersion: String) {
+        guard readable, cardsOn, !quiet, ladder.step == .none, let answer, let book = store?.book,
+              version(book) == planVersion, let input = input(.afterSession) else { return }
+        if keep.applyClaude(answer, to: asked, on: today, input: input) { save() }
     }
 
     /* A new plan taken in: these notes start a fresh log (his answers and taps stay). */

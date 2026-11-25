@@ -13,9 +13,12 @@ struct ClaudeLogEntry: Codable, Identifiable, Equatable {
     let inputTokens: Int
     let outputTokens: Int
     let dollars: Double
+    /* Why nothing came back, in a few plain words (never the key, never the reply itself). */
+    var failure: String? = nil
 
     /* "Kept your plan" or "Chose: Tue bike: 60 → 40 min, easy". */
     var choiceWords: String {
+        if let failure { return failure + ", the rule book's own pick stood" }
         guard let pick else { return "No usable answer, the rule book's own pick stood" }
         if pick == 0 { return "Kept your plan" }
         return "Chose: " + (menu.indices.contains(pick - 1) ? menu[pick - 1] : "choice \(pick)")
@@ -103,11 +106,18 @@ final class ClaudeClient: ObservableObject {
         guard isOn, let key = ClaudeKey.read(), meter.canSpend() else { return nil }
         let request = ClaudePick.request(for: suggestion, context: context)
         let body = ClaudePick.body(system: request.system, user: request.user)
-        guard let (status, data) = await post(body, key: key) else { return nil }
-        if status == 401 { rejectedKey = true; return nil }
-        guard status == 200 else { return nil }
-
         let menu = [suggestion.choice.headline] + suggestion.otherChoices.map(\.headline)
+        guard let (status, data) = await post(body, key: key) else {
+            note("No answer from Anthropic (timed out or offline)", menu: menu)
+            return nil
+        }
+        if status == 401 { rejectedKey = true }
+        guard status == 200 else {
+            // An error reply is not billed: one line in the log, nothing on the meter.
+            note(status == 401 ? "Anthropic did not accept the key (401)" : "Anthropic answered with error \(status)", menu: menu)
+            return nil
+        }
+
         let answer = ClaudePick.read(data, menuCount: ClaudePick.menuCount(for: suggestion))
         // What was asked for is paid for, usable or not.
         let usage = answer?.usage ?? ClaudePick.usage(in: data) ?? ClaudeUsage()
@@ -119,6 +129,14 @@ final class ClaudeClient: ObservableObject {
         log = Array(([entry] + log).prefix(200))
         save(log, to: Self.logURL)
         return answer
+    }
+
+    /* One line in the log for an ask that brought no answer. */
+    private func note(_ failure: String, menu: [String]) {
+        let entry = ClaudeLogEntry(at: Date(), menu: menu, pick: nil, why: "", inputTokens: 0, outputTokens: 0,
+                                   dollars: 0, failure: failure)
+        log = Array(([entry] + log).prefix(200))
+        save(log, to: Self.logURL)
     }
 
     /* The tiny check of a typed key, before it is kept. */

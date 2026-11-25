@@ -71,6 +71,10 @@ struct SuggestionsSettingsView: View {
                         Text(Dates.short(e.record.day)).font(.caption).foregroundStyle(Theme.secondary)
                         Text(e.headline).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
                         Text(e.why).font(.footnote).foregroundStyle(Theme.secondary)
+                        if e.claudePicked {
+                            Text("Picked by Claude from the rule book\u{2019}s choices")
+                                .font(.caption).foregroundStyle(Theme.secondary)
+                        }
                         Text(keeper.keep.answerWords(e, today: keeper.today))
                             .font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
                     }

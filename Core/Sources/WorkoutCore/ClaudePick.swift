@@ -90,7 +90,11 @@ public enum ClaudePick {
 
     /* The longest reason that is accepted, and the longest he is asked for. */
     public static let longestWhy = 160
-    public static let blocked = ["doctor", "diagnos", "injur", "should see", "medication", "sleep", "slept", "hrv", "pulse"]
+    public static let blocked = ["doctor", "diagnos", "injur", "should see", "medication", "sleep", "slept", "hrv", "pulse",
+                                 "medical", "symptom", "illness", "sick", "fever", "physio", "heart", "pain"]
+    /* Plain text only: no links, no markup. */
+    static let notPlain = ["http", "www.", "://", "mailto", ".com", "@"]
+    static let markup = CharacterSet(charactersIn: "<>*_`#[]{}|\\~")
 
     public static let system = """
     You help an amateur athlete who is preparing for a half-distance triathlon. A fixed rule book has already decided that a suggestion is due and has written a numbered menu of changes to his training plan. You may only choose a number from that menu. 0 means keep the plan as it is. You change nothing yourself; he decides with a tap.
@@ -152,14 +156,15 @@ public enum ClaudePick {
         return (try? JSONSerialization.data(withJSONObject: root, options: [.sortedKeys])) ?? Data()
     }
 
-    /* The reason as it may be shown, or nil: one line, "Why: " first, short, never medical. */
+    /* The reason as it may be shown, or nil: one line, "Why: " first, short, never medical, plain text (no links, no markup). */
     public static func cleanWhy(_ raw: String) -> String? {
         var why = raw.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
         guard !why.isEmpty else { return nil }
         if !why.hasPrefix("Why:") { why = "Why: " + why }
         guard why.count > 4, why.count <= longestWhy else { return nil }
         let lower = why.lowercased()
-        guard !blocked.contains(where: { lower.contains($0) }) else { return nil }
+        guard !blocked.contains(where: { lower.contains($0) }), !notPlain.contains(where: { lower.contains($0) }) else { return nil }
+        guard !why.unicodeScalars.contains(where: { markup.contains($0) || CharacterSet.controlCharacters.contains($0) }) else { return nil }
         return why
     }
 
