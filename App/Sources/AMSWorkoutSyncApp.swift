@@ -174,6 +174,9 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_EXTRA_DETAIL"] != nil, let x = store.allExtras.first(where: { $0.dayKey == store.today }) ?? store.allExtras.first {
                 ExtraDetailView(extra: x).environmentObject(store)
             }
+            if ProcessInfo.processInfo.environment["AMSWS_POOL_CARD"] != nil, let w = store.displayed.first(where: { $0.discipline.id == "swim" }) {
+                PoolCardView(title: w.title, set: w.swimSet, close: {})
+            }
         #endif
     }
 

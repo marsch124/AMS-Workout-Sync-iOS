@@ -69,6 +69,8 @@ struct SessionCard: View {
     let workout: Workout
     let mapping: Mapping
     var showDay = false
+    /* Today's card: the grey "Why:" line under the title. */
+    var showsWhy = false
     /* A list draws the pen over the card's bottom corner; the pills keep clear of it. */
     var cornerRoom: CGFloat = 0
 
@@ -86,6 +88,7 @@ struct SessionCard: View {
                     .foregroundStyle(Theme.text)
                     .multilineTextAlignment(.leading)
                     .lineLimit(3)
+                if showsWhy { SessionWhyLine(workout: workout) }
                 FlowRow(spacing: 6) {
                     if showDay { Pill(text: Dates.short(workout.dayKey)) }
                     if let seconds = Plan.plannedSeconds(workout, mapping), seconds > 0 {
