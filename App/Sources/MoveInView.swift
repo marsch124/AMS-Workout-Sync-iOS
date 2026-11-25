@@ -18,17 +18,6 @@ struct MoveInView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    if !switched {
-                        Button("Cancel") { store.cancelTakingIn(); dismiss() }
-                            .foregroundStyle(Theme.today)
-                            .accessibilityIdentifier("movein-cancel-top")
-                    }
-                    Spacer(minLength: 0)
-                }
-                .padding(.top, 8)
-                Text("The plan moves in").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
-                    .accessibilityIdentifier("movein-title")
                 if switched {
                     finished
                 } else if store.cloud.cloudHasPlan, store.incoming == nil {
@@ -44,7 +33,7 @@ struct MoveInView: View {
                             Text(store.takingIn ? "Counting…" : "Take the plan in and count")
                                 .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
                         }
-                        .buttonStyle(.borderedProminent).tint(Theme.today)
+                        .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                         .accessibilityIdentifier("movein-take")
                     }
                     if let why = store.homeProblem {
@@ -62,7 +51,22 @@ struct MoveInView: View {
             .padding(.bottom, 32)
         }
         .background(Theme.bg.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
+        // The small centred title every other Settings page has; Cancel stays at the top left.
+        .navigationTitle("The plan moves in")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("The plan moves in").font(.headline).foregroundStyle(Theme.text)
+                    .accessibilityIdentifier("movein-title")
+            }
+            if !switched {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { store.cancelTakingIn(); dismiss() }
+                        .foregroundStyle(Theme.today)
+                        .accessibilityIdentifier("movein-cancel-top")
+                }
+            }
+        }
         .interactiveDismissDisabled(store.incoming != nil && !switched)
         // The switch reads the Excel file once more before it happens, so the
         // page waits to be told rather than assuming.
@@ -97,7 +101,7 @@ struct MoveInView: View {
                 Text(usingICloud ? "Bringing the plan from iCloud…" : "Use the plan from iCloud")
                     .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }
-            .buttonStyle(.borderedProminent).tint(Theme.today)
+            .buttonStyle(.borderedProminent).tint(Theme.mainButton)
             .accessibilityIdentifier("movein-use-icloud")
             if let cloudProblem {
                 Text(cloudProblem).font(.footnote).foregroundStyle(Theme.danger)
@@ -208,7 +212,7 @@ struct MoveInView: View {
                 Text(store.switching ? "Reading the Excel file once more…" : "Make this app the plan’s home")
                     .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }
-            .buttonStyle(.borderedProminent).tint(Theme.today)
+            .buttonStyle(.borderedProminent).tint(Theme.mainButton)
             .accessibilityIdentifier("movein-switch")
             .padding(.top, 6)
             Text("Your Excel file is not changed. You can go back for three weeks.")
@@ -245,7 +249,7 @@ struct MoveInView: View {
             Button { dismiss() } label: {
                 Text("Done").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }
-            .buttonStyle(.borderedProminent).tint(Theme.today)
+            .buttonStyle(.borderedProminent).tint(Theme.mainButton)
             .accessibilityIdentifier("movein-done")
         }
         .font(.subheadline).foregroundStyle(Theme.secondary)

@@ -388,6 +388,14 @@ struct SettingsView: View {
  * size any more.
  */
 extension View {
+    /* The same small size, but full colour with white words: the one main button of a page. */
+    func mainSmallButton() -> some View {
+        font(.caption.weight(.semibold))
+            .buttonStyle(.borderedProminent)
+            .controlSize(.mini)
+            .tint(Theme.mainButton)
+    }
+
     func settingsButton(tint: Color, filled: Bool = false) -> some View {
         font(.caption.weight(.semibold))
             .buttonStyle(.bordered)

@@ -342,7 +342,7 @@ struct BoardCard: View {
 
     private var minutes: String? {
         guard let s = Plan.plannedSeconds(workout, mapping), s > 0 else { return nil }
-        return s < 3600 ? "\(Int((s / 60).rounded())) min" : formatDuration(s)
+        return formatDuration((s / 60).rounded() * 60)
     }
 
     /*

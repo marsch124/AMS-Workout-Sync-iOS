@@ -34,6 +34,8 @@ enum Theme {
     static let danger = Color.dynamic(light: 0xc81e1e, dark: 0xff6b6b)
 
     static let today = Color.dynamic(light: 0x00875A, dark: 0x00C97B)
+    /* Full-colour main buttons: white words need a deeper green than the bright night mint. */
+    static let mainButton = Color.dynamic(light: 0x00875A, dark: 0x00875A)
     static let plan = Color.dynamic(light: 0x1266C8, dark: 0x3B9EFF)
     static let progress = Color.dynamic(light: 0x7C3AED, dark: 0xC084FC)
     static let settings = Color.dynamic(light: 0x5A6B7B, dark: 0x94A3B8)

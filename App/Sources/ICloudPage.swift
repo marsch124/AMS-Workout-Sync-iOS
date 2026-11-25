@@ -46,7 +46,7 @@ struct ICloudPage: View {
                 Button { cloud.syncNow() } label: {
                     Text("Sync now").font(.headline).frame(maxWidth: .infinity, minHeight: 40)
                 }
-                .buttonStyle(.borderedProminent).tint(Theme.today)   // the main button is never grey
+                .buttonStyle(.borderedProminent).tint(Theme.mainButton)   // the main button is never grey
                 .accessibilityIdentifier("icloud-sync-now")
 
                 SectionHeading(text: "Your devices")
@@ -69,6 +69,7 @@ struct ICloudPage: View {
                         .accessibilityIdentifier("icloud-device-" + d.kind)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)   // as wide as the cards around it
                 .padding(.horizontal, 14)
                 .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                 .accessibilityElement(children: .contain)
@@ -214,7 +215,7 @@ struct TwoPlansView: View {
             Button(action: use) {
                 Text("Use this one").font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 34)
             }
-            .buttonStyle(.borderedProminent).tint(Theme.today)
+            .buttonStyle(.borderedProminent).tint(Theme.mainButton)
             .padding(.top, 4)
             .accessibilityIdentifier(id + "-use")
         }

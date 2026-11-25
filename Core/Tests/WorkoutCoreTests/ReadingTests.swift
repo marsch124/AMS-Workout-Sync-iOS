@@ -30,8 +30,9 @@ final class ReadingTests: XCTestCase {
 
     func testDurationsAreWrittenBackAsTheSheetWritesThem() {
         XCTAssertEqual(formatDuration(35 * 60), "35m")
-        XCTAssertEqual(formatDuration(90 * 60), "1h 30m")
-        XCTAssertEqual(formatDuration(0), "0s")
+        XCTAssertEqual(formatDuration(90 * 60), "1h\u{00A0}30m")
+        XCTAssertEqual(formatDuration(66 * 3600 + 8 * 60), "66h\u{00A0}08m", "two-digit minutes, one unbreakable figure")
+        XCTAssertEqual(formatDuration(0), "0m", "never 0s")
         XCTAssertEqual(formatDuration(nil), "")
     }
 

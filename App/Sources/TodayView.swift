@@ -80,9 +80,19 @@ struct TodayView: View {
             }
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()
-            WeekCard(view: view, today: today)
+            if view.plan.isEmpty {
+                // First run, no plan yet: no empty week drawing, one plain line saying where it comes from.
+                Text("No plan yet — Settings → Your plan brings it in.")
+                    .font(.subheadline).foregroundStyle(Theme.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 2)
+                    .accessibilityIdentifier("today-no-plan")
+            } else {
+                WeekCard(view: view, today: today)
+            }
 
-            if sessions.isEmpty {
+            if view.plan.isEmpty {
+            } else if sessions.isEmpty {
                 RestCard(text: "Nothing planned today")
             } else if sessions.allSatisfy({ $0.discipline.id == "rest" }) {
                 RestCard(text: sessions[0].title)
@@ -284,7 +294,7 @@ struct TodayView: View {
                         .padding(.horizontal, 2)
                         .accessibilityIdentifier("feel-from-neighbour-note")
                 }
-                GarminMorningRow(today: today, alone: !healthLine)
+                GarminMorningRow(today: today, alone: !healthLine && (feel == nil || feelFrom == nil))
                 }
                 .task { await health.readMorning() }
                 .task { await garmin.readIfDue(today: today) }
@@ -318,8 +328,9 @@ struct TodayView: View {
         private func value(_ s: String) -> Text { Text(s).fontWeight(.bold).foregroundStyle(Theme.text) }
 
         private func hours(_ h: Double) -> String {
-            let whole = Int(h), minutes = Int(((h - Double(whole)) * 60).rounded())
-            return minutes == 0 ? "\(whole)h" : "\(whole)h \(minutes)m"
+            // As every other length of time: "7h 24m", "45m" (a plain space: the row is one line).
+            let total = Int((h * 60).rounded()), whole = total / 60, minutes = total % 60
+            return whole == 0 ? "\(minutes)m" : "\(whole)h " + String(format: "%02dm", minutes)
         }
 
         /* How far from his own fortnight, in brackets — or how soon there will be one. */
@@ -403,7 +414,7 @@ struct WaitingWarning: View {
             Text("Logging has not reached Dropbox").font(.headline).foregroundStyle(Theme.text)
             Text(text).font(.subheadline).foregroundStyle(Theme.secondary)
             Button(store.syncing ? "Sending…" : "Send it now") { store.syncNow() }
-                .font(.subheadline.weight(.semibold)).buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.today)
+                .font(.subheadline.weight(.semibold)).buttonStyle(.borderedProminent).controlSize(.small).tint(Theme.mainButton)
                 .disabled(store.syncing)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -498,16 +509,21 @@ struct WeekCard: View {
 
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("This week").font(.headline).foregroundStyle(Theme.text)
-                Button(keyOpen ? "Hide key" : "Key") { withAnimation(.easeInOut(duration: 0.15)) { keyOpen.toggle() } }
-                    .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
-                Spacer()
-                VStack(alignment: .trailing, spacing: 5) {
+                // The figure stands right under its name, on the left; the bar keeps its place at the right.
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack {
+                        Text("This week").font(.headline).foregroundStyle(Theme.text)
+                        Button(keyOpen ? "Hide key" : "Key") { withAnimation(.easeInOut(duration: 0.15)) { keyOpen.toggle() } }
+                            .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
+                    }
                     Text(done > 0 ? "\(formatDuration(done)) of \(formatDuration(planned))" : "\(formatDuration(planned)) planned")
                         .font(.subheadline.weight(.semibold).monospacedDigit())
                         .foregroundStyle(Theme.secondary)
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 5) {
                     if planned > 0 {
                         // Extras that count as training: their own time, beside the plan's
                         // and never inside it (his ask, 2026-09-27).
@@ -576,7 +592,7 @@ struct WeekKey: View {
     let days: [PlanDay]
 
     var body: some View {
-        let sports = Disciplines.five.map { ($0.id, $0.label) } + others + [("rest", "Rest / not a plan sport")]
+        let sports = Disciplines.five.map { ($0.id, $0.label) } + others
         VStack(alignment: .leading, spacing: 10) {
             if !days.isEmpty { Divider() }
             HStack(spacing: 14) {
@@ -608,6 +624,11 @@ struct WeekKey: View {
                         Text(label).font(.caption).foregroundStyle(Theme.secondary)
                     }
                 }
+            }
+            // A row of its own: in a third of the width it folded into three short lines.
+            HStack(spacing: 6) {
+                Circle().fill(Theme.sport("rest")).frame(width: 10, height: 10)
+                Text("Rest / not a plan sport").font(.caption).foregroundStyle(Theme.secondary)
             }
         }
     }
@@ -650,7 +671,7 @@ struct EmptyWorkbook: View {
                     .frame(maxWidth: .infinity, minHeight: 52)
             }
             .buttonStyle(.borderedProminent)
-            .tint(Theme.today)
+            .tint(Theme.mainButton)
             Text("In Files, open Dropbox and pick your plan. This app only reads it.")
                 .font(.footnote).foregroundStyle(Theme.secondary).multilineTextAlignment(.center)
         }

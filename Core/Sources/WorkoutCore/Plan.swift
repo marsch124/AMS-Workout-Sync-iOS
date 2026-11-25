@@ -147,15 +147,17 @@ public func durationFromCell(_ value: Double?, _ unit: String) -> Double? {
     }
 }
 
+/* One way to write a length of time everywhere: "66h 08m", "45m" — never "0s".
+ * The space is a non-breaking one, so a figure never splits over two lines. */
 public func formatDuration(_ seconds: Double?) -> String {
     guard let seconds, !seconds.isNaN else { return "" }
     let total = Int(seconds.rounded())
     let h = total / 3600
     let m = (total % 3600) / 60
     let s = total % 60
-    if h > 0 { return "\(h)h " + String(format: "%02dm", m) }
-    if m > 0 { return s > 0 ? "\(m)m " + String(format: "%02ds", s) : "\(m)m" }
-    return "\(s)s"
+    if h > 0 { return "\(h)h\u{00A0}" + String(format: "%02dm", m) }
+    if m > 0 { return s > 0 ? "\(m)m\u{00A0}" + String(format: "%02ds", s) : "\(m)m" }
+    return s > 0 ? "\(s)s" : "0m"
 }
 
 private let minuteWords = Pattern("\\b(min|mins|minute|minutes|minuten)\\b")

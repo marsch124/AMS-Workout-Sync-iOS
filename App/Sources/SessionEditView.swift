@@ -154,7 +154,7 @@ struct SessionEditView: View {
                     Button(action: save) {
                         Text("Save").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     }
-                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .buttonStyle(.borderedProminent).tint(Theme.mainButton)
                     .accessibilityIdentifier("edit-save")
                     // On the button that is always there: the note itself may be empty.
                     .task(id: liveDraft) {
