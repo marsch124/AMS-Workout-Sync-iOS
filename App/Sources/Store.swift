@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 import WorkoutCore
 
 /*
@@ -223,15 +224,43 @@ final class Store: ObservableObject {
 
     /* The Calendar app follows the plan as shown: the sheet with the queue laid over it. */
     func calendarChanged() {
-        guard let mapping else { return }
+        // The iPhone alone keeps the Training calendar: it lives in iCloud's calendars and shows on the
+        // iPad and the Mac already. Written by all three, every event would be there three times.
+        guard Device.isPhone, let mapping else { return }
         TrainingCalendar.shared.sync(displayed, mapping: mapping, today: today)
     }
 
+    /* The meeting point with iCloud (2.1). Made on first use; its changes redraw whatever shows the store. */
+    private var cloudWatch: AnyCancellable?
+    private(set) lazy var cloud: PlanCloud = {
+        let made = PlanCloud(store: self)
+        cloudWatch = made.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }
+        return made
+    }()
+
     init() {
+        open()
+        // iCloud is looked for once the plan here is open; never before, never instead.
+        Diary.shared.onChange = { [weak self] in self?.cloud.localChanged() }
+        Task { @MainActor [weak self] in self?.cloud.start() }
+    }
+
+    private func open() {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_RESET"] != nil {
             try? FileManager.default.removeItem(at: queueURL)
             UserDefaults.standard.removeObject(forKey: "moveLog")
+            UserDefaults.standard.removeObject(forKey: "moveLog.inBook")
+            UserDefaults.standard.removeObject(forKey: PlanCloud.joinedKey)
+            UserDefaults.standard.removeObject(forKey: PlanCloud.joinedAtKey)
+            try? FileManager.default.removeItem(at: beforeICloudURL)
+            // A screen test with a stand-in iCloud starts with nothing of a plan at all, whatever ran before it.
+            if ProcessInfo.processInfo.environment["AMSWS_FAKE_CLOUD"] != nil {
+                try? FileManager.default.removeItem(at: cacheURL)
+                UserDefaults.standard.removeObject(forKey: bookmarkKey)
+                UserDefaults.standard.removeObject(forKey: "dropboxPath")
+                if ProcessInfo.processInfo.environment["AMSWS_FAKE_PATH"] == nil { dropboxPath = nil }
+            }
             HealthMark.forgetAll()
             UserDefaults.standard.removeObject(forKey: "health.asked")
             UserDefaults.standard.removeObject(forKey: "health.enabled")
@@ -265,8 +294,11 @@ final class Store: ObservableObject {
             // The flag decides. A plan that lives here is never quietly swapped
             // for an old copy of the Excel file: he would log into the wrong plan.
             home = .app
-            if let saved = (try? Data(contentsOf: bookURL)).flatMap({ try? PlanBook.decoded($0) }) {
+            if var saved = (try? Data(contentsOf: bookURL)).flatMap({ try? PlanBook.decoded($0) }) {
+                let carried = carryIntoBook(&saved)
                 publish(saved)
+                // The move log and the workbook's mark go into the book once (2.1); the flag only after it is on disk.
+                if !carried || save(saved) { UserDefaults.standard.set(true, forKey: "moveLog.inBook") }
                 // Anything still waiting from before the app was last closed is written in now.
                 if !queue.isEmpty { writeHere() }
                 return
@@ -319,6 +351,8 @@ final class Store: ObservableObject {
 
     /* Read the workbook again from wherever it lives. */
     func refresh() {
+        // Coming to the front is a meeting with iCloud too (it does nothing where iCloud is off).
+        cloud.start()
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FILE"] != nil { return }
         #endif
@@ -510,6 +544,12 @@ final class Store: ObservableObject {
         if moves.count > 600 {
             for key in moves.sorted { $0.value.at < $1.value.at }.prefix(moves.count - 600).map(\.key) { moves[key] = nil }
         }
+        // Since 2.1 the move log of a plan that lives here is part of the plan, so every device reads the same.
+        if home == .app, var book {
+            book.moves = moves
+            save(book)
+            return
+        }
         if let data = try? JSONEncoder().encode(moves) { UserDefaults.standard.set(data, forKey: "moveLog") }
     }
 
@@ -643,9 +683,17 @@ final class Store: ObservableObject {
     @Published var syncStatus: SyncStatus = .off
     /* For three weeks after the switch Excel can become the home again. */
     var canGoBackUntil: Date? { switchedAt.map { $0.addingTimeInterval(21 * 86400) } }
-    var canGoBack: Bool { home == .app && (canGoBackUntil.map { $0 > Date() } ?? false) && dropboxPath != nil && Dropbox.shared.isConnected }
+    private var goBackWindowOpen: Bool { home == .app && Device.isPhone && (canGoBackUntil.map { $0 > Date() } ?? false) }
+    /* Closed once an iPad or Mac uses the plan too: going back would leave them with a plan nobody writes. */
+    var canGoBack: Bool { goBackWindowOpen && dropboxPath != nil && Dropbox.shared.isConnected && !cloud.otherDevicesUsePlan }
+    var goBackClosed: Bool { goBackWindowOpen && cloud.otherDevicesUsePlan }
+
+    /* Counts every plan put on screen, so a meeting can tell the plan changed while it was joining. */
+    private(set) var bookVersion = 0
 
     private func publish(_ book: PlanBook) {
+        bookVersion += 1
+        if home == .app { moves = book.moves }
         self.book = book
         plan = book.sessions
         extras = book.extras
@@ -668,6 +716,9 @@ final class Store: ObservableObject {
             lastProblem = BookError.newerApp.localizedDescription
             return false
         }
+        // Every change is marked here, by difference with what was there, so no other place has to
+        // remember it — the marks are what decide, when two devices meet, which change is the newer.
+        let book = book.stamped(after: self.book ?? book)
         do {
             let data = try book.encoded()
             try FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
@@ -680,6 +731,7 @@ final class Store: ObservableObject {
         publish(book)
         keepWeeklySpreadsheet(book)
         copyToDropboxSoon()
+        cloud.localChanged()
         return true
     }
 
@@ -826,6 +878,9 @@ final class Store: ObservableObject {
 
     private func finishSwitch(_ taken: PlanImport, _ bytes: Data) {
         let fm = FileManager.default
+        var book = taken.book
+        book.origin.originalHash = PlanCloud.hash(bytes)
+        let carried = carryMoves(&book)
         do {
             try fm.createDirectory(at: supportURL, withIntermediateDirectories: true)
             // A plan already kept here (one that would not open, or from an
@@ -834,7 +889,7 @@ final class Store: ObservableObject {
                 try? fm.moveItem(at: bookURL, to: supportURL.appendingPathComponent("plan-before-\(Int(Date().timeIntervalSince1970)).json"))
             }
             try bytes.write(to: originalURL, options: .atomic)
-            try taken.book.encoded().write(to: bookURL, options: .atomic)
+            try book.encoded().write(to: bookURL, options: .atomic)
         } catch {
             homeProblem = "The plan could not be saved on this phone: \(error.localizedDescription) Nothing was changed."
             return
@@ -847,9 +902,11 @@ final class Store: ObservableObject {
         incoming = nil
         incomingBytes = nil
         lastProblem = nil
-        publish(taken.book)
-        keepWeeklySpreadsheet(taken.book, force: true)
+        if carried || UserDefaults.standard.data(forKey: "moveLog") == nil { UserDefaults.standard.set(true, forKey: "moveLog.inBook") }
+        publish(book)
+        keepWeeklySpreadsheet(book, force: true)
         copyToDropboxSoon()
+        cloud.localChanged()
     }
 
     /*
@@ -887,6 +944,7 @@ final class Store: ObservableObject {
                 UserDefaults.standard.set(Home.excel.rawValue, forKey: self.homeKey)
                 self.home = .excel
                 self.book = nil
+                await self.cloud.planLeftTheApp()
                 self.rev = uploaded.rev
                 self.parse(uploaded.data, cached: false)
             } catch {
@@ -1023,8 +1081,15 @@ final class Store: ObservableObject {
             lastProblem = "A safety copy can be put back only while the plan lives in this app. Nothing was changed."
             return false
         }
-        guard let data = try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json")),
-              let copy = try? PlanBook.decoded(data) else {
+        guard let old = (try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json"))).flatMap({ try? PlanBook.decoded($0) }),
+              !old.isFromNewerApp else {
+            lastProblem = "That safety copy could not be opened. Nothing was changed."
+            return false
+        }
+        // Marked as a change made now, so on the other devices it wins over what came after the copy —
+        // which is what putting it back means. What it takes out gets a removed mark the same way.
+        let copy = old.stamped(after: book ?? old)
+        guard let data = try? copy.encoded() else {
             lastProblem = "That safety copy could not be opened. Nothing was changed."
             return false
         }
@@ -1054,6 +1119,7 @@ final class Store: ObservableObject {
         if !queue.isEmpty { writeHere() }
         keepWeeklySpreadsheet(copy)
         copyToDropboxSoon()
+        cloud.localChanged()
         return true
     }
 
@@ -1077,6 +1143,225 @@ final class Store: ObservableObject {
         }
     }
 #endif
+
+    // MARK: iCloud (2.1)
+
+    /* What this device does when it meets iCloud. */
+    enum CloudRole {
+        /* The plan lives here: it meets iCloud's plan (the book and the version on screen). */
+        case member(PlanBook, Int)
+        /* No plan at all on this device: it takes iCloud's, without asking — there is nothing to lose. */
+        case empty
+        /* The plan lives in Excel here: nothing of the plan is shared; the move-in page offers iCloud's. */
+        case excel
+        /* Moving in, going back, or a plan here that would not open: the plan waits. */
+        case busy
+    }
+
+    var cloudRole: CloudRole {
+        if takingIn || switching || goingBack { return .busy }
+        if home == .app {
+            guard let book, !book.isFromNewerApp else { return .busy }
+            return .member(book, bookVersion)
+        }
+        return hasNoPlanAtAll ? .empty : .excel
+    }
+
+    /* Nothing of a plan on this device: no book, no workbook read or chosen, nothing waiting. */
+    var hasNoPlanAtAll: Bool {
+        book == nil && plan.isEmpty && queue.isEmpty && dropboxPath == nil
+            && UserDefaults.standard.data(forKey: bookmarkKey) == nil
+            && !FileManager.default.fileExists(atPath: cacheURL.path)
+            && !FileManager.default.fileExists(atPath: bookURL.path)
+    }
+
+    var beforeICloudURL: URL { supportURL.appendingPathComponent("Before iCloud", isDirectory: true) }
+    var originalFileURL: URL { originalURL }
+    var hasOriginal: Bool { FileManager.default.fileExists(atPath: originalURL.path) }
+
+    private static func stampNow() -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd-HHmmss"
+        return f.string(from: Date())
+    }
+
+    /*
+     * Before this device meets iCloud for the first time: the plan, the diary
+     * and anything waiting, copied into "Before iCloud" and never pruned. False
+     * only if a file that exists could not be copied (no room): then iCloud
+     * waits rather than go ahead without it.
+     */
+    func keepBeforeICloud() -> Bool {
+        let fm = FileManager.default
+        let stamp = Store.stampNow()
+        do {
+            try fm.createDirectory(at: beforeICloudURL, withIntermediateDirectories: true)
+            for (from, name) in [(bookURL, "plan"), (supportURL.appendingPathComponent("diary.json"), "diary"), (queueURL, "waiting")] {
+                guard fm.fileExists(atPath: from.path) else { continue }
+                try fm.copyItem(at: from, to: beforeICloudURL.appendingPathComponent("\(name)-\(stamp).json"))
+            }
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /* The plan copy from before iCloud, for "Copy from before iCloud" on the iCloud page. */
+    var beforeICloudCopy: URL? {
+        let names = ((try? FileManager.default.contentsOfDirectory(atPath: beforeICloudURL.path)) ?? [])
+            .filter { $0.hasPrefix("plan-") && $0.hasSuffix(".json") }.sorted()
+        return names.first.map { beforeICloudURL.appendingPathComponent($0) }
+    }
+
+    /* A file from iCloud that could not be read: its bytes are kept here before anything is written over it. */
+    func parkFromICloud(_ data: Data, name: String) {
+        let folder = supportURL.appendingPathComponent("From iCloud unreadable", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try? data.write(to: folder.appendingPathComponent("\(Store.stampNow()) \(name)"), options: .atomic)
+    }
+
+    /* A whole plan kept as a file in Before iCloud (the one not chosen of two). */
+    func keepAside(_ book: PlanBook, as name: String) {
+        try? FileManager.default.createDirectory(at: beforeICloudURL, withIntermediateDirectories: true)
+        try? book.encoded().write(to: beforeICloudURL.appendingPathComponent("\(name)-\(Store.stampNow()).json"), options: .atomic)
+    }
+
+    /*
+     * Before a plan joined with iCloud's replaces the one here: a copy of the
+     * one here. Newest 20 kept; the copies from meetings that took something
+     * away from this device ("-took") are counted apart, so twenty quiet
+     * meetings cannot push them out.
+     */
+    private func keepBeforeMerge(took: Bool) -> Bool {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: bookURL.path) else { return true }
+        do {
+            try fm.createDirectory(at: backupsURL, withIntermediateDirectories: true)
+            let name = "before-merge-\(Store.stampNow())\(took ? "-took" : "").json"
+            let to = backupsURL.appendingPathComponent(name)
+            if fm.fileExists(atPath: to.path) { try fm.removeItem(at: to) }
+            try fm.copyItem(at: bookURL, to: to)
+        } catch {
+            return false
+        }
+        let all = ((try? fm.contentsOfDirectory(atPath: backupsURL.path)) ?? []).filter { $0.hasPrefix("before-merge-") }.sorted()
+        for group in [all.filter { $0.hasSuffix("-took.json") }, all.filter { !$0.hasSuffix("-took.json") }] {
+            for old in group.dropLast(20) { try? fm.removeItem(at: backupsURL.appendingPathComponent(old)) }
+        }
+        return true
+    }
+
+    /*
+     * The plan joined with iCloud's, put in place here — only if the plan here
+     * is still the one that was joined (else the meeting joins again), and
+     * only after a safety copy. On disk first, then on screen. Not marked:
+     * its marks came with it.
+     */
+    func takeFromCloud(_ joined: PlanBook, takenAway: [String], version: Int) -> Bool {
+        guard home == .app, version == bookVersion, !joined.isFromNewerApp, !goingBack else { return false }
+        keepSafetyCopy()
+        guard keepBeforeMerge(took: !takenAway.isEmpty) else {
+            lastProblem = "No room for a safety copy, so the plan from your other devices was not put in place. Nothing was changed."
+            return false
+        }
+        do {
+            try joined.encoded().write(to: bookURL, options: .atomic)
+        } catch {
+            lastProblem = "The plan from your other devices could not be saved on this \(Device.word) (\(error.localizedDescription)). Nothing was changed."
+            return false
+        }
+        publish(joined)
+        // Logging that could not be written before (its session may have come back) is tried again.
+        if !queue.isEmpty { writeHere() }
+        keepWeeklySpreadsheet(joined)
+        copyToDropboxSoon()
+        return true
+    }
+
+    /* A device with no plan of its own takes iCloud's. */
+    func adoptFromCloud(_ cloudBook: PlanBook) -> Bool {
+        guard hasNoPlanAtAll, !cloudBook.isFromNewerApp else { return false }
+        return makeHome(cloudBook)
+    }
+
+    /* The iPhone on Excel, on the move-in page: iCloud's plan becomes the plan here; what waits is written into it. */
+    func useCloudPlan(_ cloudBook: PlanBook) -> Bool {
+        guard home == .excel, !takingIn, !switching, !cloudBook.isFromNewerApp else { return false }
+        homeProblem = nil
+        incoming = nil
+        incomingBytes = nil
+        var book = cloudBook
+        let carried = carryMoves(&book)
+        guard makeHome(book) else { return false }
+        if carried { UserDefaults.standard.set(true, forKey: "moveLog.inBook") }
+        if !queue.isEmpty { writeHere() }
+        return true
+    }
+
+    /* He chose iCloud's plan over the one here (TwoPlansView); the one here was kept aside first. */
+    func replaceWithCloudPlan(_ cloudBook: PlanBook) -> Bool {
+        guard home == .app, !cloudBook.isFromNewerApp else { return false }
+        let fm = FileManager.default
+        if fm.fileExists(atPath: originalURL.path) {
+            try? fm.createDirectory(at: beforeICloudURL, withIntermediateDirectories: true)
+            try? fm.moveItem(at: originalURL, to: beforeICloudURL.appendingPathComponent("other-plan-original-\(Store.stampNow()).xlsx"))
+        }
+        return makeHome(cloudBook)
+    }
+
+    private func makeHome(_ book: PlanBook) -> Bool {
+        let fm = FileManager.default
+        do {
+            try fm.createDirectory(at: supportURL, withIntermediateDirectories: true)
+            if fm.fileExists(atPath: bookURL.path) {
+                keepSafetyCopy()
+                try? fm.moveItem(at: bookURL, to: supportURL.appendingPathComponent("plan-before-\(Int(Date().timeIntervalSince1970)).json"))
+            }
+            try book.encoded().write(to: bookURL, options: .atomic)
+        } catch {
+            homeProblem = "The plan from iCloud could not be saved on this \(Device.word): \(error.localizedDescription) Nothing was changed."
+            return false
+        }
+        UserDefaults.standard.set(Home.app.rawValue, forKey: homeKey)
+        let at = book.origin.takenAt
+        UserDefaults.standard.set(at, forKey: "plan.switchedAt")
+        switchedAt = at
+        home = .app
+        lastProblem = nil
+        publish(book)
+        return true
+    }
+
+    /* The frozen workbook, fetched from iCloud by a device that did not make the switch. */
+    func saveOriginal(_ data: Data) {
+        guard !FileManager.default.fileExists(atPath: originalURL.path) else { return }
+        try? FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
+        try? data.write(to: originalURL, options: .atomic)
+    }
+
+    /* The move log of the Excel days goes into the book: a move the book does not know yet. */
+    private func carryMoves(_ book: inout PlanBook) -> Bool {
+        guard !UserDefaults.standard.bool(forKey: "moveLog.inBook"),
+              let data = UserDefaults.standard.data(forKey: "moveLog"),
+              let old = try? JSONDecoder().decode([String: MoveRecord].self, from: data) else { return false }
+        var changed = false
+        for (key, move) in old where book.moves[key] == nil {
+            book.moves[key] = move
+            changed = true
+        }
+        return changed
+    }
+
+    /* Once, on opening a plan that lives here: the move log, and the mark of the workbook it came from. */
+    private func carryIntoBook(_ book: inout PlanBook) -> Bool {
+        var changed = carryMoves(&book)
+        if book.origin.originalHash == nil, let data = try? Data(contentsOf: originalURL) {
+            book.origin.originalHash = PlanCloud.hash(data)
+            changed = true
+        }
+        return changed
+    }
 
     // MARK: changing the plan itself
 

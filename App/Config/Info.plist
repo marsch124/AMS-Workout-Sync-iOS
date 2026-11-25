@@ -42,7 +42,7 @@
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>To keep your sessions in a Training calendar — added, moved and removed as the plan changes. Full access is what iOS requires for an app to update events it made itself.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>To take a photograph of a session and keep it beside the plan. Photos stay on this phone.</string>
+	<string>To take a photograph of a session and keep it beside the plan, on your iPhone, iPad and Mac through your own iCloud.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>AMS Triathlon Training reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them, and so hikes and gym sessions outside the plan count in your load. Nothing is written to Health.</string>
 	<key>NSHealthUpdateUsageDescription</key>
@@ -57,6 +57,13 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 </dict>
 </plist>

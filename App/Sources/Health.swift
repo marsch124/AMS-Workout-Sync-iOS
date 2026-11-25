@@ -84,6 +84,60 @@ final class HealthImport: ObservableObject {
 
     @Published private(set) var morning = Morning()
 
+    /* What the iPhone shared through iCloud (2.1); read on the iPad and the Mac. */
+    @Published var shared: HealthShare?
+
+    /*
+     * The morning as the Today line shows it, and where it came from. On the
+     * iPhone its own Health, always. On the Mac the iPhone's numbers; on an
+     * iPad its own when it has any, else the iPhone's. `from` is nil for
+     * numbers read here, else "from iPhone, as of 07:12"; `stale` when they
+     * are older than 18 hours.
+     */
+    func shownMorning(today: String, now: Date = Date()) -> (morning: Morning, from: String?, stale: Bool) {
+        if Device.isPhone || (!Device.isMac && !morning.isEmpty) { return (morning, nil, false) }
+        guard let share = shared, let m = share.morning(onOrBefore: today)?.morning, !m.isEmpty else { return (morning, nil, false) }
+        return (Morning(share: m), share.asOfWords(now: now), share.isStale(now: now))
+    }
+
+    /*
+     * On the iPhone: what Health holds, for the iPad and the Mac — this
+     * morning's numbers beside the mornings already shared (14 days), the
+     * workouts of the last 14 days, and the Load card's list. Nil when Health
+     * is not in use here, or has nothing at all: an empty file never replaces
+     * a full one.
+     */
+    func shareForOtherDevices(previous: HealthShare?, today: String) async -> HealthShare? {
+        guard Device.isPhone, inUse else { return nil }
+        let now = Date()
+        var share = HealthShare(writtenAt: now)
+        share.mornings = previous?.mornings ?? [:]
+        if !morning.isEmpty {
+            let m = morning
+            share.mornings[today] = MorningShare(readAt: now, restingHR: m.restingHR, restingHRNormal: m.restingHRNormal,
+                                                 hrv: m.hrv, hrvNormal: m.hrvNormal, sleepHours: m.sleepHours,
+                                                 restingDays: m.restingDays, hrvDays: m.hrvDays)
+        }
+        var workouts: [WorkoutShare] = []
+        for back in 0..<14 {
+            let day = PlanView.addDays(today, -back)
+            for w in await ownWorkouts(on: day) {
+                workouts.append(WorkoutShare(id: w.id.uuidString, dayKey: day, sport: w.sport, typeName: w.typeName,
+                                             start: w.start, seconds: w.seconds, metres: w.metres, avgHr: w.avgHr, source: w.source))
+            }
+        }
+        share.workouts = workouts
+        share.found = Diary.shared.found
+        share = share.trimmed(today: today)
+        if share.mornings.isEmpty && share.workouts.isEmpty && share.found.isEmpty { return nil }
+        // Nothing new since the last file: the same file again, with its own time, so "as of" stays honest.
+        if let previous, previous.mornings == share.mornings, previous.workouts == share.workouts, previous.found == share.found,
+           now.timeIntervalSince(previous.writtenAt) < 3600 {
+            return previous
+        }
+        return share
+    }
+
     func readMorning() async {
         guard isAvailable, enabled else { return }
         await askForAnythingNew()
@@ -242,8 +296,21 @@ final class HealthImport: ObservableObject {
         }
     }
 
-    /* Every workout that started on that calendar day, newest first. */
+    /*
+     * Every workout that started on that calendar day, newest first. The Mac
+     * has no Health: its log form offers what the iPhone shared. An iPad uses
+     * its own Health and falls back on the iPhone's when its own has nothing.
+     */
     func workouts(on dayKey: String) async -> [HealthWorkout] {
+        guard !Device.isPhone else { return await ownWorkouts(on: dayKey) }
+        let fromPhone = (shared?.workouts ?? []).filter { $0.dayKey == dayKey }
+            .sorted { $0.start > $1.start }.map(HealthWorkout.init(share:))
+        if Device.isMac || !isAvailable || !enabled { return fromPhone }
+        let own = await ownWorkouts(on: dayKey)
+        return own.isEmpty ? fromPhone : own
+    }
+
+    private func ownWorkouts(on dayKey: String) async -> [HealthWorkout] {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FAKE_HEALTH"] != nil { return Self.fakes(dayKey) }
         #endif
@@ -381,6 +448,12 @@ final class HealthImport: ObservableObject {
 }
 
 extension HealthWorkout {
+    /* A workout the iPhone shared, as the log form offers it. */
+    init(share s: WorkoutShare) {
+        self.init(id: UUID(uuidString: s.id) ?? UUID(), sport: s.sport, typeName: s.typeName, start: s.start,
+                  seconds: s.seconds, metres: s.metres, avgHr: s.avgHr, source: s.source)
+    }
+
     /* The form's boxes, filled from this workout: minutes, distance in the box's unit, HR, and a pace the sport understands. */
     func formValues(for disciplineId: String) -> [String: String] {
         var v: [String: String] = [:]
@@ -406,5 +479,12 @@ extension HealthWorkout {
         if let metres, metres > 0 { parts.append(metres >= 1000 ? jsNumberString((metres / 100).rounded() / 10) + " km" : "\(Int(metres)) m") }
         if let avgHr { parts.append("\(Int(avgHr.rounded())) bpm") }
         return parts.joined(separator: " · ")
+    }
+}
+
+extension HealthImport.Morning {
+    init(share m: MorningShare) {
+        self.init(restingHR: m.restingHR, restingHRNormal: m.restingHRNormal, hrv: m.hrv, hrvNormal: m.hrvNormal,
+                  sleepHours: m.sleepHours, restingDays: m.restingDays, hrvDays: m.hrvDays)
     }
 }

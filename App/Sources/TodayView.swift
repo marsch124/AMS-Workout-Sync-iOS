@@ -24,10 +24,13 @@ struct TodayView: View {
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                if let view = store.view {
+                if let view = store.view, !store.cloud.showingArrival {
                     content(view)
                         .padding(.horizontal, 16)
                         .padding(.bottom, 32)
+                } else if !Device.isPhone || store.cloud.showingArrival {
+                    // The iPad and the Mac take the plan from iCloud: no Excel, no Dropbox, nothing to choose.
+                    WaitingForPlanView()
                 } else {
                     EmptyWorkbook()
                 }
@@ -61,7 +64,7 @@ struct TodayView: View {
             if !store.planLivesHere, let waited = store.waitedTooLong { WaitingWarning(text: waited) }
             // "Feeling good" joins the night's numbers on the one line; a tap
             // on the line brings the question back to change the answer.
-            MorningLine(feel: changingFeel ? nil : diary.feel.answer(on: today),
+            MorningLine(today: today, feel: changingFeel ? nil : diary.feel.answer(on: today),
                         change: { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true } })
             // The morning question: once a day, one tap, and it is gone until
             // tomorrow. Nothing else on this screen reacts to the answer.
@@ -210,12 +213,16 @@ struct TodayView: View {
      */
     private struct MorningLine: View {
         @ObservedObject private var health = HealthImport.shared
+        let today: String
         /* This morning's answer to "How do you feel?", once given. */
         var feel: Feel? = nil
         var change: () -> Void = {}
         var body: some View {
-            let m = health.morning
+            // On the iPad and the Mac the numbers may be the iPhone's: then they say so, and when.
+            let shown = health.shownMorning(today: today)
+            let m = shown.morning
             if !m.isEmpty || feel != nil {
+                VStack(alignment: .leading, spacing: 1) {
                 // One row, not three stacked readings: the figure, and beside it
                 // in brackets how far it sits from his own fortnight — always,
                 // so a missing trend never looks like a fault (his ask, 28
@@ -234,7 +241,14 @@ struct TodayView: View {
                     .accessibilityLabel(spoken(m))
                     .contentShape(Rectangle())
                     .onTapGesture { if feel != nil { change() } }
-                    .task { await health.readMorning() }
+                    .opacity(shown.stale ? 0.6 : 1)
+                    if let from = shown.from, !m.isEmpty {
+                        Text(from).font(.caption2).foregroundStyle(Theme.secondary)
+                            .padding(.horizontal, 2)
+                            .accessibilityIdentifier("morning-from-iphone")
+                    }
+                }
+                .task { await health.readMorning() }
             } else {
                 Color.clear.frame(height: 0).task { await health.readMorning() }
             }
