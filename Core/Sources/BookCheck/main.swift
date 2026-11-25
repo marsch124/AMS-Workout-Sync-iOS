@@ -34,7 +34,22 @@ do {
     print("logging both ways: \(outcome.entries) entries")
     print("differences: \(outcome.differences.isEmpty ? "none" : String(outcome.differences.count))")
     for d in outcome.differences.prefix(40) { print("  " + d) }
-    exit(outcome.differences.isEmpty && taken.proof.matches ? 0 : 1)
+
+    // And the road back: a book that was changed, written out as a spreadsheet and read again.
+    var book = taken.book
+    for q in BookOracle.entries(for: book.sessions, extras: book.extras, mapping: book.mapping, today: today) { _ = try? book.apply(q) }
+    if let open = book.sessions.first(where: { !$0.loggedInSheet && $0.discipline.id != "rest" && $0.dayKey > today }),
+       var draft = book.draft(of: open.key) {
+        draft.minutes = (draft.minutes ?? 30) + 5; draft.intensity = "Z1"; draft.dayKey = PlanView.addDays(open.dayKey, 1)
+        _ = try book.change(open.key, to: draft)
+    }
+    _ = try book.add(SessionDraft(dayKey: PlanView.addDays(today, 3), sport: "bike", title: "Easy spin (made in the app)", minutes: 45, intensity: "Z2", purpose: "Third ride"))
+    if let last = book.sessions.last(where: { $0.discipline.id == "rest" }) { _ = try book.remove(last.key) }
+    let copy = try PlanExport.workbook(book, template: data)
+    print("spreadsheet copy: \(copy.count) bytes, reads back the same as the app")
+    let untouched = try PlanExport.workbook(taken.book, template: data)
+    print("unchanged plan copies to the very same file: \(untouched == data)")
+    exit(outcome.differences.isEmpty && taken.proof.matches && untouched == data ? 0 : 1)
 } catch {
     print("failed: \(error.localizedDescription)"); exit(1)
 }

@@ -48,7 +48,7 @@
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>AMS Triathlon Training never writes anything to Health. Apple requires this text to be present anyway.</string>
 	<key>UIFileSharingEnabled</key>
-	<false/>
+	<true/>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

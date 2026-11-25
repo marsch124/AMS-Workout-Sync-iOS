@@ -36,6 +36,23 @@ final class Store: ObservableObject {
     @Published private(set) var queue: [QueuedEntry] = []
     @Published private(set) var syncing = false
 
+    /*
+     * Where the plan lives. Until 2.0 always the workbook in Dropbox; once he
+     * has tapped the switch, a book in this app (plan.json), and Dropbox is
+     * no longer read or written.
+     */
+    enum Home: String { case excel, app }
+    @Published private(set) var home: Home = .excel
+    @Published private(set) var book: PlanBook?
+    /* The workbook taken in and counted, waiting for his tap. Nothing is saved until then. */
+    @Published private(set) var incoming: PlanImport?
+    @Published private(set) var takingIn = false
+    @Published private(set) var goingBack = false
+    @Published private(set) var homeProblem: String?
+    @Published private(set) var switchedAt: Date? = UserDefaults.standard.object(forKey: "plan.switchedAt") as? Date
+    private var incomingBytes: Data?
+    private let homeKey = "plan.home"
+
     private let bookmarkKey = "workbookBookmark"
     private let nameKey = "workbookName"
     private let readAtKey = "workbookReadAt"
@@ -218,6 +235,10 @@ final class Store: ObservableObject {
             HealthMark.forgetAll()
             UserDefaults.standard.removeObject(forKey: "health.asked")
             UserDefaults.standard.removeObject(forKey: "health.enabled")
+            for url in [bookURL, originalURL, backupsURL] { try? FileManager.default.removeItem(at: url) }
+            UserDefaults.standard.removeObject(forKey: homeKey)
+            UserDefaults.standard.removeObject(forKey: "plan.switchedAt")
+            switchedAt = nil
         }
         #endif
         loadQueue()
@@ -227,10 +248,29 @@ final class Store: ObservableObject {
         if let path = ProcessInfo.processInfo.environment["AMSWS_FILE"],
            let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
             fileName = URL(fileURLWithPath: path).lastPathComponent
+            // AMSWS_HOME=app: the same file, but taken in — the app as the plan's home.
+            if ProcessInfo.processInfo.environment["AMSWS_HOME"] == "app",
+               let taken = try? PlanImport.read(data, fileName: fileName, today: today) {
+                home = .app
+                switchedAt = switchedAt ?? Date()
+                try? data.write(to: originalURL, options: .atomic)
+                publish(taken.book)
+                return
+            }
             parse(data, cached: false)
             return
         }
         #endif
+        if UserDefaults.standard.string(forKey: homeKey) == Home.app.rawValue {
+            if let data = try? Data(contentsOf: bookURL), let saved = try? PlanBook.decoded(data) {
+                home = .app
+                publish(saved)
+                return
+            }
+            // The flag says the plan lives here and the book will not open:
+            // say so, and fall back to the last workbook read rather than show nothing.
+            lastProblem = "The plan kept in this app could not be opened. Its safety copies are untouched — see Settings."
+        }
         if let data = try? Data(contentsOf: cacheURL) {
             parse(data, cached: true)
         }
@@ -269,6 +309,8 @@ final class Store: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FILE"] != nil { return }
         #endif
+        // The plan lives here: there is nothing elsewhere to read.
+        if home == .app { return }
         if let path = dropboxPath, Dropbox.shared.isConnected {
             if !queue.isEmpty { syncNow(); return }
             if plan.isEmpty { phase = .loading }
@@ -357,6 +399,7 @@ final class Store: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_SHOW_BUTTONS"] != nil { return true }
         #endif
+        if home == .app { return true }
         return dropboxPath != nil && Dropbox.shared.isConnected
     }
 
@@ -533,6 +576,7 @@ final class Store: ObservableObject {
     }
 
     func syncNow() {
+        if home == .app { writeHere(); return }
         guard !syncing, !queue.isEmpty, let path = dropboxPath, Dropbox.shared.isConnected else { return }
         syncing = true
         let snapshot = queue
@@ -559,6 +603,283 @@ final class Store: ObservableObject {
             } catch {
                 self.lastProblem = "Could not send your logging just now: \(error.localizedDescription) It is still waiting on this phone."
             }
+        }
+    }
+
+    // MARK: - the plan's home in this app (2.0)
+
+    private var supportURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    }
+    private var bookURL: URL { supportURL.appendingPathComponent("plan.json") }
+    /* The workbook exactly as it stood at the switch: the base of every spreadsheet copy, and the road back. */
+    private var originalURL: URL { supportURL.appendingPathComponent("plan-original.xlsx") }
+    private var backupsURL: URL { supportURL.appendingPathComponent("backups", isDirectory: true) }
+    private var documentsURL: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+
+    var planLivesHere: Bool { home == .app }
+    /* For three weeks after the switch Excel can become the home again. */
+    var canGoBackUntil: Date? { switchedAt.map { $0.addingTimeInterval(21 * 86400) } }
+    var canGoBack: Bool { home == .app && (canGoBackUntil.map { $0 > Date() } ?? false) && dropboxPath != nil && Dropbox.shared.isConnected }
+
+    private func publish(_ book: PlanBook) {
+        self.book = book
+        plan = book.sessions
+        extras = book.extras
+        zones = book.zones
+        mapping = book.mapping
+        fromCache = false
+        phase = .ready
+        calendarChanged()
+    }
+
+    /* On disk first, then on screen. The day's first save keeps yesterday's book as a safety copy. */
+    private func save(_ book: PlanBook) {
+        do {
+            let data = try book.encoded()
+            try FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
+            keepSafetyCopy()
+            try data.write(to: bookURL, options: .atomic)
+        } catch {
+            lastProblem = "Could not save the plan on this phone: \(error.localizedDescription)"
+        }
+        publish(book)
+        keepWeeklySpreadsheet(book)
+    }
+
+    private func keepSafetyCopy() {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: bookURL.path) else { return }
+        let copy = backupsURL.appendingPathComponent("plan-\(PlanView.todayKey()).json")
+        if fm.fileExists(atPath: copy.path) { return }
+        try? fm.createDirectory(at: backupsURL, withIntermediateDirectories: true)
+        try? fm.copyItem(at: bookURL, to: copy)
+        let all = ((try? fm.contentsOfDirectory(at: backupsURL, includingPropertiesForKeys: nil)) ?? [])
+            .filter { $0.lastPathComponent.hasPrefix("plan-") }.sorted { $0.lastPathComponent < $1.lastPathComponent }
+        for old in all.dropLast(30) { try? fm.removeItem(at: old) }
+    }
+
+    /* How many days have a safety copy, and the newest one's day. */
+    var safetyCopies: (count: Int, newest: String?) {
+        let names = ((try? FileManager.default.contentsOfDirectory(atPath: backupsURL.path)) ?? [])
+            .filter { $0.hasPrefix("plan-") && $0.hasSuffix(".json") }.sorted()
+        return (names.count, names.last.map { String($0.dropFirst(5).dropLast(5)) })
+    }
+
+    /* Everything waiting is written into the book at once: there is no elsewhere to send it. */
+    private func writeHere() {
+        guard var book, !queue.isEmpty else { return }
+        var kept: [QueuedEntry] = []
+        for var entry in queue {
+            do {
+                _ = try book.apply(entry)
+            } catch {
+                entry.attempts += 1
+                entry.lastError = error.localizedDescription
+                kept.append(entry)
+            }
+        }
+        queue = kept
+        save(book)
+        saveQueue()
+        lastProblem = kept.isEmpty ? nil : "Some logging could not be written — see Settings."
+    }
+
+    // MARK: taking the workbook in
+
+    /* Read the workbook afresh, take it in and count both sides. Nothing is saved: he looks first. */
+    func takePlanIn() {
+        guard !takingIn else { return }
+        if !queue.isEmpty {
+            homeProblem = "\(queue.count) entr\(queue.count == 1 ? "y is" : "ies are") still waiting to go to Dropbox. Send \(queue.count == 1 ? "it" : "them") first, so nothing you logged is left behind."
+            return
+        }
+        takingIn = true
+        homeProblem = nil
+        Task {
+            defer { self.takingIn = false }
+            do {
+                let fresh = try await self.freshWorkbook()
+                self.incoming = try PlanImport.read(fresh.data, fileName: fresh.name, today: self.today)
+                self.incomingBytes = fresh.data
+            } catch {
+                self.homeProblem = "The plan could not be taken in just now: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func freshWorkbook() async throws -> (data: Data, name: String) {
+        #if DEBUG
+        if let path = ProcessInfo.processInfo.environment["AMSWS_FILE"],
+           let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+            return (data, URL(fileURLWithPath: path).lastPathComponent)
+        }
+        #endif
+        if let path = dropboxPath, Dropbox.shared.isConnected {
+            let file = try await Dropbox.shared.download(path)
+            rev = file.rev
+            return (file.data, file.name.isEmpty ? fileName : file.name)
+        }
+        if let data = try? Data(contentsOf: cacheURL) { return (data, fileName) }
+        throw NSError(domain: "AMSWorkoutSync", code: 2, userInfo: [
+            NSLocalizedDescriptionKey: "There is no workbook to take in yet."])
+    }
+
+    func cancelTakingIn() {
+        incoming = nil
+        incomingBytes = nil
+        homeProblem = nil
+    }
+
+    /* The switch. Only on a proof that matches, and only by his tap. */
+    func makeAppTheHome() {
+        guard let taken = incoming, taken.proof.matches, let bytes = incomingBytes, queue.isEmpty else { return }
+        do {
+            try FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
+            try bytes.write(to: originalURL, options: .atomic)
+            try taken.book.encoded().write(to: bookURL, options: .atomic)
+        } catch {
+            homeProblem = "The plan could not be saved on this phone: \(error.localizedDescription) Nothing was changed."
+            return
+        }
+        let now = Date()
+        UserDefaults.standard.set(Home.app.rawValue, forKey: homeKey)
+        UserDefaults.standard.set(now, forKey: "plan.switchedAt")
+        switchedAt = now
+        home = .app
+        incoming = nil
+        incomingBytes = nil
+        lastProblem = nil
+        publish(taken.book)
+        keepWeeklySpreadsheet(taken.book, force: true)
+    }
+
+    /*
+     * The road back, for three weeks: the plan as it is now is written into
+     * the workbook it came from and put back in Dropbox, and Excel is the
+     * home again. Refused if the file in Dropbox is no longer the one that
+     * was taken in — then two plans have grown apart and choosing between
+     * them is his to do, not the app's.
+     */
+    func goBackToExcel() {
+        guard canGoBack, !goingBack, let book, let path = dropboxPath,
+              let original = try? Data(contentsOf: originalURL) else { return }
+        goingBack = true
+        homeProblem = nil
+        Task {
+            defer { self.goingBack = false }
+            do {
+                let there = try await Dropbox.shared.download(path)
+                guard there.data == original else {
+                    self.homeProblem = "The Excel file in Dropbox was changed after the plan moved into the app. Going back would overwrite those changes, so nothing was done."
+                    return
+                }
+                let bytes = try PlanExport.workbook(book, template: original)
+                let uploaded = try await Dropbox.shared.upload(path, bytes, rev: there.rev)
+                let aside = self.supportURL.appendingPathComponent("plan-left-\(PlanView.todayKey()).json")
+                try? FileManager.default.removeItem(at: aside)
+                try? FileManager.default.moveItem(at: self.bookURL, to: aside)
+                UserDefaults.standard.set(Home.excel.rawValue, forKey: self.homeKey)
+                self.home = .excel
+                self.book = nil
+                self.rev = uploaded.rev
+                self.parse(uploaded.data, cached: false)
+            } catch {
+                self.homeProblem = "Going back did not work just now: \(error.localizedDescription) The plan still lives in the app; nothing was changed."
+            }
+        }
+    }
+
+    // MARK: a spreadsheet copy
+
+    /* The plan as it is now, as a workbook in the app's own folder in Files. Returns where it is. */
+    func spreadsheetCopy() -> URL? {
+        guard let book, let original = try? Data(contentsOf: originalURL) else { return nil }
+        do {
+            let bytes = try PlanExport.workbook(book, template: original)
+            let url = documentsURL.appendingPathComponent("Triathlon plan \(PlanView.todayKey()).xlsx")
+            try FileManager.default.createDirectory(at: documentsURL, withIntermediateDirectories: true)
+            try bytes.write(to: url, options: .atomic)
+            UserDefaults.standard.set(Date(), forKey: "plan.lastSpreadsheet")
+            return url
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
+    }
+
+    var lastSpreadsheetCopy: Date? { UserDefaults.standard.object(forKey: "plan.lastSpreadsheet") as? Date }
+
+    /* Once a week by itself; the newest eight are kept. */
+    private func keepWeeklySpreadsheet(_ book: PlanBook, force: Bool = false) {
+        if !force, let last = lastSpreadsheetCopy, Date().timeIntervalSince(last) < 7 * 86400 { return }
+        guard spreadsheetCopy() != nil else { return }
+        let fm = FileManager.default
+        let all = ((try? fm.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)) ?? [])
+            .filter { $0.lastPathComponent.hasPrefix("Triathlon plan ") && $0.pathExtension == "xlsx" }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+        for old in all.dropLast(8) { try? fm.removeItem(at: old) }
+    }
+
+    // MARK: changing the plan itself
+
+    /* Sessions can be changed, added and taken out only once the plan lives here. */
+    var canChangePlan: Bool { home == .app && book != nil }
+
+    func draft(of key: String) -> SessionDraft? { book?.draft(of: key) }
+
+    /* Newest first. */
+    var planChanges: [PlanChange] { (book?.changes ?? []).reversed() }
+
+    @discardableResult
+    func changeSession(_ key: String, to draft: SessionDraft) -> PlanChange? {
+        guard var book, let was = book.session(key) else { return nil }
+        do {
+            guard let change = try book.change(key, to: draft) else { return nil }
+            if draft.dayKey != was.dayKey { rememberMove(was, to: draft.dayKey) }
+            save(book)
+            return change
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
+    }
+
+    @discardableResult
+    func addSession(_ draft: SessionDraft) -> Workout? {
+        guard var book else { return nil }
+        do {
+            let made = try book.add(draft)
+            save(book)
+            return made
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
+    }
+
+    @discardableResult
+    func removeSession(_ key: String) -> PlanChange? {
+        guard var book else { return nil }
+        do {
+            let change = try book.remove(key)
+            save(book)
+            return change
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
+    }
+
+    func undoChange(_ id: String) {
+        guard var book else { return }
+        do {
+            try book.undo(id)
+            save(book)
+        } catch {
+            lastProblem = error.localizedDescription
         }
     }
 }
