@@ -60,6 +60,7 @@ final class GarminReader: ObservableObject {
     func keyChanged() {
         keySaved = GarminKey.isSaved
         if !keySaved {
+            GarminActivityReader.shared.forget()
             numbers = nil
             problem = nil
             file = GarminMorningFile()

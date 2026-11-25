@@ -75,6 +75,7 @@ struct ProgressView: View {
         // Beside the fitness card, never on Today: minutes
         // times how hard, for everything he did.
         if let board = LoadBoard.make(store: store, diary: diary) { LoadCard(board: board).id("load") }
+        ZonesWeekCard()
     }
 
     /* What was done: the weeks, the mix, the totals. */

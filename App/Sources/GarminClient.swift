@@ -179,4 +179,43 @@ actor GarminClient {
                                 hrv: GarminMorning.hrv(hrvNight), hrvDays: GarminBody.hrvDays(hrvRange),
                                 summaries: GarminBody.summaryDays(summaries))
     }
+
+    // MARK: Finished sessions (round 28)
+
+    /* One GET whose answer is a file, not JSON (the recorded session). Nil when Garmin has nothing for it. */
+    func getData(_ path: String) async throws -> Data? {
+        guard let url = URL(string: Self.base + path) else { throw GarminFailure.other }
+        for attempt in 0..<2 {
+            var request = URLRequest(url: url)
+            request.setValue("Bearer " + (try await validToken()), forHTTPHeaderField: "Authorization")
+            let (data, status) = try await send(request)
+            if status == 401 {
+                token = nil
+                if attempt == 0 { continue }
+                throw GarminFailure.keyRefused
+            }
+            if status == 403 { throw GarminFailure.keyRefused }
+            return (200..<300).contains(status) && !data.isEmpty ? data : nil
+        }
+        return nil
+    }
+
+    /* The activities between two days, newest first: the short list, one small read. */
+    func activities(from: String, to: String) async throws -> [GarminActivitySummary] {
+        let answer = try await tolerant("/activitylist-service/activities/search/activities",
+                                        ["startDate": from, "endDate": to, "limit": "99", "start": "0"])
+        return GarminActivity.summaries(answer)
+    }
+
+    /* One session's route, pulse and laps: the recorded file, and where it holds no laps Garmin's own split list. */
+    func recording(activityId: Int) async throws -> GarminRecording {
+        var rec = GarminRecording()
+        if let file = try? await getData("/download-service/files/activity/\(activityId)") {
+            rec = GarminFit.recording(fromDownload: file)
+        }
+        if rec.laps.isEmpty, let detail = try await tolerant("/activity-service/activity/\(activityId)") {
+            rec.laps = GarminActivity.laps(detail: detail)
+        }
+        return rec
+    }
 }
