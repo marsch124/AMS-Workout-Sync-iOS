@@ -1,15 +1,14 @@
 import SwiftUI
 import WorkoutCore
 
-/* The side list's rows, in order. */
+/* The side list's rows, in order (his pick, 25 Nov 2026: one Plan page holds the week, the month and the year). */
 enum SideRow: String, CaseIterable {
-    case today, week, season, sessions, progress, settings
+    case today, plan, sessions, progress, settings
 
     var title: String {
         switch self {
         case .today: return "Today"
-        case .week: return "Week"
-        case .season: return "Season"
+        case .plan: return "Plan"
         case .sessions: return "Sessions"
         case .progress: return "Progress"
         case .settings: return "Settings"
@@ -20,8 +19,7 @@ enum SideRow: String, CaseIterable {
     var colour: Color {
         switch self {
         case .today: return Theme.today
-        case .week: return Theme.week
-        case .season: return Theme.season
+        case .plan: return Theme.week
         case .sessions: return Theme.plan
         case .progress: return Theme.progress
         case .settings: return Theme.settings
@@ -30,8 +28,9 @@ enum SideRow: String, CaseIterable {
 }
 
 /*
- * The wide look's root: a side list on the left (his pick, 25 Nov 2026: "1 and 3
- * both"), the chosen page on the right. The app opens on Today.
+ * The wide look's root: a side list on the left, the chosen page on the right
+ * (his pick, 25 Nov 2026: one Plan page with Week, Month and Year, the season
+ * always on top, his numbers beside it). The app opens on Today.
  */
 struct WideRoot: View {
     @EnvironmentObject var store: Store
@@ -41,13 +40,19 @@ struct WideRoot: View {
         #endif
         return .today
     }()
-    /* The week the Week and Season pages show: the Monday's day key. Both pages share it. */
+    /* The Plan page's view, the week it shows (its Monday's day key) and the month ("2026-11"). */
+    @State private var planMode: PlanMode = {
+        #if DEBUG
+        if let name = ProcessInfo.processInfo.environment["AMSWS_PLAN"], let mode = PlanMode(rawValue: name) { return mode }
+        #endif
+        return .week
+    }()
     @State private var weekStart: String = ""
+    @State private var month: String = ""
     @State private var todayPath = NavigationPath()
     @State private var sessionsPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
-    @State private var weekPath = NavigationPath()
-    @State private var seasonPath = NavigationPath()
+    @State private var planPath = NavigationPath()
 
     var body: some View {
         HStack(spacing: 0) {
@@ -56,20 +61,22 @@ struct WideRoot: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Theme.bg.ignoresSafeArea())
         }
-        .onAppear { if weekStart.isEmpty { weekStart = PlanView.weekStart(store.today) } }
+        .onAppear {
+            if weekStart.isEmpty { weekStart = PlanView.weekStart(store.today) }
+            if month.isEmpty { month = PlanOverview.month(of: store.today) }
+        }
     }
 
     @ViewBuilder private var detail: some View {
         switch selection {
         case .today:
             TodayView(path: $todayPath, goToSettings: { selection = .settings })
-                .readableWidth(680)
-        case .week:
-            WeekPage(season: false, weekStart: $weekStart, path: $weekPath)
-        case .season:
-            WeekPage(season: true, weekStart: $weekStart, path: $seasonPath)
+                .readableWidth(760)
+        case .plan:
+            PlanPage(mode: $planMode, weekStart: $weekStart, month: $month, path: $planPath)
         case .sessions:
             PlanTab(path: $sessionsPath)
+                .environment(\.wideReadableLimit, 760)
         case .progress:
             ProgressView()
         case .settings:
@@ -82,8 +89,7 @@ struct WideRoot: View {
     private func backToFirstScreen(_ row: SideRow) {
         switch row {
         case .today: todayPath = NavigationPath()
-        case .week: weekPath = NavigationPath()
-        case .season: seasonPath = NavigationPath()
+        case .plan: planPath = NavigationPath()
         case .sessions: sessionsPath = NavigationPath()
         case .settings: settingsPath = NavigationPath()
         case .progress: break
@@ -158,35 +164,5 @@ struct SideList: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(status.words)
         .accessibilityIdentifier("sync-status")
-    }
-}
-
-/*
- * The Week page (look 1) and the Season page (look 3): the same week board, the
- * Season page with every week of the plan above it and the phases below.
- */
-struct WeekPage: View {
-    @EnvironmentObject var store: Store
-    let season: Bool
-    @Binding var weekStart: String
-    @Binding var path: NavigationPath
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    if season { SeasonView(weekStart: $weekStart) }
-                    WeekBoard(weekStart: $weekStart, columnHeight: season ? 250 : 430)
-                    if season { SeasonPhases() }
-                }
-                .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 24)
-            }
-            .background(Theme.bg.ignoresSafeArea())
-            .refreshable { store.refresh() }
-            .navigationDestination(for: String.self) { key in
-                SessionView(key: key).readableWidth(680)
-            }
-            .toolbar(.hidden, for: .navigationBar)
-        }
     }
 }
