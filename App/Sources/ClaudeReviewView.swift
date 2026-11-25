@@ -23,7 +23,7 @@ enum ClaudeDebug {
         #endif
     }
 
-    static var forced: Bool { review != nil || ask != nil }
+    static var forced: Bool { review != nil || ask != nil || ClaudeKey.isFake }
 }
 
 extension ClaudeClient {

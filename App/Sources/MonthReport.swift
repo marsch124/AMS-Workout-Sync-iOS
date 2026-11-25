@@ -157,7 +157,7 @@ private struct ReportPageOne: View {
             testTable
             zonesBlock
             Spacer(minLength: 0)
-            Text("Made by AMS Triathlon Training on \(Dates.short(today)). Worked out from the logged sessions; it is not medical advice.")
+            Text("Made by AMS Triathlon Training on \(Dates.short(today)). Worked out from the sessions logged in the app.")
                 .font(.caption2).foregroundStyle(Paper.grey)
         }
         .padding(.horizontal, 32).padding(.vertical, 30)
@@ -197,14 +197,26 @@ private struct ReportPageOne: View {
                     Text("\(Dates.short(w.start).dropFirst(4)) – \(Dates.short(w.end).dropFirst(4))").frame(width: 92, alignment: .leading)
                     ForEach(ids, id: \.self) { id in
                         let h = w.sports.first { $0.sport == id }?.hours
-                        Text(h.map { "\(formatDuration($0.done)) of \(formatDuration($0.planned))" } ?? "—")
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        hoursCell(h)
                     }
-                    Text("\(formatDuration(w.hours.done)) of \(formatDuration(w.hours.planned))").frame(maxWidth: .infinity, alignment: .leading)
+                    hoursCell(w.hours)
                 }
-                .font(.caption2).foregroundStyle(Paper.ink).lineLimit(1).minimumScaleFactor(0.7)
+                .font(.caption2).foregroundStyle(Paper.ink).lineLimit(1)
             }
         }
+    }
+
+    /* "1h 43m" with "of 1h 50m" in grey under it: two short lines instead of one long one that has to shrink. */
+    private func hoursCell(_ h: PlanOverview.Hours?) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if let h, h.planned > 0 || h.done > 0 {
+                Text(formatDuration(h.done))
+                Text("of \(formatDuration(h.planned))").foregroundStyle(Paper.grey)
+            } else {
+                Text("—")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var testTable: some View {

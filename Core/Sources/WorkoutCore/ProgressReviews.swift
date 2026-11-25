@@ -210,7 +210,7 @@ public enum PersonalBests {
             guard let l = longest else { continue }
             let km = Stats.actualsOf(l.w, mapping).km
             var farther: Farther?
-            if let f = farthest, f.w.key != l.w.key { farther = Farther(key: f.w.key, dayKey: f.w.dayKey, km: f.km) }
+            if let f = farthest, f.w.key != l.w.key, f.km > km + 0.0001 { farther = Farther(key: f.w.key, dayKey: f.w.dayKey, km: f.km) }
             out.append(Best(kind: kind, key: l.w.key, dayKey: l.w.dayKey, seconds: l.s, weeks: 0,
                             km: km > 0 ? km : nil, farther: farther))
         }

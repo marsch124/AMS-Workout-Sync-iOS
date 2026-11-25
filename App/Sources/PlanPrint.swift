@@ -243,6 +243,8 @@ struct PrintPage: View {
 /* The word "Print", on the wide Plan page and on the Sessions page. */
 struct PlanPrintButton: View {
     @EnvironmentObject var store: Store
+    /* In the wide Plan page's button row it looks like its neighbours (Previous week …). */
+    var stepLook = false
     @State private var open: Bool = {
         #if DEBUG
         return ProcessInfo.processInfo.environment["AMSWS_PRINT"] != nil
@@ -252,10 +254,16 @@ struct PlanPrintButton: View {
     }()
 
     var body: some View {
-        Button("Print") { open = true }
-            .settingsButton(tint: Theme.plan)
-            .accessibilityIdentifier("plan-print")
-            .sheet(isPresented: $open) { PlanPrintSheet().environmentObject(store) }
+        Group {
+            if stepLook {
+                StepButton(words: "Print", id: "plan-print") { open = true }
+            } else {
+                Button("Print") { open = true }
+                    .settingsButton(tint: Theme.plan)
+                    .accessibilityIdentifier("plan-print")
+            }
+        }
+        .sheet(isPresented: $open) { PlanPrintSheet().environmentObject(store) }
     }
 }
 
