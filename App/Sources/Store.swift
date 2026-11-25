@@ -638,6 +638,9 @@ final class Store: ObservableObject {
     }
 
     var planLivesHere: Bool { home == .app }
+
+    /* How the plan in iCloud stands on this device; the side list and Settings show it as a dot with its words. */
+    @Published var syncStatus: SyncStatus = .off
     /* For three weeks after the switch Excel can become the home again. */
     var canGoBackUntil: Date? { switchedAt.map { $0.addingTimeInterval(21 * 86400) } }
     var canGoBack: Bool { home == .app && (canGoBackUntil.map { $0 > Date() } ?? false) && dropboxPath != nil && Dropbox.shared.isConnected }
@@ -1114,6 +1117,14 @@ final class Store: ObservableObject {
             lastProblem = error.localizedDescription
             return nil
         }
+    }
+
+    /* A session dragged to another day on the week board: the same change as the Change page makes, with only the day new. */
+    @discardableResult
+    func moveSession(_ key: String, to day: String) -> PlanChange? {
+        guard var draft = draft(of: key), draft.dayKey != day else { return nil }
+        draft.dayKey = day
+        return changeSession(key, to: draft)
     }
 
     @discardableResult
