@@ -43,7 +43,7 @@ struct FavouritesSettingsView: View {
                         .accessibilityIdentifier("favourites-problem")
                 }
             }
-            .padding(16)
+            .padding(16).frame(maxWidth: 720).frame(maxWidth: .infinity)
         }
         .onPreferenceChange(FavouriteFrameKey.self) { frames = $0 }
         .background(Theme.plan.opacity(0.05).background(Theme.bg).ignoresSafeArea())

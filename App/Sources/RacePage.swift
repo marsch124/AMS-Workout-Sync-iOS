@@ -66,7 +66,7 @@ struct RacePage: View {
                 }
             }
         }
-        .tint(RaceLook.fill)
+        .tint(Theme.plan)
     }
 
     private var noRace: some View {
@@ -82,15 +82,31 @@ struct RacePage: View {
         let pacing = shelf.value(RacePacing.self, for: RaceKeys.pacing(race.day)) ?? RacePacing()
         let fuel = shelf.value(RaceFuel.self, for: RaceKeys.fuel(race.day)) ?? RaceFuel()
         let list = shelf.value(RaceChecklist.self, for: RaceKeys.checklist(race.day)) ?? .starting
-        return ScrollView {
+        return ScrollViewReader { proxy in ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 head(race)
                 dayPlan(race, pacing)
-                fuelPlan(race, fuel, pacing)
-                kit(race, list)
+                fuelPlan(race, fuel, pacing).id("race-fuel-part")
+                kit(race, list).id("race-kit-part")
             }
             .padding(.horizontal, 12).padding(.bottom, 16).padding(.top, 6)
-            .frame(maxWidth: 720).frame(maxWidth: .infinity)
+            .frame(maxWidth: 1000).frame(maxWidth: .infinity)
+        }
+        #if DEBUG
+        .task {
+            // Pictures: AMSWS_RACE_SCROLL=fuel|kit scrolls down; AMSWS_RACE_OPEN=pacing|fuel|fuelrow|list opens an editing page.
+            let env = ProcessInfo.processInfo.environment
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            if let w = env["AMSWS_RACE_SCROLL"] { proxy.scrollTo(w == "kit" ? "race-kit-part" : "race-fuel-part", anchor: .top) }
+            switch env["AMSWS_RACE_OPEN"] {
+            case "pacing": editingPacing = true
+            case "fuel": editingFuel = true
+            case "fuelrow": addingFuel = true
+            case "list": editingList = true
+            default: break
+            }
+        }
+        #endif
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("race-page")
@@ -149,7 +165,7 @@ struct RacePage: View {
         return VStack(alignment: .leading, spacing: 8) {
             heading("Your plan for the day")
             finishLine(p)
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
                 ForEach(RaceLeg.allCases, id: \.self) { leg in legTile(leg, p, words?[leg]) }
             }
             Text("Your own times, added up. The app works out no pace and no speed.")
@@ -188,7 +204,7 @@ struct RacePage: View {
                 if let distance { Text(distance).font(.caption).foregroundStyle(Theme.secondary) }
                 if !p.note(leg).isEmpty { Text(p.note(leg)).font(.footnote).foregroundStyle(Theme.text) }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(10)
             .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(RaceLook.tile))
         }
@@ -238,7 +254,7 @@ struct RacePage: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(10)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(RaceLook.tile))
         .accessibilityElement(children: .combine)
@@ -272,6 +288,7 @@ struct RacePage: View {
                     .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
                     .accessibilityIdentifier("race-checklist-count")
             }
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 8, alignment: .top)], alignment: .leading, spacing: 8) {
             ForEach(RaceKitGroup.allCases, id: \.self) { g in
                 let items = ordered.enumerated().filter { $0.element.group == g }
                 if !items.isEmpty {
@@ -282,12 +299,14 @@ struct RacePage: View {
                             tickRow(item, n) { shelf.set(list.toggled(item.id), for: RaceKeys.checklist(race.day)) }
                         }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(RaceLook.tile))
                 }
             }
+            }
             Text("A tick means packed.").font(.caption).foregroundStyle(Theme.secondary)
             HStack(spacing: 8) {
-                plainButton("Untick all", id: "race-untick-all") { askUntick = true }
+                plainButton("Untick all", id: "race-untick-all", danger: true) { askUntick = true }
                     .disabled(list.packedCount == 0)
                 plainButton("Change the list", id: "race-check-edit") { editingList = true }
             }
@@ -321,17 +340,18 @@ struct RacePage: View {
         Button(action: action) {
             Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
                 .padding(.horizontal, 14).frame(minHeight: 36)
-                .background(Capsule().fill(RaceLook.fill))
+                .background(Capsule().fill(Theme.plan))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(id)
     }
 
-    private func plainButton(_ title: String, id: String, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(RaceLook.ink)
+    private func plainButton(_ title: String, id: String, danger: Bool = false, _ action: @escaping () -> Void) -> some View {
+        let c = danger ? Theme.danger : Theme.plan
+        return Button(action: action) {
+            Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(c)
                 .padding(.horizontal, 14).frame(minHeight: 36)
-                .background(Capsule().stroke(RaceLook.ink.opacity(0.6), lineWidth: 1.2))
+                .background(Capsule().stroke(c.opacity(0.6), lineWidth: 1.2))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(id)

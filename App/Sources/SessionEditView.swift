@@ -62,6 +62,7 @@ struct SessionEditView: View {
 
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     if adding {
@@ -128,7 +129,7 @@ struct SessionEditView: View {
                         .tint(Theme.plan)
                         .accessibilityIdentifier("edit-key")
 
-                    if adding { RepeatSection(base: liveDraft, until: $repeatUntil) }
+                    if adding { RepeatSection(base: liveDraft, until: $repeatUntil).id("repeat-section") }
 
                     if !adding {
                         Button("Take out of the plan") { asking = true }
@@ -145,9 +146,11 @@ struct SessionEditView: View {
             .onAppear {
                 if adding, ProcessInfo.processInfo.environment["AMSWS_REPEAT"] != nil {
                     repeatUntil = RepeatSession.defaultUntil(liveDraft.dayKey, store: store)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { proxy.scrollTo("repeat-section", anchor: .top) }
                 }
             }
             #endif
+            }
             .navigationTitle(adding ? "New session" : "Change session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

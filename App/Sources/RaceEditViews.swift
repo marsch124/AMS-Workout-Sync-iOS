@@ -129,7 +129,7 @@ private struct EditFrame<Content: View>: View {
                 }
             }
         }
-        .tint(RaceLook.fill)
+        .tint(Theme.plan)
     }
 }
 
@@ -281,7 +281,7 @@ struct RaceFuelEdit: View {
         }) {
             Text("Hold the three lines and drag a row to where it belongs. Tap a row to change it.")
                 .font(.footnote).foregroundStyle(Theme.secondary)
-            ReorderColumn(items: $rows, handleID: "race-fuel-handle", tint: RaceLook.fill) { $row, n in
+            ReorderColumn(items: $rows, handleID: "race-fuel-handle", tint: Theme.plan) { $row, n in
                 HStack(spacing: 8) {
                     Button { changing = row } label: {
                         VStack(alignment: .leading, spacing: 1) {
@@ -296,7 +296,7 @@ struct RaceFuelEdit: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("race-fuel-change-\(n)")
                     Button("Remove") { rows.removeAll { $0.id == row.id } }
-                        .font(.caption.weight(.semibold)).buttonStyle(.plain).foregroundStyle(RaceLook.ink)
+                        .font(.caption.weight(.semibold)).buttonStyle(.plain).foregroundStyle(Theme.danger)
                         .accessibilityIdentifier("race-fuel-remove-\(n)")
                 }
             }
@@ -345,20 +345,20 @@ struct RaceChecklistEdit: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(g.word.uppercased()).font(.caption.weight(.bold)).tracking(0.6).foregroundStyle(RaceLook.ink)
                         .padding(.horizontal, 10).padding(.top, 8).padding(.bottom, 2)
-                    ReorderColumn(items: group(g), firstNumber: firstNumber(g), tint: RaceLook.fill) { $item, n in
+                    ReorderColumn(items: group(g), firstNumber: firstNumber(g), tint: Theme.plan) { $item, n in
                         HStack(spacing: 8) {
                             TextField("Item", text: $item.name)
                                 .textFieldStyle(.plain).padding(.vertical, 6)
                                 .accessibilityIdentifier("race-check-name-\(n)")
                             Button("Remove") { list.items.removeAll { $0.id == item.id } }
-                                .font(.caption.weight(.semibold)).buttonStyle(.plain).foregroundStyle(RaceLook.ink)
+                                .font(.caption.weight(.semibold)).buttonStyle(.plain).foregroundStyle(Theme.danger)
                                 .accessibilityIdentifier("race-check-remove-\(n)")
                         }
                     }
                     Button("Add to \(g.word.lowercased())") {
                         list.items.append(RaceKitItem(group: g, name: ""))
                     }
-                    .font(.footnote.weight(.semibold)).buttonStyle(.plain).foregroundStyle(RaceLook.ink)
+                    .font(.footnote.weight(.semibold)).buttonStyle(.plain).foregroundStyle(Theme.plan)
                     .padding(.horizontal, 10).padding(.vertical, 8)
                     .accessibilityIdentifier("race-check-add-" + g.rawValue)
                 }

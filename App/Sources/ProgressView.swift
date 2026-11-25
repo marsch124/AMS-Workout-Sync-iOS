@@ -227,7 +227,7 @@ struct RoadCard: View {
                 Text(road.raceTitle).font(.subheadline).foregroundStyle(Theme.text)
                     .accessibilityIdentifier("race-title")
                 if road.isRace {
-                    RaceSheetLink { Text("Open your race page \u{203A}").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.progress) }
+                    RaceSheetLink { Text("Open your race page \u{203A}").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.plan) }
                         .accessibilityIdentifier("race-page-link")
                 }
             }

@@ -17,7 +17,7 @@ struct LogExtrasDebug: View {
         if env["AMSWS_LOG_EXTRAS"] != nil, let w = store.displayed.first(where: { $0.discipline.id != "rest" }) {
             NavigationStack { LogExtrasPicture(workout: w) }.environmentObject(store)
         }
-        if env["AMSWS_DONE_EXTRAS"] != nil, env["AMSWS_SESSION"] == nil, let w = store.displayed.first(where: { $0.discipline.id != "rest" }), let m = store.mapping {
+        if env["AMSWS_DONE_EXTRAS"] != nil, env["AMSWS_SESSION"] == nil, env["AMSWS_HURTS"] == nil, let w = store.displayed.first(where: { $0.discipline.id != "rest" }), let m = store.mapping {
             NavigationStack {
                 ScrollView { SessionNotesBlock(workout: w, mapping: m).padding(16) }
                     .background(Theme.bg.ignoresSafeArea())

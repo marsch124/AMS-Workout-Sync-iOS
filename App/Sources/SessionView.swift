@@ -20,6 +20,7 @@ struct SessionView: View {
     @ObservedObject private var neighbours = Neighbours.shared
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             if let w = store.workout(key), let mapping = store.mapping {
                 VStack(alignment: .leading, spacing: 16) {
@@ -248,10 +249,11 @@ struct SessionView: View {
                             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                     }
 
-                    if w.state == .done, w.discipline.id != "rest" { SessionNotesBlock(workout: w, mapping: mapping) }
+                    if w.state == .done, w.discipline.id != "rest" { SessionNotesBlock(workout: w, mapping: mapping).id("notes-block") }
                     if w.state == .done, w.discipline.id != "rest" { DoneSessionGarmin(workout: w, mapping: mapping) }
                     PhotoStrip(owner: PhotoOwner(w))
                     StopSignButton(showsState: w.dayKey >= store.today)
+                    Color.clear.frame(height: 1).id("page-end")
                 }
                 .padding(16)
             } else {
@@ -259,6 +261,15 @@ struct SessionView: View {
             }
         }
         .background(Theme.bg.ignoresSafeArea())
+        #if DEBUG
+        .task {
+            // Picture: AMSWS_SESSION_SCROLL=1 scrolls to the notes block, =end to the bottom.
+            guard let w = ProcessInfo.processInfo.environment["AMSWS_SESSION_SCROLL"] else { return }
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            proxy.scrollTo(w == "end" ? "page-end" : "notes-block", anchor: w == "end" ? .bottom : .top)
+        }
+        #endif
+        }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

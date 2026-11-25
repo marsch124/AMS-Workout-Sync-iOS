@@ -86,7 +86,7 @@ struct NoteTile: View {
     var tint: Color = Theme.plan
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(name.uppercased()).font(.caption2.weight(.bold)).tracking(0.6).foregroundStyle(tint)
+            Text(name.uppercased()).font(.caption2.weight(.bold)).tracking(0.6).foregroundStyle(tint).lineLimit(1).minimumScaleFactor(0.7)
             Text(figure).font(.title3.weight(.bold).monospacedDigit()).foregroundStyle(Theme.text)
                 .lineLimit(1).minimumScaleFactor(0.6)
         }
@@ -223,7 +223,10 @@ struct LogExtrasSection: View {
                     ChoiceWord(word: "No", chosen: draft.wetsuit == false, id: "openwater-wetsuit-no") {
                         draft.wetsuit = draft.wetsuit == false ? nil : false
                     }
-                    Text("Water temperature").font(.subheadline).foregroundStyle(Theme.text).padding(.leading, 6)
+                    Spacer(minLength: 0)
+                }
+                HStack(spacing: 8) {
+                    Text("Water temperature").font(.subheadline).foregroundStyle(Theme.text)
                     TextField("17", text: $draft.temp).keyboardType(.numberPad)
                         .multilineTextAlignment(.center).frame(width: 52).padding(6).background(extrasBox())
                         .accessibilityIdentifier("openwater-temp")
@@ -378,7 +381,7 @@ struct SessionNotesBlock: View {
             if let o = notes.water {
                 HStack(spacing: 8) {
                     NoteTile(name: "Open water", figure: "On")
-                    if let w = o.wetsuit { NoteTile(name: "Wetsuit", figure: w ? "yes" : "no") }
+                    if let w = o.wetsuit { NoteTile(name: "Wetsuit", figure: w ? "Yes" : "No") }
                     if let t = o.tempC { NoteTile(name: "Water", figure: "\(t)°") }
                 }
                 if !o.line.isEmpty { Text(o.line).font(.footnote).foregroundStyle(Theme.text).fixedSize(horizontal: false, vertical: true) }
