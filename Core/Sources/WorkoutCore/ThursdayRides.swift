@@ -18,6 +18,8 @@ import Foundation
  */
 public enum ThursdayRides {
     public static let purpose = "Easy aerobic bike volume; keeps easy days easy"
+    /* The reason written beside each added ride in the list of changes: it is also how the rides are known again. */
+    public static let why = "Thursday easy rides"
     static let tail = "— third ride of the week"
 
     public struct Ride: Equatable {
@@ -64,7 +66,9 @@ public enum ThursdayRides {
         var block = ""
         for w in weeks.sorted(by: { $0.monday < $1.monday }) {
             let k = kind(w)
-            if normalise(w.phase) != block { block = normalise(w.phase); ordinary = 0 }
+            // "Base 3 · Recovery" is still Base 3: the steps go on, they do not start again.
+            let name = normalise(w.phase).hasPrefix("base 3") ? "base 3" : normalise(w.phase)
+            if name != block { block = name; ordinary = 0 }
             switch k {
             case .base2: out[w.number] = easy
             case .base3:
@@ -83,15 +87,40 @@ public enum ThursdayRides {
         s.discipline.id == "bike" && (s.planned.description == purpose || s.title.hasSuffix(tail))
     }
 
-    /* The rides to add: Thursdays from `start` on, not where one already is. */
-    public static func drafts(weeks: [PlanWeek], sessions: [Workout], from start: String) -> [SessionDraft] {
+    /*
+     * The days that hold, or held, a ride this rule added — wherever it is now.
+     * A ride he moved to Friday, renamed or took out of the plan still counts
+     * for its week: the rule never offers that week a second time. Only an
+     * Undo of the adding itself frees the week again.
+     */
+    static func servedDays(sessions: [Workout], changes: [PlanChange]) -> [String] {
+        var days: [String] = []
+        for add in changes where add.kind == "add" && add.why == why && !add.undone {
+            if let now = sessions.first(where: { $0.key == add.key }) {
+                days.append(now.dayKey)
+            } else if let out = changes.last(where: { $0.kind == "remove" && $0.key == add.key && $0.undo != nil }),
+                      let was = out.undo {
+                days.append(was.dayKey)
+            }
+        }
+        return days
+    }
+
+    /* The rides to add: Thursdays from `start` on, not in a week that has, or had, its ride. */
+    public static func drafts(weeks: [PlanWeek], sessions: [Workout], changes: [PlanChange] = [],
+                              from start: String) -> [SessionDraft] {
         let rides = rides(for: weeks)
+        let served = servedDays(sessions: sessions, changes: changes)
         var out: [SessionDraft] = []
         for w in weeks.sorted(by: { $0.monday < $1.monday }) {
             guard let ride = rides[w.number] else { continue }
-            let thursday = PlanView.addDays(w.monday, 3)
+            // The week's heading may not start on a Monday: the Thursday is counted from the real Monday.
+            let monday = PlanView.weekStart(w.monday)
+            let thursday = PlanView.addDays(monday, 3)
             if thursday < start { continue }
-            if sessions.contains(where: { $0.dayKey == thursday && holdsARide($0) }) { continue }
+            let sunday = PlanView.addDays(monday, 6)
+            if served.contains(where: { $0 >= monday && $0 <= sunday }) { continue }
+            if sessions.contains(where: { $0.dayKey >= monday && $0.dayKey <= sunday && holdsARide($0) }) { continue }
             out.append(SessionDraft(dayKey: thursday, sport: "bike", title: ride.title, minutes: ride.minutes,
                                     intensity: ride.intensity, purpose: purpose, isKey: false))
         }
@@ -102,7 +131,7 @@ public enum ThursdayRides {
     public static func weekMinutes(weeks: [PlanWeek], sessions: [Workout], mapping: Mapping,
                                    drafts: [SessionDraft]) -> [WeekMinutes] {
         weeks.sorted(by: { $0.monday < $1.monday }).compactMap { w in
-            let days = Set((0..<7).map { PlanView.addDays(w.monday, $0) })
+            let days = Set((0..<7).map { PlanView.addDays(PlanView.weekStart(w.monday), $0) })
             let added = drafts.filter { days.contains($0.dayKey) }.reduce(0.0) { $0 + ($1.minutes ?? 0) }
             guard added > 0 else { return nil }
             let before = sessions.filter { days.contains($0.dayKey) && $0.discipline.id != "rest" }

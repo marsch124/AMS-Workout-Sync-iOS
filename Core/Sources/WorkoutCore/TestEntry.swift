@@ -36,6 +36,7 @@ public enum TestEntry {
         guard parts.count == 2,
               let m = Int(parts[0].trimmingCharacters(in: .whitespaces)),
               let s = Int(parts[1].trimmingCharacters(in: .whitespaces)),
+              parts[1].trimmingCharacters(in: .whitespaces).count == 2,
               m >= 0, s >= 0, s < 60 else { return nil }
         return Double(m * 60 + s)
     }
@@ -115,13 +116,43 @@ public enum TestEntry {
             return .failure(TestEntryProblem("The last day is before the first day."))
         }
         let notes = f.notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let waiting = existing.first(where: { !$0.hasNumbers }) {
+        switch target(existing: existing) {
+        case .waiting(let waiting):
             return .success(TestResult(name: waiting.name, week: waiting.week, dates: dates, lthr: lthr, ftp: ftp,
                                        css: css, weight: weight, notes: notes))
+        case .new(let name):
+            return .success(TestResult(name: name, dates: dates, lthr: lthr, ftp: ftp, css: css, weight: weight, notes: notes))
         }
+    }
+
+    /* Where a saved test goes: into a block still waiting for numbers, or after the others as a new "Test N". */
+    public enum Target: Equatable {
+        case waiting(TestResult)
+        case new(String)
+    }
+
+    public static func target(existing: [TestResult]) -> Target {
+        // Only a block after the last one that has numbers is filled; an earlier empty one stays as it is.
+        let after = (existing.lastIndex(where: { $0.hasNumbers }) ?? -1) + 1
+        if let waiting = existing.dropFirst(after).first(where: { !$0.hasNumbers }) { return .waiting(waiting) }
         var n = existing.count + 1
         while existing.contains(where: { $0.name == "Test \(n)" }) { n += 1 }
-        return .success(TestResult(name: "Test \(n)", dates: dates, lthr: lthr, ftp: ftp, css: css, weight: weight, notes: notes))
+        return .new("Test \(n)")
+    }
+
+    /* The grey line under the boxes: which test Save makes. Taken from the same rule as make. */
+    public static func becomesLine(existing: [TestResult]) -> String {
+        switch target(existing: existing) {
+        case .waiting(let t): return "Saves as \(t.name)"
+        case .new(let name): return "Saves as a new test, \(name)"
+        }
+    }
+
+    /* "Test 6 \u{2014} not scheduled", without the empty day ", \u{2014}" the sheet leaves behind. */
+    public static func cleanLabel(_ t: TestResult) -> String {
+        var label = t.label
+        for tail in [", \u{2014}", ", -", ", \u{2013}"] where label.hasSuffix(tail) { label.removeLast(tail.count) }
+        return label
     }
 }
 

@@ -20,9 +20,12 @@ public struct IntervalStep: Equatable {
     public let target: String
     /* True for the steps that sit inside the repeat. */
     public let inRepeat: Bool
+    /* A cool-down that runs until the planned time is up (recovery length not given): that total, in minutes. */
+    public let untilMinutes: Int?
 
-    public init(kind: Kind, minutes: Int?, target: String, inRepeat: Bool) {
+    public init(kind: Kind, minutes: Int?, target: String, inRepeat: Bool, untilMinutes: Int? = nil) {
         self.kind = kind; self.minutes = minutes; self.target = target; self.inRepeat = inRepeat
+        self.untilMinutes = untilMinutes
     }
 }
 
@@ -58,7 +61,7 @@ public enum SessionAdvice {
 
     public static func intervalSteps(for w: Workout, _ mapping: Mapping) -> IntervalPlan? {
         let minutes = Plan.plannedSeconds(w, mapping).map { Int(($0 / 60).rounded()) }
-        for text in [w.title, w.planned.description] where !text.isEmpty {
+        for text in [w.planned.description, w.title] where !text.isEmpty {
             if let p = intervalSteps(text: text, sport: w.discipline.id, totalMinutes: minutes) { return p }
         }
         return nil
@@ -75,11 +78,11 @@ public enum SessionAdvice {
     }
 
     private static let simple: NSRegularExpression = try! NSRegularExpression(pattern:
-        #"^(?:[a-z0-9 .+/]{0,40}?\bwith\s+|(\d+)\s*min\s+easy\s*\+\s*)?(\d+)\s*x\s*(\d+)\s*min(?:utes)?\s+(?:at|@)\s+([^,;(]+?)(?:\s*,\s*(?:(\d+)\s*min\s*(easy|jog|walk|rest|recovery)(?:\s+between)?|(easy|jog)\s+(?:between|recoveries)))?\s*(?:;|$)"#,
+        #"^(?:(?!(?:(?!\bwith\b)[a-z0-9 .+/])*\d+\s*min)[a-z0-9 .+/]{0,40}?\bwith\s+|(\d+)\s*min\s+easy\s*\+\s*)?(\d+)\s*x\s*(\d+)\s*min(?:utes)?\s+(?:at|@)\s+([^,;(]+?)(?:\s*,\s*(?:(\d+)\s*min\s*(easy|jog|walk|rest|recovery)(?:\s+between)?|(easy|jog)\s+(?:between|recoveries)))?\s*$"#,
         options: [.caseInsensitive])
 
     private static let overUnder: NSRegularExpression = try! NSRegularExpression(pattern:
-        #"^(\d+)\s*x\s*\(\s*(\d+)\s*min\s+([^/)]+?)\s*/\s*(\d+)\s*min\s+([^)]+?)\s*\)\s*(?:;|$)"#,
+        #"^(\d+)\s*x\s*\(\s*(\d+)\s*min\s+([^/)]+?)\s*/\s*(\d+)\s*min\s+([^)]+?)\s*\)\s*$"#,
         options: [.caseInsensitive])
 
     /*
@@ -99,6 +102,8 @@ public enum SessionAdvice {
             }
         }
         let norm = normalised(original)
+        // Two sequences in one text ("... then ...") is more than this reader understands.
+        if " \(norm.lowercased()) ".contains(" then ") { return nil }
         let ns = norm as NSString
         let whole = NSRange(location: 0, length: ns.length)
         func group(_ m: NSTextCheckingResult, _ i: Int) -> String? {
@@ -121,7 +126,8 @@ public enum SessionAdvice {
                 inside.append(IntervalStep(kind: .recovery, minutes: rm, target: recoveryWord(word, sport), inRepeat: true))
             } else if let word = group(m, 7) {
                 inside.append(IntervalStep(kind: .recovery, minutes: nil, target: recoveryWord(word, sport), inRepeat: true))
-            } else if w < 10 {
+            } else {
+                // No recovery named: short efforts are unreadable, and long blocks would run back to back.
                 return nil
             }
         } else if let m = overUnder.firstMatch(in: norm, range: whole) {
@@ -136,21 +142,32 @@ public enum SessionAdvice {
         }
         guard (2...20).contains(reps), inside.allSatisfy({ ($0.minutes ?? 1) >= 1 && ($0.minutes ?? 1) <= 120 }) else { return nil }
 
-        // Warm-up and cool-down: the time the repeat leaves over, easy.
+        // Warm-up and cool-down. A warm-up named in the text is used as written; otherwise 15 minutes
+        // (10 when the session is shorter than 45). The cool-down is what the planned time leaves.
+        if let total = totalMinutes, total < reps * inside.reduce(0, { $0 + ($1.minutes ?? 0) }) + 10 { return nil }
+        let recoveryKnown = inside.allSatisfy { $0.minutes != nil }
         let repeated = reps * inside.reduce(0) { $0 + ($1.minutes ?? 0) }
-        var warmMinutes = warm ?? 10
-        var coolMinutes = 5
-        if let total = totalMinutes, total > repeated {
-            let left = total - repeated
-            coolMinutes = left >= 40 ? 10 : 5
-            if let w = warm { warmMinutes = w; coolMinutes = max(left - w, 5) }
-            else { warmMinutes = max(left - coolMinutes, 5) }
+        var warmMinutes = warm ?? ((totalMinutes ?? 0) >= 45 ? 15 : 10)
+        var steps: [IntervalStep] = []
+        var cool: IntervalStep
+        if recoveryKnown, let total = totalMinutes {
+            var left = total - warmMinutes - repeated
+            if left < 5, warm == nil, warmMinutes > 10 {
+                warmMinutes = 10
+                left = total - warmMinutes - repeated
+            }
+            guard left >= 5 else { return nil }
+            cool = IntervalStep(kind: .cooldown, minutes: left, target: easyWord, inRepeat: false)
+        } else if let total = totalMinutes {
+            cool = IntervalStep(kind: .cooldown, minutes: nil, target: easyWord, inRepeat: false, untilMinutes: total)
+        } else {
+            cool = IntervalStep(kind: .cooldown, minutes: 5, target: easyWord, inRepeat: false)
         }
         // A very long easy start is a long ride with blocks in it, not a session to build by hand.
         guard warmMinutes <= 45 else { return nil }
-        var steps = [IntervalStep(kind: .warmup, minutes: warmMinutes, target: easyWord, inRepeat: false)]
+        steps.append(IntervalStep(kind: .warmup, minutes: warmMinutes, target: easyWord, inRepeat: false))
         steps += inside
-        steps.append(IntervalStep(kind: .cooldown, minutes: coolMinutes, target: easyWord, inRepeat: false))
+        steps.append(cool)
         return IntervalPlan(sport: sport, repeats: reps, steps: steps)
     }
 
@@ -171,14 +188,16 @@ public enum SessionAdvice {
 
     // MARK: The Garmin Connect steps
 
-    public static let garminTemplateLine = "Saved there, it stays as a template: copy it for the next week, and send it to your watch."
+    public static let garminTemplateLine = "Saved there, it stays in your Workouts list: copy it for next week and send it to your watch."
 
     private static func minutesText(_ m: Int?) -> String { m.map { "\($0) min" } ?? "until you are ready (press Lap)" }
 
     private static func stepLine(_ s: IntervalStep) -> String {
         switch s.kind {
         case .warmup: return "Warm-up: \(minutesText(s.minutes)), \(s.target)."
-        case .cooldown: return "Cool-down: \(minutesText(s.minutes)), \(s.target)."
+        case .cooldown:
+            if let until = s.untilMinutes { return "Cool-down: \(s.target) until the \(until) minutes are up." }
+            return "Cool-down: \(minutesText(s.minutes)), \(s.target)."
         case .work: return "Work: \(minutesText(s.minutes)) at \(s.target)."
         case .recovery:
             return s.minutes == nil ? "Recovery: \(s.target), \(minutesText(nil))." : "Recovery: \(s.minutes!) min \(s.target)."
@@ -188,7 +207,7 @@ public enum SessionAdvice {
     /* The numbered lines, one per thing to tap or enter. */
     public static func garminLines(for plan: IntervalPlan) -> [String] {
         var raw: [String] = [
-            "Open Garmin Connect on your phone. Tap the menu, then Training & Planning, then Workouts, then Create a Workout.",
+            "Open Garmin Connect on your phone. Tap More, then Training & Planning, then Workouts, then Create a Workout.",
             "Choose \(plan.sport == "run" ? "Running" : "Cycling") as the sport.",
         ]
         for s in plan.steps where s.kind == .warmup { raw.append("Add a step. " + stepLine(s)) }

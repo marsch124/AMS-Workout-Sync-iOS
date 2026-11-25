@@ -12,6 +12,7 @@ final class TestEntryTests: XCTestCase {
         XCTAssertEqual(TestEntry.parseSwim(" 2:05 "), 125)
         XCTAssertNil(TestEntry.parseSwim("1:75"))
         XCTAssertNil(TestEntry.parseSwim("110"))
+        XCTAssertNil(TestEntry.parseSwim("1:5"))
         XCTAssertNil(TestEntry.parseSwim("a:b"))
         XCTAssertEqual(TestEntry.swimText(125), "2:05")
     }
@@ -36,5 +37,14 @@ final class TestEntryTests: XCTestCase {
         XCTAssertEqual([t.name, t.week], ["Test 2", "W9"])
         let same = TestEntry.sameAs(try XCTUnwrap(TestEntry.last(of: existing)))
         XCTAssertEqual([same.lthr, same.ftp, same.swim, same.weight], ["150", "190", "1:55", "71"])
+    }
+
+    func testNewResultFillsOnlyABlockAfterTheLastWithNumbers() {
+        let tests = [TestResult(name: "Test 1"), TestResult(name: "Test 2", lthr: 160)]
+        XCTAssertEqual(TestEntry.target(existing: tests), .new("Test 3"))
+        XCTAssertEqual(TestEntry.becomesLine(existing: tests), "Saves as a new test, Test 3")
+        let more = tests + [TestResult(name: "Test 3")]
+        XCTAssertEqual(TestEntry.target(existing: more), .waiting(more[2]))
+        XCTAssertEqual(TestEntry.becomesLine(existing: more), "Saves as Test 3")
     }
 }

@@ -15,12 +15,12 @@ struct ZonesView: View {
             VStack(alignment: .leading, spacing: 12) {
                 if store.canChangePlan {
                     SectionHeading(text: "Your tests")
-                    if !store.tests.isEmpty { TestsList() }
                     Button { entering = true } label: {
-                        Text("Enter a test result").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                        Text("Enter a test result").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     }
                     .buttonStyle(.borderedProminent).tint(Theme.today)
                     .accessibilityIdentifier("test-enter")
+                    if !store.tests.isEmpty { TestsList() }
                 }
                 if let z = store.zones {
                     let known = z.current.filter { !$0.value.isEmpty }

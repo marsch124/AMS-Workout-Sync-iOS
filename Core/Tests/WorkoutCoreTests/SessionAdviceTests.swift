@@ -23,17 +23,31 @@ final class SessionAdviceTests: XCTestCase {
         XCTAssertEqual(p.steps[1].target, "Z4")
         XCTAssertEqual(p.steps[2].minutes, 2)
         XCTAssertEqual(p.steps[2].target, "jog")
-        // 50 minutes less 4 x 8 leaves 18: five cool-down, the rest warm-up.
-        XCTAssertEqual(p.steps[0].minutes, 13)
-        XCTAssertEqual(p.steps[3].minutes, 5)
+        // 15 min warm-up would leave 3 for the cool-down, so the 10-minute warm-up: 50 - 10 - 32 = 8.
+        XCTAssertEqual(p.steps[0].minutes, 10)
+        XCTAssertEqual(p.steps[3].minutes, 8)
     }
 
-    func testBikeBlocksWithAsciiLettersAndNoRecovery() throws {
-        let p = try XCTUnwrap(SessionAdvice.intervalSteps(text: "Trainer sweet spot: 2x12 min at 88-93% FTP", sport: "bike", totalMinutes: 55))
+    func testBikeBlocksWithAsciiLetters() throws {
+        let p = try XCTUnwrap(SessionAdvice.intervalSteps(text: "Trainer sweet spot: 2x12 min at 88-93% FTP, 4 min easy", sport: "bike", totalMinutes: 60))
         XCTAssertEqual(p.repeats, 2)
-        XCTAssertEqual(p.steps.map(\.kind), [.warmup, .work, .cooldown])
+        XCTAssertEqual(p.steps.map(\.kind), [.warmup, .work, .recovery, .cooldown])
         XCTAssertEqual(p.steps[1].target, "88-93% FTP")
+        XCTAssertEqual(p.steps[0].minutes, 15)
+        XCTAssertEqual(p.steps[3].minutes, 13)
         XCTAssertEqual(SessionAdvice.garminText(for: p).contains("Cycling"), true)
+    }
+
+    func testWrongCardsAreNotShown() {
+        let none: [(String, Int?)] = [
+            ("4x10 min at Z3; 30 min Z2 tempo", 100),                                   // text after a ;
+            ("45 min Z2 then 20 min tempo with 3x10 min at Z4, 2 min easy", 120),        // two sequences
+            ("2x20 min at FTP", 90),                                                     // blocks back to back
+            ("3x10 min at Z3, 2 min jog", 40),                                           // too little time left
+        ]
+        for (t, m) in none { XCTAssertNil(SessionAdvice.intervalSteps(text: t, sport: "bike", totalMinutes: m), t) }
+        XCTAssertNil(SessionAdvice.intervalSteps(text: "45 min Z2 with 2x10 min at Z4, 2 min easy", sport: "run", totalMinutes: 90))
+        XCTAssertNotNil(SessionAdvice.intervalSteps(text: "2x20 min at FTP, easy between", sport: "bike", totalMinutes: 90))
     }
 
     func testOverUnders() throws {
@@ -52,6 +66,17 @@ final class SessionAdviceTests: XCTestCase {
         XCTAssertEqual(b.steps[2].kind, .recovery)
         XCTAssertNil(b.steps[2].minutes)
         XCTAssertEqual(b.steps[0].minutes, 10)
+        // Recovery length not given: the last step runs until the planned time is up.
+        let c = try XCTUnwrap(SessionAdvice.intervalSteps(text: "Z2 run with 4\u{00D7}3 min at Z3, jog recoveries", sport: "run", totalMinutes: 50))
+        XCTAssertEqual(c.steps[0].minutes, 15)
+        XCTAssertNil(c.steps[2].minutes)
+        XCTAssertEqual(c.steps.last?.untilMinutes, 50)
+        XCTAssertTrue(SessionAdvice.garminLines(for: c).contains { $0.contains("until the 50 minutes are up") })
+    }
+
+    func testNoCardWhenNothingIsLeftForTheCoolDown() {
+        // 4 x (10 + 2) = 48 of 50 minutes: even a 10-minute warm-up leaves nothing.
+        XCTAssertNil(SessionAdvice.intervalSteps(text: "4x10 min at Z3, 2 min jog", sport: "run", totalMinutes: 50))
     }
 
     func testGarminLinesAreNumberedAndNameTheRepeat() throws {

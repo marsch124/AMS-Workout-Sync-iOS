@@ -14,6 +14,8 @@ struct TestEntryView: View {
     @State private var fields = TestEntryFields()
     @State private var first = Date()
     @State private var last = Date()
+    @State private var started = false
+    @State private var saved = false
     @State private var problem: String?
     @FocusState private var focused: Bool
 
@@ -32,33 +34,31 @@ struct TestEntryView: View {
                         .settingsButton(tint: Theme.today)
                         .accessibilityIdentifier("test-same")
                     }
-                    HStack(alignment: .top, spacing: 12) {
-                        labelled("Threshold pulse (beats a minute)") {
-                            numberBox("160", text: $fields.lthr, id: "test-lthr", pad: .decimalPad)
-                        }
-                        labelled("Bike power FTP (watts)") {
-                            numberBox("200", text: $fields.ftp, id: "test-ftp", pad: .decimalPad)
-                        }
+                    fieldRow("Threshold pulse", unit: "beats a minute") {
+                        numberBox("160", text: $fields.lthr, id: "test-lthr", pad: .decimalPad)
                     }
-                    HStack(alignment: .top, spacing: 12) {
-                        labelled("Swim pace per 100 m (m:ss)") {
-                            numberBox("1:50", text: $fields.swim, id: "test-swim", pad: .numbersAndPunctuation)
-                        }
-                        labelled("Weight (kg)") {
-                            numberBox("70", text: $fields.weight, id: "test-weight", pad: .decimalPad)
-                        }
+                    fieldRow("Bike power (FTP)", unit: "watts") {
+                        numberBox("200", text: $fields.ftp, id: "test-ftp", pad: .decimalPad)
                     }
-                    HStack(alignment: .top, spacing: 12) {
-                        labelled("First day") {
-                            DatePicker("First day", selection: $first, displayedComponents: .date)
-                                .labelsHidden().environment(\.timeZone, utc)
-                                .accessibilityIdentifier("test-first")
-                        }
-                        labelled("Last day") {
-                            DatePicker("Last day", selection: $last, in: first..., displayedComponents: .date)
-                                .labelsHidden().environment(\.timeZone, utc)
-                                .accessibilityIdentifier("test-last")
-                        }
+                    fieldRow("Swim pace per 100 m", unit: "min:sec") {
+                        numberBox("1:50", text: $fields.swim, id: "test-swim", pad: .numbersAndPunctuation)
+                    }
+                    fieldRow("Weight", unit: "kg") {
+                        numberBox("70", text: $fields.weight, id: "test-weight", pad: .decimalPad)
+                    }
+                    HStack(spacing: 8) {
+                        Text("First day").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                        DatePicker("First day", selection: $first, displayedComponents: .date)
+                            .labelsHidden().environment(\.timeZone, utc)
+                            .accessibilityIdentifier("test-first")
+                        Spacer(minLength: 0)
+                    }
+                    HStack(spacing: 8) {
+                        Text("Last day").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                        DatePicker("Last day", selection: $last, in: first..., displayedComponents: .date)
+                            .labelsHidden().environment(\.timeZone, utc)
+                            .accessibilityIdentifier("test-last")
+                        Spacer(minLength: 0)
                     }
                     labelled("Notes") {
                         TextField("Anything worth keeping", text: $fields.notes, axis: .vertical)
@@ -67,10 +67,13 @@ struct TestEntryView: View {
                             .padding(10).background(box)
                             .accessibilityIdentifier("test-notes")
                     }
+                    Text(TestEntry.becomesLine(existing: store.tests))
+                        .font(.footnote).foregroundStyle(Theme.secondary)
+                        .accessibilityIdentifier("test-becomes")
                     Text("Leave a box empty if that part was not tested; the zones keep the last number there is.")
                         .font(.footnote).foregroundStyle(Theme.secondary)
                 }
-                .padding(16).padding(.bottom, 90)
+                .padding(16)
             }
             .background(Theme.bg.ignoresSafeArea())
             .navigationTitle("Enter a test result")
@@ -101,10 +104,16 @@ struct TestEntryView: View {
                 .background(Theme.bg)
             }
         }
+        .onAppear {
+            guard !started else { return }
+            started = true
+            if let d = parseDayKey(store.today) { first = d; last = d }
+        }
         .onChange(of: first) { _, new in if last < new { last = new } }
     }
 
     private func save() {
+        guard !saved else { return }
         var f = fields
         f.firstDay = dayKey(first) ?? ""
         f.lastDay = dayKey(last) ?? ""
@@ -112,7 +121,7 @@ struct TestEntryView: View {
         case .failure(let p):
             problem = p.words
         case .success(let test):
-            if store.recordTest(test) { dismiss() } else { problem = "The test could not be saved. Nothing was changed." }
+            if store.recordTest(test) { saved = true; dismiss() } else { problem = "The test could not be saved. Nothing was changed." }
         }
     }
 
@@ -123,6 +132,16 @@ struct TestEntryView: View {
             .focused($focused)
             .padding(10).background(box)
             .accessibilityIdentifier(id)
+    }
+
+    /* One row per box: the name, the box right beside it, the unit in grey after it. */
+    private func fieldRow<Content: View>(_ title: String, unit: String, @ViewBuilder _ content: () -> Content) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(title).font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+            content().frame(maxWidth: 110)
+            Text(unit).font(.footnote).foregroundStyle(Theme.secondary)
+            Spacer(minLength: 0)
+        }
     }
 
     private func labelled<Content: View>(_ title: String, @ViewBuilder _ content: () -> Content) -> some View {
@@ -139,21 +158,19 @@ struct TestEntryView: View {
     }
 }
 
-/* The tests, newest first, for the zones page. */
+/* The tests for the zones page: the ones with numbers, newest first; then one compact card for those still to come. */
 struct TestsList: View {
     @EnvironmentObject var store: Store
 
     var body: some View {
+        let done = Array(store.tests.filter(\.hasNumbers).reversed())
+        let waiting = store.tests.filter { !$0.hasNumbers }
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(store.tests.reversed()), id: \.name) { test in
+            ForEach(done, id: \.name) { test in
                 Card {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(test.label).font(.body.weight(.semibold)).foregroundStyle(Theme.text)
-                        if test.hasNumbers {
-                            Text(numbers(test)).font(.subheadline.monospacedDigit()).foregroundStyle(Theme.text)
-                        } else {
-                            Text("No numbers entered yet").font(.footnote).foregroundStyle(Theme.secondary)
-                        }
+                        Text(TestEntry.cleanLabel(test)).font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                        Text(numbers(test)).font(.subheadline).foregroundStyle(Theme.text)
                         if !test.notes.isEmpty {
                             Text(test.notes).font(.footnote).foregroundStyle(Theme.secondary)
                         }
@@ -162,16 +179,27 @@ struct TestsList: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("test-row")
             }
+            if !waiting.isEmpty {
+                Card {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Still to come").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                        ForEach(waiting, id: \.name) { test in
+                            Text(TestEntry.cleanLabel(test)).font(.footnote).foregroundStyle(Theme.secondary)
+                                .accessibilityIdentifier("test-row-waiting")
+                        }
+                    }
+                }
+            }
         }
         .accessibilityIdentifier("tests-list")
     }
 
     private func numbers(_ t: TestResult) -> String {
         var parts: [String] = []
-        if let x = t.lthr { parts.append("Pulse " + jsNumberString(x)) }
-        if let x = t.ftp { parts.append("FTP " + jsNumberString(x) + " W") }
-        if let x = t.css { parts.append("Swim " + TestEntry.swimText(x)) }
-        if let x = t.weight { parts.append(jsNumberString(x) + " kg") }
-        return parts.joined(separator: "  ·  ")
+        if let x = t.lthr { parts.append("Threshold pulse " + jsNumberString(x)) }
+        if let x = t.ftp { parts.append("Bike power " + jsNumberString(x) + " W") }
+        if let x = t.css { parts.append("Swim pace " + TestEntry.swimText(x)) }
+        if let x = t.weight { parts.append("Weight " + jsNumberString(x) + " kg") }
+        return parts.joined(separator: " \u{00B7} ")
     }
 }

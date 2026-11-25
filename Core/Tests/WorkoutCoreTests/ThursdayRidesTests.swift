@@ -84,4 +84,54 @@ final class ThursdayRidesTests: XCTestCase {
         XCTAssertEqual(rows.count, d.count)
         XCTAssertEqual(rows.map { $0.after - $0.before }, d.map { $0.minutes ?? 0 })
     }
+
+    /* A ride he moved, renamed or took out still counts for its week: the rule never offers that week again. */
+    func testAMovedRenamedOrRemovedRideIsNotOfferedAgain() throws {
+        var b = try book()
+        let w = weeks()
+        let first = ThursdayRides.drafts(weeks: w, sessions: b.sessions, changes: b.changes, from: "2030-01-01")
+        XCTAssertEqual(first.count, 11)
+        var keys: [String] = []
+        for d in first { keys.append(try b.add(d, why: ThursdayRides.why).key) }
+        XCTAssertEqual(ThursdayRides.drafts(weeks: w, sessions: b.sessions, changes: b.changes, from: "2030-01-01").count, 0)
+
+        // Moved to the Friday of its week.
+        var moved = try XCTUnwrap(b.draft(of: keys[0]))
+        moved.dayKey = PlanView.addDays(moved.dayKey, 1)
+        _ = try b.change(keys[0], to: moved)
+        // Renamed and given another purpose.
+        var renamed = try XCTUnwrap(b.draft(of: keys[1]))
+        renamed.title = "Coffee ride"
+        renamed.purpose = "Sunshine"
+        _ = try b.change(keys[1], to: renamed)
+        // Taken out of the plan.
+        _ = try b.remove(keys[2])
+        XCTAssertEqual(ThursdayRides.drafts(weeks: w, sessions: b.sessions, changes: b.changes, from: "2030-01-01").count, 0,
+                       "a week that has, or had, its ride is never offered a second one")
+
+        // Only an Undo of the adding itself frees the week again.
+        let adding = try XCTUnwrap(b.changes.first { $0.kind == "add" && $0.key == keys[3] })
+        try b.undo(adding.id)
+        let again = ThursdayRides.drafts(weeks: w, sessions: b.sessions, changes: b.changes, from: "2030-01-01")
+        XCTAssertEqual(again.map(\.dayKey), [first[3].dayKey])
+    }
+
+    /* A week whose heading does not start on a Monday still gets its ride on the Thursday. */
+    func testAWeekHeadingThatIsNotAMondayStillGivesAThursday() throws {
+        let b = try book()
+        let odd = [PlanWeek(number: 1, monday: "2030-01-06", phase: "Base 2 \u{2014} Aerobic Development", tag: "")]   // a Sunday
+        let d = ThursdayRides.drafts(weeks: odd, sessions: b.sessions, from: "2029-12-01")
+        XCTAssertEqual(d.count, 1)
+        XCTAssertEqual(PlanView.addDays(PlanView.weekStart(d[0].dayKey), 3), d[0].dayKey)
+    }
+
+    /* "Base 3 · Recovery" is still Base 3: the steps go on after it. */
+    func testBaseThreeStepsGoOnAfterItsEasyWeek() throws {
+        let b = try book()
+        var w: [PlanWeek] = []
+        let phases = ["Base 3 \u{2014} Aerobic Endurance", "Base 3 \u{2014} Recovery", "Base 3 \u{2014} Aerobic Endurance"]
+        let tags = ["", "RECOVERY WEEK", ""]
+        for i in 0..<3 { w.append(PlanWeek(number: i + 1, monday: PlanView.addDays("2030-01-07", 7 * i), phase: phases[i], tag: tags[i])) }
+        XCTAssertEqual(minutes(ThursdayRides.drafts(weeks: w, sessions: b.sessions, from: "2030-01-01")), [50, 30, 55])
+    }
 }

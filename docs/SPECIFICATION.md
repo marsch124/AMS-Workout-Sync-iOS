@@ -1256,6 +1256,10 @@ Compiled **only in DEBUG** builds; none exists in a release build. Pass them as 
 | `AMSWS_MOVEIN` | 2.0: opens the page "The plan moves in" | settings screens |
 | `AMSWS_EDIT` | 2.0: opens "Change session" | session screens |
 | `AMSWS_CHANGES` | 2.0: opens "Changes to the plan" | settings screens |
+| `AMSWS_TEST` | 2.1: `1` opens the test list in Your zones; `new` opens the page "Enter a test result" | settings screens |
+| `AMSWS_SAFETY` | 2.1: `1` opens "Safety copies" | settings screens |
+| `AMSWS_RIDES` | 2.1: `1` opens "Thursday rides" | settings screens |
+| `AMSWS_GARMIN` | 2.1: `1` opens a session with the Garmin card | session screens |
 | `AMSWS_FEEL` | 1.2: `1` to `5` answers this morning's question with that face; `week` fills the thirteen days before today (pattern 3 4 4 2 3 5 4 3 · 4 2 3 4, one day left unanswered) so the Mornings bars have something to draw | `Diary.swift` |
 
 For a calendar check: `xcrun simctl privacy <udid> grant calendar com.schabbauer.AMSWorkoutSync`, launch with `SIMCTL_CHILD_AMSWS_CALENDAR=1`, then read the simulator's calendar database (`tools/README.md`).
@@ -1520,8 +1524,8 @@ Only when `canChangePlan` (`home == .app` and a book). The Store methods `change
 * **`change(key, to:)`**: the title cannot be emptied (the old one stays); a draft equal to the current one returns nil and records nothing; a bad day throws `badDay`. The session is shaped (sport, words, planned length, zone, description, the star), and a plain one-block session gets one block of words (the purpose, else the title); a plan with warm-up and cool-down columns keeps its own blocks. A moved day also calls `rememberMove` in the Store so Progress "moved rather than lost" counts it. The key is **not** changed, so photographs, the Training calendar and the move history stay with it.
 * **`add(draft)`**: counter + 1; key `App!<counter><6 random lowercase letters or digits>`; row `100000 + counter` (above any real row, so it sorts after the workbook's sessions of that day); sheet `App`; phase from the week of that day, else the nearest session's.
 * **`remove(key)`**: the session leaves `sessions`, is put in `removed` with the time, and its record is kept in the change (with `undo`).
-* **`undo(changeID)`**: an added session goes (and is marked removed); an edited or removed one returns to the plan's side as it was; what was logged since (results, done, missed) stays. A change can be taken back once (`undone`).
-* **`PlanChange`**: `id`, `at`, `kind` (edit, add, remove), `key`, `title`, `before`, `after` (only what differs, in words, such as "60 min → 40 min"; joined by " · "), `why`, `undo` (the session as it was; nil for an add), `undone`. Settings → "Changes to the plan" lists them newest first with a "Take back" button; a taken-back one reads "Taken back" in grey.
+* **`undo(changeID)`**: an added session goes (and is marked removed); an edited or removed one returns to the plan's side as it was; what was logged since (results, done, missed) stays. A change can be undone once (`undone`).
+* **`PlanChange`**: `id`, `at`, `kind` (edit, add, remove), `key`, `title`, `before`, `after` (only what differs, in words, such as "60 min → 40 min"; joined by " · "), `why`, `undo` (the session as it was; nil for an add), `undone`. Settings → "Changes to the plan" lists them newest first with an "Undo" button; an undone one reads "Undone" in grey.
 
 ### P.10 Weeks and phases in the book
 
@@ -1544,7 +1548,7 @@ Only when `canChangePlan` (`home == .app` and a book). The Store methods `change
 * No suggestions, no advice, no health claim; the app changes the plan only when told.
 * Not in 2.0, said honestly in What's new as "Coming next": iPad and Mac, the morning check with Garmin numbers, suggestions by the rule book, Claude built in, links to Workout Companion and Magic Morning.
 
-**Signs added.** Green word "same" in the side-by-side table = the two figures agree (see P.15); red "differs"; red buttons "Go back to Excel" and "Take out of the plan" take something away; "Taken back" in grey; "Lives in this app". **Judgement for the owner:** the green tick otherwise means "done and nothing else" (11.5, N.6); in the side-by-side table it means "the same". This breaks the rule that a mark means one thing in the whole app. The guide says so openly, but a word ("Same") or an equals sign would be cleaner.
+**Signs added.** Green word "same" in the side-by-side table = the two figures agree (see P.15); red "differs"; red buttons "Go back to Excel" and "Take out of the plan" take something away; "Undone" in grey; "Lives in this app". **Judgement for the owner:** the green tick otherwise means "done and nothing else" (11.5, N.6); in the side-by-side table it means "the same". This breaks the rule that a mark means one thing in the whole app. The guide says so openly, but a word ("Same") or an equals sign would be cleaner.
 
 
 ### P.13 A copy outside the phone (added during 2.0)
@@ -1582,64 +1586,67 @@ Four additions. The first three work only once the plan lives in the app (`canCh
 
 ### S.1 Enter a test result
 
-**Where.** Settings → "Your zones" (identifier `tests-list`): the zone sheet, and under it every test the plan holds, newest first, one row each (`test-row`). Above the list the main button (full colour, never grey) "Enter a test result" (`test-enter`). Before the plan lives in the app a test is entered in Excel as before.
+**Where.** Settings → "Your zones" (identifier `tests-list`): the zone sheet, and under it every test the plan holds, newest first, one row each (`test-row`). The main button (full colour, never grey) "Enter a test result" (`test-enter`) comes first; under it the tests that have numbers, newest first; then one card "Still to come" (`test-row-waiting`) with the plan's tests that have no numbers yet. Before the plan lives in the app a test is entered in Excel as before.
 
-**The page** "Enter a test result" has these boxes, all optional, with Cancel (`test-cancel`; Escape on a Mac keyboard) and Save (`test-save`):
+**The page** "Enter a test result" has these boxes, each its own row; an empty box means "not tested this time" and at least one number is needed; with Cancel (`test-cancel`; Escape on a Mac keyboard) and Save (`test-save`):
 
 | Box | Identifier | Format | Limits |
 |---|---|---|---|
-| Heart rate at threshold | `test-lthr` | beats a minute | 80 to 220 |
+| Threshold pulse | `test-lthr` | beats a minute | 80 to 220 |
 | Bike power (FTP) | `test-ftp` | watts | 50 to 500 |
-| Swim pace per 100 m | `test-swim` | m:ss | 1:00 to 4:00 (stored as seconds a 100 m) |
+| Swim pace per 100 m | `test-swim` | minutes and seconds, like 1:50 | 1:00 to 4:00 (stored as seconds a 100 m) |
 | Weight | `test-weight` | kilograms | 35 to 150 |
+| First day | `test-first` | a day | not after the last day |
+| Last day | `test-last` | a day | not before the first day |
 | Notes | `test-notes` | free text | none |
 
-* "Same as the last test" (`test-same`) fills the number boxes with those of the newest test.
-* **Save never greys out.** A tap on Save with something missing or out of its limits writes nothing and shows one red line (`test-problem`) saying what is missing or wrong. A good Save calls `Store.recordTest`: the test is added to the book and saved, the page closes, the list shows it first.
+* "Same as the last test" (`test-same`) fills the four numbers with those of the newest test and leaves the days and the notes alone.
+* A grey line (`test-becomes`) says which test the entry becomes: it fills the next test the plan has waiting for numbers (for example "Saves as Test 3"); if none is waiting it becomes a new test.
+* **Save never greys out.** A tap on Save with something missing or out of its limits writes nothing and shows one red line (`test-problem`), above Save, saying what is missing or wrong. A good Save calls `Store.recordTest`: the test is added to the book and saved, the page closes, the list shows it first.
 * The zones follow the newest numbers. The app stores and shows what is entered; it never says whether a result is good or bad. Sessions already logged are not changed.
 
 ### S.2 Safety copies
 
-**Where.** Settings → "Safety copies" opens the page `plan-safety`, title `safety-title`. One row per day that has a copy (`safety-row`), newest first, the newest 30 days kept; each row says what the copy holds as sessions · done · changes (`Store.safetyCopySummary`). With no copy the page shows one grey line (`safety-none`).
+**Where.** Settings → "Safety copies" is one row; it opens the page `plan-safety`, title `safety-title`. A copy is made at the start of each day the plan changes (not every day) and kept for 30 days. One row per day that has a copy (`safety-row`), newest first; each row gives the day and what the copy holds, like "372 sessions · 83 done · 4 changes so far" (`Store.safetyCopySummary`; invented numbers). With no copy the page shows one grey line (`safety-none`): "No safety copies yet. The first one is made the next time the plan changes." The page can only be reached once the plan lives in the app.
 
-**Putting one back.** Each row has the red outlined button "Put this copy back" (`safety-put-back`). It asks first (`safety-confirm`) with Cancel and a red confirming button. On confirming, `Store.restoreSafetyCopy(day)` copies the plan as it is now aside (`plan-before-restore-<time>.json`), writes the chosen copy over `plan.json`, empties the waiting list, refreshes the screen and owes the copy in Dropbox. A green line (`safety-done`) says it was put back. A copy that will not open, or a failed write, shows a red line (`safety-problem`) and changes nothing. Refused while Going back to Excel runs. What was logged after that day is not in the copy.
+**Putting one back.** Each row has the red outlined button "Put this copy back" (`safety-put-back`). It asks first (`safety-confirm`) with Cancel and a red confirming button. On confirming, `Store.restoreSafetyCopy(day)` copies the plan as it is now aside (`plan-before-restore-<time>.json`), writes the chosen copy over `plan.json`, empties the waiting list, refreshes the screen and owes the copy in Dropbox. The plan goes back to how it was at the start of that day; everything logged or changed from that day on is taken out. A green line (`safety-done`) says "The plan is back as it was at the start of Mon 23 Nov." A copy that will not open, or a failed write, shows a red line (`safety-problem`) and changes nothing. Refused while Going back to Excel runs. Everything logged or changed from that day on is not in the copy.
 
 ### S.3 Thursday rides
 
 **Where.** Settings → "Thursday rides" (`plan-rides`, title `rides-title`). Source of the rule: a private coach note (option 1); the page itself carries no personal numbers.
 
-**The rule.** An easy ride (sport Bike, not a key session) each Thursday from Monday 30 November 2026 to the race, by the phase of that week:
+**The rule.** An easy ride (sport Bike, not a key session) each Thursday from the next Monday to the race (no fixed start date), by the phase of that week:
 
 | Week | Ride |
 |---|---|
 | Base 2 | 45 min |
-| Base 3 | 50, then 55, then 60 min |
+| Base 3 | growing from 50 to 60 min |
 | Build | 60 min |
 | Peak | 45 min |
-| Easy week, test week, the last week of the taper | 30 min easy spin |
+| Easy week, test week, the taper | 30 min easy spin |
 | Race-practice week, race week | none |
 
-**The page.** Every ride, one row each (`rides-row`); every week with its planned minutes before → after (`rides-week-row`); the main button "Add … rides" (`rides-add`) with the number in it; Cancel (`rides-cancel`). Nothing is added until the button is tapped. The tap adds all rides in one save through `Store.addSessions(_:why:)` (all or none), each as a change in Changes to the plan, so each ride can be undone there (P.9: the newest change to a session) or changed, moved and taken out like any session. Afterwards the page says so (`rides-done`, button "Done"). Rides already in the plan are not added again (`rides-already`, a grey line).
+**The page.** Every ride, one row each (`rides-row`); every week with its planned time before → after in hours and minutes (`rides-week-row`); the main button "Add 29 rides" (`rides-add`; the number is the real count); Cancel (`rides-cancel`). Nothing is added until the button is tapped. The tap adds all rides in one save through `Store.addSessions(_:why:)` (all or none), each as a change in Changes to the plan, so each ride can be undone there (P.9: the newest change to a session) or changed, moved and taken out like any session. Cancel before, "Done" after; afterwards a green line (`rides-done`) says "29 rides added. Undo them under Changes to the plan." A Thursday that already has its ride is skipped; when all are there the page says "These rides are already in your plan." (`rides-already`, `rides-none` when there is nothing to list). If adding fails, a red line (`rides-problem`) says so and nothing is changed.
 
 ### S.4 On a session's page (`SessionView.swift`)
 
-Shown for every session of the right kind, whether the plan is in Excel or in the app.
+Shown whether the plan is in Excel or in the app, on the kinds of session below.
 
-* **Eating and drinking** (`session-fuel`): a session over 90 minutes carries one grey line about food and drink on the way.
-* **Protein** (`session-protein`): a strength session carries one grey line about protein afterwards.
+* **Eating and drinking** (`session-fuel`): a session over 90 minutes that is still to do carries one grey line: "Over 90 minutes: eat and drink as you go — about 30–60 g of carbohydrate an hour."
+* **Protein** (`session-protein`): a strength session, to do or done, carries one grey line: "After strength: a meal or snack with 20–30 g of protein within an hour or two."
 * Both are general sport habits, not medical advice; text only, no button, no count.
-* **Garmin Connect card** (`garmin-card`, "Build it like this in Garmin Connect"): on an interval session; lists the steps to build the workout once in the Garmin Connect app, and the button "Copy the steps" (`garmin-copy`) puts them on the clipboard. Nothing is sent to the watch.
+* **Garmin Connect card** (`garmin-card`, "Build it like this in Garmin Connect"): a run or ride made of repeats, like 3 × 8 min at Z3, carries the card while it is still to do. Swims, strength, finished sessions and texts the app cannot read into steps have none. Folded it is one line with a small green button "Show the steps" ("Hide the steps" when open). The steps: open Garmin Connect, More → Training & Planning → Workouts → Create a Workout, the sport, a warm-up, a repeat with its effort and recovery, a cool-down, name and save. "Copy the steps" (`garmin-copy`) copies them as text. Saved there, the workout stays in the Workouts list: copy it for next week and send it to your watch. The app itself sends nothing to the watch.
 
 ### S.5 Switches, identifiers, signs
 
 * **DEBUG switches** (see 14.6): `AMSWS_TEST=1` opens the test list in Your zones; `AMSWS_TEST=new` opens the page "Enter a test result"; `AMSWS_SAFETY=1` opens "Safety copies"; `AMSWS_RIDES=1` opens "Thursday rides"; `AMSWS_GARMIN=1` opens a session with the Garmin card.
-* **Identifiers:** `tests-list, test-row, test-enter, test-lthr, test-ftp, test-swim, test-weight, test-notes, test-same, test-save, test-cancel, test-problem · plan-safety, safety-title, safety-row, safety-put-back, safety-confirm, safety-done, safety-problem, safety-none · plan-rides, rides-title, rides-row, rides-week-row, rides-add, rides-cancel, rides-done, rides-already · session-fuel, session-protein, garmin-card, garmin-copy`.
-* **Signs.** The red button "Put this copy back" joins the red buttons that take something away. A red line under Save or a button: what is missing or what failed. A grey line on a session: a general habit, text only. "before → after": a week's minutes now and with the rides. No new mark or colour; "Signs in this app" lists these in words.
+* **Identifiers:** `tests-list, test-row, test-enter, test-lthr, test-ftp, test-swim, test-weight, test-notes, test-same, test-save, test-cancel, test-problem, test-becomes, test-row-waiting, test-first, test-last · plan-safety, safety-title, safety-row, safety-put-back, safety-confirm, safety-done, safety-problem, safety-none · plan-rides, rides-title, rides-row, rides-week-row, rides-add, rides-cancel, rides-done, rides-already, rides-none, rides-problem · session-fuel, session-protein, garmin-card, garmin-copy`.
+* **Signs.** The red button "Put this copy back" joins the red buttons that take something away. A red line above Save on the test page, or at the top of Safety copies or Thursday rides: what is missing or what failed. A grey line above Save: which test the entry becomes. A green line after putting a copy back or adding rides: done. A grey line on a session: a general habit, text only. "before → after": a week's time now and with the rides. "Show the steps / Hide the steps" opens and closes the Garmin steps on the session's own page. No new mark or colour; "Signs in this app" lists these in words.
 * **Words.** What's new has "2.1 (75) Enter a test, safety copies, Thursday rides". How this works changed in Where the plan lives, Changing the plan, On a session's page (new), How your plan is kept safe, Your zones, What this app does not do and Signs in this app.
 
 ### S.6 What 2.1 deliberately does not do
 
-* It puts nothing on the watch; the Garmin card is a recipe to copy.
+* It puts nothing on the watch; the Garmin card is a set of steps to copy.
 * It judges no test and advises on none; zones are the sheet's formulas, never worked out by the app.
 * No second Thursday option (a run off the bike, a Monday ride) and no strength change.
 * The three new pages offer nothing while the plan lives in Excel.

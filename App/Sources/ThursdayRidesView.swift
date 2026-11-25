@@ -12,6 +12,7 @@ struct ThursdayRidesView: View {
     @Environment(\.dismiss) private var dismiss
     /* How many were added by this visit; the page then says so instead of offering them again. */
     @State private var added = 0
+    @State private var failed = false
 
     /* From the next Monday on (today, when today is a Monday). */
     private var start: String {
@@ -25,7 +26,7 @@ struct ThursdayRidesView: View {
 
     private var drafts: [SessionDraft] {
         guard let book = store.book else { return [] }
-        return ThursdayRides.drafts(weeks: book.weeks, sessions: book.sessions, from: start)
+        return ThursdayRides.drafts(weeks: book.weeks, sessions: book.sessions, changes: book.changes, from: start)
     }
 
     private var weekRows: [ThursdayRides.WeekMinutes] {
@@ -42,6 +43,13 @@ struct ThursdayRidesView: View {
 
     private func day(_ key: String) -> String { parseDayKey(key).map(Self.dayFormat.string(from:)) ?? key }
     private func minutes(_ m: Double) -> String { "\(Int(m.rounded())) min" }
+    /* Hours and minutes: "5 h", "5 h 45 min", "45 min". */
+    private func hoursMinutes(_ m: Double) -> String {
+        let total = Int(m.rounded())
+        let h = total / 60, r = total % 60
+        if h == 0 { return "\(r) min" }
+        return r == 0 ? "\(h) h" : "\(h) h \(r) min"
+    }
 
     var body: some View {
         let list = drafts
@@ -86,6 +94,7 @@ struct ThursdayRidesView: View {
         .background(Theme.bg.ignoresSafeArea())
         .navigationTitle("Thursday rides")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(added > 0 ? "Done" : "Cancel") { dismiss() }.accessibilityIdentifier("rides-cancel")
@@ -93,13 +102,22 @@ struct ThursdayRidesView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if added == 0 && !list.isEmpty {
+                VStack(spacing: 8) {
+                if failed {
+                    Text(store.lastProblem ?? "The rides could not be added. Nothing was changed.")
+                        .font(.footnote).foregroundStyle(Theme.danger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityIdentifier("rides-problem")
+                }
                 Button {
-                    added = store.addSessions(list, why: "Thursday easy rides")
+                    added = store.addSessions(list, why: ThursdayRides.why)
+                    failed = added == 0
                 } label: {
                     Text("Add \(list.count) rides").font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                 }
                 .buttonStyle(.borderedProminent).tint(Theme.today)
                 .accessibilityIdentifier("rides-add")
+                }
                 .padding(16)
                 .background(Theme.bg)
             }
@@ -109,7 +127,7 @@ struct ThursdayRidesView: View {
     private func rideRow(_ d: SessionDraft) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(day(d.dayKey)).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
-                .frame(width: 84, alignment: .leading)
+                .fixedSize(horizontal: true, vertical: false)
             VStack(alignment: .leading, spacing: 1) {
                 Text(shortTitle(d.title)).font(.subheadline).foregroundStyle(Theme.sportInk("bike"))
                 Text("\(minutes(d.minutes ?? 0)) \u{00B7} \(d.intensity)").font(.footnote).foregroundStyle(Theme.secondary)
@@ -127,8 +145,8 @@ struct ThursdayRidesView: View {
     private func weekRow(_ w: ThursdayRides.WeekMinutes) -> some View {
         HStack(spacing: 8) {
             Text("Week \(w.number)").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
-                .frame(width: 84, alignment: .leading)
-            Text("\(minutes(w.before)) \u{2192} \(minutes(w.after))").font(.subheadline).foregroundStyle(Theme.secondary)
+                .fixedSize(horizontal: true, vertical: false)
+            Text("\(hoursMinutes(w.before)) \u{2192} \(hoursMinutes(w.after))").font(.subheadline).foregroundStyle(Theme.secondary)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 10).padding(.vertical, 5)

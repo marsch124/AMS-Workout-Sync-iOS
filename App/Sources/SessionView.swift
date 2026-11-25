@@ -76,8 +76,8 @@ struct SessionView: View {
                         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                     }
 
-                    // Two calm lines of general habit, on a session still to do and on a done one.
-                    if let fuel = SessionAdvice.fuelLine(for: w, mapping) {
+                    // Two calm lines of general habit: fuel on a session still to do; protein on a to-do or done strength session.
+                    if w.state != .done, !w.missed, let fuel = SessionAdvice.fuelLine(for: w, mapping) {
                         Text(fuel).font(.footnote).foregroundStyle(Theme.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("session-fuel")
@@ -375,18 +375,14 @@ private struct GarminCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button { open.toggle() } label: {
-                HStack(spacing: 6) {
-                    Text("Build it like this in Garmin Connect").font(.subheadline.weight(.semibold))
-                    Text("\u{203A}").font(.subheadline.weight(.semibold))
-                        .rotationEffect(open ? .degrees(90) : .zero)
-                    Spacer(minLength: 0)
-                }
-                .foregroundStyle(Theme.plan)
-                .contentShape(Rectangle())
+            HStack(spacing: 8) {
+                Text("Build it like this in Garmin Connect").font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.text)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button(open ? "Hide the steps" : "Show the steps") { open.toggle() }
+                    .settingsButton(tint: Theme.today)
+                    .accessibilityIdentifier("garmin-card")
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("garmin-card")
             if open {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(SessionAdvice.garminLines(for: plan).enumerated()), id: \.offset) { _, line in
@@ -400,7 +396,7 @@ private struct GarminCard: View {
                     UIPasteboard.general.string = SessionAdvice.garminText(for: plan)
                     copied = true
                 }
-                .settingsButton(tint: Theme.plan)
+                .settingsButton(tint: Theme.today)
                 .accessibilityIdentifier("garmin-copy")
             }
         }

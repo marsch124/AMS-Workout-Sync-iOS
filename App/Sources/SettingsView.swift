@@ -200,9 +200,14 @@ struct SettingsView: View {
         let copies = store.safetyCopies
         SettingsRow(title: "Lives in this app", sub: homeSub)
             .accessibilityIdentifier("plan-home")
-        SettingsRow(title: "Safety copies",
-                    sub: copies.count == 0 ? "None yet — the first comes when the plan next changes"
-                        : "\(copies.count) day\(copies.count == 1 ? "" : "s"), newest " + (copies.newest.map(Self.dayKeyShort) ?? ""))
+        NavigationLink { SafetyCopiesView() } label: {
+            SettingsRow(title: "Safety copies",
+                        sub: copies.count == 0 ? "none yet \u{2014} the first is made the next time the plan changes"
+                            : "\(copies.count) day\(copies.count == 1 ? "" : "s"), newest " + (copies.newest.map(Self.dayKeyShort) ?? ""),
+                        chevron: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("plan-safety")
         SettingsRow(title: "Spreadsheet copy",
                     sub: store.lastSpreadsheetCopy.map { "last " + Self.dayMonth($0) } ?? "none yet — the first is made with the next change",
                     action: ("Save a copy now", { copyURL = store.spreadsheetCopy() }), actionID: "plan-copy")
@@ -224,11 +229,6 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("plan-changes")
-        NavigationLink { SafetyCopiesView() } label: {
-            SettingsRow(title: "Put a safety copy back", sub: "The plan as it was at the start of an earlier day", chevron: true)
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("plan-safety")
         if store.canGoBack, let until = store.canGoBackUntil {
             SettingsRow(title: "Go back to Excel",
                         sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now into the Excel file in Dropbox.",

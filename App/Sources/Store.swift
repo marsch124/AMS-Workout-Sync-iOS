@@ -1016,24 +1016,40 @@ final class Store: ObservableObject {
      */
     @discardableResult
     func restoreSafetyCopy(_ day: String) -> Bool {
-        guard home == .app, !goingBack,
-              let data = try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json")),
+        guard home == .app, !goingBack else {
+            lastProblem = "A safety copy can be put back only while the plan lives in this app. Nothing was changed."
+            return false
+        }
+        guard let data = try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json")),
               let copy = try? PlanBook.decoded(data) else {
             lastProblem = "That safety copy could not be opened. Nothing was changed."
             return false
         }
         let fm = FileManager.default
-        let aside = supportURL.appendingPathComponent("plan-before-restore-\(Int(Date().timeIntervalSince1970)).json")
+        // The plan as it is now goes into the list of safety copies too, under
+        // today's day and the time, so putting the wrong copy back can be put
+        // right from the same page. (Today's own copy is filed first if this is
+        // the day's first change.)
+        keepSafetyCopy()
+        let clock = DateFormatter()
+        clock.locale = Locale(identifier: "en_US_POSIX"); clock.dateFormat = "HHmm"
+        let aside = backupsURL.appendingPathComponent("plan-\(PlanView.todayKey())-before-\(clock.string(from: Date())).json")
         do {
-            if fm.fileExists(atPath: bookURL.path) { try fm.copyItem(at: bookURL, to: aside) }
+            try fm.createDirectory(at: backupsURL, withIntermediateDirectories: true)
+            if fm.fileExists(atPath: bookURL.path) {
+                if fm.fileExists(atPath: aside.path) { try fm.removeItem(at: aside) }
+                try fm.copyItem(at: bookURL, to: aside)
+            }
             try data.write(to: bookURL, options: .atomic)
         } catch {
             lastProblem = "The safety copy could not be put back (\(error.localizedDescription)). Nothing was changed."
             return false
         }
-        queue = []
-        saveQueue()
         publish(copy)
+        // Logging that was still waiting never reached the plan, so it is in no
+        // copy: it is written into the plan that was put back, not thrown away.
+        if !queue.isEmpty { writeHere() }
+        keepWeeklySpreadsheet(copy)
         copyToDropboxSoon()
         return true
     }
@@ -1042,7 +1058,9 @@ final class Store: ObservableObject {
     /* Picture and screen-test switch only: make sure two safety copies exist (the plan as it is, filed under the two days before today). */
     func debugSeedSafetyCopies() {
         let fm = FileManager.default
-        guard fm.fileExists(atPath: bookURL.path), safetyCopyDays.count < 2 else { return }
+        let onDisk = fm.fileExists(atPath: bookURL.path)
+        // Picture mode keeps the plan in memory only: then the copies are written from it.
+        guard onDisk || book != nil, safetyCopyDays.count < 2 else { return }
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "yyyy-MM-dd"
         guard let now = f.date(from: today) else { return }
@@ -1050,7 +1068,9 @@ final class Store: ObservableObject {
         for back in 1...2 {
             guard let d = Calendar.current.date(byAdding: .day, value: -back, to: now) else { continue }
             let copy = backupsURL.appendingPathComponent("plan-\(f.string(from: d)).json")
-            if !fm.fileExists(atPath: copy.path) { try? fm.copyItem(at: bookURL, to: copy) }
+            guard !fm.fileExists(atPath: copy.path) else { continue }
+            if onDisk { try? fm.copyItem(at: bookURL, to: copy) }
+            else if let data = try? book?.encoded() { try? data.write(to: copy) }
         }
     }
 #endif
