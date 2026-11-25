@@ -144,6 +144,7 @@ struct RootView: View {
                 let _ = store.debugSeedSafetyCopies()
                 NavigationStack { SafetyCopiesView() }
             }
+            FavouritesDebugScreens()
             if ProcessInfo.processInfo.environment["AMSWS_RIDES"] != nil {
                 NavigationStack { ThursdayRidesView() }
             }

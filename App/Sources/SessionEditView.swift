@@ -24,6 +24,7 @@ struct SessionEditView: View {
     @State private var isKey: Bool
     @State private var problem: String?
     @State private var asking = false
+    @State private var repeatUntil: String?   // nil = does not repeat (the Repeat row)
     @FocusState private var focused: Bool
     private let initial: SessionDraft
 
@@ -62,6 +63,12 @@ struct SessionEditView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    if adding {
+                        FavouritesBlock { f in
+                            sport = f.sport; title = f.title; zone = f.zone; purpose = f.purpose
+                            minutes = f.minutes.map { jsNumberString($0) } ?? ""
+                        }
+                    }
                     labelled("Day") {
                         DatePicker("Day", selection: $day, displayedComponents: .date)
                             .labelsHidden()
@@ -120,6 +127,8 @@ struct SessionEditView: View {
                         .tint(Theme.plan)
                         .accessibilityIdentifier("edit-key")
 
+                    if adding { RepeatSection(base: liveDraft, until: $repeatUntil) }
+
                     if !adding {
                         Button("Take out of the plan") { asking = true }
                             .settingsButton(tint: Theme.danger)
@@ -131,6 +140,13 @@ struct SessionEditView: View {
                 .padding(.bottom, 90)
             }
             .background(Theme.bg.ignoresSafeArea())
+            #if DEBUG
+            .onAppear {
+                if adding, ProcessInfo.processInfo.environment["AMSWS_REPEAT"] != nil {
+                    repeatUntil = RepeatSession.defaultUntil(liveDraft.dayKey, store: store)
+                }
+            }
+            #endif
             .navigationTitle(adding ? "New session" : "Change session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -214,6 +230,9 @@ struct SessionEditView: View {
         if let key {
             store.changeSession(key, to: draft)
             dismiss()
+        } else if let until = repeatUntil {
+            if RepeatSession.save(draft, until: until, store: store, includingBase: true) { dismiss() }
+            else { problem = store.lastProblem ?? "The sessions could not be added." }
         } else if store.addSession(draft) != nil {
             dismiss()
         } else {

@@ -46,6 +46,8 @@ struct SessionView: View {
                         }
                     }
 
+                    SessionFavouriteRow(key: key)
+
                     FlowRow(spacing: 6) {
                         if let s = Plan.plannedSeconds(w, mapping), s > 0 {
                             Pill(text: formatDuration(s)).accessibilityIdentifier("session-length")
