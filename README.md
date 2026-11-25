@@ -2,6 +2,8 @@
 
 Called AMS Workout Sync up to 1.1 (72); the folder, the repository, the bundle id and the URL scheme `amsworkoutsync` keep the old name. The full description of the app is in `docs/SPECIFICATION.md`.
 
+From 2.0 (build 74) the app can also be the plan's own home: the plan is taken in from the workbook once, counted on both sides to prove nothing changed, and then lives in the app (sessions can be changed, added and taken out; safety copies, weekly spreadsheet copies, and a road back to Excel for three weeks). Until the user chooses that, Excel in Dropbox stays the home exactly as before. The engine is `PlanBook`, `PlanImport`, `PlanExport` and `BookOracle` in `Core/`; `book-check` rehearses the move on a copy of a workbook.
+
 The native iPhone app for Martin's training plan — a SwiftUI app around
 `Core/`, a Swift package that is a line-for-line port of the web app's reader
 and writer (`../AMS Workout Sync`). Since 1.0 (15 September 2026) it is the
@@ -12,7 +14,9 @@ implementation the parity harness checks against.
 
 - `Core/Sources/WorkoutCore` — zip, xlsx, mapping detection, plan, writer,
   edits, extras, sync engine, form logic. `plan-dump`, `write-dump`,
-  `sync-check`, `form-check` are the Mac-side checks.
+  `sync-check`, `form-check`, `book-check` are the Mac-side checks. Since 2.0 also
+  the plan's book (`PlanBook`), the one-time take-in and its proof, and the
+  spreadsheet copy.
 - `tools/` — the parity harness against the web app: `README.md` there says
   how to run it. Every change to the writer or to `buildEdits` must be re-run
   through it before it ships.

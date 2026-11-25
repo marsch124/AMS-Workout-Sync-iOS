@@ -2,7 +2,7 @@
 
 > **Name note.** This app was called **Workout Sync** up to version 1.1 (72). From 1.2 (73) the shown name is **AMS Triathlon Training**. It is the same app: same bundle id `com.schabbauer.AMSWorkoutSync`, same URL scheme `amsworkoutsync://`, same repository. Source file names, the Xcode target and the Swift package still say "WorkoutSync" or "WorkoutCore". Where this document quotes a text the app shows, the quote is what the code says today (version 1.2 (73)); section 12.6 records the texts that were renamed in 1.2 and the places that keep the old word on purpose.
 
-This document describes the app **as the code is today** (1.2 build 73, 24 November 2026). Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
+This document describes the app **as the code is today** (2.0 build 74, 25 November 2026). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
 
 Source layout:
 
@@ -59,6 +59,8 @@ The plan is built for swim, bike, run, strength and mobility, with bricks (bike 
 | Dropbox refresh token | Keychain, service `com.schabbauer.AMSWorkoutSync`, account `dropbox.refresh`, accessible after first unlock | Never in UserDefaults. |
 | Other settings | UserDefaults: `dropboxPath`, `dropbox.account`, `workbookBookmark`, `workbookName`, `workbookReadAt`, `health.asked`, `health.enabled`, `log.showAllFields`, `calendar.enabled`, `calendar.start`, `calendar.allDay`, `calendar.id`, `calendar.events`, `calendar.count`, `calendar.lastSync` | |
 | Calendar events | The iPhone Calendar app, in a calendar called "Training" | Section 9.7. |
+
+From 2.0, once the plan has moved in, the plan itself is kept on the phone as well (`plan.json`, `plan-original.xlsx`, `backups/`, and spreadsheet copies in Documents; see P.6), and `plan.home`, `plan.switchedAt` and `plan.lastSpreadsheet` join the UserDefaults keys.
 
 What is kept **only on the phone** and is not in the workbook: the waiting log, photographs, the move log (used by Progress "moved rather than lost"), the Health-used marks, the cached copy, the calendar memory, and all settings.
 
@@ -130,6 +132,8 @@ Source: `Store.swift`.
 A successful (non-cache) parse: clears `lastProblem`, stamps `readAt`, and writes the bytes to the cache file. Every parse also tells the calendar to update (section 9.7).
 
 `parse` builds, from one `Workbook`: the mapping (`Plan.mapping`), the plan (`Plan.build`), the extras (`Extras.read`), the zones (`Zones.read`). If no mapping is found the error is "Nothing in this workbook looks like a training plan."
+
+**2.0:** when the plan lives in the app (`home == .app`) none of the three sources above is used: the plan is the book `plan.json`, `refresh()` does nothing, and nothing is downloaded. See P.1.
 
 ### 3.3 The displayed plan
 
@@ -1113,11 +1117,11 @@ When in use, a disclosure **What Health hands over** (identifier `health-what`, 
 
 ### 12.4 How this works
 
-A scrolling page of cards, one per part, in this order: What this app is; Today; Logging a session; The Sessions tab; Missed, Move, Swap; Extra workouts; How syncing keeps your plan safe; Photographs; Before you train; Progress; Your zones; In your calendar; Sending a session; Speaking instead of typing. Each card has a headline and one or more paragraphs. **There is no "Signs in this app" part yet.**
+A scrolling page of cards, one per part, in this order: What this app is; Today; Logging a session; The Sessions tab; Missed, Move, Swap; Extra workouts; How syncing keeps your plan safe; Photographs; Before you train; Progress; Your zones; In your calendar; Sending a session; Speaking instead of typing. Each card has a headline and one or more paragraphs. **Since 1.2 there is also "Signs in this app", and since 2.0 two more parts, "Where the plan lives" (after "What this app is") and "Changing the plan" (after "Missed, Move, Swap"); "How syncing keeps your plan safe" became "How your plan is kept safe" and every part says what is true before and after the switch.**
 
 ### 12.5 What's new
 
-A scrolling page of cards, newest first, each with the version and build, the date, a green headline and bullet paragraphs. Entries run from "0.1 (1) Read only" to "1.2 (73) A new name, how you feel, how hard it was, and your load". Every release adds an entry at the top.
+A scrolling page of cards, newest first, each with the version and build, the date, a green headline and bullet paragraphs. Entries run from "0.1 (1) Read only" to "2.0 (74) The plan can live in the app". Every release adds an entry at the top.
 
 ### 12.6 The name in the app's texts (done in 1.2)
 
@@ -1248,6 +1252,10 @@ Compiled **only in DEBUG** builds; none exists in a release build. Pass them as 
 | `AMSWS_EXTRA_DETAIL` | Overlays the detail of today's first extra (else the first extra) | `AMSWorkoutSyncApp.swift` |
 | `AMSWS_EXTRAFORM` | Opens the extra form on Today: `1` for today, or a day key for that day | `TodayView.swift` |
 | `AMSWS_SCROLL` | Scrolls Settings to the section id `zones`, `photos` or `calendar`; with the value `load` scrolls Progress to the Load card (1.2) | `SettingsView.swift`, `ProgressView.swift` |
+| `AMSWS_HOME` | 2.0: `app` with `AMSWS_FILE` takes that file in and makes the app the plan's home (no Dropbox needed) | `Store.swift` |
+| `AMSWS_MOVEIN` | 2.0: opens the page "The plan moves in" | settings screens |
+| `AMSWS_EDIT` | 2.0: opens "Change session" | session screens |
+| `AMSWS_CHANGES` | 2.0: opens "Changes to the plan" | settings screens |
 | `AMSWS_FEEL` | 1.2: `1` to `5` answers this morning's question with that face; `week` fills the thirteen days before today (pattern 3 4 4 2 3 5 4 3 · 4 2 3 4, one day left unanswered) so the Mornings bars have something to draw | `Diary.swift` |
 
 For a calendar check: `xcrun simctl privacy <udid> grant calendar com.schabbauer.AMSWorkoutSync`, launch with `SIMCTL_CHILD_AMSWS_CALENDAR=1`, then read the simulator's calendar database (`tools/README.md`).
@@ -1270,11 +1278,11 @@ For a calendar check: `xcrun simctl privacy <udid> grant calendar com.schabbauer
 
 These are described so the next author can decide. Nothing here was changed.
 
-1. **Refresh is skipped while anything is waiting.** `Store.swift:273`: `refresh()` with a non-empty queue calls `syncNow()` and returns. If the sync cannot write an entry (for example "no longer in the workbook"), nothing is uploaded, no new copy is parsed, and the plan on screen is not refreshed from Dropbox until the entry is sent or discarded.
+1. **Refresh is skipped while anything is waiting** (while Excel is the home; since 2.0, once the plan lives in the app, `refresh()` returns at once and a stuck entry no longer blocks reading the plan, because there is nothing elsewhere to read). `Store.swift:273`: `refresh()` with a non-empty queue calls `syncNow()` and returns. If the sync cannot write an entry (for example "no longer in the workbook"), nothing is uploaded, no new copy is parsed, and the plan on screen is not refreshed from Dropbox until the entry is sent or discarded.
 2. **"Logged on" is the sync time.** `Sync.swift:710–711` sets `completedAt = now` at sync; no screen sets `completedAt` (checked: no write to it in `App/Sources`). A session logged offline gets the date it was *sent*.
 3. **Distance in a shared message.** `ShareText.swift` `doneFigures` prints a waiting distance with the **sheet's** unit even if the entry was typed in the other unit (a swim typed in metres on a kilometre sheet would read as metres labelled "km").
 4. **Two speed-like boxes on a bike.** `LogForm.swift:664, 682`: the bike form offers "Average speed" (the *pace* column) and "Speed" (the speed column) in the same form; the session screen shows only the pace column, labelled "Speed".
-5. **Guide has no "Signs in this app".** `Guide.swift:14–86`.
+5. ~~Guide has no "Signs in this app".~~ Closed in 1.2.
 6. **Out-of-date comments.** `Store.swift:5–17` says the app "cannot write even by accident" and "nothing here ever opens the file for writing" (it writes through Dropbox); `Writer.swift` header says "Nothing in the app calls this yet"; `Mapping.swift` header says the Sheet setup screen is not part of the app (true, but the detection is final: there is no way to correct a wrong guess).
 7. **Hard-coded app name in a row.** `SettingsView.swift` What's new row text "AMS Workout Sync <version>".
 8. **Conflict detection by text.** `Dropbox.swift` treats HTTP 409 as a conflict when the body merely contains the word "conflict".
@@ -1375,3 +1383,165 @@ All are also in section 11.5 and in "How this works" ("Signs in this app").
 ### N.8 Housekeeping
 
 Two stray duplicate project folders, `AMSWorkoutSync 2.xcodeproj` and `AMSWorkoutSync 3.xcodeproj` (stale copies from builds 51 and 57), were removed from the repository. `AMSWorkoutSync.xcodeproj` (generated by XcodeGen from `project.yml`) is the only one.
+
+---
+
+## New in 2.0 (74) — the plan lives in the app
+
+Until 1.2 the plan's home was the Excel workbook in Dropbox and the app a careful guest in it. From 2.0 the user may move the plan into the app. It is his choice, by one tap, and reversible for three weeks. Until he taps, nothing in this section is in effect: `home` is `.excel` and sections 3 to 9 describe the app unchanged. Files: `Core/Sources/WorkoutCore/PlanBook.swift`, `PlanImport.swift`, `PlanExport.swift`, `BookOracle.swift`, the end of `App/Sources/Store.swift` ("the plan's home in this app (2.0)"), `Core/Sources/BookCheck/main.swift`.
+
+### P.1 The two homes
+
+`Store.Home` is `excel` or `app`, kept in UserDefaults `plan.home`. `planLivesHere` is `home == .app`.
+
+| | Excel is the home (as before) | The app is the home |
+|---|---|---|
+| Where the plan is | the workbook in Dropbox (or Files, read only); a cached copy | `plan.json` in Application Support |
+| Logging | queued, then sent (9.3) | written into the book at once (`writeHere`, P.4); the queue holds only what could not be applied |
+| `refresh()` | downloads, parses | returns at once: "the plan lives here: there is nothing elsewhere to read" |
+| `canLog` | Dropbox connected and a path chosen | always true |
+| Changing the plan | not possible | possible (P.9) |
+| "Waiting to sync" | shown | nothing waits; a stuck entry stays in the queue with its reason but no longer blocks reading the plan |
+
+At start-up, if `plan.home` is `app`, the store reads `plan.json` and publishes it. If the book will not open, `lastProblem` says "The plan kept in this app could not be opened. Its safety copies are untouched — see Settings." and the store falls back to the last cached workbook rather than show nothing.
+
+`publish(book)` sets the displayed plan, extras, zones and mapping from the book (`fromCache = false`, `phase = .ready`) and tells the calendar the plan changed. Everything that reads `plan`, `extras`, `zones` (Today, Sessions, Progress, Load, the calendar, photographs, sharing) therefore works unchanged.
+
+### P.2 The book (`PlanBook`)
+
+A `Codable` document the app owns. Fields:
+
+* `format` (1, `currentFormat`).
+* `sessions: [Workout]` — every session, in order: by day, then by the row it had in the workbook, then insertion order (`inOrder`).
+* `extras: [ExtraRecord]` — newest day first, then highest row.
+* `zones: Zones?`, `weeks: [PlanWeek]` (`number`, `monday` as a day key, `phase`, `tag`; `isEasy` when the tag contains "recovery" or "easy", `isTest` when it contains "test"), `mapping: Mapping` (units and which boxes a session has, as the workbook had them), `origin: PlanOrigin` (`fileName`, `takenAt`, session and extra counts at the move).
+* `changes: [PlanChange]` — see P.9; at most 400 are kept, oldest dropped first.
+* `stamps: [String: Date]` — when each session (by key) or extra (`"extra:" + id`) last changed. It is what "the newest change wins" will go by between devices; nothing reads it for that yet.
+* `removed: [String: Date]` — sessions taken out of the plan and when, so that another device would not bring one back.
+* `counter: Int` — how many sessions have been made in the app.
+
+**Permanent session names.** A session keeps the key it had in the workbook (for example `Weekly Schedules!7`: sheet name, `!`, row) for good, whatever is changed or moved afterwards. Photographs (9.11), the move log (3.7) and the Training calendar (9.7) hang on that name, and a session that changed it would quietly lose them. Sessions made in the app are named `App!<n><random>` (P.9).
+
+**`source`.** A `Workout` taken from a single-row workbook line also carries `source`: that row's cells word for word by heading (`[heading: text]`, a formula's cell as its last answer). It holds, for example, the plan week (`planWeek`, from heading "Week") and the key-session star (`isKey`, from heading "Key": any text other than blank).
+
+**Tolerant reading.** `init(from:)` requires only `mapping` and `sessions`; without them there is no book. Every other field falls back (extras `[]`, weeks `[]`, origin invented from the counts, changes `[]`, stamps and removed empty, counter 0). A `Workout` needs `key` and a valid `dayKey`; its other fields fall back, and its sport is classified again from `disciplineRaw`. `PlanChange` also decodes field by field. `missed` is settled on reading: a session is missed when its `done` box holds the plan's own missed word (`mapping.missedValue`, compared after `normalise`). A book written by an older app therefore opens in a newer one (test `testABookFromAnOlderAppStillOpens`).
+
+On disk: JSON, dates as milliseconds since 1970, keys sorted (`encoded()` / `decoded(_:)`).
+
+### P.3 Logging into the book, and the both-ways check
+
+`PlanBook.apply(_ queued: QueuedEntry, now:)` turns the very same queued entries as before into book changes:
+
+1. An entry with an `extra` goes to `apply(extra:)` (below).
+2. The session is found by `Sync.findWorkout(for:in:)` or by its key; none → `BookError.noSession`.
+3. The entry's weekday names are cleared (the weekday is worked out from the date now); `completedAt` is set to `now` unless the entry is a move or already has one.
+4. The cell edits come from **`Plan.buildEdits(session, entry, mapping)`** — the function that wrote the workbook. An empty list means `.dropped`.
+5. Each edit is stored as the reader would have read the cell back (`readBack`): a number as its text and number, text trimmed (blank → no value), a date as its day key. A `date` edit moves the session to that day; a `weekday` edit is ignored (it is derived). Nothing about what "logged" means is decided twice.
+6. `loggedInSheet` and `logged` come from `Plan.isLogged(results)`; `missed` from the done box; `pending` and `pendingMove` are cleared; the sessions are put in order and the stamp set.
+
+`apply(extra:)`: an edit (`editing` set) changes only the fields named in the target (`ExtraField.*`), keeping the row, and a change of activity also changes the label; the target is found by `ref`, else by day, label and minutes. A new extra is appended on the next row (highest row + 1, at least 2); one already recorded (same `ref`, or same day, label and minutes) is not added twice, which makes a replay harmless. The activity id is found again from its label (`activityID(forLabel:)`, else `other`), as the sheet always did.
+
+**`BookOracle`** (library, so it can run on the Mac against a copy of the real plan as well as in tests) writes one spread of entries twice: into a workbook with the old writer (`Sync.apply`) and into a book made from that same workbook, then reads both and compares session by session and box by box. The spread: a one-tap Done, a full form with awkward text (ö å ä, `<`, `&`, quotes, a decimal comma, a pace), a missed with a note, two moves, a how-hard answer, a second entry on the same session, corrections of two done sessions, a new extra, the same extra again (replay), a correction of it, and a correction of the last old extra. It reports "written / dropped / failed" for each entry on each side (they must agree) and every difference; the book is also saved and read again and compared with itself ("after saving: …"). No difference means logging in the app is what logging into Excel was.
+
+**`book-check`** (`Core/Sources/BookCheck`): `book-check <workbook.xlsx> [today]`. Prints the side-by-side counts and the months, the weeks, the key sessions and the book size, every odd value, the proof verdict, the both-ways result ("differences: none" is wanted), then rehearses the road back: logs the spread into a book, changes one open session (five more minutes, zone Z1, a day later), adds one, removes one rest day, writes the spreadsheet copy and reads it back; and checks that an unchanged book copies to the very same bytes as the workbook. Exit 0 only if all hold. It writes nothing; run it on a copy.
+
+### P.4 Taking the plan in (`PlanImport`)
+
+`PlanImport.read(data, fileName:, today:)` reads the workbook with the app's own readers (`Plan.build`, `Extras.read`, `Zones.read`), then adds what the app never needed while Excel was the home: each single-row session's `source` cells, and the week headings. A week heading is a row whose date column holds a range such as "07 Sep – 13 Sep 2026" (`monday(of:)`: day, month, day, month, year; the year written is the last day's, so a week from December into January starts the year before). The week number comes from the "Week" column, else the running count; the phase and tag from the phase column split on " · ". A plan with no such rows simply has no weeks.
+
+**The proof is taken on the book as it comes back off the disk**: the book is encoded and decoded before it is counted, so what is stored is what he will train from.
+
+**Tally** (`PlanTally`), counted the same way on both sides — `before` from the sessions as `Plan.build` read them, `after` from the decoded book:
+
+* `sessions` — every session; `rest` — sessions whose sport is rest; `training` — all the others.
+* `done` — training sessions logged and not missed; `missed` — training sessions marked missed.
+* `toCome` — training sessions on `today` or later that are not logged.
+* `extras` — every extra; `extrasThatCount` — those that count as training.
+* Sessions before today only: `plannedMinutes` — sum of each session's planned minutes (`Plan.plannedSeconds`, rounded to whole minutes per session); `recordedMinutes` — sum of `Load.minutes` for done sessions.
+* `months` — for every month with a training session before today: sessions, done, missed, planned and recorded minutes.
+
+The proof lines shown are: Sessions, Training, Rest days, Done, Missed, Still to come, Extra activities, Planned minutes so far, Recorded minutes so far. `PlanProof.matches` is true only when `differences` is empty **and** both tallies are equal. `differences` compares session by session and box by box (day, sport, sport as read, words, phase, blocks, planned, done, missed, and every result box by text and number) and the extras; it also reports a different count, order or a missing session, and stops after 200.
+
+**Oddities** (`Oddity`: `kind`, `place`, `words`), taken in as written, never repaired:
+
+* `order` — rows out of date order within a sheet (one line with a count; the app goes by the date, as it always has).
+* `pace` — an average pace written as minutes:seconds with seconds of 60 or more.
+* `effort` — a session's or an extra's how-hard value below 1 or above 10.
+* `future` — a training session ticked as done on a day after today.
+* `restDay` — a training session on a day (before today) that the plan also calls a rest day.
+
+### P.5 The switch
+
+**`Store.takePlanIn()`**: refused with a message if the queue is not empty ("N entries are still waiting to go to Dropbox. Send them first …"). Otherwise it downloads the workbook afresh (DEBUG: `AMSWS_FILE`; else Dropbox; else the cached copy), reads it with `PlanImport.read` and keeps the result in `incoming` with the downloaded bytes. **Nothing is saved.** `cancelTakingIn()` drops both.
+
+**`Store.makeAppTheHome()`** runs only if `incoming` exists, its proof `matches`, the bytes exist and the queue is empty. It then: writes the workbook exactly as downloaded to `plan-original.xlsx`; writes the book to `plan.json` (both atomically; on failure it says "Nothing was changed" and stops); sets `plan.home` = `app` and `plan.switchedAt` = now; publishes the book; and makes the first spreadsheet copy at once (`force`).
+
+Screens: Settings → Your plan → "Move the plan into this app" → Start opens the page "The plan moves in": the button "Take the plan in and count"; the table "EXCEL AND THE APP, SIDE BY SIDE" (Excel's figure and the app's figure for each proof line, a green tick when they are the same, the red word "differs" when not); "MONTH BY MONTH"; "LOOKED ODD IN THE FILE"; the verdict "Everything matches."; the main button "Make this app the plan's home". Words are given in the guide (What's new 2.0). Note the tick: see P.12.
+
+### P.6 Files on disk and keys
+
+| Item | Where | What |
+|---|---|---|
+| `plan.json` | Application Support | the book |
+| `plan-original.xlsx` | Application Support | the workbook exactly as it stood at the switch: the template of every spreadsheet copy and the road back |
+| `backups/plan-<yyyy-mm-dd>.json` | Application Support | a safety copy: the book as it was before the first save of that day. Kept only when it does not exist yet; the newest 30 days are kept |
+| `plan-left-<yyyy-mm-dd>.json` | Application Support | the book put aside when going back to Excel |
+| `Triathlon plan <yyyy-mm-dd>.xlsx` | Documents (Files → On My iPhone → Triathlon) | a spreadsheet copy; the newest eight are kept |
+| `plan.home` | UserDefaults | `excel` or `app` |
+| `plan.switchedAt` | UserDefaults | when the plan moved in; the three weeks of "Go back" run from here |
+| `plan.lastSpreadsheet` | UserDefaults | when the last copy was made |
+
+`save(book)`: encode; keep the day's safety copy (`keepSafetyCopy`: the file that stands on disk before this write); write `plan.json` atomically; publish; then `keepWeeklySpreadsheet`. A failed write sets `lastProblem` ("Could not save the plan on this phone: …") but the book is still shown. `safetyCopies` gives the count and newest day for Settings. Only the plan is in these files; photographs, the move log, the diary and the queue keep their own files (3.x).
+
+### P.7 The spreadsheet copy (`PlanExport.workbook(_:template:)`)
+
+Made from `plan-original.xlsx` by the writer that has always written his plan, so every sheet, heading, colour and formula of his stays. **Only cells that differ are written**:
+
+* For every session that is in the original: the day (and the weekday name, learned from the sheet's own wording), sport, words, planned duration, planned distance, intensity, description, and every result box whose text differs; a box that is now empty is emptied.
+* A session taken out of the plan: its row is emptied of what makes it a session (sport, words, description, planned duration, intensity); the row itself stays.
+* A session made in the app (not in the original): appended on the first free row after the last used row (+ 2) of the first plan sheet, with its phase, day, weekday, and the boxes above.
+* Extras: every row that is new or reads differently is written whole (day, weekday, activity, what, duration, distance, heart rate, effort, "Yes"/"No" for training, notes, ref), through `Extras.ensureSheet`; the Ref heading is added if needed.
+* Multi-row sessions (`rows.count > 1`) are not written.
+* If nothing differs, the bytes returned are the template itself: an unchanged plan copies to the very same file.
+
+**Read-back check.** Before the bytes are returned they are opened again, the plan is read from them and held against the book: same number of sessions; for each session the day, sport, words, planned, missed and done and every result box; and the extras. A session made in the app is found in the copy by day, sport and words. Any difference throws `PlanExport.Problem.doesNotMatch` ("… It was not saved.") and no file is given out. Photographs and the Training calendar are not part of a spreadsheet.
+
+`Store.spreadsheetCopy()` writes `Triathlon plan <day>.xlsx` into Documents, sets `plan.lastSpreadsheet` and returns the URL (Settings: "Save a copy now" then shares it). `keepWeeklySpreadsheet` runs after every save and after the switch: when no copy has been made for 7 days (or on the switch) it makes one and deletes all but the newest eight. So "by itself every week" means: the first save after a week has passed.
+
+### P.8 Going back to Excel
+
+`Store.goBackToExcel()` is available for 21 days after `plan.switchedAt` (`canGoBackUntil`) while Dropbox is connected and a path is set (`canGoBack`). It downloads the file now in Dropbox and **refuses if its bytes are not identical to `plan-original.xlsx`** ("The Excel file in Dropbox was changed after the plan moved into the app … nothing was done."). Otherwise it makes the spreadsheet copy from the book and original, uploads it against the revision it just read, moves `plan.json` aside as `plan-left-<day>.json`, sets `plan.home` = `excel`, forgets the book and parses the uploaded workbook as before. On any error the plan stays in the app and nothing is changed. The button is red.
+
+### P.9 Changing the plan
+
+Only when `canChangePlan` (`home == .app` and a book). The Store methods `changeSession`, `addSession`, `removeSession`, `undoChange` each call the matching `PlanBook` method and then `save`.
+
+* **`SessionDraft`**: `dayKey`, `sport` (a discipline id: swim, bike, run, strength, mobility, brick, race, rest, other), `title`, `minutes` (always minutes; stored in the plan's own duration unit by `durationToCell`), `intensity`, `purpose`, `isKey`. The page "Change session" shows them as Day, Sport, Words, Length in minutes, Zone or effort, Purpose, Key session.
+* **`change(key, to:)`**: the title cannot be emptied (the old one stays); a draft equal to the current one returns nil and records nothing; a bad day throws `badDay`. The session is shaped (sport, words, planned length, zone, description, the star), and a plain one-block session gets one block of words (the purpose, else the title); a plan with warm-up and cool-down columns keeps its own blocks. A moved day also calls `rememberMove` in the Store so Progress "moved rather than lost" counts it. The key is **not** changed, so photographs, the Training calendar and the move history stay with it.
+* **`add(draft)`**: counter + 1; key `App!<counter><6 random lowercase letters or digits>`; row `100000 + counter` (above any real row, so it sorts after the workbook's sessions of that day); sheet `App`; phase from the week of that day, else the nearest session's.
+* **`remove(key)`**: the session leaves `sessions`, is put in `removed` with the time, and its record is kept in the change (with `undo`).
+* **`undo(changeID)`**: an added session goes (and is marked removed); an edited or removed one returns to the plan's side as it was; what was logged since (results, done, missed) stays. A change can be taken back once (`undone`).
+* **`PlanChange`**: `id`, `at`, `kind` (edit, add, remove), `key`, `title`, `before`, `after` (only what differs, in words, such as "60 min → 40 min"; joined by " · "), `why`, `undo` (the session as it was; nil for an add), `undone`. Settings → "Changes to the plan" lists them newest first with a "Take back" button; a taken-back one reads "Taken back" in grey.
+
+### P.10 Weeks and phases in the book
+
+`week(on:)` finds the heading for the Monday of a day; `phase(on:)` gives that week's phase, else the nearest earlier session's phase, else the first session's.
+
+### P.11 Tests, switches and counts
+
+* **Model tests** (`PlanBookTests`, six, seconds, on the fixture workbook): `testTakingThePlanInChangesNothing`; `testLoggingIntoTheBookIsWhatLoggingIntoExcelWas` (the oracle); `testASessionCanBeChangedAndTheChangeTakenBack`; `testASessionCanBeAddedLoggedAndRemoved`; `testABookFromAnOlderAppStillOpens`; `testAWeekHeadingGivesItsMonday`.
+* **Screen tests** (UI tests 20 and 21, controls found by identifier): `PlanHomeUITests` (the page "The plan moves in": counting, the proof, the switch) and `PlanChangeUITests` (changing a session, making and taking one out, taking a change back).
+* **DEBUG switches** (compiled only in DEBUG; see 14.6): `AMSWS_HOME=app` (with `AMSWS_FILE`: the same file, taken in, the app as the plan's home, no Dropbox needed); `AMSWS_MOVEIN` (opens the page "The plan moves in"); `AMSWS_EDIT` (opens "Change session" for a session); `AMSWS_CHANGES` (opens "Changes to the plan").
+* `AMSWS_RESET` also clears `plan.home` and `plan.switchedAt` (`Store.swift`).
+
+### P.12 What 2.0 deliberately does not do
+
+* No iPad or Mac app, no sync of the book between devices (the `stamps` and `removed` fields are there for it, unused). The plan lives on this iPhone, and in the iPhone's backup.
+* The app does not follow the Excel file after the switch; there is no merge from Excel into the app. The only way back is "Go back to Excel" (three weeks) or a spreadsheet copy.
+* No page for entering a new zone test; the zones are those the workbook held at the switch.
+* No change of a session's several-row blocks (a session whose workbook lines span more than one row cannot be written into a spreadsheet copy) and no editing of weeks or phases.
+* Nothing is "mended" on the way in: odd values are shown, not changed.
+* No suggestions, no advice, no health claim; the app changes the plan only when told.
+* Not in 2.0, said honestly in What's new as "Coming next": iPad and Mac, the morning check with Garmin numbers, suggestions by the rule book, Claude built in, links to Workout Companion and Magic Morning.
+
+**Signs added.** Green tick in the side-by-side table = "the same on both sides"; red "differs"; red buttons "Go back to Excel" and "Take out of the plan" take something away; "Taken back" in grey; "Lives in this app". **Judgement for the owner:** the green tick otherwise means "done and nothing else" (11.5, N.6); in the side-by-side table it means "the same". This breaks the rule that a mark means one thing in the whole app. The guide says so openly, but a word ("Same") or an equals sign would be cleaner.
