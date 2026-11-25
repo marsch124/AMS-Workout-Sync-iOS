@@ -63,11 +63,20 @@ public enum BookMerge {
             return BookJoin(book: local, changesLocal: false, changesCloud: false, refused: nil, takenAway: [])
         }
         let theirs: PlanBook? = cloudFileThere ? cloud.first.flatMap { try? combine($0, $0) } : nil
-        return BookJoin(book: joined,
-                        changesLocal: !same(joined, mine),
-                        changesCloud: theirs == nil || !same(joined, theirs!) || cloud.count > 1,
-                        refused: nil,
-                        takenAway: takenAway(from: local, to: joined))
+        // Conflict copies that brought nothing new are only cleared, not written over: one that cannot be
+        // removed then costs a look at each meeting, never a write.
+        var out = BookJoin(book: joined,
+                           changesLocal: !same(joined, mine),
+                           changesCloud: theirs == nil || !same(joined, theirs!),
+                           refused: nil,
+                           takenAway: takenAway(from: local, to: joined))
+        out.clearConflicts = cloud.count > (cloudFileThere ? 1 : 0)
+        return out
+    }
+
+    /* Two books from the same move into the app (the same mapping, file and moment): only those are ever joined. */
+    public static func samePlan(_ a: PlanBook, _ b: PlanBook) -> Bool {
+        a.mapping.bytes == b.mapping.bytes && a.origin.fileName == b.origin.fileName && a.origin.takenAt == b.origin.takenAt
     }
 
     // MARK: - what a meeting takes away
@@ -112,8 +121,7 @@ public enum BookMerge {
         if newest > PlanBook.currentFormat { throw Refusal.newerFormat(newest) }
 
         // 2. The same plan? Two imports that were made apart are never auto-merged.
-        let sameMapping = a.mapping.bytes == b.mapping.bytes
-        if !sameMapping || a.origin.fileName != b.origin.fileName || a.origin.takenAt != b.origin.takenAt {
+        if !samePlan(a, b) {
             let names = [a.origin.describe, b.origin.describe].sorted()
             throw Refusal.differentPlan(names[0], names[1])
         }
@@ -138,6 +146,11 @@ public enum BookMerge {
             var planStamp: Date?, logStampOut: Date?
             let chosen: Workout
             switch (wa, wb) {
+            case let (x?, y?) where x == y:
+                // The same session on both sides (the usual case): nothing to choose.
+                chosen = x
+                planStamp = later(a.stamps[key], b.stamps[key])
+                logStampOut = later(logStamp(a, x), logStamp(b, y))
             case let (x?, y?):
                 planStamp = later(a.stamps[key], b.stamps[key])
                 logStampOut = later(logStamp(a, x), logStamp(b, y))
@@ -153,14 +166,19 @@ public enum BookMerge {
                 continue
             }
             // Survival: a removal as late as the last thing done to it takes it out; a later log brings it back.
+            // So does a log the removing device never saw: the session as it was taken out (the remove
+            // line's undo) holds another log, or none — taking it out then would lose what he logged.
             let last = later(planStamp, logStampOut) ?? .distantPast
             if let r = removed[key] {
-                if r >= last { continue }
+                let unseen = !chosen.results.isEmpty && neverSeen(chosen, logStampOut, key, in: changes)
+                if r >= last && !unseen { continue }
                 removed[key] = nil
-                if let l = logStampOut, l > r {
+                let after = r >= last ? "Came back: logged on another device before it was taken out"
+                                      : "Came back: logged after it was taken out"
+                if r < last ? (logStampOut.map { $0 > r } ?? false) : true {
                     // Already "taken back" so it never stands in the way of undoing an older change to the session.
-                    var back = PlanChange(id: "back:\(key):\(PlanBook.ms(r))", at: l, kind: "back", key: key, title: chosen.title,
-                                          before: "", after: "Came back: logged after it was taken out", why: "", undo: nil)
+                    var back = PlanChange(id: "back:\(key):\(PlanBook.ms(r))", at: max(logStampOut ?? r, r), kind: "back", key: key,
+                                          title: chosen.title, before: "", after: after, why: "", undo: nil)
                     back.undone = true
                     changes = unionChanges(changes, [back])
                 }
@@ -185,7 +203,7 @@ public enum BookMerge {
             let chosen: ExtraRecord
             switch (ae[id], be[id]) {
             case let (x?, y?):
-                chosen = aWins(a.stamps[sk], b.stamps[sk], PlanBook.bytes(x), PlanBook.bytes(y)) ? x : y
+                chosen = x == y || aWins(a.stamps[sk], b.stamps[sk], PlanBook.bytes(x), PlanBook.bytes(y)) ? x : y
             case let (x?, nil): chosen = x
             case let (nil, y?): chosen = y
             default: continue
@@ -211,22 +229,22 @@ public enum BookMerge {
         changes = capped(changes)
 
         // 8. Zones, weeks and the test results.
-        let testsWinA = aWins(a.stamps["tests"], b.stamps["tests"], PlanBook.bytes(a.tests), PlanBook.bytes(b.tests))
+        let testsWinA = a.tests == b.tests || aWins(a.stamps["tests"], b.stamps["tests"], PlanBook.bytes(a.tests), PlanBook.bytes(b.tests))
         let (first, second) = testsWinA ? (a.tests, b.tests) : (b.tests, a.tests)
         let tests = first + second.filter { t in !first.contains { $0.name == t.name } }
         let zoneStampA = later(a.stamps["zones"], a.stamps["tests"]), zoneStampB = later(b.stamps["zones"], b.stamps["tests"])
-        let zonesWinA = aWins(zoneStampA, zoneStampB, PlanBook.bytes(a.zones), PlanBook.bytes(b.zones))
+        let zonesWinA = a.zones == b.zones || aWins(zoneStampA, zoneStampB, PlanBook.bytes(a.zones), PlanBook.bytes(b.zones))
         var zones = zonesWinA ? a.zones : b.zones
         // Test results of both sides count: zones follow the tests that are there now.
         if tests != (zonesWinA ? a.tests : b.tests) { zones = zones?.recalculated(from: tests) }
-        let weeks = aWins(a.stamps["weeks"], b.stamps["weeks"], PlanBook.bytes(a.weeks), PlanBook.bytes(b.weeks)) ? a.weeks : b.weeks
+        let weeks = a.weeks == b.weeks || aWins(a.stamps["weeks"], b.stamps["weeks"], PlanBook.bytes(a.weeks), PlanBook.bytes(b.weeks)) ? a.weeks : b.weeks
 
         // 10. Moves: per session, the later one; the newest 600.
         var moves = a.moves
         for (k, m) in b.moves {
             if let have = moves[k] {
-                let (x, y) = (PlanBook.bytes(m), PlanBook.bytes(have))
-                if m.at != have.at ? m.at > have.at : !x.lexicographicallyPrecedes(y) { moves[k] = m }
+                if m == have { continue }
+                if m.at != have.at ? m.at > have.at : !PlanBook.bytes(m).lexicographicallyPrecedes(PlanBook.bytes(have)) { moves[k] = m }
             } else { moves[k] = m }
         }
         if moves.count > 600 {
@@ -261,26 +279,59 @@ public enum BookMerge {
         out.stamps = stampsOut
         out.removed = removed
         out.counter = max(a.counter, b.counter)
-        out.applied = Array(Set(a.applied).union(b.applied)).sorted()
+        // The entries already written: both lists, oldest first (by when each was written, then A–Z, the
+        // same on every device), never trimmed here — only `remember` trims, and it drops the oldest.
+        var appliedAt = a.appliedAt
+        for (id, t) in b.appliedAt { appliedAt[id] = max(appliedAt[id] ?? t, t) }
+        let ids = Set(a.applied).union(b.applied)
+        out.appliedAt = appliedAt.filter { ids.contains($0.key) }
+        out.applied = ids.sorted {
+            let x = appliedAt[$0] ?? .distantPast, y = appliedAt[$1] ?? .distantPast
+            return x != y ? x < y : $0 < $1
+        }
         out.moves = moves
         return out
     }
 
     // MARK: - pieces
 
+    /*
+     * A log the device that took the session out never saw: the newest remove line still standing holds
+     * another log (or none), and — where the line knows when its log was made — this one is later.
+     * No line at all (taken out by an undo or a safety copy): nothing says it was seen.
+     */
+    private static func neverSeen(_ w: Workout, _ logStamp: Date?, _ key: String, in changes: [PlanChange]) -> Bool {
+        guard let line = changes.last(where: { $0.kind == "remove" && $0.key == key && !$0.undone }) else { return true }
+        let seen = line.undo?.results ?? [:]
+        if PlanBook.bytes(seen) == w.logBytes { return false }
+        if seen.isEmpty { return true }
+        guard let seenAt = line.logAt else { return true }
+        return (logStamp ?? .distantPast) > seenAt
+    }
+
     private static func unionChanges(_ a: [PlanChange], _ b: [PlanChange]) -> [PlanChange] {
-        var byID: [String: PlanChange] = [:]
-        for c in a + b {
-            guard var have = byID[c.id] else { byID[c.id] = c; continue }
-            // The same line seen twice: taken back on either side is taken back.
-            let undone = have.undone || c.undone
-            if PlanBook.bytes(c).count > PlanBook.bytes(have).count
-                || (PlanBook.bytes(c).count == PlanBook.bytes(have).count
-                    && have.undone == c.undone && PlanBook.bytes(have).lexicographicallyPrecedes(PlanBook.bytes(c))) { have = c }
-            have.undone = undone
-            byID[c.id] = have
+        // Kept by position, not copied into a dictionary: the lists are long and each line holds a session.
+        var at: [String: Int] = [:]
+        var out: [PlanChange] = []
+        out.reserveCapacity(a.count + b.count)
+        for list in [a, b] {
+            for c in list {
+                guard let i = at[c.id] else { at[c.id] = out.count; out.append(c); continue }
+                // The same line seen twice: taken back on either side is taken back.
+                let undone = out[i].undone || c.undone
+                if out[i].undone == c.undone ? out[i] == c : { var p = c; p.undone = out[i].undone; return p == out[i] }() {
+                    out[i].undone = undone          // the usual case, and a cheap one
+                    continue
+                }
+                let have = PlanBook.bytes(out[i]), new = PlanBook.bytes(c)
+                if new.count > have.count || (new.count == have.count && out[i].undone == c.undone && have.lexicographicallyPrecedes(new)) {
+                    out[i] = c
+                }
+                out[i].undone = undone
+            }
         }
-        return byID.values.sorted { $0.at != $1.at ? $0.at < $1.at : $0.id < $1.id }
+        out.sort { $0.at != $1.at ? $0.at < $1.at : $0.id < $1.id }
+        return out
     }
 
     /* The newest 400; a removal is never dropped (it is the only place a taken-out session still lives). */
@@ -299,7 +350,8 @@ public enum BookMerge {
             .sorted { $0.date != $1.date ? $0.date < $1.date : $0.ref < $1.ref }
         var next = boundary
         var rowOf: [String: Int] = [:]
-        let taken = Set(extras.filter { e in !mine.contains { $0.id == e.id } }.map(\.row))
+        let mineIDs = Set(mine.map(\.id))
+        let taken = Set(extras.filter { !mineIDs.contains($0.id) }.map(\.row))
         for e in mine {
             next += 1
             while taken.contains(next) { next += 1 }
@@ -326,6 +378,8 @@ public struct BookJoin: Equatable {
     /// Session keys ("Weekly Schedules!7"), extras ("extra:<id>") and log boxes ("log:<session key>") that were
     /// in `local` and are not in `book`. Non-empty → a "before merge" safety copy is taken first.
     public var takenAway: [String]
+    /// Conflict copies went into the join: clear them (with the write, or on their own when nothing else changed).
+    public var clearConflicts = false
 
     public init(book: PlanBook, changesLocal: Bool, changesCloud: Bool, refused: BookMerge.Refusal?, takenAway: [String]) {
         self.book = book; self.changesLocal = changesLocal; self.changesCloud = changesCloud
@@ -380,10 +434,13 @@ extension PlanBook {
         for w in sessions {
             guard let was = oldSessions[w.key] else {
                 mark(w.key)
-                if !w.results.isEmpty { mark("log:" + w.key) }
+                // A session that comes back (an undo, a safety copy) brings its log with the log's own
+                // mark when it has one: an old log marked "now" would win over one logged since elsewhere.
+                if !w.results.isEmpty && book.stamps["log:" + w.key] == nil { mark("log:" + w.key) }
                 if let r = book.removed[w.key], let s = book.stamps[w.key], s > r { book.removed[w.key] = nil }
                 continue
             }
+            if w == was { continue }
             if w.planBytes != was.planBytes { mark(w.key) }
             if w.logBytes != was.logBytes { mark("log:" + w.key) }
         }
@@ -396,7 +453,7 @@ extension PlanBook {
         let oldExtras = Dictionary(old.extras.map { ($0.id, $0) }, uniquingKeysWith: { x, _ in x })
         let nowIDs = Set(extras.map(\.id))
         for e in extras {
-            if let was = oldExtras[e.id], PlanBook.bytes(e.withRow(0)) == PlanBook.bytes(was.withRow(0)) { continue }
+            if let was = oldExtras[e.id], e == was || PlanBook.bytes(e.withRow(0)) == PlanBook.bytes(was.withRow(0)) { continue }
             mark("extra:" + e.id)
             if let r = book.removed["extra:" + e.id], let s = book.stamps["extra:" + e.id], s > r { book.removed["extra:" + e.id] = nil }
         }
@@ -407,9 +464,10 @@ extension PlanBook {
             if let own = book.removed[k] { m = max(m, PlanBook.ms(own)) }
             book.removed[k] = PlanBook.date(ms: m)
         }
-        if PlanBook.bytes(zones) != PlanBook.bytes(old.zones) { mark("zones") }
-        if PlanBook.bytes(weeks) != PlanBook.bytes(old.weeks) { mark("weeks") }
-        if PlanBook.bytes(tests) != PlanBook.bytes(old.tests) { mark("tests") }
+        // Equal values first (cheap); the bytes decide only when they differ (a number that is not a number).
+        if zones != old.zones && PlanBook.bytes(zones) != PlanBook.bytes(old.zones) { mark("zones") }
+        if weeks != old.weeks && PlanBook.bytes(weeks) != PlanBook.bytes(old.weeks) { mark("weeks") }
+        if tests != old.tests && PlanBook.bytes(tests) != PlanBook.bytes(old.tests) { mark("tests") }
         return book
     }
 
@@ -444,6 +502,50 @@ extension ExtraRecord {
     func withRow(_ row: Int) -> ExtraRecord {
         ExtraRecord(row: row, date: date, activity: activity, label: label, what: what, minutes: minutes,
                     distance: distance, avgHr: avgHr, effort: effort, isTraining: isTraining, notes: notes, ref: ref)
+    }
+}
+
+// MARK: - putting a safety copy back while the plan is shared
+
+extension PlanBook {
+    /*
+     * A safety copy put back while other devices share the plan. The plan's
+     * own side goes back — the days, words and lengths, the weeks, and which
+     * sessions are in the plan — and is marked as a change made now, so the
+     * other devices take it too. What he logged since the copy stays: a
+     * session's log is the copy's only where the copy's log mark is the later
+     * one; a session logged since that the copy does not have stays in the
+     * plan; extra workouts, test results and zones stay as they are now.
+     * A copy of another plan (another move into the app) is not mixed in: nil.
+     */
+    public static func putBack(_ copy: PlanBook, over current: PlanBook, now: Date = Date()) -> PlanBook? {
+        guard BookMerge.samePlan(copy, current), !copy.isFromNewerApp else { return nil }
+        func logMark(_ book: PlanBook, _ w: Workout) -> Date? {
+            book.stamps["log:" + w.key] ?? (w.results.isEmpty ? nil : book.stamps[w.key])
+        }
+        let cur = Dictionary(current.sessions.map { ($0.key, $0) }, uniquingKeysWith: { x, _ in x })
+        let old = Dictionary(copy.sessions.map { ($0.key, $0) }, uniquingKeysWith: { x, _ in x })
+        var sessions: [Workout] = []
+        for w in copy.sessions {
+            guard let c = cur[w.key], c.logBytes != w.logBytes else { sessions.append(w); continue }
+            // The copy's log only if it is the later one (it seldom is); else what he logged since.
+            let copyLater = (logMark(copy, w) ?? .distantPast) > (logMark(current, c) ?? .distantPast)
+            sessions.append(copyLater ? w : w.withLog(of: c, copy.mapping))
+        }
+        for w in current.sessions where old[w.key] == nil && !w.results.isEmpty {
+            // Logged, and not in the copy: logged since (or the copy took it out unlogged) — it stays.
+            if (logMark(current, w) ?? .distantFuture) > (copy.removed[w.key] ?? .distantPast) { sessions.append(w) }
+        }
+        var book = current
+        for w in sessions where cur[w.key] == nil && !w.results.isEmpty {
+            // Back from the copy with the copy's log: that log keeps its own (old) mark.
+            book.stamps["log:" + w.key] = logMark(copy, w) ?? Date(timeIntervalSince1970: 0)
+        }
+        book.sessions = PlanBook.inOrder(sessions)
+        book.weeks = copy.weeks
+        book.counter = max(copy.counter, current.counter)
+        // Marked by difference with the plan as it is now: what goes back is the newest change everywhere.
+        return book.stamped(after: current, now: now)
     }
 }
 

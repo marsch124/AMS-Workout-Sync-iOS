@@ -69,6 +69,16 @@ public enum CloudFiles {
         return (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date()
     }
 
+    /* Clears the conflict copies that went into a join, without writing the file (it already holds them). */
+    public static func clear(_ url: URL, resolving merged: [Data]) {
+        guard !merged.isEmpty else { return }
+        for version in NSFileVersion.unresolvedConflictVersionsOfItem(at: url) ?? [] {
+            guard let bytes = try? Data(contentsOf: version.url), merged.contains(bytes) else { continue }
+            version.isResolved = true
+            try? version.remove()
+        }
+    }
+
     /* Writes a file only if nothing is there yet (or on its way): the frozen workbook is never overwritten. */
     public static func writeOnce(_ data: Data, to url: URL) -> Bool {
         if read(url) != .absent { return false }
@@ -118,6 +128,25 @@ public enum PlanMeeting {
         public var cloudBook: PlanBook?
         /* The newest mark among the books from iCloud, to notice a clock that is behind. */
         public var newestCloudMark: Date?
+        /* Two different plans: the one in iCloud that really differs from this device's (the file or a conflict copy). */
+        public var otherPlan: PlanBook?
+        /* Its bytes, so a conflict copy can be cleared once he has chosen. */
+        public var otherPlanBytes: Data?
+        /* The other plan is a conflict copy beside the file, not the file itself. */
+        public var otherPlanIsConflict = false
+    }
+
+    /*
+     * May a device that holds a plan put it into iCloud? Always when the file is
+     * there (it is joined first). When the file is not there, only if no other
+     * device says its plan lives in the app: else the file is most likely still
+     * on its way to this device, and writing now would set an old plan beside it.
+     * `otherDevices` are the other devices' homes ("app", "excel", "none").
+     */
+    public static func shouldWriteUp(localHasPlan: Bool, cloudFileThere: Bool, otherDevices: [String]) -> Bool {
+        guard localHasPlan else { return false }
+        if cloudFileThere { return true }
+        return !otherDevices.contains("app")
     }
 
     public static func meet(local: PlanBook, rank: Int, read: CloudFiles.Read) -> Outcome {
@@ -157,6 +186,14 @@ public enum PlanMeeting {
         }
         out.newestCloudMark = cloud.flatMap { Array($0.stamps.values) }.max()
         out.join = BookMerge.join(local: local.baselined(rank: rank), cloud: cloud, cloudFileThere: fileThere)
+        if case .differentPlan? = out.join?.refused, let i = cloud.firstIndex(where: { !BookMerge.samePlan($0, local) }) {
+            // The book that really differs from this device's: the file, or one of the conflict copies.
+            out.otherPlan = cloud[i]
+            out.otherPlanIsConflict = !(fileThere && i == 0)
+            if out.otherPlanIsConflict, case .found(_, let conflicts, _) = read {
+                out.otherPlanBytes = conflicts.first { (try? PlanBook.decoded($0)) == cloud[i] }
+            }
+        }
         return out
     }
 

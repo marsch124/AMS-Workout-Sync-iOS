@@ -53,11 +53,14 @@ public struct PlanChange: Codable, Equatable, Identifiable {
     public var undone: Bool = false
     /* The day the change left the session on: an undo moves it back only if it is still there. */
     public var afterDay: String?
+    /* A removal: the mark of the log the session had then, so a merge can tell a log the removing device saw from one it never saw. */
+    public var logAt: Date?
 
     public init(id: String = UUID().uuidString, at: Date, kind: String, key: String, title: String,
-                before: String, after: String, why: String, undo: Workout?, afterDay: String? = nil) {
+                before: String, after: String, why: String, undo: Workout?, afterDay: String? = nil, logAt: Date? = nil) {
         self.id = id; self.at = at; self.kind = kind; self.key = key; self.title = title
         self.before = before; self.after = after; self.why = why; self.undo = undo; self.afterDay = afterDay
+        self.logAt = logAt
     }
 
     public init(from decoder: Decoder) throws {
@@ -73,6 +76,7 @@ public struct PlanChange: Codable, Equatable, Identifiable {
         undo = try? c.decodeIfPresent(Workout.self, forKey: .undo)
         undone = (try? c.decodeIfPresent(Bool.self, forKey: .undone)) ?? false
         afterDay = try? c.decodeIfPresent(String.self, forKey: .afterDay)
+        logAt = try? c.decodeIfPresent(Date.self, forKey: .logAt)
     }
 }
 
@@ -156,6 +160,8 @@ public struct PlanBook: Codable, Equatable {
     public var counter: Int = 0
     /* The entries already written in, by their ids: one that comes round again is not written twice. */
     public var applied: [String] = []
+    /* When each of them was written, so the list is trimmed by age — the oldest go first. */
+    public var appliedAt: [String: Date] = [:]
     /* Format 2: the move log (a session moved from one day to another), so every device reads the same one. */
     public var moves: [String: MoveRecord] = [:]
 
@@ -196,6 +202,7 @@ public struct PlanBook: Codable, Equatable {
         removed = try c.decodeIfPresent([String: Date].self, forKey: .removed) ?? [:]
         counter = try c.decodeIfPresent(Int.self, forKey: .counter) ?? 0
         applied = try c.decodeIfPresent([String].self, forKey: .applied) ?? []
+        appliedAt = (try? c.decodeIfPresent([String: Date].self, forKey: .appliedAt)) ?? [:]
         moves = try c.decodeIfPresent([String: MoveRecord].self, forKey: .moves) ?? [:]
         // A change kept for undoing holds a session as it was; its missed mark is settled the same way.
         for i in changes.indices {
@@ -267,7 +274,7 @@ public struct PlanBook: Codable, Equatable {
         if applied.contains(queued.id) { return .written }
         if let extra = queued.extra {
             let how = try apply(extra: extra, now: now)
-            remember(queued.id)
+            remember(queued.id, now: now)
             return how
         }
 
@@ -313,13 +320,18 @@ public struct PlanBook: Codable, Equatable {
         // merged apart between devices, so a log never overwrites a change of plan, nor the reverse.
         if movedDay { stamps[w.key] = now }
         if wroteLog || !movedDay { stamps["log:" + w.key] = now }
-        remember(queued.id)
+        remember(queued.id, now: now)
         return .written
     }
 
-    private mutating func remember(_ id: String) {
+    /* The list is oldest first (a merge keeps it so), so the ones trimmed off the front are the oldest. */
+    private mutating func remember(_ id: String, now: Date) {
         applied.append(id)
-        if applied.count > 300 { applied.removeFirst(applied.count - 300) }
+        appliedAt[id] = now
+        if applied.count > 300 {
+            for gone in applied.prefix(applied.count - 300) { appliedAt[gone] = nil }
+            applied.removeFirst(applied.count - 300)
+        }
     }
 
     /* A written cell, as Sheet would hand it back. */
@@ -565,10 +577,11 @@ public struct PlanBook: Codable, Equatable {
             throw BookError.noSession(key)
         }
         let old = sessions.remove(at: i)
+        let logAt = old.results.isEmpty ? nil : (stamps["log:" + key] ?? stamps[key])
         removed[key] = now
         stamps[key] = now
         let change = PlanChange(at: now, kind: "remove", key: key, title: old.title,
-                                before: PlanBook.summary(was), after: "", why: why, undo: old)
+                                before: PlanBook.summary(was), after: "", why: why, undo: old, logAt: logAt)
         record(change)
         return change
     }
@@ -576,7 +589,8 @@ public struct PlanBook: Codable, Equatable {
     /* Only the newest change to a session can be undone: undoing an older one would quietly take the later ones with it. */
     public func canUndo(_ changeID: String) -> Bool {
         guard let c = changes.firstIndex(where: { $0.id == changeID }), !changes[c].undone else { return false }
-        return !changes[(c + 1)...].contains { $0.key == changes[c].key && !$0.undone }
+        let key = changes[c].key
+        return !changes[(c + 1)...].contains { $0.key == key && !$0.undone }
     }
 
     /*
@@ -593,7 +607,8 @@ public struct PlanBook: Codable, Equatable {
         let change = changes[c]
         switch change.kind {
         case "add":
-            if let made = session(change.key), made.loggedInSheet {
+            // Anything at all logged on it (not only a finished session): taken out the way any session is, kept in the list.
+            if let made = session(change.key), !made.results.isEmpty {
                 changes[c].undone = true
                 try remove(change.key, why: "Undo of adding it", now: now)
                 return
@@ -617,6 +632,8 @@ public struct PlanBook: Codable, Equatable {
                 sessions[i] = old
             } else {
                 sessions.append(old)
+                // Its log comes back with the mark it had, never "now": a log made since on another device stays newer.
+                if !old.results.isEmpty, let t = change.logAt { stamps["log:" + change.key] = t }
             }
             removed[change.key] = nil
         }

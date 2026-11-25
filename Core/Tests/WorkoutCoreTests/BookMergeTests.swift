@@ -151,14 +151,20 @@ final class BookMergeTests: XCTestCase {
     func testASessionTakenOutStaysOutUnlessTheOtherDeviceDidSomethingLater() throws {
         let b = try base()
         var x = b, y = b
+        try log(&y, run16, "30", 5)             // logged BEFORE the removal…
+        x = try m(x, y)                         // …and the removing device saw that log
         try x.remove(run16, now: at(10))
-        try log(&y, run16, "30", 5)             // logged BEFORE the removal
         let gone = try m(x, y)
         XCTAssertNil(gone.session(run16))
         XCTAssertNotNil(gone.removed[run16])
-        XCTAssertTrue(gone.changes.contains { $0.kind == "remove" && $0.key == run16 && $0.undo != nil })
+        XCTAssertTrue(gone.changes.contains { $0.kind == "remove" && $0.key == run16 && $0.undo?.results == y.session(run16)?.results })
         // Merging with a copy that never heard of it also keeps it out.
         XCTAssertNil(try m(gone, b).session(run16))
+        // Taken out unlogged on one, never logged on the other: out.
+        var p = b
+        try p.remove(bike15, now: at(20))
+        XCTAssertNil(try m(p, b).session(bike15))
+        XCTAssertNil(try m(b, p).session(bike15))
     }
 
     func testTwoDevicesChangingTheSameSessionTheLaterWholeSideWins() throws {
@@ -251,17 +257,49 @@ final class BookMergeTests: XCTestCase {
         // The line "came back" does not stand in the way of undoing an older change.
         XCTAssertEqual(try bytes(try m(all, mac)), try bytes(all))
 
-        // Reversed times: logged at 10, removed at 20 → gone, kept in the list with its undo.
+        // Reversed times: logged on the phone at 10 (and the app closed at once, or offline), taken out on the
+        // Mac at 20 — the Mac never saw that log, so taking the session out must not take the log with it.
         var mac2 = b, phone2 = b
         try log(&phone2, swim9, "40", 10)
         try mac2.remove(swim9, now: at(20))
-        let gone = try m(mac2, phone2)
-        XCTAssertNil(gone.session(swim9))
-        XCTAssertNotNil(gone.removed[swim9])
-        XCTAssertTrue(gone.changes.contains { $0.kind == "remove" && $0.undo != nil })
-        // What was logged is not lost either: the phone's copy (with its log) is what a take-back would show, and join says so.
+        let kept = try m(mac2, phone2)
+        XCTAssertEqual(kept.session(swim9)?.results, phone2.session(swim9)?.results, "the session and its log survive")
+        XCTAssertNil(kept.removed[swim9])
+        XCTAssertTrue(kept.changes.contains { $0.kind == "back" && $0.key == swim9 && $0.after.hasPrefix("Came back") })
+        XCTAssertEqual(try bytes(kept), try bytes(try m(phone2, mac2)), "the same in either order")
+        XCTAssertEqual(try bytes(try m(kept, mac2)), try bytes(kept), "and the same when it meets the Mac again")
         let join = BookMerge.join(local: phone2, cloud: [mac2], cloudFileThere: true)
-        XCTAssertTrue(join.takenAway.contains(swim9))
+        XCTAssertFalse(join.takenAway.contains(swim9))
+        XCTAssertFalse(join.takenAway.contains("log:" + swim9))
+    }
+
+    /* Undoing the removal afterwards (on either device) brings the session back WITH its log, not empty. */
+    func testCase2b_UndoOfTheRemovalKeepsTheLogTheRemovingDeviceNeverSaw() throws {
+        let b = try base()
+        var mac = b, phone = b
+        try log(&phone, swim9, "40", 10)
+        let removal = try mac.remove(swim9, now: at(20))
+        for (first, second) in [(mac, phone), (phone, mac)] {
+            var joined = try m(first, second)
+            XCTAssertTrue(joined.canUndo(removal.id))
+            try joined.undo(removal.id, now: at(30))
+            XCTAssertEqual(joined.session(swim9)?.results["actualDuration"]?.text, "40")
+            XCTAssertEqual(joined.session(swim9)?.loggedInSheet, true)
+        }
+        // Undone on the Mac BEFORE it met the phone: the phone's log still wins.
+        var macUndo = mac
+        try macUndo.undo(removal.id, now: at(30))
+        XCTAssertEqual(try m(macUndo, phone).session(swim9)?.results["actualDuration"]?.text, "40")
+        XCTAssertEqual(try bytes(try m(macUndo, phone)), try bytes(try m(phone, macUndo)))
+
+        // He saw the log and took the session out anyway: then it goes, and the remove line holds the log.
+        var mac3 = try m(b, phone)
+        try mac3.remove(swim9, now: at(40))
+        let gone = try m(mac3, phone)
+        XCTAssertNil(gone.session(swim9))
+        XCTAssertEqual(gone.changes.last { $0.kind == "remove" && $0.key == swim9 }?.undo?.results["actualDuration"]?.text, "40")
+        XCTAssertEqual(try bytes(gone), try bytes(try m(phone, mac3)))
+        XCTAssertTrue(BookMerge.join(local: phone, cloud: [mac3], cloudFileThere: true).takenAway.contains(swim9))
     }
 
     func testCase3_AddedOnBoth() throws {
@@ -417,6 +455,7 @@ final class BookMergeTests: XCTestCase {
         let b = try base()
         var local = b, cloud = b
         try log(&local, swim9, "40", 10)
+        cloud = try m(cloud, local)                 // the other device saw the log, then took the session out
         try cloud.remove(swim9, now: at(20))
         try cloud.remove(run16, now: at(21))
         let join = BookMerge.join(local: local, cloud: [cloud], cloudFileThere: true)
