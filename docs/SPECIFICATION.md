@@ -2,7 +2,7 @@
 
 > **Name note.** This app was called **Workout Sync** up to version 1.1 (72). From 1.2 (73) the shown name is **AMS Triathlon Training**. It is the same app: same bundle id `com.schabbauer.AMSWorkoutSync`, same URL scheme `amsworkoutsync://`, same repository. Source file names, the Xcode target and the Swift package still say "WorkoutSync" or "WorkoutCore". Where this document quotes a text the app shows, the quote is what the code says today (version 1.2 (73)); section 12.6 records the texts that were renamed in 1.2 and the places that keep the old word on purpose.
 
-This document describes the app **as the code is today** (2.3 build 77, 25 November 2026). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
+This document describes the app **as the code is today** (2.4 build 78, 25 November 2026). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
 
 Source layout:
 
@@ -1974,3 +1974,65 @@ Row `settings-suggestions` under "Changes to the plan" in Settings → Your plan
 * The cards, his answers to them and the Claude key, switch, count and log are per device; the iPad and Mac make no cards. The pause and the illness steps are shared through iCloud (`pause.json`), and stay per device only with iCloud off.
 * The plan review (T6) is off.
 * The neighbour link needs the neighbour apps' matching versions and reaches nothing but the iPhone's own password store.
+
+## New in 2.4 (78) — Claude says when it cannot choose, one morning answer on every device, sign fixes
+
+One idea: **when something is not as it seems, the screen says so in words, and a mark or colour means one thing.** Nothing in the plan, the rule book or the data of the plan changes. Version shown: 2.4 (78), 25 November 2026.
+
+### X.1 Claude says when it cannot choose
+
+**Before (2.3).** When Anthropic refused (key ended, no credit), the app silently used the rule book's own pick; only one line in the log under Settings → Claude said so.
+
+**Now.** While the trouble lasts, two places say so in words: one line on Settings → Claude under "Key saved", and one grey line on the suggestion card on Today, under the reason (`Why:` line). The suggestion itself always appears and works; only who picks changes. Nothing is ever bought by the app.
+
+**What decides the case** (from the answer to the request for a card; the first rule that fits wins):
+
+| Answer from Anthropic | Case |
+|---|---|
+| HTTP 401 or 403 | key no longer accepted |
+| HTTP 402, or an error of type `billing_error`, or an error message that speaks of the credit balance | no credit |
+| the app's own month meter is at its 5-dollar cap (checked before the question, so nothing is sent) | cap reached |
+| anything else: no network, timeouts, HTTP 429, 5xx, an unusable answer | no line at all; one line in the log, as in 2.3 |
+
+**The words** (fixed; page / card):
+
+1. Key no longer accepted. Page: "Anthropic no longer accepts this key. It may have ended or been removed. Until you type a new one, the rule book chooses alone." Card: "Claude could not choose: Anthropic no longer accepts your key. Settings → Claude."
+2. No credit. Page: "Your Anthropic account has no credit left. Until you add credit at Anthropic, the rule book chooses alone." Card: "Claude could not choose: your Anthropic account has no credit left. Settings → Claude."
+3. Cap reached. Page: "This month's 5 US dollars are used. Claude chooses again next month. Until then the rule book chooses alone." Card: "Claude could not choose: this month's 5 US dollars are used." (no pointer to Settings: nothing to fix there.)
+
+**The row** Settings → Claude then reads "On, but not choosing · " followed by "key no longer accepted", "no credit left at Anthropic" or "this month's 5 US dollars are used".
+
+**When it clears.** At the next answer with HTTP 200, or when a new key is typed and accepted (a key change). It is kept across restarts (it is a small per-device note, never in iCloud, never in the plan or a copy). The cap case also ends by itself when the month turns, because the meter does. The grey card line is shown on the card only while the trouble lasts, in the same grey as the other card lines; it carries no colour of its own and no button. It changes nothing in the card's menu, its buttons, its checks or its words. It is not read by the rule book and never sent anywhere.
+
+**Unchanged:** one try of at most 20 seconds per card, the answer checks, the word check, the data sent, the 5-dollar cap, the log (a line is still written for every refusal, including these).
+
+### X.2 A taken-over morning answer says so on every device
+
+**Before.** Only the iPhone that took the answer over from AMS Magic Morning Routine (or AMS Workout Companion) showed "Feeling good — from Magic Morning" with the grey "Answered in Magic Morning — change it there." and kept it unchangeable. The diary document that travels through iCloud held only the value, so an iPad or Mac showed the answer as its own and offered to change it.
+
+**Now.** The diary document gains an optional field `feelFrom` (day → the app that answered; `"morning"` for Magic Morning, `"workouts"` for Workouts, the same words as the note's `from`). It is written when an answer is taken over. When two devices meet (the iCloud merge), `feelFrom` follows the winning answer of the day: whichever device's answer for that day wins, its `feelFrom` (or its absence) wins with it, so a value is never shown with another answer's origin. An answer given in this app (the five faces, or a change of an own answer) removes that day's `feelFrom`. An older app version ignores the field and keeps writing the document as before; a newer version reading a document without it shows the answer as the user's own. iPad and Mac now show the same line, "Feeling good — from Magic Morning", and the grey line "Answered in Magic Morning — change it there."; the answer cannot be changed there. Everything else about taking over (first answer of the day wins, Mornings bars, rule book reading, Claude's numbers) is as in V.6.
+
+### X.3 Sign fixes (a mark or colour means one thing)
+
+1. **Year view, today.** Today's day square is outlined in **green**, the green of today everywhere else (before: a dark outline). The key under the months shows the green outline for "Today". Rest day stays a grey empty outline; race day stays red.
+2. **Waiting to sync.** The "Waiting to sync" labels (cards, the session's page) and the waiting headline on a session's page are **grey** (before: green, which means done). Green means done only.
+3. **"Send it now".** In the red warning at the top of Today (logging has waited more than a day; only while the plan is in Excel) the button "Send it now" is **green** (before: red). Red stays for the warning's frame and for things that take something away.
+4. **Words beside marks.** The share mark says **"Send"** (a session's page, and photographs); the flag on Progress says **"The race"**; in Move, "+1" reads **"+1 day"**; the small mark on an extra reads **"Counts as training"** (before: marks alone).
+5. **Sessions, the number on All.** All no longer counts rest days, so All = Done + Missed + Upcoming and matches the bar above the list (before: All was larger).
+6. **Race day badge.** A race day's badge shows the **flag** (before: the general "other" mark), so the flag means the race everywhere (Progress, the Plan page's season bars, badges).
+
+### X.4 Icons
+
+All the app's hand-drawn marks now come from the central AMS icon library that every AMS app shares. Nothing looks different.
+
+### X.5 Identifiers, signs, tests
+
+* **Signs added or changed** (each with words in How this works → Signs in this app): the grey "Claude could not choose: …" line on a card; the grey line under "Key saved" and the row "On, but not choosing · …"; the green outline on Year; grey "Waiting to sync"; green "Send it now"; "Send", "The race", "+1 day" and "Counts as training" beside their marks; the flag on a race day's badge; the heart on "Log details" (Apple Health holds numbers for this session) is now listed there too; "Feeling good — from Magic Morning" is the same on iPhone, iPad and Mac.
+* **Collisions checked:** green means done only (no waiting words, no warning in green except the one action that puts things right, a button, never a status); grey lines are information, each with words; red is the warning frame and what takes something away.
+* **Tests:** one small data test per rule: the case chosen from each kind of answer (401, 403, 402, `billing_error`, the credit-balance message, the cap, 429, 5xx, timeout); clearing on HTTP 200 and on a key change; kept across a restart; `feelFrom` written, merged with the winning answer, removed by an own answer, ignored by the older shape; the count on All against Done + Missed + Upcoming. One screen test finds the new lines and buttons by their identifiers.
+
+### X.6 What 2.4 deliberately does not do
+
+* It does not buy, top up or change anything at Anthropic; it only says what happened.
+* It shows nothing for a short hiccup (no network, Anthropic busy, HTTP 429 or 5xx): only the log.
+* It does not change who may make cards (the iPhone only), the rule book, the plan or any figure.
