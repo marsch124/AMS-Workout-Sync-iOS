@@ -37,6 +37,11 @@
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.healthcare-fitness</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>amsworkouts</string>
+		<string>amsmorning</string>
+	</array>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>NSCalendarsFullAccessUsageDescription</key>

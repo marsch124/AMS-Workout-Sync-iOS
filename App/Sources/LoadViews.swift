@@ -47,6 +47,7 @@ struct LoadBoard {
 struct LoadCard: View {
     let board: LoadBoard
     @ObservedObject private var diary = Diary.shared
+    @ObservedObject private var neighbours = Neighbours.shared
     /* The Health workout whose row of numbers is open. */
     @State private var asking: String?
 
@@ -117,6 +118,12 @@ struct LoadCard: View {
             Text(explanation)
                 .font(.caption).foregroundStyle(Theme.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            // From Magic Morning: how many of the last seven mornings he stretched. Grey, never a judgement.
+            if let stretch = neighbours.stretchLine {
+                Text(stretch).font(.caption).foregroundStyle(Theme.secondary)
+                    .accessibilityIdentifier("stretch-line")
+            }
 
             if !board.toScore.isEmpty {
                 Divider()

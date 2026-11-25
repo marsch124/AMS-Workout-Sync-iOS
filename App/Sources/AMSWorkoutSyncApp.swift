@@ -24,6 +24,7 @@ struct AMSWorkoutSyncApp: App {
                         Task { await HealthImport.shared.readMorning() }
                         // The hikes and gym sessions outside the plan, for Load.
                         Task { await Diary.shared.readHealth(today: store.today) }
+                        Neighbours.shared.cameToFront(today: store.today)
                     }
                     // Going to the background: what was just logged goes to iCloud now, not at the next opening.
                     if phase == .background { store.cloud.goingToBackground() }
@@ -90,6 +91,12 @@ struct RootView: View {
         }
         .tint(tint)
         .overlay { debugScreens }
+        // amsworkoutsync://today, from Workouts or Magic Morning: the first screen.
+        .onOpenURL { url in
+            guard url.host == "today" else { return }
+            tab = "today"
+            todayPath = NavigationPath()
+        }
     }
 
     /* Screen walks, DEBUG only: one page opened straight away, for a picture. */

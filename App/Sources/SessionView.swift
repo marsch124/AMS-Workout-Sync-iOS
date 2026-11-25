@@ -15,6 +15,7 @@ struct SessionView: View {
     @State private var zoneAsk: ZoneAsk?
     @State private var sharing = false
     @State private var payload: SharePayload?
+    @ObservedObject private var neighbours = Neighbours.shared
 
     var body: some View {
         ScrollView {
@@ -63,6 +64,17 @@ struct SessionView: View {
                             }
                         }
                         if !w.phase.isEmpty { Pill(text: w.phase) }
+                    }
+
+                    // Strength done in Workouts: one line, and one button that logs it.
+                    if let s = neighbours.strength(for: w, among: store.view?.forDay(w.dayKey) ?? []) {
+                        NeighbourDoneLine(workout: w, state: s)
+                    }
+                    if w.discipline.id == "strength", neighbours.workoutsInstalled {
+                        Button("Open Workouts") { neighbours.openWorkouts() }
+                            .font(.footnote.weight(.semibold)).foregroundStyle(Theme.secondary)
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("open-workouts")
                     }
 
                     ForEach(Array(w.sections.enumerated()), id: \.offset) { _, section in
