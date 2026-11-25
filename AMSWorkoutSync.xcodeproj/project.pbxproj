@@ -21,6 +21,7 @@
 		1DAF8A7B8F008223FA81CAC4 /* GarminMorningUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CD21785F71109598A32492D /* GarminMorningUITests.swift */; };
 		1F7F89FB822726498823E6AE /* RaceEditViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4545506F79E4D9D433E6C2FB /* RaceEditViews.swift */; };
 		208A724EC312F4125C46AAA1 /* SeasonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04CBC958D9BB764875C6207 /* SeasonView.swift */; };
+		24B17177DC92C39F31BBDEEF /* TodayNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD80208B1FE18E2D0BA25612 /* TodayNote.swift */; };
 		24C73D27839B03C65C5F9E82 /* SuggestionsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E7C3F09C67D051238AC768 /* SuggestionsSettingsView.swift */; };
 		24DD67DD79E07FEC82557AFF /* MoveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */; };
 		25373DDA23B843ADB5C10401 /* FavouritesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A190B1AB035CA6BDF46BF1F /* FavouritesUITests.swift */; };
@@ -91,6 +92,7 @@
 		AFC447F2AECDEB2E500F137C /* GarminSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3FFCF1DC05E464FB2ED3970 /* GarminSettingsView.swift */; };
 		B1CABD5E7ED197469D4C85AD /* SafetyCopiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868D688CF593B1074DAB4C08 /* SafetyCopiesView.swift */; };
 		B26A348E8757F3F57C510F55 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD39982CFB85EDA1755222A /* ShareText.swift */; };
+		B42AEFD786FF0E9255581705 /* plan-done.xlsx in Resources */ = {isa = PBXBuildFile; fileRef = 3DD2BBE3B6BF41FAE08429C0 /* plan-done.xlsx */; };
 		B6B55CFCACC822A65E6DBD59 /* ThursdayRidesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4563F8EA9F576F4025FC0CC /* ThursdayRidesUITests.swift */; };
 		B8ECADD750A7508B54D0DC88 /* GarminActivityReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B823F9DBC61A22A88D87462 /* GarminActivityReader.swift */; };
 		BB179DE37CC85C7E3F846A8A /* StopSignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CF0A3A8F1A6CC4EFF1DB10 /* StopSignView.swift */; };
@@ -170,6 +172,7 @@
 		3B823F9DBC61A22A88D87462 /* GarminActivityReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminActivityReader.swift; sourceTree = "<group>"; };
 		3BFFF43913961BBC438C16AF /* LogFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFormView.swift; sourceTree = "<group>"; };
 		3CD21785F71109598A32492D /* GarminMorningUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminMorningUITests.swift; sourceTree = "<group>"; };
+		3DD2BBE3B6BF41FAE08429C0 /* plan-done.xlsx */ = {isa = PBXFileReference; path = "plan-done.xlsx"; sourceTree = "<group>"; };
 		3E761F4FA612AABC7C820139 /* SessionEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEditView.swift; sourceTree = "<group>"; };
 		4050A7154CFB8357CC22F817 /* SpotlightIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndex.swift; sourceTree = "<group>"; };
 		41F26771CF90A03C5E86FB7C /* TestEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEntryUITests.swift; sourceTree = "<group>"; };
@@ -267,6 +270,7 @@
 		F7F1BC3EF9EE50E5E5164540 /* PersonalBests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalBests.swift; sourceTree = "<group>"; };
 		F830082B6724012E7CAB6628 /* NigglesCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NigglesCard.swift; sourceTree = "<group>"; };
 		FC9FE1BD710D6061C830192E /* RacePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RacePage.swift; sourceTree = "<group>"; };
+		FD80208B1FE18E2D0BA25612 /* TodayNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayNote.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -446,6 +450,7 @@
 				A500418BE406E5EED0261B44 /* TestHistory.swift */,
 				D6E3DEEE01504BE66D135FE3 /* Theme.swift */,
 				7D15A4D8DFEA91F33C0EB80C /* ThursdayRidesView.swift */,
+				FD80208B1FE18E2D0BA25612 /* TodayNote.swift */,
 				5419017E5E37523852FF0B4F /* TodayView.swift */,
 				6E9EECF821F9A0C789D085EC /* TodayWeather.swift */,
 				4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */,
@@ -463,6 +468,7 @@
 		E234DFAF2A8355631210C352 /* Fixtures */ = {
 			isa = PBXGroup;
 			children = (
+				3DD2BBE3B6BF41FAE08429C0 /* plan-done.xlsx */,
 				727F13AC6FACE0F75894E10A /* plan.xlsx */,
 			);
 			path = Fixtures;
@@ -568,6 +574,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B42AEFD786FF0E9255581705 /* plan-done.xlsx in Resources */,
 				6951774C8A2ED04539AE4CAC /* plan.xlsx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -663,6 +670,7 @@
 				54AE55B92F2529F788232282 /* TestHistory.swift in Sources */,
 				626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */,
 				BE5BE9EBAD68976428A07A02 /* ThursdayRidesView.swift in Sources */,
+				24B17177DC92C39F31BBDEEF /* TodayNote.swift in Sources */,
 				AE4B787B0C3121743BEC221B /* TodayView.swift in Sources */,
 				7CBCB311CBA44A94E4435586 /* TodayWeather.swift in Sources */,
 				9B5D2417943ED124065919BD /* TrainingCalendar.swift in Sources */,
@@ -754,7 +762,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 83;
+				CURRENT_PROJECT_VERSION = 84;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -768,7 +776,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.7;
+				MARKETING_VERSION = 2.8;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -814,7 +822,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 83;
+				CURRENT_PROJECT_VERSION = 84;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -834,7 +842,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.7;
+				MARKETING_VERSION = 2.8;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
