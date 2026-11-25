@@ -152,6 +152,22 @@ public enum ClaudePick {
         return (try? JSONSerialization.data(withJSONObject: root, options: [.sortedKeys])) ?? Data()
     }
 
+    /* The reason as it may be shown, or nil: one line, "Why: " first, short, never medical. */
+    public static func cleanWhy(_ raw: String) -> String? {
+        var why = raw.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
+        guard !why.isEmpty else { return nil }
+        if !why.hasPrefix("Why:") { why = "Why: " + why }
+        guard why.count > 4, why.count <= longestWhy else { return nil }
+        let lower = why.lowercased()
+        guard !blocked.contains(where: { lower.contains($0) }) else { return nil }
+        return why
+    }
+
+    /* The same check for an answer that is already built: a pick inside the menu and a clean reason. */
+    public static func accepts(_ answer: ClaudeAnswer, menuCount: Int) -> Bool {
+        answer.pick >= 0 && answer.pick <= menuCount && cleanWhy(answer.why) == answer.why
+    }
+
     /* The answer, or nil whenever anything is off. */
     public static func read(_ data: Data, menuCount: Int) -> ClaudeAnswer? {
         guard let root = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return nil }
@@ -162,16 +178,11 @@ public enum ClaudePick {
               let inner = (try? JSONSerialization.jsonObject(with: Data(text.utf8))) as? [String: Any],
               let pickNumber = inner["pick"] as? NSNumber, CFGetTypeID(pickNumber) != CFBooleanGetTypeID(),
               Double(pickNumber.intValue) == pickNumber.doubleValue,
-              var why = inner["why"] as? String else { return nil }
+              let rawWhy = inner["why"] as? String else { return nil }
         let pick = pickNumber.intValue
         guard pick >= 0, pick <= menuCount else { return nil }
 
-        why = why.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
-        guard !why.isEmpty else { return nil }
-        if !why.hasPrefix("Why:") { why = "Why: " + why }
-        guard why.count > 4, why.count <= longestWhy else { return nil }
-        let lower = why.lowercased()
-        guard !blocked.contains(where: { lower.contains($0) }) else { return nil }
+        guard let why = cleanWhy(rawWhy) else { return nil }
 
         let u = root["usage"] as? [String: Any] ?? [:]
         func n(_ k: String) -> Int { (u[k] as? NSNumber)?.intValue ?? 0 }

@@ -29,6 +29,9 @@ public struct SuggestionEntry: Codable, Equatable, Identifiable, Sendable {
      * this, or nothing is written.
      */
     public var before: [[RBBefore]]
+    /* Claude was asked about this card (once, ever), and whether its answer was used. */
+    public var claudeAsked = false
+    public var claudePicked = false
 
     public var id: String { record.id }
 
@@ -49,7 +52,7 @@ public struct SuggestionEntry: Codable, Equatable, Identifiable, Sendable {
         self.init(record: s.record, otherHeadlines: s.otherChoices.map(\.headline), isReview: s.review != nil)
     }
 
-    enum CodingKeys: String, CodingKey { case record, otherHeadlines, isReview, changeIDs, undone, before }
+    enum CodingKeys: String, CodingKey { case record, otherHeadlines, isReview, changeIDs, undone, before, claudeAsked, claudePicked }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -59,6 +62,8 @@ public struct SuggestionEntry: Codable, Equatable, Identifiable, Sendable {
         changeIDs = try c.decodeIfPresent([String].self, forKey: .changeIDs) ?? []
         undone = try c.decodeIfPresent(Bool.self, forKey: .undone) ?? false
         before = try c.decodeIfPresent([[RBBefore]].self, forKey: .before) ?? []
+        claudeAsked = try c.decodeIfPresent(Bool.self, forKey: .claudeAsked) ?? false
+        claudePicked = try c.decodeIfPresent(Bool.self, forKey: .claudePicked) ?? false
     }
 
     public var headline: String { record.headline }

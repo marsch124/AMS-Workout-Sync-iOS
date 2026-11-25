@@ -174,9 +174,36 @@ final class SuggestionKeeper: ObservableObject {
         revalidate(save: false)
         if keep.openEntry(on: today) == nil, keep.mayShowNew(on: today) || keep.mayShowNew(on: today, trigger: .section5),
            let input = input(moment), let s = RuleBook.suggest(input) {
-            keep.add(SuggestionEntry(s, input: input), today: today)
+            if keep.add(SuggestionEntry(s, input: input), today: today) { askClaude(s, input: input) }
         }
         if keep != was { save() }
+    }
+
+    // MARK: Claude's pick (Settings → Claude)
+
+    /*
+     * Right after the rule book has made a card, and only when Claude is on and
+     * has a key: ask it to pick from that SAME menu. The card is shown at once
+     * with the rule book's own pick; the answer, if a valid one comes back while
+     * the card is still open and unchanged, replaces it. Any failure leaves the
+     * card as it is. The ask is written into Claude's own log by the client.
+     */
+    private func askClaude(_ s: Suggestion, input: RuleBookInput) {
+        let client = ClaudeClient.shared
+        guard client.isOn, s.review == nil, let asked = keep.askable(on: today), asked.id == s.record.id else { return }
+        keep.markAsked(asked.id)
+        let context = ClaudeContext.make(from: input)
+        Task { [weak self] in
+            let answer = await client.pick(for: s, context: context)
+            self?.claudeAnswered(answer, to: asked)
+        }
+    }
+
+    private func claudeAnswered(_ answer: ClaudeAnswer?, to asked: SuggestionEntry) {
+        guard readable, cardsOn, let answer, let current = keep.openEntry(on: today), current.id == asked.id,
+              let trial = current.applyingClaude(answer),
+              let input = input(.afterSession), SuggestionApply.fits(trial, choice: 0, input: input) else { return }
+        if keep.applyClaude(answer, to: asked, on: today) { save() }
     }
 
     /* A new plan taken in: these notes start a fresh log (his answers and taps stay). */

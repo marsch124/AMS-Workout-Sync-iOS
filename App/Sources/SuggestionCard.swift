@@ -56,6 +56,11 @@ struct SuggestionCardView: View {
                 .font(.subheadline).foregroundStyle(Theme.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("suggestion-why")
+            if entry.claudePicked {
+                Text("Picked by Claude from the rule book\u{2019}s choices")
+                    .font(.caption).foregroundStyle(Theme.secondary)
+                    .accessibilityIdentifier("suggestion-claude")
+            }
 
             let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
             layout {
