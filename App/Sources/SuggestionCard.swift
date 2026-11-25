@@ -14,13 +14,20 @@ struct SuggestionArea: View {
     @ObservedObject private var keeper = SuggestionKeeper.shared
 
     var body: some View {
-        if keeper.ladder.step != .none || keeper.card != nil || keeper.changed != nil {
+        if keeper.ladderStatus != nil || keeper.card != nil || keeper.changed != nil || keeper.todaysNotice != nil {
             VStack(alignment: .leading, spacing: 10) {
                 LadderLine()
                 if let entry = keeper.card {
                     SuggestionCardView(entry: entry)
                 } else if let entry = keeper.changed {
                     ChangedLine(entry: entry)
+                }
+                if let notice = keeper.todaysNotice {
+                    Text(notice.text)
+                        .font(.footnote).foregroundStyle(Theme.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityIdentifier(notice.id)
                 }
             }
             .onAppear { keeper.todayAppeared() }
@@ -151,23 +158,17 @@ struct ChangedLine: View {
     }
 }
 
-/* While a stop sign or an illness step is on: its fixed words, on Today. */
+/* While a pause or an illness step is on: one grey line on Today ("Suggestions are paused — Stop sign"). */
 struct LadderLine: View {
     @ObservedObject private var keeper = SuggestionKeeper.shared
 
     var body: some View {
-        let state = keeper.ladder
-        if state.step != .none {
-            VStack(alignment: .leading, spacing: 2) {
-                if let label = Self.label(state.step) {
-                    Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
-                }
-                Text(state.text).font(.footnote).foregroundStyle(Theme.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("ladder-line")
+        if let line = keeper.ladderStatus {
+            Text(line)
+                .font(.footnote).foregroundStyle(Theme.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("ladder-line")
         }
     }
 
@@ -180,15 +181,20 @@ struct LadderLine: View {
     }
 }
 
-/* The quiet "Stop sign" text button, on Today and on every session page. */
+/*
+ * The two quiet text buttons, on Today and on every session page: "Stop
+ * sign" (opening it pauses suggestions) and "I'm ill", which opens only the
+ * illness questions — a cold never has to read the stop sign's words.
+ */
 struct StopSignButton: View {
     @ObservedObject private var keeper = SuggestionKeeper.shared
     @State private var open = false
+    @State private var ill = false
     /* On a session page: what the session shows while paused or resting. */
     var showsState = false
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
             if showsState, let label = LadderLine.label(keeper.ladder.step) {
                 Text(label).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
                     .accessibilityIdentifier("session-ladder")
@@ -198,8 +204,14 @@ struct StopSignButton: View {
                 .foregroundStyle(Theme.secondary)
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("stop-sign")
+            Button("I\u{2019}m ill") { ill = true }
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.secondary)
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("ill-button")
         }
         .sheet(isPresented: $open) { StopSignView() }
+        .sheet(isPresented: $ill) { IllnessView() }
     }
 }
 

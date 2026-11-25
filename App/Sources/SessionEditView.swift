@@ -44,6 +44,8 @@ struct SessionEditView: View {
 
     private var adding: Bool { key == nil }
     @ObservedObject private var keeper = SuggestionKeeper.shared
+    /* The grey line, worked out a moment after he stops typing, never on every keystroke. */
+    @State private var ownNote: String?
 
     /* The page as it stands, for the grey line; the same draft Save would make. */
     private var liveDraft: SessionDraft {
@@ -143,7 +145,7 @@ struct SessionEditView: View {
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
                     // His own change against the rule book: one grey line, never a block.
-                    OwnEditNote(text: keeper.note(forChanging: key, to: liveDraft))
+                    OwnEditNote(text: ownNote)
                     if let problem {
                         Text(problem).font(.footnote).foregroundStyle(Theme.danger)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -154,6 +156,12 @@ struct SessionEditView: View {
                     }
                     .buttonStyle(.borderedProminent).tint(Theme.today)
                     .accessibilityIdentifier("edit-save")
+                    // On the button that is always there: the note itself may be empty.
+                    .task(id: liveDraft) {
+                        try? await Task.sleep(nanoseconds: 350_000_000)
+                        guard !Task.isCancelled else { return }
+                        ownNote = keeper.note(forChanging: key, to: liveDraft)
+                    }
                 }
                 .padding(16)
                 .background(Theme.bg)

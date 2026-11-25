@@ -56,15 +56,17 @@ final class SuggestionUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["suggestion-changed"].waitForExistence(timeout: 2), "Undo left the Changed line")
     }
 
-    /* The quiet Stop sign button on Today opens the page with its fixed heading. */
+    /* The quiet Stop sign button on Today opens the page with its fixed heading; opening it pauses, "Opened by mistake" takes it back. */
     func testStopSignPageOpens() {
         let app = launch(suggest: nil)
         let stop = app.buttons["stop-sign"]
         XCTAssertTrue(stop.waitForExistence(timeout: 15), "no Stop sign on Today")
         stop.tap()
         XCTAssertTrue(app.staticTexts["stop-title"].waitForExistence(timeout: 5), "the stop-sign page did not open")
-        XCTAssertTrue(app.buttons["stop-ill"].exists)
-        app.buttons["stop-close"].tap()
+        XCTAssertTrue(app.staticTexts["stop-paused"].exists, "opening the stop sign pauses")
+        XCTAssertTrue(app.buttons["stop-mistake"].exists)
+        app.buttons["stop-mistake"].tap()
         XCTAssertFalse(app.staticTexts["stop-title"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["ill-button"].exists, "\u{201C}I\u{2019}m ill\u{201D} has its own button")
     }
 }

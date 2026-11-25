@@ -23,16 +23,37 @@ import WorkoutCore
 final class SuggestionKeeper: ObservableObject {
     static let shared = SuggestionKeeper()
 
+    /* The words he reads when a card no longer fits, and when its notes cannot be read. */
+    static let staleWords = "The plan has changed since this suggestion, so it was put away."
+    static let unreadableWords = "The suggestions\u{2019} own notes could not be read, so suggestions are resting. Your plan is untouched."
+    static let goneWords = "This change is no longer in your plan."
+    static let changedAgainWords = "This session was changed again since, so nothing was undone."
+
+    /* One calm grey line where the card was, for the rest of the day. */
+    struct Notice: Equatable {
+        let day: String
+        let text: String
+        let id: String
+    }
+
     @Published private(set) var keep = SuggestionKeep()
     /* False when suggestions.json is there but cannot be read: then nothing is shown or written. */
     @Published private(set) var readable = true
+    @Published private(set) var notice: Notice?
 
     private weak var store: Store?
     private var bag: Set<AnyCancellable> = []
     private var loggedToday: Int?
-    /* weekCap[w], frozen the first time it is needed and kept beside the plan. */
+    /* weekCap[w] of the plan as taken in, frozen once per plan (its taken-in moment beside it). */
     private var caps: [Int: Int]?
-    private var capsUnreadable = false
+    private var capsFor: Double?
+    @Published private(set) var capsUnreadable = false
+    /* The engine's view of the plan, kept per plan version: rebuilt only when the plan changes. */
+    private var cached: (key: String, input: RuleBookInput)?
+    /* The last check asked, so Today appearing again with nothing new runs nothing. */
+    private var lastCheck: String?
+    /* A tap on "Take it" being written: a second one meanwhile is ignored. */
+    private var taking = false
 
     private var supportURL: URL { FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0] }
     private var fileURL: URL { supportURL.appendingPathComponent("suggestions.json") }
@@ -87,6 +108,9 @@ final class SuggestionKeeper: ObservableObject {
 
     var today: String { store?.today ?? PlanView.todayKey() }
 
+    /* The notes read, both of them. */
+    var notesReadable: Bool { readable && !capsUnreadable }
+
     // MARK: when a card may be made and shown
 
     /* The plan lives here, the switch is on, the file reads. */
@@ -103,11 +127,17 @@ final class SuggestionKeeper: ObservableObject {
         return planReady && Device.isPhone
     }
 
+    /* No card at all while paused or resting after an illness. */
+    private var quiet: Bool { ladder.step == .paused || ladder.step == .rest }
+
     /* The card waiting for his answer. */
-    var card: SuggestionEntry? { cardsOn ? keep.openEntry(on: today) : nil }
+    var card: SuggestionEntry? { cardsOn && !quiet ? keep.openEntry(on: today) : nil }
 
     /* A card taken today: "Changed — Undo" in its place until the day ends. */
     var changed: SuggestionEntry? { cardsOn ? keep.changedEntry(on: today) : nil }
+
+    /* The calm line where a card was put away or could not be undone, today only. */
+    var todaysNotice: Notice? { notice.flatMap { $0.day == today ? $0 : nil } }
 
     /* Today appeared: the morning check runs once he has answered, or from 07:00; Sunday evening is the plan review's. */
     func todayAppeared() {
@@ -120,85 +150,205 @@ final class SuggestionKeeper: ObservableObject {
             check(.evening)
         } else if Diary.shared.feel.answer(on: today) != nil || hour >= 7 {
             check(.morning)
+        } else {
+            revalidate()
         }
     }
 
+    /* A version of the plan that changes with every change and every log (the book's own marks). */
+    private func version(_ book: PlanBook) -> String {
+        let newest = book.stamps.values.max()?.timeIntervalSince1970 ?? 0
+        return "\(book.origin.takenAt.timeIntervalSince1970)|\(book.changes.count)|\(book.stamps.count)|\(newest)|\(book.sessions.count)|\(book.extras.count)"
+    }
+
     func check(_ moment: RBMoment) {
-        guard cardsOn, planReady else { return }
+        guard cardsOn, planReady, let store, let book = store.book else { return }
+        let key = [moment.rawValue, today, version(book), String(describing: Diary.shared.feel.answer(on: today)),
+                   String(describing: keep.health), "\(keep.hurtDays.count)|\(keep.entries.count)|\(keep.isOn)",
+                   String(describing: keep.settings), "\(Diary.shared.found.count)"].joined(separator: "#")
+        guard key != lastCheck else { return }
+        lastCheck = key
         let was = keep
+        belongToPlan(book)
         keep.closeStale(today: today)
-        if keep.mayShowNew(on: today), let input = input(moment), let s = RuleBook.suggest(input) {
-            keep.add(SuggestionEntry(s), today: today)
+        revalidate(save: false)
+        if keep.openEntry(on: today) == nil, keep.mayShowNew(on: today) || keep.mayShowNew(on: today, trigger: .section5),
+           let input = input(moment), let s = RuleBook.suggest(input) {
+            keep.add(SuggestionEntry(s, input: input), today: today)
         }
         if keep != was { save() }
+    }
+
+    /* A new plan taken in: these notes start a fresh log (his answers and taps stay). */
+    private func belongToPlan(_ book: PlanBook) {
+        if keep.belong(to: book.origin.takenAt.timeIntervalSince1970) { cached = nil }
+    }
+
+    /*
+     * The open card, checked against the plan as it is now (app back to the
+     * front, the plan changed): one that no longer fits is put away quietly.
+     */
+    func revalidate(save shouldSave: Bool = true) {
+        guard readable, let entry = keep.openEntry(on: today), !entry.isReview, entry.record.choice(0)?.isEmpty == false,
+              let input = input(.afterSession) else { return }
+        guard !SuggestionApply.fits(entry, choice: 0, input: input) else { return }
+        keep.putAway(entry.id, .planChanged, on: today)
+        if shouldSave { save() }
     }
 
     // MARK: what the engine reads
 
     func input(_ moment: RBMoment) -> RuleBookInput? {
-        guard let store, let book = store.book, store.canChangePlan, let caps = frozenCaps(book, today: store.today) else { return nil }
-        return RuleBook.input(book: book, feel: Diary.shared.feel, today: store.today, moment: moment, log: keep.log,
-                              health: keep.health, hurtDays: keep.hurtDays, weekCaps: caps,
-                              importDay: PlanView.todayKey(book.origin.takenAt), settings: keep.settings)
+        guard let store, let book = store.book, store.canChangePlan else { return nil }
+        let key = version(book) + "|" + store.today + "|" + String(describing: keep.settings) + "|\(Diary.shared.found.count)"
+        var base: RuleBookInput
+        if let cached, cached.key == key {
+            base = cached.input
+        } else {
+            guard let frozen = frozenCaps(book, today: store.today) else { return nil }
+            base = RuleBook.input(book: book, extras: watchHikes(book), today: store.today,
+                                  weekCaps: RuleBook.weekCaps(frozen: frozen, book: book, today: store.today),
+                                  importDay: PlanView.todayKey(book.origin.takenAt), settings: keep.settings)
+            cached = (key, base)
+        }
+        base.feel = Diary.shared.feel
+        base.moment = moment
+        base.log = keep.log
+        base.health = keep.health
+        base.hurtDays = keep.hurtDays
+        return base
     }
 
+    /*
+     * Hikes and walks of 30 minutes or more from the watch, as the Load card
+     * already keeps them, so a hiking week is not read as days off. One he
+     * wrote in as an extra that day already counts and is not counted twice.
+     */
+    private func watchHikes(_ book: PlanBook) -> [RBExtra] {
+        let written = Set(book.extras.filter { ["hike", "walk"].contains($0.activity) }
+            .compactMap { parseDayKey($0.date).flatMap(dayKey) })
+        return Diary.shared.found.filter { ["hike", "walk"].contains($0.sport) && $0.minutes >= 30 && !written.contains($0.dayKey) }
+            .map { RBExtra(day: $0.dayKey, activity: "hike", minutes: Int($0.minutes.rounded()), countsAsTraining: true) }
+    }
+
+    private struct CapsFile: Codable {
+        var takenAt: Double
+        var caps: [String: Int]
+    }
+
+    /* The caps of the plan as taken in, frozen once per plan; a new plan freezes afresh. */
     private func frozenCaps(_ book: PlanBook, today: String) -> [Int: Int]? {
-        if let caps { return caps }
+        let stamp = book.origin.takenAt.timeIntervalSince1970
+        if let caps, capsFor == stamp { return caps }
         if capsUnreadable { return nil }
         if let data = try? Data(contentsOf: capsURL) {
-            guard let saved = try? JSONDecoder().decode([String: Int].self, from: data) else {
+            if let file = try? JSONDecoder().decode(CapsFile.self, from: data) {
+                if file.takenAt == stamp {
+                    caps = Dictionary(uniqueKeysWithValues: file.caps.compactMap { k, v in Int(k).map { ($0, v) } })
+                    capsFor = stamp
+                    return caps
+                }
+                // Another plan's caps: freeze this one's below.
+            } else if (try? JSONDecoder().decode([String: Int].self, from: data)) == nil {
                 capsUnreadable = true
                 return nil
             }
-            caps = Dictionary(uniqueKeysWithValues: saved.compactMap { k, v in Int(k).map { ($0, v) } })
-            return caps
+        } else if FileManager.default.fileExists(atPath: capsURL.path) {
+            capsUnreadable = true
+            return nil
         }
-        if FileManager.default.fileExists(atPath: capsURL.path) { capsUnreadable = true; return nil }
-        // First time: the plan's own minutes per week, sessions he added himself left out.
-        let made = Set(book.sessions.filter(\.madeInApp).map(\.key))
-        let sessions = RuleBook.input(book: book, today: today).sessions.filter { !made.contains($0.id) }
-        let fresh = RuleBook.weekCaps(sessions)
-        let saved = Dictionary(uniqueKeysWithValues: fresh.map { (String($0.key), $0.value) })
+        let fresh = RuleBook.takenInCaps(book, today: today)
+        let file = CapsFile(takenAt: stamp, caps: Dictionary(uniqueKeysWithValues: fresh.map { (String($0.key), $0.value) }))
         do {
             try FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
-            try JSONEncoder().encode(saved).write(to: capsURL, options: .atomic)
+            try JSONEncoder().encode(file).write(to: capsURL, options: .atomic)
         } catch {
             return nil
         }
         caps = fresh
+        capsFor = stamp
         return fresh
     }
 
-    private func save() {
-        guard readable, let data = try? keep.encoded() else { return }
-        try? FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
-        try? data.write(to: fileURL, options: .atomic)
+    @discardableResult
+    private func save() -> Bool {
+        guard readable, let data = try? keep.encoded() else { return false }
+        do {
+            try FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
+            try data.write(to: fileURL, options: .atomic)
+            return true
+        } catch {
+            return false
+        }
     }
 
     // MARK: his answer
 
     /* "Take it" (0) or one of the other choices (1, 2). */
     func take(_ index: Int) {
-        guard let entry = card, let moves = entry.record.choice(index), let store else { return }
-        var ids: [String] = []
-        if !moves.isEmpty {
-            guard let input = input(.afterSession),
-                  let made = store.applySuggestion(moves, input: input, why: "Suggestion: " + headline(entry, index)) else { return }
-            ids = made
+        guard !taking, readable, let entry = card, let moves = entry.record.choice(index), let store, let book = store.book else { return }
+        taking = true
+        defer { taking = false }
+        guard !moves.isEmpty else {
+            keep.answer(entry.id, .took(index), on: today)
+            save()
+            return
         }
-        keep.answer(entry.id, .took(index), on: today, changeIDs: ids)
+        let line = headline(entry, index)
+        guard let input = input(.afterSession), SuggestionApply.fits(entry, choice: index, input: input),
+              !SuggestionApply.alreadyInPlan(entry, headline: line, book: book) else {
+            putAway(entry)
+            return
+        }
+        let before = keep
+        var logged = false
+        let made = store.applySuggestion(moves, input: input, why: SuggestionApply.why(line)) { ids in
+            // The log first: a plan changed by a card the log does not know of could be taken again.
+            keep.answer(entry.id, .took(index), on: today, changeIDs: ids)
+            logged = save()
+            if !logged { keep = before }
+            return logged
+        }
+        if made == nil, logged {
+            // The plan could not be saved: the card is open again, as it was.
+            keep.unanswer(entry.id)
+            save()
+        } else if made?.isEmpty == true {
+            putAway(entry)
+        }
+    }
+
+    /* Nothing written: the card goes, with one calm grey line in its place. */
+    private func putAway(_ entry: SuggestionEntry) {
+        keep.putAway(entry.id, .planChanged, on: today)
         save()
+        notice = Notice(day: today, text: Self.staleWords, id: "suggestion-stale")
     }
 
     func keepPlan() {
-        guard let entry = card else { return }
+        guard readable, let entry = card else { return }
         keep.answer(entry.id, .keptPlan, on: today)
         save()
     }
 
     func undo() {
-        guard let entry = changed, let store else { return }
-        if !entry.changeIDs.isEmpty, !store.undoSuggestion(entry.changeIDs) { return }
+        guard readable, let entry = changed, let store else { return }
+        if !entry.changeIDs.isEmpty {
+            guard let book = store.book else { return }
+            let live = SuggestionApply.liveIDs(entry.changeIDs, in: book)
+            if live.isEmpty {
+                // Put back already (Changes to the plan, a safety copy, another device): nothing to undo.
+                keep.undo(entry.id)
+                save()
+                notice = Notice(day: today, text: Self.goneWords, id: "suggestion-gone")
+                return
+            }
+            guard live.count == entry.changeIDs.count, live.allSatisfy({ book.canUndo($0) }),
+                  store.undoSuggestion(entry.changeIDs) else {
+                notice = Notice(day: today, text: Self.changedAgainWords, id: "suggestion-undo-refused")
+                return
+            }
+        }
         keep.undo(entry.id)
         save()
     }
@@ -217,35 +367,79 @@ final class SuggestionKeeper: ObservableObject {
 
     var paused: Bool { ladder.step == .paused }
 
-    func pause() {
+    /* The one grey line on Today while a pause or the illness steps are on (where the plan lives in the app). */
+    var ladderStatus: String? {
+        guard readable, store?.canChangePlan == true else { return nil }
+        return RuleBookWords.ladderStatus(ladder, today: today)
+    }
+
+    /* Opening the Stop sign pauses at once, as its words say; any open card is put away. */
+    func openedStopSign() {
+        guard readable, !paused else { return }
         keep.health.stopSignSince = today
         keep.health.doctorSeenOn = nil
+        keep.putAwayOpen(.paused, on: today)
         save()
     }
 
+    /* "Opened by mistake": only the day it was opened. The cards it put away come back. */
+    var mayUndoStopSign: Bool { readable && paused && keep.health.stopSignSince == today }
+
+    func stopSignByMistake() {
+        guard mayUndoStopSign else { return }
+        keep.health.stopSignSince = nil
+        reopenPaused()
+        save()
+    }
+
+    private func reopenPaused() {
+        for e in keep.entries where e.record.answer == .paused && e.record.answeredOn == today { keep.unanswer(e.id) }
+    }
+
     func doctorSeen() {
+        guard readable else { return }
         keep.health.doctorSeenOn = today
         save()
         check(.morning)
     }
 
     func ill(_ kind: RBIllness) {
+        guard readable else { return }
         keep.health.illSince = today
         keep.health.illness = kind
         keep.health.symptomFreeSince = nil
         keep.health.stillNotRight = []
+        keep.putAwayOpen(.paused, on: today)
         save()
         check(.morning)
     }
 
+    /* "I tapped this by mistake": only while no day has passed since he said he was ill. */
+    var mayUndoIll: Bool { readable && keep.health.illSince == today }
+
+    func illByMistake() {
+        guard mayUndoIll else { return }
+        keep.health.illSince = nil
+        keep.health.illness = nil
+        keep.health.symptomFreeSince = nil
+        keep.health.stillNotRight = []
+        // A card the illness made today goes too; one it put away comes back.
+        for e in keep.entries where e.record.trigger == .section5 && e.record.day == today && e.record.answer == nil {
+            keep.putAway(e.id, .paused, on: today)
+        }
+        reopenPaused()
+        save()
+    }
+
     func symptomFree(since day: String) {
-        guard keep.health.illSince != nil else { return }
+        guard readable, keep.health.illSince != nil else { return }
         keep.health.symptomFreeSince = max(day, keep.health.illSince ?? day)
         save()
         check(.morning)
     }
 
     func stillNotRight() {
+        guard readable else { return }
         if !keep.health.stillNotRight.contains(today) { keep.health.stillNotRight.append(today) }
         save()
         check(.morning)
@@ -264,9 +458,10 @@ final class SuggestionKeeper: ObservableObject {
     }
 
     func hurts(_ place: String?, session: String) {
+        guard readable else { return }
         keep.hurts(place, session: session, on: today)
         save()
-        if place != nil { check(.afterSession) }
+        if let place, SuggestionKeep.markingPlaces.contains(place) { check(.afterSession) }
     }
 
     // MARK: the grey line for his own changes
@@ -292,6 +487,24 @@ final class SuggestionKeeper: ObservableObject {
         save()
     }
 
+    /*
+     * "Start the notes afresh", after he said yes: the unreadable notes are
+     * put aside (never deleted) and new ones begun. The plan is not touched.
+     */
+    func startAfresh() {
+        let stamp = Int(Date().timeIntervalSince1970)
+        let fm = FileManager.default
+        for (url, damaged) in [(fileURL, !readable), (capsURL, capsUnreadable)] where damaged && fm.fileExists(atPath: url.path) {
+            let aside = url.deletingPathExtension().appendingPathExtension("unreadable-\(stamp).json")
+            try? fm.moveItem(at: url, to: aside)
+        }
+        if !readable { keep = SuggestionKeep() }
+        readable = true
+        capsUnreadable = false
+        caps = nil; capsFor = nil; cached = nil; lastCheck = nil
+        save()
+    }
+
     // MARK: pictures (DEBUG)
 
     #if DEBUG
@@ -313,7 +526,7 @@ final class SuggestionKeeper: ObservableObject {
             input.feel.set(.tired, on: PlanView.addDays(today, -1))
             input.feel.set(.bad, on: today)
             input.log = []
-            if let s = RuleBook.suggest(input) { entry = SuggestionEntry(s) }
+            if let s = RuleBook.suggest(input) { entry = SuggestionEntry(s, input: input) }
         }
         let card = entry ?? Self.sample(today)
         keep.add(card, today: today)

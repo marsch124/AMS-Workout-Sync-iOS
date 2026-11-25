@@ -12,6 +12,7 @@ struct SuggestionsSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var on: Bool
     @State private var settings: RuleBookSettings
+    @State private var askingAfresh = false
 
     init() {
         let keep = SuggestionKeeper.shared.keep
@@ -22,10 +23,22 @@ struct SuggestionsSettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                if !keeper.readable {
-                    Text("The list of suggestions on this \(Device.word) could not be read, so none are made. Nothing in it was changed.")
-                        .font(.footnote).foregroundStyle(Theme.danger)
-                        .accessibilityIdentifier("suggest-unreadable")
+                if !keeper.notesReadable {
+                    UnreadableNotesLine()
+                    Button("Start the notes afresh") { askingAfresh = true }
+                        .settingsButton(tint: Theme.plan)
+                        .accessibilityIdentifier("suggest-afresh")
+                        .confirmationDialog("Start the suggestions\u{2019} notes afresh?", isPresented: $askingAfresh, titleVisibility: .visible) {
+                            Button("Start afresh") {
+                                keeper.startAfresh()
+                                on = keeper.keep.isOn
+                                settings = keeper.keep.settings
+                            }
+                            .accessibilityIdentifier("suggest-afresh-yes")
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text("Your answers here and the list of past suggestions begin again. The old notes are kept aside, and your plan is not touched.")
+                        }
                 }
                 switchRow("Suggest changes to my plan",
                           "The app suggests, you decide: nothing in your plan changes until you tap Take it.",
@@ -46,10 +59,6 @@ struct SuggestionsSettingsView: View {
                           settings.longSessionsGrowSlowly ? "A step is about a tenth of your longest one in the last 3 weeks."
                               : "The plan\u{2019}s own numbers stand.",
                           $settings.longSessionsGrowSlowly, id: "suggest-q4")
-                switchRow("Resting pulse is shown only",
-                          settings.restingPulseShownOnly ? "It never starts a suggestion."
-                              : "It would count only together with how you feel; the app does not count it yet.",
-                          $settings.restingPulseShownOnly, id: "suggest-q5")
 
                 SectionHeading(text: "What was suggested")
                 let entries = keeper.keep.newestFirst
