@@ -266,6 +266,8 @@ public enum Feel: Int, CaseIterable, Codable, Identifiable, Sendable {
 public struct FeelLog: Codable, Equatable {
     public private(set) var days: [String: Int] = [:]
     public init() {}
+    /* The answers as they travel between devices (DiaryDoc). */
+    public init(days: [String: Int]) { self.days = days }
 
     public func answer(on day: String) -> Feel? { days[day].flatMap(Feel.init(rawValue:)) }
     /* The question is put only while the day has no answer. */
