@@ -12,7 +12,7 @@ extension RuleBook {
     static func t1Tired(_ input: RuleBookInput) -> [Candidate]? {
         let today = input.today, w = input.todayWeek, s = input.settings
         let tag = input.tag(w)
-        if tag == .easy || tag == .race || input.isTaper(w) { return nil }
+        if tag == .easy || tag == .race || input.isTaper(w) || input.easyStretch(today) { return nil }
         if tag == .test && input.sessions.contains(where: { $0.day == today && labels($0).test }) { return nil }
 
         let last = lastRecord(.t1, input)
@@ -30,7 +30,9 @@ extension RuleBook {
             $0.day >= weekAgo && input.known($0.day) && feltHarder($0, today: today, margin: s.feltHarderMargin)
         }
         let hardSessions = Set(harder.map(\.day)).count >= 2 && harder.contains { $0.day > since }
-        let twoTiredWeeks = w >= 2 && input.isTiredWeek(w) && input.isTiredWeek(w - 1)
+        // The guide's "two tired weeks: easy week now" is a climb too: not after he kept the last tired card.
+        let keptLast = last.map { $0.wasKept && daysBetween($0.day, today) <= s.ladderResetDays } ?? false
+        let twoTiredWeeks = w >= 2 && !keptLast && input.isTiredWeek(w) && input.isTiredWeek(w - 1)
             && !input.log.contains { $0.trigger == .t1 && $0.key == "tired-weeks|\(w)" }
         guard poorMornings || hardSessions || twoTiredWeeks else { return nil }
 
@@ -38,14 +40,23 @@ extension RuleBook {
         if twoTiredWeeks, let forward = easyWeekForward(input, key: "tired-weeks|\(w)", step: 3,
                                                         headline: RuleBookWords.easyWeekLine(wasMonday: nil),
                                                         why: RuleBookWords.whyTwoTiredWeeks) {
-            return [forward] + (t1Step2(input, why: RuleBookWords.whyTwoTiredWeeks, key: "tired-weeks|\(w)") ?? [])
+            return [forward] + (t1Step2(input, why: RuleBookWords.whyTiredLong, key: "tired-weeks|\(w)", step: 3) ?? [])
         }
 
-        // Which rung: again within 7 days of the last one closing → the next; after that the ladder starts over.
+        // Which rung (his guide's ladder, one step at a time):
+        // after "Keep my plan" the same step may come again, never the next;
+        // the next step only once a TAKEN step has actually passed;
+        // after the reset days the ladder starts over.
         var step = 1
-        if let last, last.answer != nil, daysBetween(last.closedOn, today) <= s.ladderStepDays,
-           daysBetween(last.day, today) <= s.ladderResetDays {
-            step = min(3, last.step + 1)
+        if let last, last.answer != nil, daysBetween(last.day, today) <= s.ladderResetDays {
+            if last.wasTaken {
+                let days = input.sessions.filter { last.sessions.contains($0.id) }.map(\.day)
+                let end = days.max() ?? last.closesOn
+                guard end < today else { return nil }
+                if daysBetween(end, today) <= s.ladderStepDays { step = min(3, last.step + 1) }
+            } else if daysBetween(last.closedOn, today) <= s.ladderStepDays {
+                step = last.step
+            }
         }
         let key = "tired|\(today)"
         switch step {
@@ -54,8 +65,10 @@ extension RuleBook {
         default:
             guard let next = input.weeks.filter({ $0.number > w && $0.tag == .easy }).min(by: { $0.number < $1.number }),
                   let forward = easyWeekForward(input, key: key, step: 3, headline: RuleBookWords.easyWeekLine(wasMonday: next.monday),
-                                                why: RuleBookWords.whyTiredOverWeek) else { return t1Step2(input, why: RuleBookWords.whyStillTired, key: key) }
-            return [forward] + (t1Step2(input, why: RuleBookWords.whyTiredOverWeek, key: key) ?? [])
+                                                why: RuleBookWords.whyTiredOverWeek) else {
+                return t1Step2(input, why: RuleBookWords.whyTiredLong, key: key, step: 3)
+            }
+            return [forward] + (t1Step2(input, why: RuleBookWords.whyTiredLong, key: key, step: 3) ?? [])
         }
     }
 
@@ -101,15 +114,15 @@ extension RuleBook {
     }
 
     /* Step 2: every non-protected session of the next 3 days made easy. */
-    static func t1Step2(_ input: RuleBookInput, why: String, key: String) -> [Candidate]? {
+    static func t1Step2(_ input: RuleBookInput, why: String, key: String, step: Int = 2) -> [Candidate]? {
         let days = days(from: input.today, count: 3)
         let list = input.sessions.filter { days.contains($0.day) && touchable($0, input) && !alreadyEasy($0) }
         guard !list.isEmpty else { return nil }
         let easy = list.map { Move.makeEasier(session: $0.id, instead: nil) }
         let shorter = list.map { Move.shorten(session: $0.id, minutes: percent($0.plannedMin, 70)) }
-        return [Candidate(trigger: .t1, step: 2, key: key, moves: easy,
+        return [Candidate(trigger: .t1, step: step, key: key, moves: easy,
                           headline: RuleBookWords.easyDaysLine(count: 3, sessions: list), why: why),
-                Candidate(trigger: .t1, step: 2, key: key, moves: shorter,
+                Candidate(trigger: .t1, step: step, key: key, moves: shorter,
                           headline: "Next 3 days shorter: " + list.map(RuleBookWords.name).joined(separator: ", ") + " at 70 %", why: why)]
     }
 
@@ -125,7 +138,7 @@ extension RuleBook {
     // MARK: T2 · a missed key session in a 2–3 day gap
 
     static func t2MissedKey(_ input: RuleBookInput) -> [Candidate]? {
-        guard input.moment == .morning else { return nil }
+        guard input.moment == .morning, !input.easyStretch(input.today) else { return nil }
         let today = input.today
         var gapDays = 0
         var keys: [RBSession] = []

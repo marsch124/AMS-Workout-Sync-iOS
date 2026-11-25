@@ -120,6 +120,8 @@ public struct RuleBookSettings: Codable, Equatable, Sendable {
     public var longSessionsGrowSlowly = true
     /* Q5 · resting pulse is only shown (true), or counts together with a morning answer of 3 or less. */
     public var restingPulseShownOnly = true
+    /* T6, the Sunday plan review: off for now (the coach's review), its code and tests kept. No switch on screen. */
+    public var planReviewOn = false
 
     // 8.5 — judgement numbers, tunable
     public var feltHarderMargin = 2
@@ -152,6 +154,57 @@ public struct RuleBookSettings: Codable, Equatable, Sendable {
     public var hikesAlwaysCount = true
 
     public init() {}
+
+    enum CodingKeys: String, CodingKey {
+        case keepBackToBackQuality, somethingHurtsTap, laterEasyWeekStaysEasy, longSessionsGrowSlowly, restingPulseShownOnly
+        case planReviewOn
+        case feltHarderMargin, bigWeekFactor, behindFraction, longStepFraction, longStepMinRide, longStepMinRun, lookBackDays
+        case rampCeiling, rampWeeks, bigWeekAverageWeeks, tiredCoolDownDays, ladderStepDays, ladderResetDays
+        case longCoolDownDays, bigWeekCoolDownDays, cardsPerSevenDays, cardsPerDay, untouchedAfterTakenDays
+        case hrvStartDay, hrvNightsNeeded, feverRestHours, feverEasyDays, longFloorPercent, stillNotRightDays, raceWeek
+        case hikesAlwaysCount
+    }
+
+    /* A number that is missing (an older file) takes its default; one that is there and cannot be read is damage and throws. */
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        func v<T: Decodable>(_ k: CodingKeys, _ d: T) throws -> T { try c.decodeIfPresent(T.self, forKey: k) ?? d }
+        let d = RuleBookSettings()
+        keepBackToBackQuality = try v(.keepBackToBackQuality, d.keepBackToBackQuality)
+        somethingHurtsTap = try v(.somethingHurtsTap, d.somethingHurtsTap)
+        laterEasyWeekStaysEasy = try v(.laterEasyWeekStaysEasy, d.laterEasyWeekStaysEasy)
+        longSessionsGrowSlowly = try v(.longSessionsGrowSlowly, d.longSessionsGrowSlowly)
+        // Fixed to "shown only" for now (the coach's review): no switch on screen.
+        _ = try v(.restingPulseShownOnly, d.restingPulseShownOnly)
+        restingPulseShownOnly = true
+        planReviewOn = try v(.planReviewOn, d.planReviewOn)
+        feltHarderMargin = try v(.feltHarderMargin, d.feltHarderMargin)
+        bigWeekFactor = try v(.bigWeekFactor, d.bigWeekFactor)
+        behindFraction = try v(.behindFraction, d.behindFraction)
+        longStepFraction = try v(.longStepFraction, d.longStepFraction)
+        longStepMinRide = try v(.longStepMinRide, d.longStepMinRide)
+        longStepMinRun = try v(.longStepMinRun, d.longStepMinRun)
+        lookBackDays = try v(.lookBackDays, d.lookBackDays)
+        rampCeiling = try v(.rampCeiling, d.rampCeiling)
+        rampWeeks = try v(.rampWeeks, d.rampWeeks)
+        bigWeekAverageWeeks = try v(.bigWeekAverageWeeks, d.bigWeekAverageWeeks)
+        tiredCoolDownDays = try v(.tiredCoolDownDays, d.tiredCoolDownDays)
+        ladderStepDays = try v(.ladderStepDays, d.ladderStepDays)
+        ladderResetDays = try v(.ladderResetDays, d.ladderResetDays)
+        longCoolDownDays = try v(.longCoolDownDays, d.longCoolDownDays)
+        bigWeekCoolDownDays = try v(.bigWeekCoolDownDays, d.bigWeekCoolDownDays)
+        cardsPerSevenDays = try v(.cardsPerSevenDays, d.cardsPerSevenDays)
+        cardsPerDay = try v(.cardsPerDay, d.cardsPerDay)
+        untouchedAfterTakenDays = try v(.untouchedAfterTakenDays, d.untouchedAfterTakenDays)
+        hrvStartDay = try v(.hrvStartDay, d.hrvStartDay)
+        hrvNightsNeeded = try v(.hrvNightsNeeded, d.hrvNightsNeeded)
+        feverRestHours = try v(.feverRestHours, d.feverRestHours)
+        feverEasyDays = try v(.feverEasyDays, d.feverEasyDays)
+        longFloorPercent = try v(.longFloorPercent, d.longFloorPercent)
+        stillNotRightDays = try v(.stillNotRightDays, d.stillNotRightDays)
+        raceWeek = try v(.raceWeek, d.raceWeek)
+        hikesAlwaysCount = try v(.hikesAlwaysCount, d.hikesAlwaysCount)
+    }
 }
 
 // MARK: - his taps for section 5
@@ -177,6 +230,19 @@ public struct RBHealthTaps: Codable, Equatable, Sendable {
                 illness: RBIllness? = nil, symptomFreeSince: String? = nil, stillNotRight: [String] = []) {
         self.stopSignSince = stopSignSince; self.doctorSeenOn = doctorSeenOn; self.illSince = illSince
         self.illness = illness; self.symptomFreeSince = symptomFreeSince; self.stillNotRight = stillNotRight
+    }
+
+    enum CodingKeys: String, CodingKey { case stopSignSince, doctorSeenOn, illSince, illness, symptomFreeSince, stillNotRight }
+
+    /* Strict: a tap that is there and cannot be read throws, so a pause never ends without a word. */
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        stopSignSince = try c.decodeIfPresent(String.self, forKey: .stopSignSince)
+        doctorSeenOn = try c.decodeIfPresent(String.self, forKey: .doctorSeenOn)
+        illSince = try c.decodeIfPresent(String.self, forKey: .illSince)
+        illness = try c.decodeIfPresent(RBIllness.self, forKey: .illness)
+        symptomFreeSince = try c.decodeIfPresent(String.self, forKey: .symptomFreeSince)
+        stillNotRight = try c.decodeIfPresent([String].self, forKey: .stillNotRight) ?? []
     }
 }
 
@@ -256,10 +322,8 @@ extension RuleBook {
             RBWeek(number: w.number, monday: w.monday, tag: tag(of: w, raceWeek: settings.raceWeek), phase: w.phase,
                    isTaper: normalise(w.phase).contains("taper"))
         }
-        let start = book.weeks.first { $0.number == 1 }?.monday
-            ?? book.weeks.first.map { PlanView.addDays($0.monday, -7 * ($0.number - 1)) }
-            ?? book.sessions.first.map { PlanView.weekStart($0.dayKey) } ?? today
-        let dropped = droppedSessions(log)
+        let start = planStart(of: book, today: today)
+        let dropped = droppedSessions(book)
         var sessions = book.sessions.map { w -> RBSession in
             let a = Stats.actualsOf(w, book.mapping)
             let week = w.planWeek ?? planWeek(w.dayKey, start: start)
@@ -285,10 +349,89 @@ extension RuleBook {
                              importDay: importDay, settings: settings)
     }
 
-    /* Sessions a taken card dropped. */
-    public static func droppedSessions(_ log: [SuggestionRecord]) -> Set<String> {
+    /*
+     * Sessions a taken card dropped, read from the plan itself — never from
+     * this device's log: a rest that says "Rest (your choice)", or a rest whose
+     * newest change still standing is a suggestion's. After an Undo, a safety
+     * copy put back or another device's change, the plan alone decides.
+     */
+    public static func droppedSessions(_ book: PlanBook) -> Set<String> {
+        var newest: [String: PlanChange] = [:]
+        for c in book.changes where !c.undone { newest[c.key] = c }
         var out = Set<String>()
-        for r in log { if case .took(let i)? = r.answer, let moves = r.choice(i) { out.formUnion(moves.flatMap(\.droppedIDs)) } }
+        for w in book.sessions where w.discipline.id == "rest" {
+            if w.title == SuggestionApply.restTitle || newest[w.key]?.why.hasPrefix("Suggestion:") == true { out.insert(w.key) }
+        }
+        return out
+    }
+
+    // MARK: week caps (spec 1.1)
+
+    /*
+     * The plan's sessions as they were taken in, rebuilt from the change
+     * list's saved before-states (the first change of each session holds it).
+     * Sessions made in the app are left out.
+     */
+    public static func takenInSessions(_ book: PlanBook) -> [Workout] {
+        var first: [String: PlanChange] = [:]
+        for c in book.changes where first[c.key] == nil { first[c.key] = c }
+        var out: [Workout] = []
+        var seen = Set<String>()
+        for w in book.sessions {
+            seen.insert(w.key)
+            let was = first[w.key].map { $0.kind == "add" ? nil : ($0.undo ?? w) } ?? w
+            if let was, !was.madeInApp { out.append(was) }
+        }
+        for (key, c) in first where !seen.contains(key) && c.kind != "add" {
+            if let was = c.undo, !was.madeInApp { out.append(was) }
+        }
+        return out
+    }
+
+    /*
+     * Sessions he added on purpose and still has — the Thursday rides and his
+     * own new sessions, not a suggestion's copies — each as it was when added.
+     * Spec 1.1: the cap moves only when he accepts a plan edit.
+     */
+    public static func addedOnPurpose(_ book: PlanBook) -> [Workout] {
+        book.changes.filter { $0.kind == "add" && !$0.undone && !$0.why.hasPrefix("Suggestion:") }.compactMap { add in
+            guard book.session(add.key) != nil else { return nil }
+            let later = book.changes.first { $0.key == add.key && $0.kind != "add" && $0.undo != nil }
+            return later?.undo ?? book.session(add.key)
+        }
+    }
+
+    /* The Monday of plan week 1. */
+    static func planStart(of book: PlanBook, today: String) -> String {
+        book.weeks.first { $0.number == 1 }?.monday
+            ?? book.weeks.first.map { PlanView.addDays($0.monday, -7 * ($0.number - 1)) }
+            ?? book.sessions.first.map { PlanView.weekStart($0.dayKey) } ?? today
+    }
+
+    static func caps(of workouts: [Workout], _ book: PlanBook, today: String) -> [Int: Int] {
+        let start = planStart(of: book, today: today)
+        var caps: [Int: Int] = [:]
+        for w in workouts where w.discipline.id != "rest" {
+            let minutes = Int(((Plan.plannedSeconds(w, book.mapping) ?? 0) / 60).rounded())
+            caps[w.planWeek ?? planWeek(w.dayKey, start: start), default: 0] += minutes
+        }
+        return caps
+    }
+
+    /* weekCap[w] from the plan as it was taken in: what the app freezes once per plan. */
+    public static func takenInCaps(_ book: PlanBook, today: String) -> [Int: Int] {
+        caps(of: takenInSessions(book), book, today: today)
+    }
+
+    /* The minutes his own added sessions (the Thursday rides among them) give each week. */
+    public static func addedCaps(_ book: PlanBook, today: String) -> [Int: Int] {
+        caps(of: addedOnPurpose(book), book, today: today)
+    }
+
+    /* The two together: the caps the engine reads. */
+    public static func weekCaps(frozen: [Int: Int], book: PlanBook, today: String) -> [Int: Int] {
+        var out = frozen
+        for (w, m) in addedCaps(book, today: today) { out[w, default: 0] += m }
         return out
     }
 

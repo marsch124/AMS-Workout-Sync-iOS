@@ -147,6 +147,23 @@ extension RuleBookInput {
     func session(_ id: String) -> RBSession? { sessions.first { $0.id == id } }
     var todayWeek: Int { week(of: today) }
 
+    /*
+     * Days that are easy whatever the calendar says: the return after an
+     * illness (and a pause), and an easy week he brought forward and kept.
+     * T1, T2, T4, T5 and T6 stay quiet on them.
+     */
+    func easyStretch(_ day: String) -> Bool {
+        switch RuleBook.ladderStep(self).step {
+        case .paused, .rest, .easyDays, .cold, .week1, .week2: return true
+        default: break
+        }
+        for r in log {
+            guard case .took(let i)? = r.answer, let moves = r.choice(i) else { continue }
+            for case .bringEasyWeekForward(let from, _) in moves where day >= from && day < PlanView.addDays(from, 7) { return true }
+        }
+        return false
+    }
+
     /* Days whose logs the engine may know: before today in the morning, up to today later on. */
     func known(_ day: String) -> Bool { moment == .morning ? day < today : day <= today }
 

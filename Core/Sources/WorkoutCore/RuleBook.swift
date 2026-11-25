@@ -42,11 +42,18 @@ public enum RuleBook {
             section5, cameInBreaking, t3BackAfterBreak, t2MissedKey, hurts, t1Tired, t4LongTooFar, t5BigWeek,
             t6Behind, backToBack
         ]
+        // A trigger whose every candidate fails gives the next one its turn,
+        // unless the calm rules (L10, L11) said no: then the day stays silent.
+        var silent: Outcome?
         for trigger in order {
             guard let candidates = trigger(input), let first = candidates.first else { continue }
-            return judge(candidates, input: input, fired: first.trigger)
+            let outcome = judge(candidates, input: input, fired: first.trigger)
+            if outcome.suggestion != nil { return outcome }
+            let calm = outcome.tried.contains { $0.failed.contains { $0.limit == .l10 || $0.limit == .l11 } }
+            if calm { return silent.map { Outcome(fired: $0.fired, suggestion: nil, tried: $0.tried + outcome.tried) } ?? outcome }
+            if silent == nil { silent = outcome } else { silent = Outcome(fired: silent!.fired, suggestion: nil, tried: silent!.tried + outcome.tried) }
         }
-        return Outcome(fired: nil, suggestion: nil, tried: [])
+        return silent ?? Outcome(fired: nil, suggestion: nil, tried: [])
     }
 
     static func judge(_ candidates: [Candidate], input: RuleBookInput, fired: RBTrigger) -> Outcome {

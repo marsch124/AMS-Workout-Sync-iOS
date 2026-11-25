@@ -15,7 +15,7 @@ extension RuleBook {
 
     static func t4LongTooFar(_ input: RuleBookInput) -> [Candidate]? {
         let s = input.settings
-        guard s.longSessionsGrowSlowly, input.moment == .morning else { return nil }
+        guard s.longSessionsGrowSlowly, input.moment == .morning, !input.easyStretch(input.today) else { return nil }
         let today = input.today, tomorrow = PlanView.addDays(today, 1)
         let longs = input.sessions.filter {
             ($0.day == today || $0.day == tomorrow) && ($0.sport == .bike || $0.sport == .run) && labels($0).long
@@ -40,8 +40,10 @@ extension RuleBook {
             if aboveZ2 { first.append(.makeEasier(session: l.id, instead: nil)) }
             var out = [Candidate(trigger: .t4, step: 0, key: l.id, moves: first,
                                  headline: RuleBookWords.easierLine(l, minutes: target, easier: aboveZ2), why: why)]
-            out.append(Candidate(trigger: .t4, step: 0, key: l.id, moves: [.makeEasier(session: l.id, instead: nil)],
-                                 headline: RuleBookWords.easierLine(l, minutes: nil, easier: true), why: why))
+            if aboveZ2 {
+                out.append(Candidate(trigger: .t4, step: 0, key: l.id, moves: [.makeEasier(session: l.id, instead: nil)],
+                                     headline: RuleBookWords.easierLine(l, minutes: nil, easier: true), why: why))
+            }
             if floor != target {
                 out.append(Candidate(trigger: .t4, step: 0, key: l.id, moves: [.shorten(session: l.id, minutes: floor)],
                                      headline: RuleBookWords.easierLine(l, minutes: floor, easier: false), why: why))
@@ -55,7 +57,7 @@ extension RuleBook {
 
     static func t5BigWeek(_ input: RuleBookInput) -> [Candidate]? {
         let s = input.settings, w = input.todayWeek
-        guard input.moment == .morning, weekday(input.today) == 0, w >= 2 else { return nil }
+        guard input.moment == .morning, weekday(input.today) == 0, w >= 2, !input.easyStretch(input.today) else { return nil }
         let tag = input.tag(w)
         if tag == .easy || tag == .race || input.isTaper(w) { return nil }
         if input.log.contains(where: { $0.trigger == .t5 && daysBetween($0.day, input.today) < s.bigWeekCoolDownDays }) { return nil }
@@ -88,7 +90,9 @@ extension RuleBook {
     // MARK: T6 · behind the plan (Sunday evening, a review, not a daily move)
 
     static func t6Behind(_ input: RuleBookInput) -> [Candidate]? {
-        guard input.moment == .evening, weekday(input.today) == 6 else { return nil }
+        // Switched off for now (the coach's review): only "Keep my plan", every Sunday, and unlogged weeks read as behind.
+        guard input.settings.planReviewOn, input.moment == .evening, weekday(input.today) == 6,
+              !input.easyStretch(input.today) else { return nil }
         let w = input.todayWeek
         if input.log.contains(where: { $0.trigger == .t6 && $0.key == "week|\(w)" }) { return nil }
         var behind = 0

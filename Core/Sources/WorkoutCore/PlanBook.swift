@@ -615,6 +615,11 @@ public struct PlanBook: Codable, Equatable {
                 // Moved again since the change: it stays on the day he put it.
                 if let after = change.afterDay, current.dayKey != after { old = old.on(current.date, current.dayKey) }
                 sessions[i] = old
+                // A move this change wrote into the move log goes with it.
+                if let m = moves[change.key], m.at == change.at {
+                    moves[change.key] = m.from == old.dayKey ? nil
+                        : MoveRecord(from: m.from, to: old.dayKey, disciplineId: m.disciplineId, at: now)
+                }
             } else {
                 sessions.append(old)
             }
