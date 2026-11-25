@@ -6,6 +6,8 @@ struct SessionView: View {
     let key: String
     @State private var logging = false
     @State private var moving = false
+    @State private var changing = false
+    @Environment(\.dismiss) private var leave
     @State private var askingMissed = false
     @State private var missedNote = ""
     /* The day's workouts in Apple Health that could be this session. */
@@ -30,11 +32,23 @@ struct SessionView: View {
                         if w.state == .done { DoneTick() }
                     }
 
-                    Text(w.title).font(.title2.weight(.bold)).foregroundStyle(Theme.text)
-                        .accessibilityIdentifier("session-title")
+                    // The word "Change", never a mark: the pen already means
+                    // "adjust what was logged". It sits beside the words it changes.
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(w.title).font(.title2.weight(.bold)).foregroundStyle(Theme.text)
+                            .accessibilityIdentifier("session-title")
+                        if store.canChangePlan {
+                            Spacer(minLength: 0)
+                            Button("Change") { changing = true }
+                                .settingsButton(tint: Theme.plan)
+                                .accessibilityIdentifier("session-change")
+                        }
+                    }
 
                     FlowRow(spacing: 6) {
-                        if let s = Plan.plannedSeconds(w, mapping), s > 0 { Pill(text: formatDuration(s)) }
+                        if let s = Plan.plannedSeconds(w, mapping), s > 0 {
+                            Pill(text: formatDuration(s)).accessibilityIdentifier("session-length")
+                        }
                         if let d = w.planned.distanceRaw { Pill(text: jsNumberString(d) + " " + mapping.units.distance) }
                         if !w.planned.intensity.isEmpty {
                             if store.zones != nil {
@@ -236,6 +250,14 @@ struct SessionView: View {
                 LogFormView(workout: w, mapping: mapping).environmentObject(store)
             }
         }
+        .sheet(isPresented: $changing) {
+            if let d = store.draft(of: key) {
+                SessionEditView(key: key, draft: d, onRemoved: {
+                    // The session no longer exists: leave its page too.
+                    DispatchQueue.main.async { leave() }
+                }).environmentObject(store)
+            }
+        }
         .sheet(isPresented: $moving) {
             if let w = store.workout(key) {
                 MoveView(workout: w).environmentObject(store)
@@ -254,6 +276,7 @@ struct SessionView: View {
         .onAppear {
             if ProcessInfo.processInfo.environment["AMSWS_LOGFORM"] != nil { logging = true }
             if ProcessInfo.processInfo.environment["AMSWS_MOVE"] != nil { moving = true }
+            if ProcessInfo.processInfo.environment["AMSWS_EDIT"] == "1" { changing = true }
             if ProcessInfo.processInfo.environment["AMSWS_ZONE"] != nil, let w = store.workout(key) { zoneAsk = ZoneAsk(intensity: w.planned.intensity, sport: w.discipline.id) }
             if ProcessInfo.processInfo.environment["AMSWS_SHARE"] != nil { sharing = true }
         }
