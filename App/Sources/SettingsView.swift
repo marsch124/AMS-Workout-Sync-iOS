@@ -290,7 +290,7 @@ struct SettingsView: View {
         }
     }
 
-    /* "since 25 Nov 2026 · 372 training sessions · 49 rest days · 18 extra workouts", counted from the book. */
+    /* "since 25 Nov 2026 · 310 training sessions · 40 rest days · 12 extra workouts", counted from the book. */
     private var homeSub: String {
         var parts: [String] = []
         if let at = store.switchedAt { parts.append("since " + Self.dayMonthYear(at)) }
