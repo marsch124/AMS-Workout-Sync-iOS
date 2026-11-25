@@ -25,6 +25,7 @@ struct ProgressView: View {
                         .accessibilityIdentifier("progress-title")
                     if let p = store.progress, let mapping = store.mapping {
                         if let road = p.road { RoadCard(road: road, today: store.today) }
+                        ProgressRound28()
                         if !p.summary.any {
                             EmptyCard(title: "Nothing has happened yet",
                                       text: "Once sessions are behind you, this is where the patterns in them show up.")
