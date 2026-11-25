@@ -82,6 +82,7 @@ struct TodayView: View {
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()
             ReturnLadderCard(onToday: true)
+            ClaudeReviewCard()
             if view.plan.isEmpty {
                 // First run, no plan yet: no empty week drawing, one plain line saying where it comes from.
                 Text("No plan yet — Settings → Your plan brings it in.")

@@ -15,14 +15,29 @@ struct ClaudeLogEntry: Codable, Identifiable, Equatable {
     let dollars: Double
     /* Why nothing came back, in a few plain words (never the key, never the reply itself). */
     var failure: String? = nil
+    /* nil for a pick; "review" or "ask" for the week review and a question about the plan. */
+    var kind: String? = nil
+    /* What was done, for those two ("Wrote the week review"). */
+    var label: String? = nil
 
     /* "Kept your plan" or "Chose: Tue bike: 60 → 40 min, easy". */
     var choiceWords: String {
+        if let kind {
+            if let failure { return failure }
+            return label ?? (kind == "review" ? "Wrote the week review" : "Answered a question")
+        }
         if let failure { return failure + ", the rule book's own pick stood" }
         guard let pick else { return "No usable answer, the rule book's own pick stood" }
         if pick == 0 { return "Kept your plan" }
         return "Chose: " + (menu.indices.contains(pick - 1) ? menu[pick - 1] : "choice \(pick)")
     }
+}
+
+/* What came of a review or a question: an answer that passed, one that did not, or nothing. */
+enum ClaudeRun<T> {
+    case answer(T)
+    case notPassed
+    case none
 }
 
 enum ClaudeCheck: Equatable {
@@ -161,10 +176,47 @@ final class ClaudeClient: ObservableObject {
         return answer
     }
 
+    /*
+     * The week review and "Ask about your plan" go through here and nowhere else:
+     * the same key, the same month meter and cap, the same log, the same refused
+     * state, the same 20-second single try. `read` is the answer check; what it
+     * refuses is paid for and logged, and nothing is shown.
+     */
+    func run<T>(kind: String, label: String, detail: String = "", body: Data, fake: T, read: (Data) -> T?) async -> ClaudeRun<T> {
+        #if DEBUG
+        if ClaudeKey.isFake { return .answer(fake) }
+        #endif
+        guard isOn, let key = ClaudeKey.read(), meter.canSpend() else { return .none }
+        guard let (status, data) = await post(body, key: key) else {
+            note("No answer from Anthropic (timed out or offline)", menu: [], kind: kind, detail: detail)
+            return .none
+        }
+        guard status == 200 else {
+            let trouble = ClaudeTrouble.read(status: status, body: data)
+            if let trouble { setRefused(trouble) }
+            note((trouble?.logWords ?? "Anthropic answered with an error") + " (\(status))", menu: [], kind: kind, detail: detail)
+            return .none
+        }
+        setRefused(nil)
+        let value = read(data)
+        let usage = ClaudePick.usage(in: data) ?? ClaudeUsage()
+        meter.add(usage: usage)
+        save(meter, to: Self.meterURL)
+        let entry = ClaudeLogEntry(at: Date(), menu: [], pick: nil, why: detail,
+                                   inputTokens: usage.input + usage.cacheCreation + usage.cacheRead,
+                                   outputTokens: usage.output, dollars: usage.dollars,
+                                   failure: value == nil ? "The answer did not pass the app\u{2019}s check, nothing shown" : nil,
+                                   kind: kind, label: label)
+        log = Array(([entry] + log).prefix(200))
+        save(log, to: Self.logURL)
+        if let value { return .answer(value) }
+        return .notPassed
+    }
+
     /* One line in the log for an ask that brought no answer. */
-    private func note(_ failure: String, menu: [String]) {
-        let entry = ClaudeLogEntry(at: Date(), menu: menu, pick: nil, why: "", inputTokens: 0, outputTokens: 0,
-                                   dollars: 0, failure: failure)
+    private func note(_ failure: String, menu: [String], kind: String? = nil, detail: String = "") {
+        let entry = ClaudeLogEntry(at: Date(), menu: menu, pick: nil, why: detail, inputTokens: 0, outputTokens: 0,
+                                   dollars: 0, failure: failure, kind: kind)
         log = Array(([entry] + log).prefix(200))
         save(log, to: Self.logURL)
     }

@@ -71,6 +71,7 @@ struct PlanTab: View {
                             }
                         }
                         .padding(.top, 12).padding(.horizontal, 16)
+                        ClaudeAskButton(inset: 16)
                         Section {
                             let days = grouped(shown(view), newestFirst: newestFirst)
                             VStack(alignment: .leading, spacing: 12) {
