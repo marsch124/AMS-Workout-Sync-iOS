@@ -136,6 +136,7 @@ struct PlanTab: View {
                             filters(view)
                         }
                     }
+                    .readableWidth(720)
                 } else {
                     EmptyWorkbook()
                 }

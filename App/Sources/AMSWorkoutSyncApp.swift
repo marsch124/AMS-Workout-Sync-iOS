@@ -47,7 +47,22 @@ struct RootView: View {
     @State private var planPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
 
+    /* The wide look (iPad, and the iPad app on the Mac) sits behind regular width. An iPhone turned on its side can
+       report regular width too; it keeps the phone look, which is the one he placed. */
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var wide: Bool { sizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone }
+
     var body: some View {
+        if wide {
+            WideRoot()
+                .tint(Theme.today)
+                .overlay { debugScreens }
+        } else {
+            phoneBody
+        }
+    }
+
+    private var phoneBody: some View {
         TabView(selection: $tab) {
             TodayView(path: $todayPath,
                       goToSettings: { withAnimation(.easeInOut(duration: 0.2)) { tab = "settings" } })
@@ -71,8 +86,12 @@ struct RootView: View {
             }
         }
         .tint(tint)
+        .overlay { debugScreens }
+    }
+
+    /* Screen walks, DEBUG only: one page opened straight away, for a picture. */
+    @ViewBuilder private var debugScreens: some View {
         #if DEBUG
-        .overlay {
             if let key = ProcessInfo.processInfo.environment["AMSWS_SESSION"] {
                 NavigationStack { SessionView(key: key) }
             }
@@ -99,7 +118,6 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_EXTRA_DETAIL"] != nil, let x = store.allExtras.first(where: { $0.dayKey == store.today }) ?? store.allExtras.first {
                 ExtraDetailView(extra: x).environmentObject(store)
             }
-        }
         #endif
     }
 

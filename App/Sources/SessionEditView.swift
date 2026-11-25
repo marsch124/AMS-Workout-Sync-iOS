@@ -122,7 +122,7 @@ struct SessionEditView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }.accessibilityIdentifier("edit-cancel")
+                    Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction).accessibilityIdentifier("edit-cancel")
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()

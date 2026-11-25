@@ -80,7 +80,7 @@ struct TestEntryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }.accessibilityIdentifier("test-cancel")
+                    Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction).accessibilityIdentifier("test-cancel")
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()

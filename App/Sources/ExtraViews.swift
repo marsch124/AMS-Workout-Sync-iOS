@@ -163,7 +163,7 @@ struct ExtraFormView: View {
             .task(id: (dayKey(date) ?? "") + (health.inUse ? " on" : " off")) { await loadHealth() }
             .navigationTitle(editing == nil ? "Extra workout" : "Adjust logged data")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction) } }
             .onAppear {
                 guard !loaded else { return }
                 loaded = true
