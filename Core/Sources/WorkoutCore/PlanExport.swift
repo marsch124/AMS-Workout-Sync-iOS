@@ -45,6 +45,21 @@ public enum PlanExport {
             return learned
         }
 
+        // Two columns the app's reader never needed, found by their headings:
+        // the key-session star and the plan week.
+        var extraCols: [String: (key: Int?, week: Int?)] = [:]
+        func columns(_ sheet: String) -> (key: Int?, week: Int?) {
+            if let known = extraCols[sheet] { return known }
+            let headings = (try? wb.readSheet(sheet)).map { PlanImport.headingNames($0, mapping) } ?? [:]
+            let found = (headings.first { normalise($0.value) == "key" }?.key, headings.first { normalise($0.value) == "week" }?.key)
+            extraCols[sheet] = found
+            return found
+        }
+        func star(_ sheet: String, _ row: Int) -> Bool {
+            guard let col = columns(sheet).key, let s = try? wb.readSheet(sheet) else { return false }
+            return !s.textAt(row, col).isEmpty
+        }
+
         for w in book.sessions where w.rows.count <= 1 {
             let old = was[w.key]
             let sheet = old == nil ? home : w.sheet
@@ -54,6 +69,12 @@ public enum PlanExport {
                 row = free
                 nextRow[sheet] = free + 1
                 put(sheet, row, "phase", words(w.phase))
+                if let col = columns(sheet).week, let week = book.week(on: w.dayKey) {
+                    edits[sheet, default: []].append(CellEdit(ref: makeRef(col, row), value: .number(Double(week.number)), field: "week"))
+                }
+            }
+            if let col = columns(sheet).key, w.isKey != (old == nil ? false : star(sheet, row)) {
+                edits[sheet, default: []].append(CellEdit(ref: makeRef(col, row), value: w.isKey ? .text("\u{2605}") : .blank, field: "key"))
             }
             if old?.dayKey != w.dayKey {
                 put(sheet, row, "date", .date(w.date))
@@ -139,6 +160,15 @@ public enum PlanExport {
         let read = Plan.build(wb, mapping)
         let byKey = Dictionary(read.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         var out: [String] = []
+        var keyCols: [String: Int?] = [:]
+        func starred(_ o: Workout) -> Bool? {
+            if keyCols[o.sheet] == nil {
+                let headings = (try? wb.readSheet(o.sheet)).map { PlanImport.headingNames($0, mapping) } ?? [:]
+                keyCols[o.sheet] = .some(headings.first { normalise($0.value) == "key" }?.key)
+            }
+            guard let col = keyCols[o.sheet] ?? nil, let sheet = try? wb.readSheet(o.sheet) else { return nil }
+            return !sheet.textAt(o.row, col).isEmpty
+        }
         if read.count != book.sessions.count { out.append("\(book.sessions.count) sessions in the app, \(read.count) in the copy") }
         for w in book.sessions where w.rows.count <= 1 {
             let twin = byKey[w.key] ?? read.first { $0.dayKey == w.dayKey && $0.title == w.title && $0.disciplineRaw == w.disciplineRaw }
@@ -148,13 +178,14 @@ public enum PlanExport {
                 out.append("\(w.title) on \(w.dayKey) reads differently in the copy")
                 continue
             }
+            if let star = starred(o), star != w.isKey { out.append("\(w.title) on \(w.dayKey): the key-session star differs in the copy") }
             for field in Set(w.results.keys).union(o.results.keys) where w.results[field]?.text != o.results[field]?.text {
                 out.append("\(w.title) on \(w.dayKey): \(field) reads differently in the copy")
             }
             if out.count > 30 { break }
         }
         let extras = Extras.read(wb)
-        if extras != book.extras { out.append("the extra activities read differently in the copy") }
+        if extras != book.extras { out.append("the extra workouts read differently in the copy") }
         return out
     }
 }

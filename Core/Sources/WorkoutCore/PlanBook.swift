@@ -254,8 +254,11 @@ public struct PlanBook: Codable, Equatable {
         // A session's name is for good here, so the name is asked first; the
         // looser search by day and wording is only for an entry made before
         // the plan moved in.
-        guard let found = session(queued.workoutKey) ?? Sync.findWorkout(for: queued, in: sessions),
-              let i = sessions.firstIndex(where: { $0.key == found.key }) else {
+        // An entry that names a session means that session and no other: if it
+        // has been taken out of the plan, the entry is refused rather than
+        // written into a neighbour that happens to read alike.
+        let found = queued.workoutKey.isEmpty ? Sync.findWorkout(for: queued, in: sessions) : session(queued.workoutKey)
+        guard let found, let i = sessions.firstIndex(where: { $0.key == found.key }) else {
             throw BookError.noSession(queued.title)
         }
         var w = sessions[i]
@@ -345,7 +348,7 @@ public struct PlanBook: Codable, Equatable {
                 date: pick(ExtraField.date, x.date, r.date),
                 activity: activityChanged ? PlanBook.activityID(forLabel: label) : r.activity,
                 label: activityChanged ? label : r.label,
-                what: pick(ExtraField.what, x.what, r.what),
+                what: pick(ExtraField.what, x.what.trimmingCharacters(in: .whitespacesAndNewlines), r.what),
                 minutes: pick(ExtraField.duration, PlanBook.finite(x.minutes), r.minutes),
                 distance: pick(ExtraField.distance, PlanBook.text(x.distance), r.distance),
                 avgHr: pick(ExtraField.avgHr, PlanBook.text(x.avgHr), r.avgHr),
@@ -484,8 +487,9 @@ public struct PlanBook: Codable, Equatable {
         if d.title.isEmpty { d.title = was.title }
         d.intensity = d.intensity.trimmingCharacters(in: .whitespacesAndNewlines)
         d.purpose = d.purpose.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let date = parseDayKey(d.dayKey), let day = dayKey(date) else { throw BookError.badDay(d.dayKey) }
+        d.dayKey = day
         if d == was { return nil }
-        guard let date = parseDayKey(d.dayKey) else { throw BookError.badDay(d.dayKey) }
 
         let old = sessions[i]
         var w = shaped(old, by: d)
@@ -503,7 +507,9 @@ public struct PlanBook: Codable, Equatable {
     /* A new session, made in the app. */
     @discardableResult
     public mutating func add(_ draft: SessionDraft, why: String = "", now: Date = Date()) throws -> Workout {
-        guard let date = parseDayKey(draft.dayKey) else { throw BookError.badDay(draft.dayKey) }
+        guard let date = parseDayKey(draft.dayKey), let day = dayKey(date) else { throw BookError.badDay(draft.dayKey) }
+        var draft = draft
+        draft.dayKey = day
         counter += 1
         let alphabet = Array("0123456789abcdefghijklmnopqrstuvwxyz")
         let tail = String((0..<6).map { _ in alphabet[Int.random(in: 0..<36)] })

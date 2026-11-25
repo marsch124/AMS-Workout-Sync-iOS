@@ -1558,3 +1558,19 @@ While Dropbox is connected and a plan path is known, `Store.copyToDropboxSoon()`
 ### P.15 Words, not the tick, in the side-by-side table
 
 The move-in page marks agreeing figures with the green word "same" and differing ones with the red word "differs". The done tick is not used there: it means done and nothing else.
+
+
+### P.16 Hardening after the expert review (25 Nov 2026, before 2.0 was released)
+
+A data-safety review and 35 adversarial tests (`PlanBookEdgeTests`) changed the following before release:
+
+- **Nothing looks saved that is not.** `Store.save` returns whether the book reached the disk; the screen is updated and the waiting list cleared only then. A failed save leaves every entry waiting and says so. An entry already written is remembered by its id in `PlanBook.applied` (newest 300) and is not written twice if the app was stopped between saving the book and clearing the list. Entries still waiting at launch are written in then.
+- **No number that is not a number.** `PlanBook.readBack`, the extras and a draft's length accept finite values only (a typed "Infinity" or "1e999" is dropped); the encoder turns any that still got in into text instead of refusing every later save.
+- **Reading is strict about damage, tolerant about age.** A field that is absent takes its default; a field that is present and unreadable throws. `Store.init` then puts back the newest safety copy that opens (the unreadable file is kept as `plan-unreadable-<time>.json`) and says which day it is from; with no safety copy the app shows the problem and does not fall back to the Excel file. A book with `format` above this app's is never saved over (`BookError.newerApp`).
+- **The switch re-reads the Excel file at the tap** (`makeAppTheHome` → `finishSwitch`): if it changed since it was counted, it is counted again and shown again. A `plan.json` already there is moved aside (`plan-before-<time>.json`), never overwritten. With Dropbox set but not reachable, an older copy on the phone is not taken in.
+- **Going back** blocks logging and changes while it runs, checks the book did not change meanwhile, and recognises a write-back that an earlier, interrupted try already made.
+- **Undo.** Only the newest change to a session can be undone (`PlanBook.canUndo`; the list says "Changed again since" on older ones). Undoing an "add" of a session that has been logged takes it out as a removal, which keeps what was logged and can itself be undone. A session moved after a change stays on its day when that change is undone (`PlanChange.afterDay`). A removal is never pruned from the list of changes.
+- **An entry means the session it names.** `PlanBook.apply` looks a session up by its key; the looser search by day and wording is used only for an entry that has no key. An entry for a session taken out of the plan is refused, not written into a similar one.
+- **Small:** day keys are stored normalised; an impossible date in a week heading gives no week; a corrected "what it was" of an extra is trimmed; the months of the count include anything already logged, so they add up to Done and Missed; the spreadsheet copy carries the key-session star and the week number of sessions made in the app.
+
+Tests: 130 data tests (`swift test --package-path Core`), of which 7 in `PlanBookTests` and 35 in `PlanBookEdgeTests`; two screen tests for 2.0.

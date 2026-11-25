@@ -57,6 +57,9 @@ struct MoveInView: View {
         .background(Theme.bg.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .interactiveDismissDisabled(store.incoming != nil && !switched)
+        // The switch reads the Excel file once more before it happens, so the
+        // page waits to be told rather than assuming.
+        .onChange(of: store.planLivesHere) { _, lives in if lives { switched = true } }
         #if DEBUG
         .onAppear {
             guard ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] != nil, store.incoming == nil, !store.planLivesHere else { return }
@@ -163,15 +166,18 @@ struct MoveInView: View {
         if proof.matches {
             Button {
                 store.makeAppTheHome()
-                switched = store.planLivesHere
             } label: {
-                Text("Make this app the plan’s home").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                Text(store.switching ? "Reading the Excel file once more…" : "Make this app the plan’s home")
+                    .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
             }
             .buttonStyle(.borderedProminent).tint(Theme.today)
             .accessibilityIdentifier("movein-switch")
             .padding(.top, 6)
             Text("Your Excel file is not changed. You can go back for three weeks.")
                 .font(.caption).foregroundStyle(Theme.secondary)
+            if let why = store.homeProblem {
+                Text(why).font(.footnote).foregroundStyle(Theme.danger).accessibilityIdentifier("movein-switch-problem")
+            }
         }
         Button("Cancel") { store.cancelTakingIn(); dismiss() }
             .settingsButton(tint: Theme.secondary)

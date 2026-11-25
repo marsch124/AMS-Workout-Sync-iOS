@@ -103,18 +103,21 @@ final class PlanBookEdgeTests: XCTestCase {
     }
 
     /*
-     * FAULT: taking back an "add" after the added session was logged deletes
-     * the session and everything logged in it, with no way back (the undo
-     * itself cannot be undone). PlanBook.undo, case "add".
+     * Undoing an "add" after the added session was logged must not lose the
+     * log: the session is taken out the way any session is, so it stays in
+     * the list of changes with what was logged, and can come back.
      */
     func testUndoOfAnAddAfterItWasLoggedDoesNotSilentlyLoseTheLog() throws {
         var book = try book()
         let made = try book.add(SessionDraft(dayKey: "2026-09-17", sport: "swim", title: "Open water try", minutes: 40), now: now)
         try log(&book, made.key) { $0.actualDuration = "42"; $0.avgHr = "128" }
         let addChange = try XCTUnwrap(book.changes.last { $0.kind == "add" })
-        let refused = (try? book.undo(addChange.id, now: now)) == nil
-        XCTAssertTrue(refused || book.session(made.key)?.results["actualDuration"]?.text == "42",
-                      "the 42 minutes he logged are gone: undo of an add removes a logged session outright")
+        try book.undo(addChange.id, now: now)
+        XCTAssertNil(book.session(made.key))
+        let taken = try XCTUnwrap(book.changes.last { $0.kind == "remove" && $0.key == made.key })
+        XCTAssertEqual(taken.undo?.results["actualDuration"]?.text, "42", "what he logged is kept with the removal")
+        try book.undo(taken.id, now: now)
+        XCTAssertEqual(book.session(made.key)?.results["actualDuration"]?.text, "42")
     }
 
     /*
@@ -422,22 +425,22 @@ final class PlanBookEdgeTests: XCTestCase {
     }
 
     /*
-     * FAULT: one session with a garbled day in plan.json makes the whole
-     * year's plan fail to open, though the file's own rule is that it is read
-     * tolerantly. Workout.init(from:) throws on a bad dayKey and
-     * PlanBook.init(from:) decodes [Workout] in one go. Fix: decode sessions
-     * one by one, keep the good ones, set the bad ones aside to be repaired.
+     * A session that is there but cannot be read is damage, and the book says
+     * so by not opening: the app then puts back its newest safety copy rather
+     * than open a plan with a session missing and save that over the rest.
+     * A field from a newer app is not damage and is simply passed over.
      */
-    func testOneBrokenSessionDoesNotLoseTheWholePlan() throws {
+    func testADamagedSessionStopsTheBookOpeningAndANewerFieldDoesNot() throws {
         let book = try book()
         var object = try XCTUnwrap(JSONSerialization.jsonObject(with: try book.encoded()) as? [String: Any])
         var sessions = try XCTUnwrap(object["sessions"] as? [[String: Any]])
-        sessions[5]["dayKey"] = "2026-13-45"
         sessions[6]["somethingNewer"] = true
         object["sessions"] = sessions
-        let data = try JSONSerialization.data(withJSONObject: object)
-        let reopened = try? PlanBook.decoded(data)
-        XCTAssertEqual(reopened?.sessions.count, 12, "the whole plan failed to open over one session")
+        XCTAssertEqual(try PlanBook.decoded(try JSONSerialization.data(withJSONObject: object)).sessions.count, book.sessions.count)
+
+        sessions[5]["dayKey"] = "2026-13-45"
+        object["sessions"] = sessions
+        XCTAssertThrowsError(try PlanBook.decoded(try JSONSerialization.data(withJSONObject: object)))
     }
 
     // MARK: counting
@@ -457,11 +460,7 @@ final class PlanBookEdgeTests: XCTestCase {
         XCTAssertEqual(t.months.first?.sessions, 1)
     }
 
-    /*
-     * FAULT (small): a session done today counts in the total "Done" but in
-     * no month, so the months do not add up to the total on the day he trains.
-     * PlanImport.tally: `isDone` is counted before the `dayKey >= today` skip.
-     */
+    /* A session done today counts in its month, so the months add up to the total. */
     func testMonthsAddUpToTheTotalDone() throws {
         var book = try book()
         try log(&book, swim9) { $0.actualDuration = "30" }

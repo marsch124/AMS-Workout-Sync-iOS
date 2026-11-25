@@ -81,13 +81,13 @@ public struct PlanProof: Equatable {
             ProofLine(label: label, before: String(pick(before)), after: String(pick(after)))
         }
         return [
-            line("Plan days (sessions and rest days)", { $0.sessions }),
+            line("Plan days", { $0.sessions }),
             line("Training sessions", { $0.training }),
             line("Rest days", { $0.rest }),
             line("Done", { $0.done }),
             line("Missed", { $0.missed }),
             line("Still to come", { $0.toCome }),
-            line("Extra activities", { $0.extras }),
+            line("Extra workouts", { $0.extras }),
             line("Planned minutes", { $0.plannedMinutes }),
             line("Recorded minutes", { $0.recordedMinutes })
         ]
@@ -167,7 +167,9 @@ public struct PlanImport {
               let to = monthNames.firstIndex(of: m[4]!.lowercased()), var year = Int(m[5]!) else { return nil }
         // The year written is the last day's: a week from December into January starts the year before.
         if from > to { year -= 1 }
-        return String(format: "%04d-%02d-%02d", year, from + 1, d)
+        let key = String(format: "%04d-%02d-%02d", year, from + 1, d)
+        // A day that does not exist is no Monday.
+        return parseDayKey(key) == nil ? nil : key
     }
 
     /*
@@ -204,8 +206,10 @@ public struct PlanImport {
             t.training += 1
             let isDone = w.loggedInSheet && !w.missed
             if w.missed { t.missed += 1 } else if isDone { t.done += 1 }
-            if w.dayKey >= today {
-                if !w.loggedInSheet { t.toCome += 1 }
+            // "So far" is every day before today, and anything already
+            // logged whatever its day — so the months add up to Done and Missed.
+            if w.dayKey >= today && !w.loggedInSheet {
+                t.toCome += 1
                 continue
             }
             let planned = minutes(Plan.plannedSeconds(w, mapping))
@@ -261,7 +265,7 @@ public struct PlanImport {
 
     public static func extraDifferences(_ a: [ExtraRecord], _ b: [ExtraRecord]) -> [String] {
         if a == b { return [] }
-        if a.count != b.count { return ["\(a.count) extra activities before, \(b.count) after"] }
+        if a.count != b.count { return ["\(a.count) extra workouts before, \(b.count) after"] }
         return zip(a, b).filter { $0 != $1 }.map { "extra of \($0.0.date) (\($0.0.label)) changed" }
     }
 

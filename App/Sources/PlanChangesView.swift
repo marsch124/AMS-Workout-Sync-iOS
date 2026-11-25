@@ -57,10 +57,15 @@ struct PlanChangesView: View {
                 if c.undone {
                     Text("Undone").font(.caption.weight(.semibold)).foregroundStyle(Theme.secondary)
                         .accessibilityIdentifier("change-undone-\(index)")
-                } else {
+                } else if store.canUndo(c.id) {
                     Button("Undo") { undoing = c }
                         .settingsButton(tint: c.kind == "add" ? Theme.danger : Theme.today)
                         .accessibilityIdentifier("change-undo-\(index)")
+                } else {
+                    // Only the newest change to a session can be undone; an
+                    // older one would quietly take the later ones with it.
+                    Text("Changed again since").font(.caption).foregroundStyle(Theme.secondary)
+                        .accessibilityIdentifier("change-older-\(index)")
                 }
             }
             Text(c.title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
