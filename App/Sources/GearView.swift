@@ -83,7 +83,16 @@ struct GearPage: View {
         .sheet(item: $editing) { GearEditView(item: $0, all: all, sessions: sessions, today: store.today) }
         .tint(GearLook.fill)
         #if DEBUG
-        .task { seedForPicture() }
+        .task {
+            seedForPicture()
+            #if DEBUG
+            // Pictures: AMSWS_GEAR_OPEN=change opens the first item's change page, =add the add page.
+            if let w = ProcessInfo.processInfo.environment["AMSWS_GEAR_OPEN"] {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                if w == "add" { adding = true } else { editing = items.first }
+            }
+            #endif
+        }
         #endif
     }
 
@@ -122,7 +131,7 @@ struct GearPage: View {
                 Text(item.name).font(.headline).foregroundStyle(Theme.text).lineLimit(1)
                 Text("\u{00B7} \(km(c.km)) km").font(.headline).foregroundStyle(Theme.text)
             }
-            Text(item.inUse ? "In use since " + (item.since.map(Dates.short) ?? "") : "Put aside")
+            Text(item.inUse ? "In use since " + (item.since.map(Dates.short) ?? "") : "Not in use now")
                 .font(.footnote).foregroundStyle(Theme.secondary)
             Text(item.countWords(c)).font(.footnote).foregroundStyle(Theme.secondary)
             if let limit = item.limitKm { limitBar(c.km, limit) }
@@ -203,8 +212,8 @@ struct GearPage: View {
     private func seedForPicture() {
         guard ProcessInfo.processInfo.environment["AMSWS_GEAR_PAGE"] != nil, shelf.keys(prefix: "gear/").isEmpty else { return }
         let t = store.today
-        var blue = GearItem(id: "g-blue", name: "Blue runners", kind: .shoes, since: PlanView.addDays(t, -70), startKm: 180, limitKm: 700)
-        var grey = GearItem(id: "g-grey", name: "Grey trainers", kind: .shoes, since: PlanView.addDays(t, -300), startKm: 690, limitKm: 700)
+        var blue = GearItem(id: "g-blue", name: "Blue runners", kind: .shoes, since: PlanView.addDays(t, -70), startKm: 412, limitKm: 700)
+        var grey = GearItem(id: "g-grey", name: "Grey trainers", kind: .shoes, since: PlanView.addDays(t, -300), startKm: 730, limitKm: 700)
         grey.periods = [GearPeriod(from: PlanView.addDays(t, -300), until: PlanView.addDays(t, -70))]
         let road = GearItem(id: "g-road", name: "Road bike", kind: .bike, since: PlanView.addDays(t, -200), startKm: 1200, limitKm: 4000)
         blue.limitKm = 700
@@ -287,12 +296,12 @@ struct GearEditView: View {
                     if let item, !item.retired {
                         HStack(spacing: 16) {
                             Button("Retire") { askRetire = true }.accessibilityIdentifier("gear-retire")
-                            Button("Remove") { askRemove = true }.accessibilityIdentifier("gear-remove")
+                            Button("Remove") { askRemove = true }.foregroundStyle(Theme.danger).accessibilityIdentifier("gear-remove")
                         }
                         .font(.subheadline.weight(.semibold)).buttonStyle(.plain).foregroundStyle(GearLook.ink)
                         .padding(.top, 6)
                     } else if item != nil {
-                        Button("Remove") { askRemove = true }.accessibilityIdentifier("gear-remove")
+                        Button("Remove") { askRemove = true }.foregroundStyle(Theme.danger).accessibilityIdentifier("gear-remove")
                             .font(.subheadline.weight(.semibold)).buttonStyle(.plain).foregroundStyle(GearLook.ink)
                     }
                 }

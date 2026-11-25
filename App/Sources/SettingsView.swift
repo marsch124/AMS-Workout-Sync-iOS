@@ -168,6 +168,8 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("settings-reminders-row")
 
+                    WeatherSettingsSection()
+
                     SectionHeading(text: "Calendar").id("calendar")
                     if Device.isPhone {
                         CalendarSettings()
@@ -200,8 +202,6 @@ struct SettingsView: View {
                         SettingsRow(title: "Not connected", sub: "Use Connect Dropbox above.")
                     }
                     }
-
-                    WeatherSettingsSection()
 
                     SectionHeading(text: "This app")
                     NavigationLink { GuideView() } label: {
