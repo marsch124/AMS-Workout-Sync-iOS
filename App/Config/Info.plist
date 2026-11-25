@@ -52,6 +52,8 @@
 	<string>AMS Triathlon Training reads the workouts, heart rate and distances your watch sent to Health, so a session can be logged by checking the numbers instead of typing them, and so hikes and gym sessions outside the plan count in your load. Nothing is written to Health.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>AMS Triathlon Training never writes anything to Health. Apple requires this text to be present anyway.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>To show the weather and daylight for today's outdoor session.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchScreen</key>

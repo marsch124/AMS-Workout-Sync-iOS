@@ -85,6 +85,7 @@ struct IllnessView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     if !keeper.notesReadable { UnreadableNotesLine() }
                     content
+                    ReturnLadderCard(gap: 12)
                 }
                 .padding(16)
             }

@@ -23,7 +23,9 @@
 		37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8173903887939F8A3DB90D8D /* ProgressView.swift */; };
 		397F613B7445E14D20C9656C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2CB3C689413A3D9CB97FA7 /* Photos.swift */; };
 		3B18EC3B9D29DE2C27133D11 /* WorkoutCore in Frameworks */ = {isa = PBXBuildFile; productRef = D690C9E09EB79AAE0C30F1A6 /* WorkoutCore */; };
+		3C2714F6269EFFC4071F2934 /* TodayRound28UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06267858A9B21CACC9D413D3 /* TodayRound28UITests.swift */; };
 		3C47B4FB4567292271EB90F5 /* Neighbours.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30A622530862215769C87FA /* Neighbours.swift */; };
+		458F12A0700DC79E048C420E /* ReturnLadderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDFDBF5AAF5A1A45839BE16 /* ReturnLadderCard.swift */; };
 		4C92AF2407F8B9021267FA3C /* PhotoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */; };
 		4FEC94AC696B1C83143E08E5 /* BodyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */; };
 		57C9D429EE28AAC34434A4E6 /* AMSIcons in Frameworks */ = {isa = PBXBuildFile; productRef = E5919F8033E8B81CB5A802AE /* AMSIcons */; };
@@ -42,12 +44,14 @@
 		76F5DE06B07EC381A7F6420E /* WideLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DA25EDF09C4F7F82CEA2D4 /* WideLayout.swift */; };
 		7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70231C046226474A30263864 /* SettingsView.swift */; };
 		7A1B933F0920090EB9B0EBBD /* SuggestionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0760C47168862B5BDA6F9875 /* SuggestionUITests.swift */; };
+		7CBCB311CBA44A94E4435586 /* TodayWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9EECF821F9A0C789D085EC /* TodayWeather.swift */; };
 		7F51C7606E2B8EEFFBD4ECDE /* MonthGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD18E54C3FEFA618202370C3 /* MonthGrid.swift */; };
 		84D79550D19088FAF9EC39B9 /* WideLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731CA5B8E9F2D95B379D98E8 /* WideLayoutUITests.swift */; };
 		860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201A884ED7294E23A8047706 /* Components.swift */; };
 		8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */; };
 		893F6F5D26884B326DCF7B16 /* PlanChangesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9322A1646D1ECEA8833A2D6C /* PlanChangesView.swift */; };
 		89CDC9463998F4995477427E /* LogFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFFF43913961BBC438C16AF /* LogFormView.swift */; };
+		8C66BAC44DE84DD3BED771DB /* WeekSoFarStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288F229B5D5DF7783E02FC03 /* WeekSoFarStrip.swift */; };
 		8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */; };
 		91C1FADA2BAC3DCB8681900D /* SpotlightIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4050A7154CFB8357CC22F817 /* SpotlightIndex.swift */; };
 		9340669904E7DB477DE5D179 /* NeighbourUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E63B9B271B07D3FEA0FDBE0 /* NeighbourUITests.swift */; };
@@ -100,6 +104,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		06267858A9B21CACC9D413D3 /* TodayRound28UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayRound28UITests.swift; sourceTree = "<group>"; };
 		0760C47168862B5BDA6F9875 /* SuggestionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionUITests.swift; sourceTree = "<group>"; };
 		08CF0A3A8F1A6CC4EFF1DB10 /* StopSignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopSignView.swift; sourceTree = "<group>"; };
 		0A14825F875D7AF6B7EE715C /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
@@ -110,6 +115,7 @@
 		18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViews.swift; sourceTree = "<group>"; };
 		201A884ED7294E23A8047706 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyUITests.swift; sourceTree = "<group>"; };
+		288F229B5D5DF7783E02FC03 /* WeekSoFarStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekSoFarStrip.swift; sourceTree = "<group>"; };
 		29C8793044EA9500B757D610 /* Diary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diary.swift; sourceTree = "<group>"; };
 		2D65F7293009826029A454FA /* WeekBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBoard.swift; sourceTree = "<group>"; };
 		2E6525576D143C59A4723612 /* DropboxViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxViews.swift; sourceTree = "<group>"; };
@@ -129,6 +135,7 @@
 		6090A62F8CCF0EC2AA253E3F /* KeyCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCommands.swift; sourceTree = "<group>"; };
 		698543645804785D12272ACB /* ClaudeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSettingsView.swift; sourceTree = "<group>"; };
 		6D4B7A403EF7D24F842CE496 /* ZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesView.swift; sourceTree = "<group>"; };
+		6E9EECF821F9A0C789D085EC /* TodayWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWeather.swift; sourceTree = "<group>"; };
 		70231C046226474A30263864 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		727F13AC6FACE0F75894E10A /* plan.xlsx */ = {isa = PBXFileReference; path = plan.xlsx; sourceTree = "<group>"; };
 		731CA5B8E9F2D95B379D98E8 /* WideLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WideLayoutUITests.swift; sourceTree = "<group>"; };
@@ -171,6 +178,7 @@
 		DBE5703FD6208A73C4D662DA /* ClaudeKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeKey.swift; sourceTree = "<group>"; };
 		DC4ACA1DEDBF250EB3A08FBD /* SuggestionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionCard.swift; sourceTree = "<group>"; };
 		DD89521CE6E4403841FE2581 /* WaitingForPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForPlanView.swift; sourceTree = "<group>"; };
+		DDDFDBF5AAF5A1A45839BE16 /* ReturnLadderCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnLadderCard.swift; sourceTree = "<group>"; };
 		E30A622530862215769C87FA /* Neighbours.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Neighbours.swift; sourceTree = "<group>"; };
 		E3FFCF1DC05E464FB2ED3970 /* GarminSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminSettingsView.swift; sourceTree = "<group>"; };
 		E7A03855A2195F5FD77B7F7C /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
@@ -221,6 +229,7 @@
 				0760C47168862B5BDA6F9875 /* SuggestionUITests.swift */,
 				41F26771CF90A03C5E86FB7C /* TestEntryUITests.swift */,
 				F4563F8EA9F576F4025FC0CC /* ThursdayRidesUITests.swift */,
+				06267858A9B21CACC9D413D3 /* TodayRound28UITests.swift */,
 				731CA5B8E9F2D95B379D98E8 /* WideLayoutUITests.swift */,
 				901F20941815D8CBD3B54485 /* WorkoutSyncUITests.swift */,
 				E234DFAF2A8355631210C352 /* Fixtures */,
@@ -303,6 +312,7 @@
 				10B7D72488BA4C064C6365BB /* PlanPage.swift */,
 				A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */,
 				8173903887939F8A3DB90D8D /* ProgressView.swift */,
+				DDDFDBF5AAF5A1A45839BE16 /* ReturnLadderCard.swift */,
 				868D688CF593B1074DAB4C08 /* SafetyCopiesView.swift */,
 				D04CBC958D9BB764875C6207 /* SeasonView.swift */,
 				3E761F4FA612AABC7C820139 /* SessionEditView.swift */,
@@ -320,9 +330,11 @@
 				D6E3DEEE01504BE66D135FE3 /* Theme.swift */,
 				7D15A4D8DFEA91F33C0EB80C /* ThursdayRidesView.swift */,
 				5419017E5E37523852FF0B4F /* TodayView.swift */,
+				6E9EECF821F9A0C789D085EC /* TodayWeather.swift */,
 				4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */,
 				DD89521CE6E4403841FE2581 /* WaitingForPlanView.swift */,
 				2D65F7293009826029A454FA /* WeekBoard.swift */,
+				288F229B5D5DF7783E02FC03 /* WeekSoFarStrip.swift */,
 				84DA25EDF09C4F7F82CEA2D4 /* WideLayout.swift */,
 				AA1F16D5080FB2389E905D5B /* WideRoot.swift */,
 				145AD2CD57182DB43079FC8C /* YearView.swift */,
@@ -487,6 +499,7 @@
 				AA30994BA586B2B1CE7CFE27 /* PlanPage.swift in Sources */,
 				F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */,
 				37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */,
+				458F12A0700DC79E048C420E /* ReturnLadderCard.swift in Sources */,
 				B1CABD5E7ED197469D4C85AD /* SafetyCopiesView.swift in Sources */,
 				208A724EC312F4125C46AAA1 /* SeasonView.swift in Sources */,
 				D1E894971B80D8FDD28D6814 /* SessionEditView.swift in Sources */,
@@ -504,9 +517,11 @@
 				626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */,
 				BE5BE9EBAD68976428A07A02 /* ThursdayRidesView.swift in Sources */,
 				AE4B787B0C3121743BEC221B /* TodayView.swift in Sources */,
+				7CBCB311CBA44A94E4435586 /* TodayWeather.swift in Sources */,
 				9B5D2417943ED124065919BD /* TrainingCalendar.swift in Sources */,
 				C5877BC4EE1B04657140810B /* WaitingForPlanView.swift in Sources */,
 				9BB7DB341CF6567250BFDCE1 /* WeekBoard.swift in Sources */,
+				8C66BAC44DE84DD3BED771DB /* WeekSoFarStrip.swift in Sources */,
 				76F5DE06B07EC381A7F6420E /* WideLayout.swift in Sources */,
 				0911A9A46C299D035C2C1DFA /* WideRoot.swift in Sources */,
 				FE420DBD6E1E58C7F86B3C0B /* YearView.swift in Sources */,
@@ -531,6 +546,7 @@
 				7A1B933F0920090EB9B0EBBD /* SuggestionUITests.swift in Sources */,
 				C9F6B2BDF5048ECA082BCFC7 /* TestEntryUITests.swift in Sources */,
 				B6B55CFCACC822A65E6DBD59 /* ThursdayRidesUITests.swift in Sources */,
+				3C2714F6269EFFC4071F2934 /* TodayRound28UITests.swift in Sources */,
 				84D79550D19088FAF9EC39B9 /* WideLayoutUITests.swift in Sources */,
 				CFB5629FD0291B55CE501A48 /* WorkoutSyncUITests.swift in Sources */,
 			);
