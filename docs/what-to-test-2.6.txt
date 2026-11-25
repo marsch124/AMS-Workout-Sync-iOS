@@ -1,0 +1,10 @@
+New: a Body page for the numbers from your Garmin watch. On an iPhone it is the middle tab, between Sessions and Progress. On an iPad and a Mac it is a row in the side list.
+
+Please look at:
+- The raspberry card: Body Battery now, the highest today, and the curve of the day with your workouts on it.
+- The four tiles: Sleep, HRV, Resting pulse and Stress, each with seven slim bars. Tap a tile to see its 7 days in numbers.
+- Pull down to read Garmin again.
+- With no Garmin key saved, the page should offer Open Garmin settings.
+- Day and night, iPhone and Mac.
+
+It is shown only: it changes no plan and makes no suggestion. It uses the same Garmin key as the morning numbers on Today (Settings, Garmin).
