@@ -1,0 +1,15 @@
+/* Every class a chapter invents starts with its id. */
+.rem-off { opacity: .45; pointer-events: none }
+.rem-notice { gap: 3px; box-shadow: 0 1px 6px rgba(0, 0, 0, .18) }
+.rem-line { border: 0; background: none; padding: 0; text-align: left; font: inherit; font-size: 11.5px; color: var(--win-muted); cursor: pointer }
+.rem-other { align-self: flex-start; font-size: 11.5px }
+.rem-words { gap: 2px; flex: 1 }
+.rem-slate { color: var(--i-settings) }
+.rem-sun { border-radius: 14px; overflow: hidden }
+.rem-sunhead { background: var(--i-plan); color: #fff; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px }
+.rem-sunrow { display: flex; align-items: baseline; gap: 6px }
+.rem-bigfig { font-size: 26px; font-weight: 700 }
+.rem-fig2 { font-size: 17px; margin-left: 6px }
+.rem-close { margin-left: auto; border: 0; border-radius: 12px; padding: 2px 9px; background: rgba(255, 255, 255, .22); color: #fff; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer }
+.rem-sunbody { background: var(--card); padding: 9px 11px; display: flex; flex-direction: column; gap: 6px }
+.rem-day { width: 28px; color: var(--i-plan); font-size: 11.5px }

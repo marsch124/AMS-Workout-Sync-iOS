@@ -1,0 +1,17 @@
+/* Every class a chapter invents starts with its id. */
+.set-title { text-align: center; font-size: 14px; font-weight: 600 }
+.set-part { margin: 4px 0 0; font-size: 15px; font-weight: 700; color: var(--i-today) }
+.set-line { margin: 0; line-height: 1.35 }
+.set-blue { background: var(--i-plan); color: #fff; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px }
+.set-sign { display: flex; align-items: center; gap: 10px; width: 100%; border: 1px solid var(--win-line); background: var(--card); border-radius: 10px; padding: 7px 10px; font: inherit; color: inherit; cursor: pointer; text-align: left }
+.set-sign.set-on { border-color: var(--pt) }
+.set-sign > span:first-child { display: inline-flex; align-items: center; justify-content: center; min-width: 74px }
+.set-moveword { border: 1px solid var(--i-plan); color: var(--i-plan); border-radius: 9px; padding: 3px 12px; font-weight: 600 }
+.set-red { color: var(--s-fail-text); font-weight: 700 }
+.set-mainword { background: var(--main); color: #fff; border-radius: 9px; padding: 3px 12px; font-weight: 600 }
+.set-say { text-align: left; white-space: normal }
+.set-res { display: flex; flex-direction: column; border: 0; background: var(--card); border-radius: 9px; padding: 6px 10px; font: inherit; color: inherit; text-align: left; cursor: pointer }
+.set-fav { padding: 7px 6px; align-items: flex-start }
+.set-favw { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 }
+.set-btns { display: flex; gap: 6px; margin-top: 2px }
+.set-btns .k-btn { padding: 2px 10px; font-size: 11.5px }

@@ -1,0 +1,11 @@
+/* Every class a chapter invents starts with its id. */
+.hom-title { text-align: center; font-size: 14px; font-weight: 600 }
+.hom-center { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding-top: 30px }
+.hom-center svg { width: 44px; height: 44px; color: var(--i-today) }
+.hom-wait { display: flex; align-items: flex-start; gap: 8px; text-align: left; max-width: 460px; width: 100% }
+.hom-list { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 2px }
+.hom-two { display: grid; grid-template-columns: minmax(0, 1fr) 50px 50px 42px; gap: 4px 6px; align-items: baseline }
+.hom-two > span:nth-child(4n+2), .hom-two > span:nth-child(4n+3) { text-align: right }
+.hom-same { color: var(--s-ok-text); font-weight: 700; font-size: 11px }
+.hom-head { font-size: 10.5px; font-weight: 600; color: var(--win-muted) }
+.hom-line { margin: 0; line-height: 1.35 }

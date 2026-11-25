@@ -1,0 +1,138 @@
+/* Layout: chapter rail on the left; on the right the coach card and a pretend iPhone beside it (or, for the Plan page, a pretend
+   iPad under it). Same course format as the other AMS tours. Inside the pretend device the app's own look: a pale page, white cards,
+   each part's colour on its headings and marks (Today green, Sessions and Plan blue, Body raspberry, Progress purple, Settings
+   slate), the green main button, the green tick circle = done. */
+:root {
+  --bg: #F1F5F4; --panel: #FFFFFF; --fg: #16302F; --muted: #5C7373; --line: #DCE6E6;
+  --accent: #00754E; --accent-soft: #DDEFE6; --main: #00875A; --on-main: #FFFFFF; --good: #00754E; --good-soft: #DDEFE6; --warn: #A9540F;
+  --ring: #E6B53F; --shadow: 0 18px 40px rgba(10, 50, 45, .16);
+  --win: #F6F8F8; --win-side: #E9EFEF; --win-sel: #DCE6E6; --win-fg: #16302F; --win-muted: #5C7373; --win-line: #DCE6E6; --card: #FFFFFF; --card-2: #EEF3F3;
+  --desk-a: #CFE3DC; --desk-b: #E6EDF5; --phone-edge: #1C1C1E;
+  --s-ok: #00875A; --s-ok-text: #00754E; --s-needs: #E8862E; --s-needs-text: #A9540F; --s-needs-soft: #FCEEDD; --s-fail: #C81E1E; --s-fail-text: #C81E1E;
+  --i-today: #00875A; --i-plan: #1266C8; --i-sessions: #1266C8; --i-body: #C21E6E; --i-progress: #7C3AED; --i-settings: #5A6B7B; --i-season: #B45309;
+  --body-tile: #F7DFEA; --body-ground: #FBF1F6; --today-col: #DDEFE6; --tomorrow: #E8F1FB; --extra: #DE9B26; --race: #EF4444;
+  --sp-swim: #4F87F8; --sp-bike: #FFD60A; --sp-run: #85CE6C; --sp-strength: #FF8C1A; --sp-rowing: #0D9488; --sp-mobility: #8650FE; --sp-race: #EF4444; --sp-rest: #64748B; --sp-other: #22D3EE;
+  --ink-swim: #2B4A88; --ink-bike: #8C7506; --ink-run: #49713B; --ink-strength: #8C4D0E; --ink-rowing: #075149; --ink-mobility: #4A2C8C; --ink-race: #832525; --ink-rest: #374050; --ink-other: #137486;
+  --f-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "Figtree", -apple-system, "Segoe UI", sans-serif;
+  --f-mac: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #071717; --panel: #102626; --fg: #F2F7F6; --muted: #A0B8B8; --line: #2A4A4A;
+  --accent: #33D69A; --accent-soft: #0F3A30; --main: #00875A; --on-main: #FFFFFF; --good: #33D69A; --good-soft: #0F3A30; --warn: #F0A868;
+  --ring: #F0C24A; --shadow: 0 18px 40px rgba(0, 0, 0, .5);
+  --win: #0A1F1F; --win-side: #0F2828; --win-sel: #21403F; --win-fg: #FFFFFF; --win-muted: #A0B8B8; --win-line: #2A5555; --card: #1A3535; --card-2: #21403F;
+  --desk-a: #0C2420; --desk-b: #14202C; --phone-edge: #4A4A50;
+  --s-ok: #00C97B; --s-ok-text: #33D69A; --s-needs: #F0943F; --s-needs-text: #F5AE66; --s-needs-soft: #3A2A18; --s-fail: #FF6B6B; --s-fail-text: #FF8782;
+  --i-today: #00C97B; --i-plan: #3B9EFF; --i-sessions: #3B9EFF; --i-body: #F472B6; --i-progress: #C084FC; --i-settings: #94A3B8; --i-season: #F59E0B;
+  --body-tile: #3A1C2E; --body-ground: #1A0F16; --today-col: #0F3A30; --tomorrow: #122B3D; --extra: #F0B855; --race: #EF4444;
+  --sp-swim: #4F87F8; --sp-bike: #FFD60A; --sp-run: #85CE6C; --sp-strength: #FF8C1A; --sp-rowing: #0D9488; --sp-mobility: #8650FE; --sp-race: #EF4444; --sp-rest: #64748B; --sp-other: #22D3EE;
+  --ink-swim: #4F87F8; --ink-bike: #FFD60A; --ink-run: #85CE6C; --ink-strength: #FF8C1A; --ink-rowing: #2CC4B6; --ink-mobility: #A47CFE; --ink-race: #FF6B6B; --ink-rest: #A3B1C2; --ink-other: #22D3EE;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #071717; --panel: #102626; --fg: #F2F7F6; --muted: #A0B8B8; --line: #2A4A4A;
+  --accent: #33D69A; --accent-soft: #0F3A30; --main: #00875A; --on-main: #FFFFFF; --good: #33D69A; --good-soft: #0F3A30; --warn: #F0A868;
+  --ring: #F0C24A; --shadow: 0 18px 40px rgba(0, 0, 0, .5);
+  --win: #0A1F1F; --win-side: #0F2828; --win-sel: #21403F; --win-fg: #FFFFFF; --win-muted: #A0B8B8; --win-line: #2A5555; --card: #1A3535; --card-2: #21403F;
+  --desk-a: #0C2420; --desk-b: #14202C; --phone-edge: #4A4A50;
+  --s-ok: #00C97B; --s-ok-text: #33D69A; --s-needs: #F0943F; --s-needs-text: #F5AE66; --s-needs-soft: #3A2A18; --s-fail: #FF6B6B; --s-fail-text: #FF8782;
+  --i-today: #00C97B; --i-plan: #3B9EFF; --i-sessions: #3B9EFF; --i-body: #F472B6; --i-progress: #C084FC; --i-settings: #94A3B8; --i-season: #F59E0B;
+  --body-tile: #3A1C2E; --body-ground: #1A0F16; --today-col: #0F3A30; --tomorrow: #122B3D; --extra: #F0B855; --race: #EF4444;
+  --sp-swim: #4F87F8; --sp-bike: #FFD60A; --sp-run: #85CE6C; --sp-strength: #FF8C1A; --sp-rowing: #0D9488; --sp-mobility: #8650FE; --sp-race: #EF4444; --sp-rest: #64748B; --sp-other: #22D3EE;
+  --ink-swim: #4F87F8; --ink-bike: #FFD60A; --ink-run: #85CE6C; --ink-strength: #FF8C1A; --ink-rowing: #2CC4B6; --ink-mobility: #A47CFE; --ink-race: #FF6B6B; --ink-rest: #A3B1C2; --ink-other: #22D3EE;
+  color-scheme: dark }
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45 }
+.wrap { max-width: 1360px; margin: 0 auto; padding-block: 18px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 22px }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none }
+button { font: inherit; color: inherit }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+/* Rail */
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 14px); align-self: start; display: flex; flex-direction: column; gap: 4px; max-height: calc(100vh - 28px); overflow: auto }
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px }
+.apptile { width: 40px; height: 40px; border-radius: 10px; background: var(--main); color: #fff; display: grid; place-items: center; flex: none }
+.apptile svg { width: 26px; height: 26px; stroke-width: 2.1 }
+.brand h1 { font-family: var(--f-display); font-size: 18px; line-height: 1.1; margin: 0; text-wrap: balance }
+.brand small { color: var(--muted); font-size: 12px }
+.chaps { display: flex; flex-direction: column; gap: 1px }
+.chap { display: flex; align-items: center; gap: 9px; padding: 5px 9px; border-radius: 8px; border: 0; background: none; color: var(--fg); font-size: 14px; text-align: left; cursor: pointer }
+.chap:hover { background: var(--accent-soft) }
+.chap > span:first-of-type { min-width: 0 }
+.chap .n { color: var(--muted); font-size: 12px; margin-left: auto; font-variant-numeric: tabular-nums; display: flex }
+.chap .n svg { width: 15px; height: 15px; stroke-width: 2.4 }
+.chap.cur { background: var(--accent-soft); color: var(--accent); font-weight: 600 }
+.chap.done .n { color: var(--good) }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 10px 2px 2px; flex: none }
+.bar i { display: block; height: 100%; background: var(--main); width: 0; transition: width .4s }
+.railnote { color: var(--muted); font-size: 12px; margin: 4px 2px }
+
+/* Coach */
+.main { display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.coach { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: start; min-height: 150px }
+.coach .eyebrow { grid-column: 1 / -1; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 600; display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.coach .eyebrow .kind { color: var(--muted); font-weight: 500 }
+.coach .eyebrow .only { color: var(--muted); font-weight: 500; border: 1px solid var(--line); border-radius: 20px; padding: 0 8px; letter-spacing: .02em; text-transform: none }
+.coach h2 { font-family: var(--f-display); font-size: 22px; line-height: 1.2; margin: 0; text-wrap: balance }
+.coach p { margin: 4px 0 0; max-width: 68ch }
+.coach p b, .finish b { font-weight: 600 }
+.coach .hint { color: var(--muted); font-size: 13.5px }
+.coach .real { color: var(--muted); font-size: 13px; display: flex; gap: 6px; align-items: flex-start }
+.coach .real svg { width: 15px; height: 15px; margin-top: 2px }
+.deal { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; margin-top: 8px; max-width: 76ch }
+.deal > div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-size: 13.5px; display: flex; flex-direction: column; gap: 2px }
+.deal b { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--accent) }
+.coach .btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end }
+.btn { font-weight: 600; border-radius: 9px; padding: 8px 16px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer }
+.btn.main-b { background: var(--main); border-color: var(--main); color: var(--on-main) }
+.btn.main-b:disabled { opacity: .45; cursor: default }
+.btn.ghost { border-color: transparent; color: var(--muted); font-weight: 500; padding-inline: 8px }
+.answers { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px }
+.ans { padding: 8px 14px; border-radius: 9px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; text-align: left }
+.ans:hover { border-color: var(--accent) }
+.ans.right { border-color: var(--good); background: var(--good-soft); color: var(--good); font-weight: 600 }
+.ans.wrong { border-color: var(--warn); color: var(--warn); text-decoration: line-through }
+.feedback { grid-column: 1 / -1; font-weight: 600; color: var(--good); min-height: 1.45em; margin: 0; display: flex; gap: 6px; align-items: center }
+.feedback.no { color: var(--warn) }
+
+/* Stage — its size is set by ui.js: 360 × 660 for the iPhone, 1040 × 660 for the iPad */
+.stagebox { position: relative; width: 100%; aspect-ratio: 360 / 660; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); max-width: 100%; background: var(--win) }
+.stage { position: absolute; left: 0; top: 0; width: 360px; height: 660px; transform-origin: 0 0; font: 12.5px/1.35 var(--f-mac); color: var(--win-fg); background: var(--win) }
+.main.dev-phone { display: grid; grid-template-columns: minmax(0, 1fr) min(380px, 44%); gap: 16px; align-items: start }
+.main.dev-phone .coach { grid-template-columns: minmax(0, 1fr); min-height: 0 }
+.main.dev-phone .coach .btns { justify-content: flex-start; margin-top: 6px }
+.main.dev-phone .stagebox { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 14px) }
+.target { animation: ring 1.6s ease-in-out infinite; border-radius: 7px; position: relative; z-index: 2 }
+@keyframes ring { 0%, 100% { box-shadow: 0 0 0 2px var(--ring), 0 0 0 6px rgba(230, 181, 63, .35) } 50% { box-shadow: 0 0 0 2px var(--ring), 0 0 0 11px rgba(230, 181, 63, 0) } }
+
+/* Finish */
+.finish { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px }
+.finish h2 { font-family: var(--f-display); margin: 0; font-size: 24px; text-wrap: balance }
+.finish .lead { margin: 0; max-width: 70ch }
+.fgroup h3 { font-family: var(--f-display); margin: 0 0 4px; font-size: 17px }
+.fnote { margin: 0 0 4px; color: var(--muted); font-size: 13.5px; max-width: 72ch }
+.fgroup label { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--line); cursor: pointer; max-width: 80ch }
+.fgroup input { width: 18px; height: 18px; accent-color: var(--main); margin-top: 2px; flex: none }
+.dealwrap { overflow-x: auto }
+.dealtable { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 640px }
+.dealtable th, .dealtable td { text-align: left; vertical-align: top; padding: 7px 10px 7px 0; border-top: 1px solid var(--line) }
+.dealtable thead th { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); border-top: 0 }
+.dealtable tbody th { font-weight: 600; white-space: nowrap }
+.dealtable tbody th svg { vertical-align: -4px; margin-right: 6px; color: var(--accent) }
+.fbtns { display: flex; gap: 8px }
+
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: minmax(0, 1fr) }
+  .rail { position: static; max-height: none }
+  .chaps { flex-direction: row; flex-wrap: wrap; gap: 3px }
+  .chap .n { display: none }
+  .coach { grid-template-columns: minmax(0, 1fr) }
+  .coach .btns { justify-content: flex-start }
+  .main.dev-phone { grid-template-columns: minmax(0, 1fr) }
+  .main.dev-phone .stagebox { position: relative; top: 0; max-width: 420px; margin-inline: auto }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important } }

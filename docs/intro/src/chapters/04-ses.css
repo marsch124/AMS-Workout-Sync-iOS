@@ -1,0 +1,21 @@
+/* Every class a chapter invents starts with its id. */
+.ses-words { gap: 2px; flex: 1; min-width: 0 }
+.ses-title { font-size: 17px; line-height: 1.2 }
+.ses-top { display: flex; justify-content: space-between; align-items: center; gap: 6px }
+.ses-wrap { display: flex; flex-wrap: wrap; gap: 5px; align-items: center }
+.ses-pool { display: flex; flex-direction: column; gap: 6px; min-height: 480px }
+.ses-pool .ses-big { font-size: 26px; font-weight: 800 }
+.ses-row { padding: 8px 10px; border-radius: 12px; font-size: 16px; font-weight: 600; border: 0; text-align: left; background: none; color: inherit; font-family: inherit; cursor: pointer }
+.ses-cur { background: var(--sp-swim); color: var(--on-main); font-weight: 800 }
+.ses-zones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto }
+.ses-zones button { min-height: 64px; border: 0; border-radius: 14px; font: inherit; font-size: 20px; font-weight: 800; cursor: pointer; background: var(--card-2); color: inherit }
+.ses-zones .ses-next { background: var(--sp-swim); color: var(--on-main) }
+.ses-route { height: 86px; border-radius: 12px; background: var(--card-2); display: flex; align-items: center; justify-content: center }
+.ses-route svg { width: 90%; height: 80%; fill: none; stroke: var(--ink-run); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round }
+.ses-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px }
+.ses-tbl th { text-align: left; color: var(--win-muted); font-weight: 600 }
+.ses-tbl td, .ses-tbl th { padding: 2px 4px }
+.ses-pick { border: 0; cursor: pointer; font: inherit; color: inherit; background: var(--card); border-radius: 12px; padding: 7px 9px; text-align: left; display: flex; flex-direction: column }
+.ses-last { display: flex; gap: 6px; align-items: baseline; font-size: 12px }
+.ses-last span:first-child { width: 92px; color: var(--win-muted) }
+.ses-bad { color: var(--s-fail-text); font-size: 11.5px }

@@ -1,0 +1,60 @@
+/* Every class a chapter invents starts with its id. */
+.tod-face { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; min-width: 0; padding: 6px 0 4px; border: 1.5px solid var(--win-line); border-radius: 11px; background: var(--card); color: var(--win-fg); font: inherit; font-size: 10.5px; font-weight: 600; cursor: pointer }
+.tod-face svg { width: 22px; height: 22px; stroke-width: 1.6 }
+.tod-face span { color: var(--win-muted) }
+.tod-face.tod-on { border-color: var(--i-today); background: color-mix(in srgb, var(--i-today) 14%, var(--card)) }
+.tod-faces { display: flex; gap: 5px }
+.tod-line { font-size: 11.5px; color: var(--win-muted); padding: 0 2px; margin-top: -4px; border: 0; background: none; text-align: left; font-family: inherit }
+.tod-line b { color: var(--win-fg) }
+button.tod-line { cursor: pointer }
+.tod-card { border: 0; text-align: left; font: inherit; color: inherit; width: 100% }
+button.tod-card { cursor: pointer }
+.tod-words { gap: 2px; flex: 1; min-width: 0 }
+.tod-title { font-size: 14px; line-height: 1.2 }
+.tod-weekhead { display: flex; align-items: center; gap: 8px }
+.tod-key { border: 0; background: color-mix(in srgb, var(--i-today) 18%, transparent); color: var(--i-today); border-radius: 10px; font: inherit; font-size: 10px; font-weight: 700; padding: 1px 8px; cursor: pointer }
+.tod-cols { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; align-items: end; height: 74px; margin-top: 4px }
+.tod-col { display: flex; flex-direction: column-reverse; gap: 2px; height: 100%; justify-content: flex-start }
+.tod-b { position: relative; border-radius: 3px; background: var(--c) }
+.tod-b.tod-todo { background: color-mix(in srgb, var(--c) 28%, transparent) }
+.tod-b.tod-dot { background: color-mix(in srgb, var(--c) 22%, transparent); border: 1px dashed var(--c) }
+.tod-b i { position: absolute; top: 1px; right: 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--s-ok); color: #fff; display: grid; place-items: center }
+.tod-b i svg { width: 6px; height: 6px; stroke-width: 3.4 }
+.tod-rest { height: 3px; border-radius: 2px; background: var(--sp-rest); width: 60%; margin: 0 auto }
+.tod-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 10px; color: var(--win-muted); margin-top: 3px }
+.tod-days b { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; background: color-mix(in srgb, var(--i-today) 18%, transparent); color: var(--i-today) }
+.tod-swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; background: var(--c); flex: none }
+.tod-swatch.tod-todo { background: color-mix(in srgb, var(--c) 28%, transparent) }
+.tod-swatch.tod-dot { background: color-mix(in srgb, var(--c) 22%, transparent); border: 1px dashed var(--c) }
+.tod-keyrow { display: flex; flex-wrap: wrap; gap: 5px 12px; font-size: 10.5px; color: var(--win-muted); padding-top: 4px; border-top: 1px solid var(--win-line) }
+.tod-keyrow span { display: inline-flex; align-items: center; gap: 5px }
+.tod-sbar { display: block; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--c) 28%, transparent); overflow: hidden }
+.tod-sbar i { display: block; height: 100%; background: var(--c); border-radius: 3px }
+.tod-srow { display: flex; flex-direction: column; gap: 2px }
+.tod-srow .k-line { gap: 5px; flex-wrap: nowrap }
+.tod-srow svg { width: 13px; height: 13px; color: var(--ink) }
+.tod-head { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--i-today) }
+.tod-grey { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--win-muted); padding-top: 4px }
+.tod-sun { border-radius: 12px; overflow: hidden; background: var(--card) }
+.tod-sunhead { background: var(--i-plan); color: #fff; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px }
+.tod-sunhead .k-line { justify-content: space-between; flex-wrap: nowrap }
+.tod-sunhead button { border: 0; background: rgba(255, 255, 255, .22); color: #fff; border-radius: 10px; font: inherit; font-size: 10px; font-weight: 600; padding: 1px 8px; cursor: pointer }
+.tod-sunbig { font-size: 20px; font-weight: 700 }
+.tod-sunrow { display: flex; align-items: center; gap: 7px; padding: 4px 10px }
+.tod-sunrow .k-sport { width: 24px; height: 24px }
+.tod-sunday { width: 26px; font-size: 10.5px; font-weight: 600; color: var(--i-plan) }
+.tod-tomtab { align-self: flex-start; background: var(--s-needs-soft, var(--card)); font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--win-muted); padding: 5px 9px; border-radius: 10px 8px 0 0 }
+.tod-tom { background: color-mix(in srgb, var(--i-plan) 10%, var(--win)); border-radius: 0 12px 12px 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px }
+.tod-pill { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--i-today); color: var(--i-today); background: none; border-radius: 12px; font: inherit; font-size: 10.5px; font-weight: 600; padding: 2px 9px; cursor: pointer }
+.tod-pill svg { width: 11px; height: 11px }
+.tod-toprow { display: flex; align-items: center; justify-content: space-between; gap: 6px }
+.tod-chipbtn { border: 0; background: color-mix(in srgb, var(--i-today) 18%, transparent); color: var(--i-today); border-radius: 12px; font: inherit; font-size: 10.5px; font-weight: 600; padding: 3px 9px; cursor: pointer; white-space: nowrap }
+.tod-foot { display: flex; justify-content: center; padding-top: 2px }
+.tod-g { display: flex; flex-direction: column; gap: 4px; cursor: pointer; border: 0; background: none; text-align: left; font: inherit; color: inherit; padding: 0 2px; margin-top: -4px }
+.tod-gline { font-size: 11px; color: var(--win-muted) }
+.tod-gline b { color: var(--win-fg) }
+.tod-gdot { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--win-muted) }
+.tod-gdot i { width: 7px; height: 7px; border-radius: 50%; background: var(--s-ok) }
+.tod-plate .k-card { gap: 1px }
+.tod-ex { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-rest, var(--win-muted)) }
+.tod-card[data-act] { cursor: pointer }

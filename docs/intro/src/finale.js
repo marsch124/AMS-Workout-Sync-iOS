@@ -1,0 +1,43 @@
+/* The last page: no practice device any more — a list for the real app on his own devices, and the whole deal in one table. */
+FINALE = {
+  title: 'On your own devices',
+  heading: 'Now do it for real',
+  lead: 'You have seen every part. Below is the same ground again as a list for your real app. Tick what you have done; the ticks stay on this device.',
+  groups: [
+    { title: 'A training day', note: 'The few presses that keep the plan true.',
+      items: [
+        'In the morning, open <b>Today</b> and answer <b>How do you feel?</b> once.',
+        'Read today’s session card: the <b>Why:</b> line, the length and the zone. Press the card to open the session’s page.',
+        'If Today shows a suggestion, answer it: <b>Take it</b>, <b>Keep my plan</b> or <b>Other choice</b>.',
+        'After training, press <b>Done</b> on the session’s page, or <b>Log details</b> to type what you really did.',
+        'In the evening, look at <b>Body</b>: today’s curve, and what your workouts took.',
+      ] },
+    { title: 'Once a week', note: 'Best on Sunday, when the week is complete.',
+      items: [
+        'Open <b>Progress</b> and read the week: what you planned, what you did, and your load.',
+        'On the iPad or the Mac, open <b>Plan</b> and look at the week to come; change to <b>Month</b> and <b>Year</b> to see where the season stands.',
+        'Open <b>Sessions</b> and use the search to find a session you want to look at again.',
+        'If you have set a key for Claude, read <b>Your week with Claude</b> on Today (Sunday evening and Monday) and ask one question in <b>Ask about your plan</b>.',
+      ] },
+    { title: 'Set up once', note: 'Each takes a few minutes and makes a page tell more.',
+      items: [
+        '<b>Settings › Reminders</b>: choose which reminders you want, and their times.',
+        '<b>Settings › Garmin</b>: check that the page says it is connected, so Today and Body have their numbers.',
+        'Open your <b>race page</b>: type your times, your fuel plan and your kit list.',
+        '<b>Shoes and bikes</b>: add the pairs and bikes you train with, so their kilometres are counted.',
+        'Make two or three sessions <b>favourites</b>, so a new session is one press away.',
+        'Before a trip, set <b>Away</b> with the days and what you will have with you.',
+      ] },
+    { title: 'Worth trying once on the real thing', note: 'These could only be tried with invented numbers so far. If one looks empty or odd on your own device, tell Claude which one.',
+      items: [
+        '<b>Body</b> with your own Garmin numbers: today’s curve, yesterday’s thin line, and a press on a workout.',
+        'A done session with <b>From your watch</b>: the route, the pulse line and the laps.',
+        'A reminder arriving on the iPhone, and the buttons on it.',
+        'The weather line under an outdoor session, after you have allowed the app to know roughly where you are.',
+        'A change made on the iPhone showing on the iPad and the Mac a moment later.',
+        'Dragging to arrange: your favourites, the kit list, the fuel rows.',
+        'On the iPad or the Mac: the <b>Keys</b> plate, and the keys it lists.',
+        'Printing a week or a month on paper.',
+      ] },
+  ],
+};

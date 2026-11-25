@@ -1,0 +1,64 @@
+/* Chapter 7 — Body. Raspberry is the part's own colour (var(--pc) inside data-part="body"). */
+.bod-h1 { text-align: center; cursor: pointer; margin-top: 2px }
+.bod-read { text-align: center; min-height: 14px; margin-top: -6px }
+.bod-calm { text-align: center }
+.bod-capline { flex-wrap: nowrap }
+.bod-yes { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600 }
+.bod-ysample { display: inline-block; width: 18px; height: 0; border-top: 2px solid color-mix(in srgb, var(--pc) 40%, #000); border-radius: 2px }
+.bod-yline { stroke: color-mix(in srgb, var(--pc) 40%, #000) }
+.bod-figs { flex-wrap: nowrap; gap: 10px }
+.bod-now { display: inline-flex; align-items: baseline; gap: 4px; font-size: 11px; font-weight: 600; white-space: nowrap }
+.bod-now b { font-size: 34px; font-weight: 700; line-height: 1 }
+.bod-side { display: flex; flex-direction: column; font-size: 10.5px; line-height: 1.3; opacity: .92; min-width: 0 }
+.bod-side span { white-space: nowrap }
+.bod-curve { position: relative; margin-top: 2px }
+.bod-svg { display: block; width: 100%; height: auto; color: #fff }
+.bod-tap { position: absolute; top: 12%; height: 76%; border: 0; background: none; cursor: pointer; padding: 0; border-radius: 4px }
+.bod-tap:hover { background: rgba(255, 255, 255, .14) }
+.bod-card { background: color-mix(in srgb, var(--pc) 11%, var(--win)); border-radius: 12px; padding: 9px 10px; display: flex; flex-direction: column; gap: 5px; min-width: 0 }
+.bod-cap { font-size: 9.5px; font-weight: 700; letter-spacing: .07em; color: var(--pc) }
+.bod-tiny { font-size: 10px }
+.bod-weekrow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px }
+.bod-day { display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 10px; min-width: 0 }
+.bod-day u { height: 22px; text-decoration: none; color: var(--win-muted) }
+.bod-day b { font-weight: 650; font-variant-numeric: tabular-nums }
+.bod-day small { color: var(--win-muted); font-size: 10px; font-variant-numeric: tabular-nums }
+.bod-mini { width: 100%; height: 22px; border-bottom: 1px solid var(--win-line) }
+.bod-today { color: var(--i-today); font-weight: 800 }
+.bod-day em, .bod-col em { font-style: normal; font-size: 10px; color: var(--win-muted) }
+.bod-day em.bod-today, .bod-col em.bod-today { color: var(--i-today); font-weight: 800 }
+.bod-range-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px }
+.bod-range { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; background: color-mix(in srgb, var(--pc) 11%, var(--win)); border-radius: 9px; padding: 2px; gap: 2px }
+.bod-range button { border: 0; background: none; color: var(--pc); font: inherit; font-size: 11.5px; font-weight: 600; padding: 5px 0; border-radius: 7px; cursor: pointer }
+.bod-range button.bod-on { background: var(--pc); color: #fff }
+.bod-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px }
+.bod-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; min-width: 0;
+  background: color-mix(in srgb, var(--pc) 11%, var(--win)); border-radius: 11px; padding: 7px 8px 6px }
+.bod-tname { font-size: 9px; font-weight: 700; letter-spacing: .08em; color: var(--pc); white-space: nowrap }
+.bod-fig { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap }
+.bod-fig b { font-size: 17px; font-weight: 700 }
+.bod-fig span { font-size: 10.5px; font-weight: 600 }
+.bod-note { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100% }
+.bod-bars { position: relative; display: flex; align-items: flex-end; gap: 3px; height: 50px; width: 100%; margin-top: 5px; padding-top: 0 }
+.bod-bars.bod-four { gap: 6px; justify-content: center }
+.bod-col { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; z-index: 1 }
+.bod-four .bod-col { flex: 0 1 22px }
+.bod-col b { display: block; width: 100%; background: var(--pc); border-radius: 3px; margin-bottom: 0 }
+.bod-col u { text-decoration: none; font-size: 10px; color: var(--win-muted); margin-bottom: 12px }
+.bod-col em { height: 12px; line-height: 12px; white-space: nowrap }
+.bod-col b { max-height: calc(100% - 12px) }
+.bod-norm { position: absolute; left: 0; right: 0; margin-bottom: 12px; border: 1px solid color-mix(in srgb, var(--win-muted) 55%, transparent); border-radius: 4px; z-index: 0 }
+.bod-norm i { font-style: normal; font-size: 8px; color: var(--win-muted); padding-left: 3px }
+.bod-sharebox { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding-top: 2px }
+.bod-share { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--pc); color: #fff; border: 0; border-radius: 20px; font: inherit; font-weight: 650; padding: 8px 20px; cursor: pointer }
+.bod-share svg { width: 15px; height: 15px }
+.bod-wide { width: 100%; border-radius: 10px }
+.bod-foot { margin-top: 4px }
+.bod-msg { text-align: center; padding: 12px 10px; gap: 10px }
+.bod-prow { display: flex; align-items: baseline; gap: 12px; padding: 5px 0; border-top: 1px solid var(--win-line) }
+.bod-prow:first-child { border-top: 0 }
+.bod-prow > span { min-width: 112px }
+.bod-prow b.bod-none { font-weight: 400; color: var(--win-muted) }
+.bod-sestitle { font-size: 17px; line-height: 1.2 }
+.bod-gtitle { text-align: center; font-size: 14px }
+.bod-fake { color: var(--win-muted); padding: 8px 10px }

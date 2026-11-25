@@ -27,3 +27,11 @@ implementation the parity harness checks against.
 - Release: archive with `-allowProvisioningUpdates`, export with
   `tools/ExportOptions.plist` (uploads to App Store Connect), TestFlight
   internal group "Me".
+
+## The course (guided tour)
+
+`docs/intro/` holds the guided course for the app as of 2.8 (84): 16 chapters, 268 steps, a practice iPhone and iPad drawn
+in the page, and 102 real pictures taken on a simulator with the invented plan. Live page (private):
+https://claude.ai/artifact/8rLownadXakfs4pMQhpstf. How a chapter is written: `docs/intro/HELPERS.md`; how the pictures are
+taken: `docs/intro/PICTURES.md`; check with `node docs/intro/check.mjs`, build with `python3 docs/intro/build.py`, then publish
+`index.html` together with `shots/`. **Update the course in the release that changes a taught screen.**

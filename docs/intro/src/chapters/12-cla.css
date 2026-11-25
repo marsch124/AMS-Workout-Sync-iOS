@@ -1,0 +1,10 @@
+/* Every class a chapter invents starts with its id. */
+.cla-title { text-align: center; font-size: 14px; font-weight: 600 }
+.cla-blue { border-color: var(--i-plan); color: var(--i-plan); font-weight: 600; background: none }
+.cla-blueword { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: var(--i-plan); cursor: pointer; text-align: left }
+.cla-ruled { color: var(--s-fail-text) }
+.cla-line { margin: 0; line-height: 1.35 }
+.cla-ask { background: var(--i-sessions) }
+.cla-chip { text-align: left; white-space: normal }
+.cla-other { display: flex; align-items: center; gap: 8px; background: var(--card-2); border-radius: 9px; padding: 6px 9px }
+.cla-other span { flex: 1; min-width: 0 }

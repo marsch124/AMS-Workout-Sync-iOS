@@ -1,0 +1,22 @@
+/* Every class starts with tst-. Purple is Progress's colour (var(--pt)). */
+.tst-n { font-variant-numeric: tabular-nums; font-size: 16px }
+.tst-pill { display: inline-flex; gap: 4px; align-items: center; border: 0; font: inherit; font-weight: 600; font-size: 12px; cursor: pointer; padding: 3px 10px; border-radius: 20px; color: var(--ink-run); background: color-mix(in srgb, var(--sp-run) 22%, transparent) }
+.tst-h { color: var(--pt); font-size: 15px }
+.tst-tile { background: color-mix(in srgb, var(--pt) 10%, var(--win)); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px }
+.tst-tn, .tst-cap { font-size: 9.5px; font-weight: 700; letter-spacing: .08em; color: var(--pt) }
+.tst-big { font-size: 28px; line-height: 1 }
+.tst-sqs { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px }
+.tst-full, .tst-out { display: block; aspect-ratio: 1; border-radius: 4px; width: 100% }
+.tst-full { background: var(--pt) } .tst-out { box-shadow: inset 0 0 0 1.5px var(--pt) }
+.tst-sw { width: 12px; height: 12px; flex: none }
+.tst-now { font-size: 8px; font-weight: 700; color: var(--pt) }
+.tst-card { background: var(--card); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px }
+.tst-nhead { background: var(--pt); color: #fff; border-radius: 12px; padding: 9px 11px; display: flex; flex-direction: column }
+.tst-nhead .tst-cap { color: #fff; opacity: .85 }
+.tst-nd { font-size: 9.5px; letter-spacing: .06em; color: var(--pt) }
+.tst-hr { border: 0; border-top: 1px solid var(--win-line); width: 100%; margin: 0 }
+.tst-title { font-size: 22px; color: var(--pt) }
+.tst-make { border: 0; background: var(--pt); color: #fff; font: inherit; font-weight: 600; border-radius: 12px; padding: 12px; cursor: pointer }
+.tst-racebtn { display: inline-flex; align-items: center; gap: 5px; color: var(--pt); font-weight: 600 }
+.tst-racebtn svg { width: 16px; height: 16px }
+.tst-racelink { font-weight: 600; color: var(--accent) }

@@ -1,0 +1,68 @@
+/* Chapter 6 — The Plan page (iPad and Mac). Every class starts with pln-. */
+.pln-keys { display: block; border: 0; background: none; padding: 2px 0; font: inherit; font-weight: 600; color: var(--i-settings); cursor: pointer }
+.pln-sync { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--win-muted) }
+.pln-sync i { width: 8px; height: 8px; border-radius: 50%; background: var(--s-ok) }
+.pln-season { position: relative; display: flex; gap: 2px; align-items: flex-end; height: 74px; padding-top: 10px }
+.pln-bar { position: relative; flex: 1; display: flex; align-items: flex-end; border: 0; background: none; padding: 0; cursor: pointer; height: 100% }
+.pln-bar b { display: block; width: 100%; background: var(--sp-swim); border-radius: 2px }
+.pln-bar.pln-on { outline: 2px solid var(--win-fg); outline-offset: 2px; border-radius: 4px }
+.pln-bar u { position: absolute; top: -2px; bottom: 0; width: 1.5px; background: var(--s-ok); text-decoration: none }
+.pln-bar u::before { content: "Today"; position: absolute; top: -9px; left: 3px; font-size: 9px; font-weight: 600; color: var(--s-ok-text) }
+.pln-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.pln-steps { display: flex; gap: 6px; margin-left: auto }
+.pln-step { border: 1px solid var(--s-ok); color: var(--s-ok-text); background: none; border-radius: 20px; padding: 3px 10px; font: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap }
+.pln-title { display: flex; align-items: baseline; gap: 10px }
+.pln-title b { font-size: 17px }
+.pln-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+.pln-col { display: flex; flex-direction: column; gap: 5px; min-height: 120px; padding: 6px; border-radius: 10px; background: var(--card-2) }
+.pln-col.pln-today { background: color-mix(in srgb, var(--s-ok) 14%, var(--card-2)) }
+.pln-col.k-dropat { box-shadow: inset 0 0 0 2px var(--i-plan) }
+.pln-col > .pln-h { font-size: 11.5px; font-weight: 600; color: var(--win-muted) }
+.pln-col.pln-today > .pln-h { font-weight: 800; color: var(--s-ok-text) }
+.pln-dummy[hidden] { display: none }
+.pln-card { position: relative; display: flex; flex-direction: column; gap: 1px; text-align: left; border: 0; border-radius: 8px; background: var(--card); color: inherit; font: inherit; padding: 5px 6px 5px 11px; cursor: pointer; box-shadow: inset 0 0 0 .5px var(--win-line) }
+.pln-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 8px 0 0 8px; background: var(--c) }
+.pln-card b { font-size: 12px; font-weight: 600 }
+.pln-card .pln-len { display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; color: var(--win-muted) }
+.pln-card .k-done { width: 15px; height: 15px }
+.pln-card .k-done svg { width: 9px; height: 9px }
+.pln-extra { display: flex; justify-content: space-between; align-items: flex-start; border-radius: 8px; padding: 5px 6px; border: 1.2px dashed var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); font-size: 12px; font-weight: 600 }
+.pln-extra small { display: block; font-weight: 400; color: var(--win-muted); font-size: 10.5px }
+.pln-add { border: 0; background: none; padding: 2px 0; color: var(--i-plan); font: inherit; font-size: 11px; font-weight: 600; text-align: left; margin-top: auto; cursor: pointer }
+.pln-rule { height: 1px; background: var(--win-line) }
+.pln-sw { --c: var(--sp-swim) } .pln-bi { --c: var(--sp-bike) } .pln-ru { --c: var(--sp-run) } .pln-st { --c: var(--sp-strength) } .pln-mo { --c: var(--sp-mobility) } .pln-re { --c: var(--sp-rest) } .pln-ot { --c: var(--sp-other) } .pln-wa { --c: var(--sp-mobility) }
+.pln-moved { display: flex; align-items: center; gap: 10px; background: var(--card); border-radius: 10px; padding: 6px 10px; font-weight: 600; font-size: 12px }
+.pln-hint { color: var(--win-muted); font-size: 12px }
+.pln-month { display: grid; grid-template-columns: 74px repeat(7, 1fr); gap: 4px }
+.pln-mh { font-size: 11px; font-weight: 600; color: var(--win-muted); padding-left: 5px }
+.pln-wk { font-size: 11px; line-height: 1.25; padding-top: 5px } .pln-wk b { display: block }
+.pln-cell { min-height: 62px; border-radius: 8px; background: var(--card-2); padding: 4px; display: flex; flex-direction: column; gap: 3px; min-width: 0 }
+.pln-cell.pln-today { background: color-mix(in srgb, var(--s-ok) 14%, var(--card-2)) }
+.pln-cell.pln-out { opacity: .45 }
+.pln-cell > span { font-size: 11px; font-weight: 600; color: var(--win-muted) }
+.pln-cell.pln-today > span { color: var(--s-ok-text); font-weight: 800 }
+.pln-chip { position: relative; display: flex; flex-direction: column; border-radius: 6px; background: var(--card); padding: 2px 4px 2px 8px; font-size: 11px; font-weight: 600; box-shadow: inset 0 0 0 .5px var(--win-line) }
+.pln-chip::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--c); border-radius: 6px 0 0 6px }
+.pln-chip small { font-size: 10px; font-weight: 400; color: var(--win-muted) }
+.pln-year { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 220px)); gap: 10px }
+.pln-block { text-align: left; border: 1px solid var(--win-line); background: var(--card); border-radius: 12px; padding: 9px; display: flex; flex-direction: column; gap: 5px; font: inherit; color: inherit; cursor: pointer }
+.pln-block b { font-size: 13px } .pln-block small { color: var(--win-muted); font-size: 10.5px }
+.pln-sq { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px }
+.pln-sq i { aspect-ratio: 1; border-radius: 2.5px; box-shadow: inset 0 0 0 1px var(--win-line) }
+.pln-sq i.pln-f { background: color-mix(in srgb, var(--c) 30%, transparent); box-shadow: none }
+.pln-sq i.pln-n { box-shadow: none }
+.pln-sq i.pln-t { outline: 1.5px solid var(--s-ok); outline-offset: 1px }
+.pln-nums { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-items: start }
+.pln-num { display: flex; flex-direction: column; gap: 5px; border-radius: 12px; background: var(--card); padding: 9px 10px }
+.pln-num > .pln-nt { font-weight: 700; font-size: 13px; color: var(--i-progress) } .pln-num > .pln-nt small { font-weight: 400; color: var(--win-muted); margin-left: 6px }
+.pln-sp { display: flex; flex-direction: column; gap: 2px; font-size: 12px }
+.pln-sp i { display: block; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--c) 30%, transparent) }
+.pln-sp i em { display: block; height: 100%; border-radius: 3px; background: var(--c) }
+.pln-load { display: flex; gap: 3px; align-items: flex-end; height: 40px }
+.pln-load i { flex: 1; height: 2px; border-radius: 2px; background: color-mix(in srgb, var(--i-progress) 55%, transparent) }
+.pln-load i:last-child { height: 38px; background: var(--i-progress) }
+.pln-keyrow { display: flex; gap: 10px; align-items: baseline; border-radius: 14px; padding: 7px 11px; background: color-mix(in srgb, var(--i-settings) 10%, transparent) }
+.pln-keyrow code { flex: none; min-width: 100px; font-weight: 700; color: var(--i-settings); background: color-mix(in srgb, var(--i-settings) 16%, transparent); border-radius: 8px; padding: 2px 8px }
+.pln-keyhead { background: var(--i-settings); color: #fff; border-radius: 16px; padding: 10px 14px }
+.pln-keyhead b { font-size: 19px; display: block }
+.pln-keyhead span { font-size: 12px; opacity: .92 }

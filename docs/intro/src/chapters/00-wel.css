@@ -1,0 +1,4 @@
+/* Every class a chapter invents starts with its id. */
+.wel-ses { border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit }
+.wel-words { gap: 2px; flex: 1 }
+.wel-title { font-size: 17px; line-height: 1.2 }

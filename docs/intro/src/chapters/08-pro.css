@@ -1,0 +1,41 @@
+/* Every class starts with pro-. Purple is Progress's own colour (var(--pt)). */
+.pro-road { gap: 6px }
+.pro-clock { display: inline-flex; align-items: baseline; gap: 6px }
+.pro-clock b { font-size: 34px; line-height: 1; color: var(--pt) }
+.pro-racebtn { display: inline-flex; align-items: center; gap: 5px; border: 0; background: color-mix(in srgb, var(--pt) 16%, transparent); color: var(--pt); font: inherit; font-weight: 600; border-radius: 20px; padding: 4px 10px; cursor: pointer }
+.pro-racebtn svg { width: 16px; height: 16px }
+.pro-link { color: var(--sp-race, var(--pt)); font-weight: 600 }
+.pro-phases { display: flex; height: 16px; border-radius: 4px; overflow: hidden; gap: 1.5px }
+.pro-phases i { position: relative; display: block }
+.pro-p1 { background: color-mix(in srgb, var(--sp-swim) 60%, transparent) } .pro-p2 { background: color-mix(in srgb, var(--sp-bike) 60%, transparent) }
+.pro-p3 { background: color-mix(in srgb, var(--sp-run) 60%, transparent) } .pro-p4 { background: var(--sp-strength) }
+.pro-phases u { position: absolute; top: -3px; bottom: -3px; left: 55%; width: 2px; background: var(--s-ok) }
+.pro-n { font-size: 16px; font-variant-numeric: tabular-nums }
+.pro-bars { display: flex; align-items: flex-end; gap: 4px; height: 96px }
+.pro-bcol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0 }
+.pro-bstack { height: 76px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; width: 100% }
+.pro-lab { font-size: 8.5px; white-space: nowrap }
+.pro-solid { display: block; background: var(--pt); border-radius: 3px; width: 100% }
+.pro-dot { display: block; width: 100%; border-radius: 3px; background: color-mix(in srgb, var(--pt) 22%, transparent); border: 1.2px dashed var(--pt) }
+.pro-sw { width: 14px; height: 10px; display: inline-block }
+.pro-effort { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px }
+.pro-effort button { border: 1.5px solid var(--pt); background: none; color: var(--pt); font: inherit; font-weight: 700; border-radius: 7px; padding: 5px 0; cursor: pointer; font-size: 11px }
+.pro-season { display: flex; align-items: flex-end; gap: 6px; height: 90px }
+.pro-scol { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end }
+.pro-scol i { display: block; width: 100%; border-radius: 3px; background: var(--pt) }
+.pro-sl { font-size: 11px; color: var(--win-muted) }
+.pro-head { background: var(--pt); color: #fff; border-radius: 16px; padding: 10px 14px; display: flex; flex-direction: column }
+.pro-cap { font-size: 10px; font-weight: 700; letter-spacing: .08em; opacity: .85 }
+.pro-month { font-size: 24px; line-height: 1.15 }
+.pro-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px }
+.pro-tile { background: color-mix(in srgb, var(--pt) 10%, var(--win)); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0 }
+.pro-tn { font-size: 9.5px; font-weight: 700; letter-spacing: .08em; color: var(--pt) }
+.pro-big { font-size: 18px; line-height: 1.15; font-variant-numeric: tabular-nums } .pro-big small { font-size: 11px }
+.pro-slim { position: relative; display: block; height: 6px }
+.pro-slim i { position: absolute; left: 0; top: 0; height: 6px; border-radius: 3px }
+.pro-pdf { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; background: var(--pt); color: #fff; font: inherit; font-weight: 600; border-radius: 11px; padding: 10px; cursor: pointer }
+.pro-pdf svg { width: 15px; height: 15px }
+.pro-earlier { border: 0; background: none; color: var(--pt); font: inherit; font-weight: 600; cursor: pointer; padding: 4px }
+.pro-list { background: color-mix(in srgb, var(--pt) 10%, var(--win)); border-radius: 12px; display: flex; flex-direction: column }
+.pro-list button { border: 0; background: none; font: inherit; color: inherit; text-align: left; padding: 8px 12px; cursor: pointer }
+.pro-h { font-size: 15px }

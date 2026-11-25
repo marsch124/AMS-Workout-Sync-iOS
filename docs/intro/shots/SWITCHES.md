@@ -1,0 +1,229 @@
+# The switches behind each picture (25 Nov 2026)
+
+Collected from the helpers' own picture scripts, newest attempt last — the LAST line is most likely the one that made the
+picture in use; check the picture after a retake. `AMSWS_HOME=app` is added by `tools/shot.sh` by itself. Pictures taken on the
+iPad carry `-pad` or start with `pln-` / `hom-02`, `hom-03`.
+
+- **bod-01-top**
+  - `AMSWS_TAB=body AMSWS_FAKE_GARMIN=1`
+- **bod-02-tiles**
+  - `AMSWS_TAB=body AMSWS_FAKE_GARMIN=1 AMSWS_BODY_SHIFT=420`
+- **bod-04-peek-sleep**
+  - `AMSWS_TAB=body AMSWS_FAKE_GARMIN=1 AMSWS_BODY_PEEK=sleep`
+- **bod-06-workout**
+  - `AMSWS_TAB=body AMSWS_FAKE_GARMIN=1 AMSWS_BODY_WORKOUT=0`
+- **bod-07-workout-b**
+  - `AMSWS_TAB=body AMSWS_FAKE_GARMIN=1 AMSWS_BODY_WORKOUT=1`
+- **bod-08-range-4w**
+  - `AMSWS_TAB=body AMSWS_FAKE_GARMIN=1 AMSWS_BODY_RANGE=4w AMSWS_BODY_SHIFT=420`
+- **bod-11-empty**
+  - `AMSWS_TAB=body`
+- **bod-92-pad**
+  - `AMSWS_SIDE=body AMSWS_FAKE_GARMIN=1`
+- **cla-01-page-key**
+  - `AMSWS_CLAUDE_PAGE=1 AMSWS_FAKE_CLAUDE=1`
+- **cla-02-page-nokey**
+  - `AMSWS_CLAUDE_PAGE=1`
+- **cla-03-card-picked**
+  - `AMSWS_TODAY=2026-09-14 AMSWS_HOME=app AMSWS_AWAY=nopool AMSWS_SUGGEST=card AMSWS_FAKE_CLAUDE=1 AMSWS_TAB=today`
+- **cla-04-cannot-choose**
+  - `AMSWS_TODAY=2026-09-14 AMSWS_HOME=app AMSWS_AWAY=nopool AMSWS_SUGGEST=card AMSWS_FAKE_CLAUDE=1 AMSWS_CLAUDE_TROUBLE=key AMSWS_TAB=today`
+  - `AMSWS_TODAY=2026-09-14 AMSWS_AWAY=nopool AMSWS_SUGGEST=card AMSWS_FAKE_CLAUDE=1 AMSWS_CLAUDE_TROUBLE=key AMSWS_TAB=today`
+- **cla-06-week-written**
+  - `AMSWS_TODAY=2026-09-20 AMSWS_FAKE_CLAUDE=1 AMSWS_CLAUDE_REVIEW=1 AMSWS_TAB=today AMSWS_TODAY_OFFSET=300`
+- **cla-08-ask-answer**
+  - `AMSWS_FAKE_CLAUDE=1 AMSWS_CLAUDE_ASK=1`
+- **cla-09-ask-button**
+  - `AMSWS_FAKE_CLAUDE=1 AMSWS_ASK_BUTTON=1 AMSWS_TAB=plan`
+- **gar-01-page-saved**
+  - `AMSWS_GARMIN_PAGE=1 AMSWS_FAKE_GARMIN=1`
+- **gar-03-today-numbers**
+  - `AMSWS_FAKE_GARMIN=1 AMSWS_TAB=today`
+- **gar-04-plate**
+  - `AMSWS_MORNING_PLATE=1 AMSWS_FAKE_GARMIN=1`
+- **gar-06-health-logform**
+  - `AMSWS_FAKE_HEALTH=1 AMSWS_LOGFORM=1 AMSWS_SESSION=2026-09-16`
+  - `AMSWS_FAKE_HEALTH=1 AMSWS_LOGFORM=1 AMSWS_SESSION=Weekly Schedules!11`
+- **hom-01-icloud-page**
+  - `AMSWS_CLOUD_PAGE=1 AMSWS_TAB=settings`
+  - `AMSWS_CLOUD_PAGE=1 AMSWS_TAB=settings AMSWS_FAKE_CLOUD=<a scratch folder> AMSWS_CLOUD_SEED=<repo>/UITests/Fixtures/plan.xlsx AMSWS_HOME=app`
+- **hom-02-waiting**
+  - `AMSWS_WAITING=none`
+  - `AMSWS_WAITING=none AMSWS_FILE=/nonexistent.xlsx`
+- **hom-03-waiting-ready**
+  - `AMSWS_WAITING=ready`
+  - `AMSWS_WAITING=ready AMSWS_FILE=/nonexistent.xlsx`
+- **hom-04-movein**
+  - `AMSWS_MOVEIN=1`
+- **hom-05-safety**
+  - `AMSWS_SAFETY=1`
+  - `AMSWS_SAFETY=1 AMSWS_HOME=app`
+- **log-01-form**
+  - `AMSWS_PLANNED=run AMSWS_LOGFORM=1`
+- **log-02-form-extras**
+  - `AMSWS_LOG_EXTRAS=1`
+- **log-03-done-notes**
+  - `AMSWS_DONE_EXTRAS=1 AMSWS_SESSION_SCROLL=1`
+- **log-04-fuel-notes**
+  - `AMSWS_FUEL_NOTES=1`
+- **log-05-niggles**
+  - `AMSWS_TAB=progress AMSWS_NIGGLES_CARD=1`
+- **log-06-extra-form**
+  - `AMSWS_EXTRAFORM=1`
+- **log-07-extra-detail**
+  - `AMSWS_EXTRA_DETAIL=1 AMSWS_FAKE_DONE=1`
+- **lst-01-sessions**
+  - `AMSWS_TAB=plan`
+- **lst-02-search**
+  - `AMSWS_TAB=plan AMSWS_SEARCH=run`
+- **lst-03-print**
+  - `AMSWS_TAB=plan AMSWS_PRINT=week`
+- **lst-04-print-month**
+  - `AMSWS_TAB=plan AMSWS_PRINT=month`
+- **lst-05-changes**
+  - `AMSWS_CHANGES=1`
+- **lst-06-done-list**
+  - `AMSWS_TAB=plan AMSWS_LIST=Done AMSWS_FAKE_DONE=1`
+- **lst-91-pad**
+  - `AMSWS_SIDE=sessions AMSWS_SEARCH=ride`
+- **pln-01-week**
+  - `AMSWS_SIDE=plan AMSWS_PLAN=week`
+- **pln-02-month**
+  - `AMSWS_SIDE=plan AMSWS_PLAN=month`
+- **pln-03-year**
+  - `AMSWS_SIDE=plan AMSWS_PLAN=year`
+- **pln-04-keys**
+  - `AMSWS_SIDE=plan AMSWS_KEYS=1`
+- **pln-05-print**
+  - `AMSWS_SIDE=plan AMSWS_PRINT=week`
+- **pln-06-print-month**
+  - `AMSWS_SIDE=plan AMSWS_PRINT=month`
+- **pln-07-session-beside**
+  - `AMSWS_SIDE=plan AMSWS_SESSION=Weekly Schedules!11`
+- **pln-08-week-ask**
+  - `AMSWS_SIDE=plan AMSWS_FAKE_CLAUDE=1 AMSWS_ASK_BUTTON=1`
+- **pro-01-top**
+  - `AMSWS_TAB=progress AMSWS_FILE=$PWD/UITests/Fixtures/plan-done.xlsx AMSWS_FAKE_DONE=1`
+  - `AMSWS_TAB=progress $F AMSWS_FAKE_DONE=1`
+- **pro-02-load**
+  - `AMSWS_TAB=progress AMSWS_FILE=$PWD/UITests/Fixtures/plan-done.xlsx AMSWS_FAKE_DONE=1 AMSWS_SCROLL=load`
+  - `AMSWS_TAB=progress $F AMSWS_FAKE_DONE=1 AMSWS_SCROLL=load`
+- **pro-03-new-cards**
+  - `AMSWS_TAB=progress AMSWS_FILE=$PWD/UITests/Fixtures/plan-done.xlsx AMSWS_FAKE_DONE=1 AMSWS_SCROLL=round28`
+  - `AMSWS_TAB=progress $F AMSWS_FAKE_DONE=1 AMSWS_SCROLL=round28`
+- **pro-04-month-review**
+  - `AMSWS_TAB=progress AMSWS_HOME=app AMSWS_TODAY=2026-10-02 AMSWS_MONTH_REVIEW=1`
+- **pro-05-bests**
+  - `AMSWS_TAB=progress AMSWS_HOME=app AMSWS_TODAY=2026-10-02 AMSWS_BESTS=1`
+- **rac-01-race**
+  - `AMSWS_RACE_PAGE=1`
+- **rac-02-fuel**
+  - `AMSWS_RACE_PAGE=1 AMSWS_RACE_SCROLL=fuel`
+- **rac-03-kit**
+  - `AMSWS_RACE_PAGE=1 AMSWS_RACE_SCROLL=kit`
+- **rac-04-pacing**
+  - `AMSWS_RACE_PAGE=1 AMSWS_RACE_OPEN=pacing`
+- **rac-06-list-edit**
+  - `AMSWS_RACE_PAGE=1 AMSWS_RACE_OPEN=list`
+- **rac-07-gear**
+  - `AMSWS_GEAR_PAGE=1`
+- **rac-08-gear-change**
+  - `AMSWS_GEAR_PAGE=1 AMSWS_GEAR_OPEN=change`
+- **rac-95-pad**
+  - `AMSWS_SIDE=settings AMSWS_RACE_PAGE=1`
+- **rem-01-reminders**
+  - `AMSWS_REMINDERS_PAGE=1`
+- **rem-02-refused**
+  - `AMSWS_REMINDERS_PAGE=denied`
+- **rem-05-today-away**
+  - `AMSWS_TAB=today AMSWS_TODAY=2026-09-14 AMSWS_HOME=app AMSWS_AWAY=nopool AMSWS_SUGGEST=card`
+- **rem-06-nogym**
+  - `AMSWS_TAB=today AMSWS_NOGYM=1`
+- **ses-02-pool-card**
+  - `AMSWS_POOL_CARD=1`
+- **ses-03-pool-step**
+  - `AMSWS_POOL_CARD=1 AMSWS_POOL_STEP=2`
+- **ses-04-planned-swim**
+  - `AMSWS_PLANNED=swim`
+- **ses-05-done-run**
+  - `AMSWS_DONE=run AMSWS_FAKE_GARMIN=1 AMSWS_FAKE_PATH=/tmp`
+  - `AMSWS_DONE=run $DONE AMSWS_FAKE_GARMIN=1 AMSWS_FAKE_PATH=/tmp`
+- **ses-06-watch**
+  - `AMSWS_DONE=run AMSWS_FAKE_GARMIN=1 AMSWS_FAKE_PATH=/tmp AMSWS_SESSION_SCROLL=end`
+  - `AMSWS_DONE=run $DONE AMSWS_FAKE_GARMIN=1 AMSWS_FAKE_PATH=/tmp AMSWS_SESSION_SCROLL=1`
+- **ses-07-move**
+  - `AMSWS_PLANNED=run AMSWS_MOVE=1`
+- **ses-08-edit**
+  - `AMSWS_PLANNED=run AMSWS_EDIT=1`
+- **ses-10-repeat**
+  - `AMSWS_REPEAT=1`
+- **ses-11-new-favourites**
+  - `AMSWS_ADD_WITH_FAVOURITES=1`
+- **ses-12-laps-last-time**
+  - `AMSWS_DONE=run $DONE AMSWS_FAKE_GARMIN=1 AMSWS_FAKE_PATH=/tmp AMSWS_SESSION_SCROLL=end`
+- **set-01-top**
+  - `AMSWS_TAB=settings`
+- **set-02-middle**
+  - `AMSWS_TAB=settings AMSWS_SCROLL=zones`
+- **set-03-lower**
+  - `AMSWS_TAB=settings AMSWS_SCROLL=calendar AMSWS_TODAY_OFFSET=900`
+- **set-04-favourites**
+  - `AMSWS_FAVOURITES_PAGE=1`
+- **set-94-pad**
+  - `AMSWS_SIDE=settings`
+- **sug-01-card**
+  - `AMSWS_TAB=today AMSWS_SUGGEST=card AMSWS_TODAY_OFFSET=600`
+  - `AMSWS_TAB=today AMSWS_SUGGEST=card`
+- **sug-02-other**
+  - `AMSWS_TAB=today AMSWS_SUGGEST=other AMSWS_TODAY_OFFSET=600`
+  - `AMSWS_TAB=today AMSWS_SUGGEST=other`
+- **sug-03-stop**
+  - `AMSWS_STOP=1`
+- **sug-05-ladder**
+  - `AMSWS_TAB=today AMSWS_LADDER=1`
+  - `AMSWS_TAB=today AMSWS_LADDER=1 AMSWS_TODAY_OFFSET=600`
+- **sug-06-hurts**
+  - `AMSWS_HURTS=1 AMSWS_FAKE_DONE=1`
+- **sug-07-settings-log**
+  - `AMSWS_SUGGEST_LOG=1`
+- **tod-01-morning**
+  - `AMSWS_TAB=today AMSWS_MORNING_PLATE=1`
+  - `AMSWS_TAB=today AMSWS_MORNING_PLATE=1 AMSWS_HOME=app`
+  - `AMSWS_TAB=today`
+- **tod-02-session-weather**
+  - `AMSWS_TAB=today AMSWS_FAKE_WEATHER=1 AMSWS_FAKE_DONE=1 AMSWS_FEEL=4`
+- **tod-03-week-so-far**
+  - `AMSWS_TAB=today AMSWS_FAKE_DONE=1 AMSWS_FEEL=4 AMSWS_TODAY_OFFSET=500`
+  - `AMSWS_TAB=today AMSWS_FAKE_DONE=1 AMSWS_FEEL=4 AMSWS_TODAY_OFFSET=250`
+  - `AMSWS_TAB=today AMSWS_FAKE_DONE=1 AMSWS_FEEL=4`
+- **tod-04-sunday-card**
+  - `AMSWS_TAB=today AMSWS_TODAY=2026-09-13 AMSWS_SUNDAY_CARD=1 AMSWS_TODAY_OFFSET=600`
+  - `AMSWS_TAB=today AMSWS_TODAY=2026-09-13 AMSWS_SUNDAY_CARD=1`
+  - `AMSWS_TAB=today AMSWS_TODAY=2026-09-13 AMSWS_SUNDAY_CARD=1 AMSWS_TODAY_OFFSET=700`
+- **tod-05-lower**
+  - `AMSWS_TAB=today AMSWS_FAKE_DONE=1 AMSWS_FEEL=4 AMSWS_TODAY_OFFSET=1100`
+  - `AMSWS_TAB=today AMSWS_TODAY_OFFSET=700`
+  - `AMSWS_TAB=today AMSWS_TODAY_OFFSET=800`
+- **tod-07-foot**
+  - `AMSWS_TAB=today AMSWS_TODAY_OFFSET=1500`
+  - `AMSWS_TAB=today AMSWS_TODAY_OFFSET=1400`
+  - `AMSWS_TAB=today AMSWS_FAKE_DONE=1 AMSWS_FEEL=4 AMSWS_TODAY_OFFSET=250`
+- **tod-90-pad**
+  - `AMSWS_SIDE=today AMSWS_FAKE_GARMIN=1`
+- **tst-01-tests-card**
+  - `AMSWS_TAB=progress AMSWS_HOME=app AMSWS_TODAY=2026-10-02 AMSWS_TESTS_CARD=1 AMSWS_FAKE_TESTS=1`
+- **tst-02-zones**
+  - `AMSWS_ZONES=1`
+- **tst-03-test-new**
+  - `AMSWS_TEST=new AMSWS_HOME=app`
+- **tst-04-zones-card**
+  - `AMSWS_ZONES_CARD=1 AMSWS_ZONES_ONLY=1`
+- **tst-05-steady**
+  - `AMSWS_TAB=progress AMSWS_HOME=app AMSWS_TODAY=2026-10-02 AMSWS_STEADY=1`
+- **tst-06-niggles**
+  - `AMSWS_NIGGLES_CARD=1`
+- **wel-01-today**
+  - `AMSWS_TAB=today AMSWS_FAKE_WEATHER=1`
+  - `AMSWS_TAB=today AMSWS_FAKE_WEATHER=1 AMSWS_HOME=app`
+
+No script line found (taken by hand; see PICTURES.md): gar-02-page-nokey, rem-03-away-page, set-06-foot, tod-08-garmin-plate

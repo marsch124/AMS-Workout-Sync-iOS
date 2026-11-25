@@ -1,0 +1,173 @@
+/* kit.css — the pretend iPhone and iPad and the shared building blocks (all start with k-). Chapters add their own classes
+   with their own prefix. Sizes are in the device's own points (the whole device is scaled to fit the page). */
+.pane { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; padding: 16px 20px 22px; display: flex; flex-direction: column; gap: 9px }
+.pane > *, .k-sheet > * { flex: none }
+.k-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, .3); display: grid; place-items: center; z-index: 20 }
+[data-part="today"] { --pc: var(--i-today); --pt: var(--i-today) } [data-part="plan"] { --pc: var(--i-plan); --pt: var(--i-plan) }
+[data-part="sessions"] { --pc: var(--i-sessions); --pt: var(--i-sessions) } [data-part="body"] { --pc: var(--i-body); --pt: var(--i-body) }
+[data-part="progress"] { --pc: var(--i-progress); --pt: var(--i-progress) } [data-part="settings"] { --pc: var(--i-settings); --pt: var(--i-settings) }
+
+/* iPhone: 304 × 642 on a desk, its page 290 wide (the real one is 390 points: everything here is about three quarters of real size) */
+.desk { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(160deg, var(--desk-a), var(--desk-b)) }
+.phone { position: relative; width: 304px; height: 642px; border-radius: 38px; background: var(--win); border: 7px solid var(--phone-edge); overflow: hidden; display: flex; flex-direction: column }
+.phone-body { position: relative; min-width: 0; overflow: hidden; flex: 1 }
+.phone .pane { padding: 30px 12px 12px }
+.phone-tabs { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--win-line); background: var(--card) }
+.phone-tabs button { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; background: none; font-size: 8.5px; font-weight: 600; color: var(--win-muted); cursor: pointer; padding: 6px 0 14px; --pc: var(--i-today) }
+.phone-tabs button[data-part="sessions"] { --pc: var(--i-sessions) } .phone-tabs button[data-part="body"] { --pc: var(--i-body) }
+.phone-tabs button[data-part="progress"] { --pc: var(--i-progress) } .phone-tabs button[data-part="settings"] { --pc: var(--i-settings) }
+.phone-tabs button svg { width: 19px; height: 19px; color: var(--pc) }
+.phone-tabs button.k-on { color: var(--pc); background: color-mix(in srgb, var(--pc) 16%, transparent) }
+.phone .k-dim { place-items: end center }
+.phone .k-sheet, .phone .k-sheet.k-wide { width: 100%; max-height: 560px; border-radius: 18px 18px 0 0; padding: 14px 12px 18px }
+
+/* iPad (and the Mac window): a side list and the page, 1040 × 660 */
+.pad { position: absolute; inset: 0; display: grid; grid-template-columns: 172px minmax(0, 1fr); background: var(--win) }
+.pad-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 14px 8px 10px; display: flex; flex-direction: column; gap: 2px }
+.pad-app { font-size: 11px; font-weight: 600; color: var(--win-muted); padding: 2px 8px 8px }
+.pad-part { display: flex; align-items: center; padding: 6px 9px; border: 0; background: none; border-radius: 7px; text-align: left; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--i-today) }
+.pad-part[data-part="plan"], .pad-part[data-part="sessions"] { color: var(--i-plan) } .pad-part[data-part="body"] { color: var(--i-body) }
+.pad-part[data-part="progress"] { color: var(--i-progress) } .pad-part[data-part="settings"] { color: var(--i-settings) }
+.pad-part.k-on { background: var(--win-sel) }
+.pad-foot { margin-top: auto; font-size: 11px; color: var(--win-muted); padding: 4px 8px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start }
+.pad-body { position: relative; min-width: 0; overflow: hidden }
+.pad .k-dim { place-items: center }
+
+/* A real picture in place of the practice screen */
+.phone-shot { background: #000 }
+.k-shotwrap { position: absolute; inset: 0; display: grid; place-items: center }
+.k-shot { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; user-select: none }
+.k-shotnote { display: none; color: var(--win-muted); padding: 20px; text-align: center }
+.k-noshot .k-shot { display: none } .k-noshot .k-shotnote { display: block }
+.k-realtag { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; background: rgba(20, 30, 30, .82); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 11px; border-radius: 20px; white-space: nowrap; z-index: 5; pointer-events: none }
+.k-realtag svg { width: 13px; height: 13px }
+.desk-pad { place-items: start center; overflow-y: auto; padding: 12px 0 }
+.padshot { position: relative; width: 760px; border-radius: 16px; border: 6px solid var(--phone-edge); overflow: hidden; background: #000 }
+.padshot .k-shotwrap { position: static; display: block }
+.padshot .k-shot { height: auto; object-fit: contain }
+.desk-pad .k-realtag { position: sticky; bottom: 4px; left: auto; transform: none; margin: -30px auto 0; width: max-content }
+
+/* Words and figures */
+.k-h1 { font-size: 22px; font-weight: 700; line-height: 1.15; margin: 0; color: var(--pt) }
+.phone .k-h1 { font-size: 20px }
+.k-h2 { font-size: 15px; font-weight: 650; margin: 0 }
+.k-sub, .k-muted { color: var(--win-muted) }
+.k-small { font-size: 11.5px }
+.k-cap { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--win-muted) }
+.k-big { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--pt); font-variant-numeric: tabular-nums }
+.k-fig { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap }
+.k-pt { color: var(--pt) }
+.k-oktext { color: var(--s-ok-text) } .k-needstext { color: var(--s-needs-text) } .k-failtext { color: var(--s-fail-text) }
+
+/* Layout */
+.k-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
+.k-sp { flex: 1 }
+.k-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
+.k-col { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
+.k-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 10px; align-items: start }
+.k-cols.k-even { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+.k-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.k-grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px }
+.k-card { background: var(--card); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0 }
+.k-card.k-plain { background: none; border: 1px solid var(--win-line) }
+.k-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid var(--win-line); min-width: 0 }
+.k-row:first-child, .k-cap + .k-row, .k-norule { border-top: 0 }
+.k-row.k-sel { background: var(--win-sel); border-radius: 6px; padding-inline: 6px; border-top-color: transparent }
+.k-row[data-act] { cursor: pointer }
+.k-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+
+/* Buttons and choices */
+.k-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--win-line); background: var(--card); border-radius: 9px; padding: 6px 12px; font: inherit; color: inherit; cursor: pointer; white-space: nowrap }
+.k-btn svg, .k-link svg { width: 15px; height: 15px }
+.k-btn.k-main { background: var(--main); border-color: var(--main); color: #fff; font-weight: 600 }
+.k-btn.k-full { width: 100% }
+.k-btn.k-out { border-color: var(--pt); color: var(--pt); background: none; font-weight: 600 }
+.k-btn.k-quiet { border-color: transparent; background: none; color: var(--win-muted) }
+.k-btn.k-danger { color: var(--s-fail-text) }
+.k-btn:disabled { opacity: .45; cursor: default }
+.k-link { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 0; color: var(--accent); cursor: pointer }
+.k-seg { display: inline-flex; background: var(--card-2); border-radius: 8px; padding: 2px; gap: 2px }
+.k-seg button { border: 0; background: none; border-radius: 6px; padding: 3px 12px; cursor: pointer }
+.k-seg button.k-on { background: var(--win); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, .18) }
+.k-stepper { display: inline-flex; align-items: center; gap: 6px }
+.k-stepper b { min-width: 128px; text-align: center; font-size: 14px }
+.k-stepper button { display: grid; place-items: center; width: 28px; height: 26px; border: 1px solid var(--win-line); background: var(--win); border-radius: 7px; cursor: pointer }
+.k-stepper svg { width: 15px; height: 15px }
+.k-pill { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--win-line); background: var(--win); border-radius: 20px; padding: 3px 11px; cursor: pointer }
+.k-pill.k-on { border-color: var(--main); background: var(--main); color: #fff; font-weight: 600 }
+.k-pill.k-grey { background: var(--card-2); border-color: transparent; color: var(--win-muted); font-size: 11px }
+.k-tile { display: flex; align-items: center; gap: 6px; min-height: 26px; border: 1px solid var(--win-line); background: var(--win); border-radius: 7px; padding: 3px 9px; cursor: pointer; text-align: left }
+.k-tile.k-on { border-color: var(--main); box-shadow: inset 0 0 0 1px var(--main); font-weight: 600 }
+.k-tick { display: inline-flex; align-items: center; gap: 8px; border: 0; background: none; padding: 2px 0; cursor: pointer; text-align: left }
+.k-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--win-muted); display: grid; place-items: center; flex: none }
+.k-tick.k-on .k-box { background: var(--main); border-color: var(--main); color: #fff }
+.k-box svg { width: 12px; height: 12px; stroke-width: 3 }
+.k-in { font: inherit; color: inherit; background: var(--win); border: 1px solid var(--win-line); border-radius: 6px; padding: 4px 8px; min-width: 0 }
+.k-kbd { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border: 1px solid var(--win-line); border-bottom-width: 2px; border-radius: 4px; font-size: 11px; color: var(--win-muted); background: var(--win) }
+.k-field { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 8px; align-items: center }
+.phone .k-field { grid-template-columns: 92px minmax(0, 1fr) }
+.k-field > label, .k-field > span:first-child { color: var(--win-muted) }
+
+/* Bars, marks, bands */
+.k-bar { position: relative; display: inline-block; flex: 1; min-width: 60px; height: 8px; border-radius: 4px; background: var(--s-fail); box-shadow: inset 0 0 0 1px var(--win-line); overflow: hidden }
+.k-bar:not(.k-over) { background: var(--card-2) }
+.k-bar i { position: absolute; inset: 0 auto 0 0; background: var(--pt, var(--main)); border-radius: 4px 0 0 4px }
+.k-bar u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--win-fg); text-decoration: none }
+.k-mark { display: inline-flex; align-items: center; gap: 6px }
+.k-mark i { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--win-muted) }
+.k-mark.k-ok i { background: var(--s-ok) } .k-mark.k-needs i { background: var(--s-needs) } .k-mark.k-fail i { background: var(--s-fail) }
+.k-mark.k-ring i { background: none; border: 2px solid var(--win-muted) }
+.k-band { display: flex; align-items: flex-start; gap: 8px; border-radius: 8px; padding: 7px 10px; background: var(--card) }
+.k-band svg { width: 16px; height: 16px; margin-top: 1px }
+.k-band.k-needs { background: var(--s-needs-soft); color: var(--s-needs-text) }
+.k-band.k-ok { color: var(--s-ok-text) } .k-band.k-fail { color: var(--s-fail-text) }
+.k-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums }
+.k-table th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--win-muted); padding: 3px 10px 3px 0 }
+.k-table td { padding: 5px 10px 5px 0; border-top: 1px solid var(--win-line); vertical-align: top }
+.k-table tr.k-sel td { background: var(--win-sel) }
+.k-table tr[data-act] { cursor: pointer }
+
+/* Sheets, drag rows, toast */
+.k-sheet { width: 520px; max-height: 610px; color: var(--win-fg); overflow-x: hidden; overflow-y: auto; background: var(--win); border-radius: 12px; padding: 16px 18px; box-shadow: 0 20px 50px rgba(0, 0, 0, .35); display: flex; flex-direction: column; gap: 10px }
+.k-sheet.k-wide { width: 780px }
+.k-sheet h3 { margin: 0; font-size: 17px; font-weight: 700; color: var(--pt) }
+.k-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px }
+.k-dragrow { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-top: 1px solid var(--win-line); border-radius: 6px; background: var(--win) }
+.k-grip { display: grid; place-items: center; width: 24px; height: 22px; color: var(--win-muted); cursor: grab; touch-action: none; border: 0; background: none; border-radius: 5px }
+.k-grip svg { width: 15px; height: 15px }
+.k-dragging { opacity: .5 }
+.k-dropat { box-shadow: inset 0 2px 0 var(--main) }
+.k-toast { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--win-fg); color: var(--win); font-weight: 600; padding: 7px 14px; border-radius: 20px; z-index: 50; max-width: 80%; text-align: center }
+
+/* This app's own blocks */
+.k-sport { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; flex: none; background: color-mix(in srgb, var(--sc) 22%, transparent); color: var(--si) }
+.k-sport svg { width: 58%; height: 58% }
+.k-sp-swim { --sc: var(--sp-swim); --si: var(--ink-swim) } .k-sp-bike, .k-sp-brick { --sc: var(--sp-bike); --si: var(--ink-bike) } .k-sp-run { --sc: var(--sp-run); --si: var(--ink-run) }
+.k-sp-strength { --sc: var(--sp-strength); --si: var(--ink-strength) } .k-sp-rowing { --sc: var(--sp-rowing); --si: var(--ink-rowing) } .k-sp-mobility { --sc: var(--sp-mobility); --si: var(--ink-mobility) }
+.k-sp-race { --sc: var(--sp-race); --si: var(--ink-race) } .k-sp-rest { --sc: var(--sp-rest); --si: var(--ink-rest) } .k-sp-other { --sc: var(--sp-other); --si: var(--ink-other) }
+.k-sportword { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--si) }
+.k-done { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--s-ok); color: #fff; flex: none }
+.k-done svg { width: 12px; height: 12px; stroke-width: 3 }
+.k-back { display: inline-flex; align-items: center; gap: 3px; border: 0; background: none; padding: 2px 0; color: var(--pt); font-weight: 600; cursor: pointer; align-self: flex-start }
+.k-back svg { width: 16px; height: 16px; stroke-width: 2.1 }
+.k-hero { background: var(--pc); color: #fff; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; min-width: 0 }
+.k-herocap { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; opacity: .85 }
+.k-herotitle { font-size: 22px; font-weight: 700; line-height: 1.15 }
+.k-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px }
+.k-stats.k-three { grid-template-columns: repeat(3, minmax(0, 1fr)) }
+.k-stat { display: flex; flex-direction: column; gap: 1px; background: var(--card); border: 0; border-radius: 10px; padding: 9px 11px; text-align: left; min-width: 0; font: inherit; color: inherit }
+button.k-stat { cursor: pointer }
+.k-stat b { font-size: 17px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums }
+.k-stat span { font-size: 10.5px; color: var(--win-muted) }
+.k-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--card-2); border: 0; border-radius: 20px; padding: 2px 9px; font: inherit; font-size: 11px; font-weight: 600; color: var(--win-fg); white-space: nowrap }
+button.k-chip { cursor: pointer }
+.k-switch { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; padding: 5px 0; cursor: pointer; text-align: left; font: inherit; color: inherit }
+.k-switch > span { flex: 1; min-width: 0 }
+.k-switch > i { width: 34px; height: 20px; border-radius: 10px; background: var(--card-2); box-shadow: inset 0 0 0 1px var(--win-line); position: relative; flex: none; transition: background .15s }
+.k-switch > i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .3); transition: left .15s }
+.k-switch.k-on > i { background: var(--main) } .k-switch.k-on > i::after { left: 16px }
+.k-nav { display: flex; align-items: center; gap: 9px; width: 100%; border: 0; background: var(--card); border-radius: 10px; padding: 8px 10px; cursor: pointer; text-align: left; font: inherit; color: inherit; min-width: 0 }
+.k-navw { display: flex; flex-direction: column; flex: 1; min-width: 0 }
+.k-navw small { font-size: 10.5px; color: var(--win-muted) }
+.k-nav > svg.i { width: 14px; height: 14px; color: var(--win-muted) }
+.k-list { display: flex; flex-direction: column; gap: 5px }
