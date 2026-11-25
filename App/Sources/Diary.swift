@@ -97,6 +97,7 @@ final class Diary: ObservableObject {
         stamps = doc.stamps
         save()
         onChange?()
+        Neighbours.shared.writeFeel(value, day: day)
     }
 
     /* How hard a workout from Health was. */

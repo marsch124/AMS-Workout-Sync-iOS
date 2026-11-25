@@ -68,6 +68,8 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: com.schabbauer.amsworkoutsync
             CFBundleURLSchemes: [amsworkoutsync]
+        # Is Workouts / Magic Morning installed? (Only asked, never read from.)
+        LSApplicationQueriesSchemes: [amsworkouts, amsmorning]
         ITSAppUsesNonExemptEncryption: false
         NSCalendarsFullAccessUsageDescription: To keep your sessions in a Training calendar — added, moved and removed as the plan changes. Full access is what iOS requires for an app to update events it made itself.
         NSCameraUsageDescription: To take a photograph of a session and keep it beside the plan, on your iPhone, iPad and Mac through your own iCloud.

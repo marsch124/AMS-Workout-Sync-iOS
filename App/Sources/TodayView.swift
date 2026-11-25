@@ -18,6 +18,7 @@ struct TodayView: View {
     @State private var openExtra: ExtraSummary?
     /* How he felt each morning, kept on the phone. */
     @ObservedObject private var diary = Diary.shared
+    @ObservedObject private var neighbours = Neighbours.shared
     /* He tapped "Feeling good" to change it: the question comes back for one tap. */
     @State private var changingFeel = false
 
@@ -37,6 +38,7 @@ struct TodayView: View {
             }
             .background(Theme.bg.ignoresSafeArea())
             .refreshable { store.refresh() }
+            .task { neighbours.cameToFront(today: store.today) }
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $addingExtra) { day in ExtraFormView(day: day.key).environmentObject(store) }
@@ -65,10 +67,11 @@ struct TodayView: View {
             // "Feeling good" joins the night's numbers on the one line; a tap
             // on the line brings the question back to change the answer.
             MorningLine(today: today, feel: changingFeel ? nil : diary.feel.answer(on: today),
+                        feelFrom: changingFeel ? nil : neighbours.feelSource(today: today, answer: diary.feel.answer(on: today)),
                         change: { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true } })
             // The morning question: once a day, one tap, and it is gone until
             // tomorrow. Nothing else on this screen reacts to the answer.
-            if diary.feel.asks(on: today) || changingFeel {
+            if (diary.feel.asks(on: today) && !neighbours.hasFeel(today: today)) || changingFeel {
                 FeelCard(current: diary.feel.answer(on: today)) { f in
                     diary.setFeel(f, on: today)
                     withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false }
@@ -99,6 +102,7 @@ struct TodayView: View {
                                 .allowsHitTesting(false)
                         }
                     }
+                    if let s = neighbours.strength(for: w, among: sessions) { NeighbourDoneLine(workout: w, state: s).padding(.top, -6) }
                 }
             }
 
@@ -217,14 +221,16 @@ struct TodayView: View {
         let today: String
         /* This morning's answer to "How do you feel?", once given. */
         var feel: Feel? = nil
+        /* "Magic Morning" when that app gave the answer: then it has a line of its own. */
+        var feelFrom: String? = nil
         var change: () -> Void = {}
         var body: some View {
             // On the iPad and the Mac the numbers may be the iPhone's: then they say so, and when.
             let shown = health.shownMorning(today: today)
             // Garmin's numbers take the place of Health's for the same thing: never two numbers side by side.
             let m = garmin.withoutDuplicates(of: shown.morning)
-            let healthLine = !m.isEmpty || feel != nil
-            if healthLine || garmin.shown != nil {
+            let healthLine = !m.isEmpty || shownFeel != nil
+            if healthLine || garmin.shown != nil || feelFrom != nil {
                 VStack(alignment: .leading, spacing: 1) {
                 if healthLine {
                 // One row, not three stacked readings: the figure, and beside it
@@ -244,13 +250,27 @@ struct TodayView: View {
                     .accessibilityIdentifier("morning-line")
                     .accessibilityLabel(spoken(m))
                     .contentShape(Rectangle())
-                    .onTapGesture { if feel != nil { change() } }
+                    .onTapGesture { if shownFeel != nil { change() } }
                     .opacity(shown.stale ? 0.6 : 1)
                     if let from = shown.from, !m.isEmpty {
                         Text(from).font(.caption2).foregroundStyle(Theme.secondary)
                             .padding(.horizontal, 2)
                             .accessibilityIdentifier("morning-from-iphone")
                     }
+                }
+                // An answer given in another app: "Feeling good — from Magic Morning", a line of its own.
+                if let feel, let source = feelFrom {
+                    (name("Feeling ") + value(feel == .ok ? "OK" : feel.word.lowercased()) + name(" — from " + source))
+                        .font(.footnote)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 2)
+                        .padding(.top, healthLine ? 0 : -9)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityIdentifier("feel-from-neighbour")
+                        .accessibilityLabel(feel.spoken + " — from " + source)
+                        .contentShape(Rectangle())
+                        .onTapGesture { change() }
                 }
                 GarminMorningRow(today: today, alone: !healthLine)
                 }
@@ -261,6 +281,9 @@ struct TodayView: View {
                     .task { await garmin.readIfDue(today: today) }
             }
         }
+
+        /* On the numbers row only when it was his own answer here. */
+        private var shownFeel: Feel? { feelFrom == nil ? feel : nil }
 
         private func line(_ m: HealthImport.Morning) -> Text {
             var parts: [Text] = []
@@ -273,7 +296,7 @@ struct TodayView: View {
                 parts.append(name("HRV ") + value("\(Int(v.rounded()))")
                              + delta(v, m.hrvNormal, days: m.hrvDays, lowerIsBetter: false))
             }
-            if let feel { parts.append(name("Feeling ") + value(feel == .ok ? "OK" : feel.word.lowercased())) }
+            if let feel = shownFeel { parts.append(name("Feeling ") + value(feel == .ok ? "OK" : feel.word.lowercased())) }
             guard var out = parts.first else { return Text("") }
             for part in parts.dropFirst() { out = out + Text("   ").foregroundStyle(Theme.secondary) + part }
             return out
@@ -312,7 +335,7 @@ struct TodayView: View {
                 out.append("Resting heart rate \(Int(r.rounded()))" + spokenDelta(r, m.restingHRNormal, days: m.restingDays))
             }
             if let v = m.hrv { out.append("HRV \(Int(v.rounded()))" + spokenDelta(v, m.hrvNormal, days: m.hrvDays)) }
-            if let feel { out.append(feel.spoken) }
+            if let feel = shownFeel { out.append(feel.spoken) }
             return out.joined(separator: ". ")
         }
 
