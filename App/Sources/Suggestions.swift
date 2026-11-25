@@ -14,7 +14,9 @@ import WorkoutCore
  * The app suggests, he decides: nothing in the plan moves without his tap.
  * One card a day at most, and only once the plan lives in this app. Cards
  * are made on the iPhone only: the log is kept on each device, and two
- * devices each making their own card would make two.
+ * devices each making their own card would make two. Stop sign and "I'm
+ * ill" are shared with his other devices through iCloud (pause.json,
+ * PlanCloud), so a pause tapped on the iPad or Mac quietens the iPhone.
  *
  * A log or week-cap file that cannot be read means nothing is shown — never
  * a guess — and the file is left exactly as it was.
@@ -54,6 +56,8 @@ final class SuggestionKeeper: ObservableObject {
     private var lastCheck: String?
     /* A tap on "Take it" being written: a second one meanwhile is ignored. */
     private var taking = false
+    /* Cards he has touched ("Other choice" opened, or a tap on the card): a late answer from Claude leaves them as they are. */
+    private var touchedCards: Set<String> = []
 
     private var supportURL: URL { FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0] }
     private var fileURL: URL { supportURL.appendingPathComponent("suggestions.json") }
@@ -196,15 +200,22 @@ final class SuggestionKeeper: ObservableObject {
         keep.markAsked(asked.id)
         let context = ClaudeContext.make(from: input)
         let planVersion = version(book)
+        let askedAt = Date()
         // Started on the main actor, so the answer is handled there too.
         Task { @MainActor [weak self] in
             let answer = await client.pick(for: s, context: context)
-            self?.claudeAnswered(answer, to: asked, planVersion: planVersion)
+            self?.claudeAnswered(answer, to: asked, planVersion: planVersion, askedAt: askedAt)
         }
     }
 
-    /* Used only if nothing moved meanwhile: same day, same plan, same card, no pause. */
-    private func claudeAnswered(_ answer: ClaudeAnswer?, to asked: SuggestionEntry, planVersion: String) {
+    /* He opened "Other choice" or tapped the card: from now on Claude's answer may not change it. */
+    func touched(_ id: String) {
+        touchedCards.insert(id)
+    }
+
+    /* Used only if nothing moved meanwhile: same day, same plan, same card, no pause, not touched, not late. */
+    private func claudeAnswered(_ answer: ClaudeAnswer?, to asked: SuggestionEntry, planVersion: String, askedAt: Date) {
+        guard ClaudePick.mayUse(askedAt: askedAt, now: Date(), touched: touchedCards.contains(asked.id)) else { return }
         guard readable, cardsOn, !quiet, ladder.step == .none, let answer, let book = store?.book,
               version(book) == planVersion, let input = input(.afterSession) else { return }
         if keep.applyClaude(answer, to: asked, on: today, input: input) { save() }
@@ -407,10 +418,11 @@ final class SuggestionKeeper: ObservableObject {
     /* Opening the Stop sign pauses at once, as its words say; any open card is put away. */
     func openedStopSign() {
         guard readable, !paused else { return }
+        let was = keep.pause
         keep.health.stopSignSince = today
         keep.health.doctorSeenOn = nil
         keep.putAwayOpen(.paused, on: today)
-        save()
+        tapsChanged(from: was)
     }
 
     /* "Opened by mistake": only the day it was opened. The cards it put away come back. */
@@ -418,9 +430,10 @@ final class SuggestionKeeper: ObservableObject {
 
     func stopSignByMistake() {
         guard mayUndoStopSign else { return }
+        let was = keep.pause
         keep.health.stopSignSince = nil
         reopenPaused()
-        save()
+        tapsChanged(from: was)
     }
 
     private func reopenPaused() {
@@ -429,19 +442,21 @@ final class SuggestionKeeper: ObservableObject {
 
     func doctorSeen() {
         guard readable else { return }
+        let was = keep.pause
         keep.health.doctorSeenOn = today
-        save()
+        tapsChanged(from: was)
         check(.morning)
     }
 
     func ill(_ kind: RBIllness) {
         guard readable else { return }
+        let was = keep.pause
         keep.health.illSince = today
         keep.health.illness = kind
         keep.health.symptomFreeSince = nil
         keep.health.stillNotRight = []
         keep.putAwayOpen(.paused, on: today)
-        save()
+        tapsChanged(from: was)
         check(.morning)
     }
 
@@ -450,6 +465,7 @@ final class SuggestionKeeper: ObservableObject {
 
     func illByMistake() {
         guard mayUndoIll else { return }
+        let was = keep.pause
         keep.health.illSince = nil
         keep.health.illness = nil
         keep.health.symptomFreeSince = nil
@@ -459,21 +475,57 @@ final class SuggestionKeeper: ObservableObject {
             keep.putAway(e.id, .paused, on: today)
         }
         reopenPaused()
-        save()
+        tapsChanged(from: was)
     }
 
     func symptomFree(since day: String) {
         guard readable, keep.health.illSince != nil else { return }
+        let was = keep.pause
         keep.health.symptomFreeSince = max(day, keep.health.illSince ?? day)
-        save()
+        tapsChanged(from: was)
         check(.morning)
     }
 
     func stillNotRight() {
         guard readable else { return }
+        let was = keep.pause
         if !keep.health.stillNotRight.contains(today) { keep.health.stillNotRight.append(today) }
-        save()
+        tapsChanged(from: was)
         check(.morning)
+    }
+
+    // MARK: the same pause on all his devices (pause.json in iCloud, PlanCloud)
+
+    /* A tap here: stamped, kept, and sent to his other devices at once (when iCloud is on). */
+    private func tapsChanged(from was: PauseShare) {
+        keep.stampPause(from: was)
+        save()
+        store?.cloud.localChanged()
+    }
+
+    /* The taps as they go to iCloud; nil while the notes cannot be read (then nothing is read or written). */
+    var sharedPause: PauseShare? { readable ? keep.pause : nil }
+
+    /*
+     * The taps joined with his other devices' (PauseShare.join). Joined once more with
+     * the taps as they are now, so a tap made while iCloud was being read is never lost.
+     * A pause or an illness that arrives puts away the open card. Returns what is kept.
+     */
+    @discardableResult
+    func pauseFromICloud(_ joined: PauseShare) -> PauseShare? {
+        guard readable else { return nil }
+        let was = keep.pause
+        let now = PauseShare.join(was, joined)
+        guard now != was else { return was }
+        let quietBefore = quiet
+        keep.takePause(now)
+        if !quietBefore && (quiet || PauseShare.illOn(now.health) && !PauseShare.illOn(was.health)) {
+            keep.putAwayOpen(.paused, on: today)
+        }
+        // Held here even if the file cannot be written just now: a pause from another device is never dropped.
+        save()
+        lastCheck = nil
+        return now
     }
 
     // MARK: "Something hurts?"

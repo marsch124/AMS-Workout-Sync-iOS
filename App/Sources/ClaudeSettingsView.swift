@@ -71,7 +71,9 @@ struct ClaudeSettingsView: View {
         Card {
             VStack(alignment: .leading, spacing: 6) {
                 Text("It picks among the choices the rule book offers and words the reason. It changes nothing; you still tap.")
-                Text("Your sessions, how hard they felt and how you felt in the morning go to Anthropic for that one answer.")
+                Text("For each suggestion, one question goes from your iPhone to Anthropic. It holds: the choices on the card and the rule book\u{2019}s reason; today\u{2019}s date; for each of the last 14 days, the minutes planned and done, how hard the hardest session felt, how you felt that morning, and any extras, such as a walk or hike of 30 minutes or more your watch recorded; and the next 7 days of your plan, each session\u{2019}s sport, minutes and effort. Your key goes with it, so Anthropic knows the question is yours.")
+                Text("Nothing else is sent: not your name, notes, session titles, photographs, tests, zones, weight, or the Health and Garmin morning numbers.")
+                    .accessibilityIdentifier("claude-sent")
                 Text("It costs about a dollar a month, never more than 5 US dollars a month. The app stops asking when the month reaches it.")
             }
             .font(.footnote).foregroundStyle(Theme.secondary)

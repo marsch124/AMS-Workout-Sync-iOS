@@ -59,8 +59,8 @@ final class ClaudeClient: ObservableObject {
 
     init() {
         let config = URLSessionConfiguration.ephemeral
-        config.timeoutIntervalForRequest = 60
-        config.timeoutIntervalForResource = 60
+        config.timeoutIntervalForRequest = ClaudePick.requestTimeout
+        config.timeoutIntervalForResource = ClaudePick.requestTimeout
         session = URLSession(configuration: config)
         keySaved = ClaudeKey.isSaved
         meter = (try? JSONDecoder().decode(ClaudeMeter.self, from: Data(contentsOf: Self.meterURL))) ?? .fresh()
@@ -152,26 +152,19 @@ final class ClaudeClient: ObservableObject {
         }
     }
 
-    /* One quiet retry for a busy or failing service. nil: nothing came back at all. */
+    /* One try, no retry, at most 20 seconds: a late answer must not change the card under his finger. nil: nothing came back. */
     private func post(_ body: Data, key: String) async -> (Int, Data)? {
-        for attempt in 0..<2 {
-            var request = URLRequest(url: URL(string: ClaudePick.endpoint)!)
-            request.httpMethod = "POST"
-            request.httpBody = body
-            request.timeoutInterval = 60
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue(key, forHTTPHeaderField: "x-api-key")
-            request.setValue(ClaudePick.version, forHTTPHeaderField: "anthropic-version")
-            request.setValue(ClaudePick.beta, forHTTPHeaderField: "anthropic-beta")
-            guard let (data, response) = try? await session.data(for: request),
-                  let http = response as? HTTPURLResponse else { return nil }
-            if (http.statusCode == 429 || http.statusCode >= 500) && attempt == 0 {
-                guard (try? await Task.sleep(nanoseconds: 3_000_000_000)) != nil else { return nil }
-                continue
-            }
-            return (http.statusCode, data)
-        }
-        return nil
+        var request = URLRequest(url: URL(string: ClaudePick.endpoint)!)
+        request.httpMethod = "POST"
+        request.httpBody = body
+        request.timeoutInterval = ClaudePick.requestTimeout
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(key, forHTTPHeaderField: "x-api-key")
+        request.setValue(ClaudePick.version, forHTTPHeaderField: "anthropic-version")
+        request.setValue(ClaudePick.beta, forHTTPHeaderField: "anthropic-beta")
+        guard let (data, response) = try? await session.data(for: request),
+              let http = response as? HTTPURLResponse else { return nil }
+        return (http.statusCode, data)
     }
 
     private func save<T: Encodable>(_ value: T, to url: URL) {

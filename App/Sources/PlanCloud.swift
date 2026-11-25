@@ -20,6 +20,7 @@ import WorkoutCore
  *   plan.json                the plan (every device with the plan in the app)
  *   diary.json               morning and how-hard answers (every device)
  *   health-from-iphone.json  Apple Health numbers (the iPhone only)
+ *   pause.json               Stop sign and "I'm ill" (every device; 2.3, PauseShare)
  *   devices/<id>.json        one per device (that device only)
  *   plan-original.xlsx       the frozen workbook (written once, never over)
  */
@@ -470,7 +471,10 @@ final class PlanCloud: ObservableObject {
         // 3. Health: the iPhone writes, the others read.
         await healthShare(root.appendingPathComponent("health-from-iphone.json"))
 
-        // 4. This device's own file.
+        // 4. Stop sign and "I'm ill": the same on every device.
+        if await pauseShare(root.appendingPathComponent("pause.json")) == false { settled = false }
+
+        // 5. This device's own file.
         await writeDeviceFile(devicesFolder)
 
         if let took {
@@ -643,6 +647,48 @@ final class PlanCloud: ObservableObject {
             if written == nil { return "" }
         }
         return nil
+    }
+
+    // MARK: Stop sign and "I'm ill", on every device
+
+    /*
+     * A separate small file beside the plan, never part of the plan or its
+     * merge. Every device reads it, joins it with its own taps by
+     * PauseShare.join (newest wins, but a pause is never lifted by an older
+     * all clear, nor by one that never saw it) and writes back what is joined.
+     * False when it must wait; nothing is read or written while the
+     * suggestions' own notes on this device cannot be read.
+     */
+    private func pauseShare(_ url: URL) async -> Bool {
+        let keeper = SuggestionKeeper.shared
+        guard let local = keeper.sharedPause else { return true }
+        let read = await Task.detached(priority: .utility) { CloudFiles.read(url) }.value
+        var cloud: [PauseShare] = []
+        var mainThere = false
+        var merged: [Data] = []
+        switch read {
+        case .waiting: return false
+        case .absent: break
+        case .found(let data, let conflicts, _):
+            if let share = try? PauseShare.decoded(data) {
+                cloud.append(share)
+                mainThere = true
+            } else {
+                store.parkFromICloud(data, name: "pause.json")
+            }
+            for bytes in conflicts {
+                if let share = try? PauseShare.decoded(bytes) { cloud.append(share); merged.append(bytes) }
+            }
+        }
+        var joined = PauseShare.join(local: local, cloud: cloud)
+        if joined != local, let kept = keeper.pauseFromICloud(joined) { joined = kept }
+        guard !mainThere || cloud.first != joined || !merged.isEmpty else { return true }
+        let share = joined
+        let written = await Task.detached(priority: .utility) { () -> Date? in
+            guard let data = try? share.encoded() else { return nil }
+            return CloudFiles.write(data, to: url, resolving: merged)
+        }.value
+        return written != nil
     }
 
     // MARK: Apple Health, from the iPhone

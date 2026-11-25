@@ -88,6 +88,21 @@ public enum ClaudePick {
     public static let version = "2026-10-21"
     public static let beta = "server-side-fallback-2026-07-01"
 
+    /* One ask, no second try, and at most this long: the card's words must not change long after he sees it. */
+    public static let requestTimeout: TimeInterval = 20
+    public static let attempts = 1
+    /* An answer arriving later than this after the ask is dropped, whatever the reason it was slow. */
+    public static let lateAfter: TimeInterval = 25
+
+    /*
+     * Whether an answer that has just arrived may still change the card: not
+     * once he has opened "Other choice" or otherwise touched the card, and not
+     * late. The card's own stale checks (SuggestionKeep.applyClaude) still follow.
+     */
+    public static func mayUse(askedAt: Date, now: Date, touched: Bool) -> Bool {
+        !touched && now >= askedAt && now.timeIntervalSince(askedAt) <= lateAfter
+    }
+
     /* The longest reason that is accepted, and the longest he is asked for. */
     public static let longestWhy = 160
     public static let blocked = ["doctor", "diagnos", "injur", "should see", "medication", "sleep", "slept", "hrv", "pulse",
@@ -165,6 +180,8 @@ public enum ClaudePick {
         let lower = why.lowercased()
         guard !blocked.contains(where: { lower.contains($0) }), !notPlain.contains(where: { lower.contains($0) }) else { return nil }
         guard !why.unicodeScalars.contains(where: { markup.contains($0) || CharacterSet.controlCharacters.contains($0) }) else { return nil }
+        // And the same word check the rule book's own words pass (L13: healthy, fit, safe, your heart).
+        guard RuleBook.l13Words([why]) == nil else { return nil }
         return why
     }
 

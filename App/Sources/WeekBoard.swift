@@ -216,23 +216,36 @@ struct MovedLine: View {
     struct Moved: Equatable {
         let changeID: String
         let text: String
+        /* The rule book's calm grey line about this move, as on the Move page; nil when it has nothing to say. */
+        var note: String? = nil
     }
 
-    /* A session still to do, dropped on another day: the same change the Change page makes, with only the day new. */
+    /*
+     * A session still to do, dropped on another day: the same change the Change page makes, with only the day new.
+     * The grey line is worked out from the plan before the move and never stops it.
+     */
     @MainActor static func move(_ store: Store, _ key: String, to dayKey: String) -> Moved? {
         guard store.canChangePlan, let w = store.workout(key), w.state == .todo,
-              w.discipline.id != "rest", w.dayKey != dayKey,
-              let change = store.moveSession(key, to: dayKey) else { return nil }
+              w.discipline.id != "rest", w.dayKey != dayKey else { return nil }
+        let note = SuggestionKeeper.shared.note(forMoving: key, to: dayKey)
+        guard let change = store.moveSession(key, to: dayKey) else { return nil }
         let title = change.title.isEmpty ? w.title : change.title
-        return Moved(changeID: change.id, text: "\(title) moved to \(Dates.short(dayKey))")
+        return Moved(changeID: change.id, text: "\(title) moved to \(Dates.short(dayKey))", note: note)
     }
 
     var body: some View {
         if let m = moved {
             HStack(spacing: 10) {
-                Text(m.text).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
-                    .lineLimit(2)
-                    .accessibilityIdentifier("week-moved")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(m.text).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                        .lineLimit(2)
+                        .accessibilityIdentifier("week-moved")
+                    if let note = m.note {
+                        Text(note).font(.footnote).foregroundStyle(Theme.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("week-moved-note")
+                    }
+                }
                 if store.canUndo(m.changeID) {
                     Button("Undo") {
                         store.undoChange(m.changeID)

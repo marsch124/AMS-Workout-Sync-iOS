@@ -89,7 +89,10 @@ struct SuggestionCardView: View {
                         .accessibilityIdentifier("suggestion-other-\(i + 1)")
                     }
                 } else {
-                    Button(RuleBookWords.otherChoice) { withAnimation(.easeInOut(duration: 0.15)) { showingOthers = true } }
+                    Button(RuleBookWords.otherChoice) {
+                        keeper.touched(entry.id)
+                        withAnimation(.easeInOut(duration: 0.15)) { showingOthers = true }
+                    }
                         .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.plan)
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("suggestion-other")
@@ -102,6 +105,8 @@ struct SuggestionCardView: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        // Any touch on the card: Claude's late answer may no longer change its words.
+        .simultaneousGesture(TapGesture().onEnded { keeper.touched(entry.id) })
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("suggestion-card")
     }

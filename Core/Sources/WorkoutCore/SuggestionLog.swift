@@ -107,10 +107,30 @@ public struct SuggestionKeep: Codable, Equatable, Sendable {
     public var hurtAsked: [String: String] = [:]
     /* The plan these notes belong to (its taken-in moment): a new plan starts a fresh log. */
     public var plan: Double?
+    /* When the stop sign and the illness taps last changed, for sharing them with his other devices (PauseShare). */
+    public var stopStamp = PauseStamp.never
+    public var illStamp = PauseStamp.never
 
     public init() {}
 
-    enum CodingKeys: String, CodingKey { case format, on, settings, entries, health, hurtDays, hurtAsked, plan }
+    enum CodingKeys: String, CodingKey { case format, on, settings, entries, health, hurtDays, hurtAsked, plan, stopStamp, illStamp }
+
+    /* The stop sign and illness taps as they are shared through iCloud. */
+    public var pause: PauseShare { PauseShare(health: health, stop: stopStamp, ill: illStamp) }
+
+    /* A tap here moved the taps from `was`: stamp what changed, so the other devices can tell. */
+    public mutating func stampPause(from was: PauseShare, now: Date = Date()) {
+        let p = PauseShare.stamped(was, to: health, now: now)
+        stopStamp = p.stop
+        illStamp = p.ill
+    }
+
+    /* The taps as joined with his other devices. */
+    public mutating func takePause(_ p: PauseShare) {
+        health = p.health
+        stopStamp = p.stop
+        illStamp = p.ill
+    }
 
     /*
      * Every part must read, or the whole file counts as unreadable: the app
@@ -128,6 +148,8 @@ public struct SuggestionKeep: Codable, Equatable, Sendable {
         hurtDays = try c.decodeIfPresent([String].self, forKey: .hurtDays) ?? []
         hurtAsked = try c.decodeIfPresent([String: String].self, forKey: .hurtAsked) ?? [:]
         plan = try c.decodeIfPresent(Double.self, forKey: .plan)
+        stopStamp = try c.decodeIfPresent(PauseStamp.self, forKey: .stopStamp) ?? .never
+        illStamp = try c.decodeIfPresent(PauseStamp.self, forKey: .illStamp) ?? .never
     }
 
     /* The notes belong to the plan taken in at `stamp`; a different plan starts a fresh log (his answers and taps stay). */
