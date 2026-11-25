@@ -151,6 +151,12 @@ final class PlanCloud: ObservableObject {
     private func found(_ container: URL?) {
         looking = false
         guard let container else {
+            #if targetEnvironment(simulator)
+            // A simulator build carries no iCloud permission: it behaves as before 2.1.
+            set(.off)
+            planState = .off
+            return
+            #endif
             // Signed in to iCloud, and still no folder: the app was built without its iCloud permission.
             let why = "This app’s iCloud folder is not available"
             set(.problem(why))
@@ -324,8 +330,13 @@ final class PlanCloud: ObservableObject {
                 if join.changesLocal {
                     // The plan here changed while the two were being joined: join again in a moment.
                     guard store.takeFromCloud(join.book, takenAway: join.takenAway, version: version) else {
-                        again = true
                         settled = false
+                        if store.bookVersion != version {
+                            again = true
+                        } else {
+                            // No room, or the plan could not be written: nothing changed here, and nothing goes up.
+                            problem = "The plan from your other devices could not be saved on this \(Device.word)"
+                        }
                         break
                     }
                 }
