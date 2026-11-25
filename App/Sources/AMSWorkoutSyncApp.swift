@@ -76,6 +76,9 @@ struct RootView: View {
             if let key = ProcessInfo.processInfo.environment["AMSWS_SESSION"] {
                 NavigationStack { SessionView(key: key) }
             }
+            if ProcessInfo.processInfo.environment["AMSWS_CHANGES"] != nil {
+                NavigationStack { PlanChangesView() }
+            }
             if ProcessInfo.processInfo.environment["AMSWS_ZONES"] != nil {
                 NavigationStack { ZonesView() }
             }

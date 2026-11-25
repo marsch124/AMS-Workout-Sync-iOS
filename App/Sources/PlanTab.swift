@@ -12,6 +12,7 @@ struct PlanTab: View {
         return .upcoming
     }()
     @State private var openExtra: ExtraSummary?
+    @State private var addingSession = false
     /* The session whose figures are being mended from the list. */
     @State private var adjusting: SessionKey?
     /* The extra being mended from the list. */
@@ -57,9 +58,19 @@ struct PlanTab: View {
                     // a pinned section header, so choosing another list never
                     // means scrolling back to the top (his ask, 2026-09-29).
                     LazyVStack(alignment: .leading, spacing: 12, pinnedViews: [.sectionHeaders]) {
-                        Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
-                            .padding(.top, 12).padding(.horizontal, 16)
-                            .accessibilityIdentifier("sessions-title")
+                        // The small "+ Session" sits on the heading's line, at its right
+                        // end, so the pinned row of four words is left exactly as he placed it.
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
+                                .accessibilityIdentifier("sessions-title")
+                            Spacer(minLength: 0)
+                            if store.canChangePlan {
+                                Button("+ Session") { addingSession = true }
+                                    .settingsButton(tint: Theme.plan)
+                                    .accessibilityIdentifier("sessions-add")
+                            }
+                        }
+                        .padding(.top, 12).padding(.horizontal, 16)
                         Section {
                             let days = grouped(shown(view), newestFirst: newestFirst)
                             VStack(alignment: .leading, spacing: 12) {
@@ -132,6 +143,10 @@ struct PlanTab: View {
             .background(Theme.bg.ignoresSafeArea())
             .refreshable { store.refresh() }
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
+            .sheet(isPresented: $addingSession) {
+                SessionEditView(key: nil, draft: SessionDraft(dayKey: PlanView.addDays(store.today, 1), sport: "run"))
+                    .environmentObject(store)
+            }
             .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
             .sheet(item: $adjustingExtra) { x in
                 ExtraFormView(day: x.dayKey, editing: x).environmentObject(store)
@@ -142,6 +157,11 @@ struct PlanTab: View {
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
+            #if DEBUG
+            .onAppear {
+                if ProcessInfo.processInfo.environment["AMSWS_EDIT"] == "new" { addingSession = true }
+            }
+            #endif
         }
     }
 
