@@ -41,6 +41,8 @@ struct ClaudeSettingsView: View {
                 switchRow
                 month
                 answered
+                ClaudeReviewList()
+                ClaudeAskEntry()
                 SectionHeading(text: "Export for Claude")
                 exportRow
                 Text("Your key stays on this device only.")
@@ -79,6 +81,7 @@ struct ClaudeSettingsView: View {
                 Text("For each suggestion, one question goes from your iPhone to Anthropic. It holds: the choices on the card and the rule book\u{2019}s reason; today\u{2019}s date; for each of the last 14 days, the minutes planned and done, how hard the hardest session felt, how you felt that morning, and any extras, such as a walk or hike of 30 minutes or more your watch recorded; and the next 7 days of your plan, each session\u{2019}s sport, minutes and effort. Your key goes with it, so Anthropic knows the question is yours.")
                 Text("Nothing else is sent: not your name, notes, session titles, photographs, tests, zones, weight, or the Health and Garmin morning numbers.")
                     .accessibilityIdentifier("claude-sent")
+                Text("The same key can also write your week on Sunday evening (Today shows a card with a button) and answer a question about your plan (a button on the Plan and Sessions pages). Each only when you tap, and each page says first what it sends.")
                 Text("It costs about a dollar a month, never more than 5 US dollars a month. The app stops asking when the month reaches it.")
             }
             .font(.footnote).foregroundStyle(Theme.secondary)

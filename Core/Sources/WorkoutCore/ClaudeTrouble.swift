@@ -47,6 +47,15 @@ public enum ClaudeTrouble: String, Codable, Sendable, Equatable, CaseIterable {
         }
     }
 
+    /* Where the week review or the questions page would have a button: one calm line instead. */
+    public var restLine: String {
+        switch self {
+        case .keyRefused: return "Claude is resting: Anthropic no longer accepts your key. Settings \u{2192} Claude."
+        case .noCredit: return "Claude is resting: your Anthropic account has no credit left. Settings \u{2192} Claude."
+        case .capReached: return "Claude is resting: this month\u{2019}s 5 US dollars are used."
+        }
+    }
+
     /* The end of the row in Settings: "On, but not choosing · …". */
     public var rowWords: String {
         switch self {
