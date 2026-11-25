@@ -70,19 +70,19 @@ public enum Disciplines {
     }
 }
 
-public struct Section: Equatable {
+public struct Section: Equatable, Codable {
     public let kind: String
     public let label: String
     public let text: String
 }
 
-public struct ResultValue: Equatable {
+public struct ResultValue: Equatable, Codable {
     public let text: String
     public let number: Double?
     public let date: Date?
 }
 
-public struct Planned: Equatable {
+public struct Planned: Equatable, Codable {
     public var durationRaw: Double?
     public var distanceRaw: Double?
     public var intensity: String
@@ -111,6 +111,14 @@ public struct Workout: Identifiable, Equatable {
     public var logged: Bool = false
     public var pending: LogEntry? = nil
     public var pendingMove: String? = nil
+    /*
+     * Every cell of the row this session was taken in from, by its heading,
+     * word for word — so nothing the workbook said is lost once the plan lives
+     * in the app (the week it belonged to, the key-session star, a column the
+     * app never read). Nil for a session read straight from a sheet or made in
+     * the app.
+     */
+    public var source: [String: String]? = nil
 }
 
 let sectionOrder = ["warmup", "intervals", "technique", "cooldown"]

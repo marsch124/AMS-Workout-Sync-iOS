@@ -107,7 +107,7 @@ public struct ExtraEntry: Codable, Equatable {
 }
 
 /* A row of the Extras sheet, read back. */
-public struct ExtraRecord: Identifiable, Equatable {
+public struct ExtraRecord: Identifiable, Equatable, Codable {
     public var id: String { ref.isEmpty ? "row-\(row)" : ref }
     public let row: Int
     public let date: String
