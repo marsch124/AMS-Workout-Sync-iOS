@@ -61,6 +61,17 @@ final class PlanCloud: ObservableObject {
     @Published private(set) var clockBehind = false
     /* A plan from a second, separate move into the app: he chooses (TwoPlansView). */
     @Published private(set) var otherPlan: PlanBook?
+    /* That plan sits beside the iCloud file as a conflict copy (its bytes, to clear it), not in the file itself. */
+    private var otherPlanBytes: Data?
+    private var otherPlanIsConflict = false
+    /* The iCloud file's own book when it is this device's plan (the other plan being a conflict copy). */
+    private var cloudMainBook: PlanBook?
+    /* Why the plan waits although this device has one (another device's plan has not arrived here yet). */
+    @Published private(set) var waitingWhy: String?
+    /* "2 things were taken out by your Mac — see Safety copies": said until he has looked. */
+    @Published private(set) var takenNotice: String? = UserDefaults.standard.string(forKey: PlanCloud.takenKey)
+    static let takenKey = "sync.takenNotice"
+    static let sharedKey = "sync.sharedWithOthers"
     /* "Plan from your iPhone · 214 sessions" is shown for two seconds before the app opens. */
     @Published private(set) var showingArrival = false
     /* iCloud already holds a plan: the move-in page offers to use it instead of a second import. */
@@ -70,6 +81,12 @@ final class PlanCloud: ObservableObject {
 
     /* Another iPad, Mac or iPhone has met iCloud with this plan: going back to Excel would strand it. */
     var otherDevicesUsePlan: Bool { devices.contains { $0.id != Device.id } }
+
+    /* "your Mac", "your iPad", "your iPhone" when one other device uses the plan; else "your other devices". */
+    var otherDeviceWords: String {
+        let kinds = Set(devices.filter { $0.id != Device.id && $0.home == "app" }.map(\.kind))
+        return kinds.count == 1 ? "your " + kinds.first! : "your other devices"
+    }
 
     private unowned let store: Store
     /* `<the app's iCloud folder>/Sync`; nil until iCloud is found (or when it is off). */
@@ -83,6 +100,10 @@ final class PlanCloud: ObservableObject {
     private var running = false
     private var again = false
     private var originalChecked = false
+    /* iCloud's list of the folder has arrived (NSMetadataQueryDidFinishGathering): before it, "not there" may only mean "not listed yet". */
+    private var gathered = false
+    private var gatherWait: Task<Void, Never>?
+    private var lastLocalChange: Date?
     private var deviceWrittenAt: Date?
     private var deviceWritten: DeviceFile?
     private var healthSharedAt: Date?
@@ -180,8 +201,22 @@ final class PlanCloud: ObservableObject {
         seedFakeCloud(folder)
         #endif
         root = folder
-        if !fake { watch() }
-        sync()
+        if fake {
+            gathered = true
+            sync()
+        } else {
+            // The first meeting waits for iCloud's list of the folder: before it arrives a plan that is
+            // there can look absent, and a device with an old plan of its own would set it beside it.
+            watch()
+            gatherWait?.cancel()
+            gatherWait = Task { [weak self] in
+                try? await Task.sleep(nanoseconds: 20_000_000_000)
+                guard let self, !Task.isCancelled, !self.gathered else { return }
+                // Still no list after 20 seconds: it stays "On its way", and nothing is written.
+                self.set(.working)
+                if case .unknown = self.planState { self.planState = .looking(nil) }
+            }
+        }
         heartbeat?.cancel()
         let every: UInt64 = fake ? 3 : 30
         heartbeat = Task { [weak self] in
@@ -197,20 +232,63 @@ final class PlanCloud: ObservableObject {
         query?.stop()
         query = nil
         heartbeat?.cancel()
+        gatherWait?.cancel()
+        gathered = false
         root = nil
         originalChecked = false
         start()
     }
 
-    /* A change on this device: meet iCloud a moment later (several quick changes go up together). */
+    /*
+     * A change on this device. The first one after a quiet spell goes up at
+     * once (he may close the app straight after logging); several quick
+     * changes after it go up together a moment later.
+     */
     func localChanged() {
         guard root != nil else { return }
-        schedule(after: 1.5)
+        let now = Date()
+        let quiet = lastLocalChange.map { now.timeIntervalSince($0) > 1.5 } ?? true
+        lastLocalChange = now
+        if quiet { pending?.cancel(); sync() } else { schedule(after: 1.5) }
+    }
+
+    /*
+     * The app goes to the background: meet iCloud now, with the time iOS
+     * allows for it, so what was just logged is on its way before the app sleeps.
+     */
+    func goingToBackground() {
+        guard root != nil, gathered else { return }
+        pending?.cancel()
+        final class Ticket { var id: UIBackgroundTaskIdentifier = .invalid }
+        let ticket = Ticket()
+        ticket.id = UIApplication.shared.beginBackgroundTask(withName: "Meet iCloud") {
+            UIApplication.shared.endBackgroundTask(ticket.id)
+            ticket.id = .invalid
+        }
+        Task { @MainActor [weak self] in
+            if let self {
+                // One meeting at a time: wait for one that is under way (at most 20 s), then meet.
+                var waited = 0
+                while self.running && waited < 200 { try? await Task.sleep(nanoseconds: 100_000_000); waited += 1 }
+                if !self.running {
+                    self.running = true
+                    await self.meet()
+                    self.running = false
+                }
+            }
+            if ticket.id != .invalid { UIApplication.shared.endBackgroundTask(ticket.id); ticket.id = .invalid }
+        }
     }
 
     /* "Sync now" on the iCloud page. */
     func syncNow() {
         originalChecked = false
+        // A list of the folder that never came: ask iCloud for it again.
+        if root != nil, !fake, !gathered {
+            query?.stop()
+            query = nil
+            watch()
+        }
         healthSharedAt = nil
         start()
     }
@@ -232,8 +310,12 @@ final class PlanCloud: ObservableObject {
         q.searchScopes = [NSMetadataQueryUbiquitousDataScope]
         q.predicate = NSPredicate(format: "%K LIKE '*'", NSMetadataItemFSNameKey)
         for name in [Notification.Name.NSMetadataQueryDidFinishGathering, .NSMetadataQueryDidUpdate] {
+            let gathering = name == .NSMetadataQueryDidFinishGathering
             observers.append(NotificationCenter.default.addObserver(forName: name, object: q, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.cloudMoved() }
+                Task { @MainActor in
+                    if gathering { self?.gathered = true; self?.gatherWait?.cancel() }
+                    self?.cloudMoved()
+                }
             })
         }
         query = q
@@ -262,6 +344,11 @@ final class PlanCloud: ObservableObject {
 
     func sync() {
         guard root != nil else { return }
+        // Before iCloud has listed the folder nothing is read or written: it stays "On its way".
+        guard gathered else {
+            if case .same = status {} else { set(.working) }
+            return
+        }
         if running {
             again = true
             return
@@ -280,13 +367,20 @@ final class PlanCloud: ObservableObject {
 
     private func meet() async {
         guard let root else { return }
-        if case .same = status {} else if case .problem = status {} else { set(.working) }
+        switch status {
+        case .same, .noted, .problem: break
+        default: set(.working)
+        }
         var settled = true
         var problem: String?
 
         // Who else uses the plan (and whether an iPhone is still on Excel).
         let devicesFolder = root.appendingPathComponent("devices", isDirectory: true)
         devices = await Task.detached(priority: .utility) { PlanCloud.readDevices(devicesFolder) }.value
+        // Once another device has met the plan it is shared for good: a safety copy put back keeps their logs.
+        if otherDevicesUsePlan { UserDefaults.standard.set(true, forKey: Self.sharedKey) }
+        var took: Int?
+        waitingWhy = nil
 
         // 1. The plan.
         let planURL = root.appendingPathComponent("plan.json")
@@ -311,6 +405,13 @@ final class PlanCloud: ObservableObject {
                 settled = false
                 break
             }
+            let others = devices.filter { $0.id != Device.id }.map(\.home)
+            if read == .absent && !PlanMeeting.shouldWriteUp(localHasPlan: true, cloudFileThere: false, otherDevices: others) {
+                // Another device's plan lives in the app, and the file has not reached this one yet: wait for it.
+                settled = false
+                waitingWhy = "Your plan from \(otherDeviceWords) has not reached this \(Device.word) yet. Nothing is sent from here until it has."
+                break
+            }
             let rank = Device.rank
             let outcome = await Task.detached(priority: .userInitiated) { PlanMeeting.meet(local: book, rank: rank, read: read) }.value
             if let bytes = outcome.unreadable { store.parkFromICloud(bytes, name: "plan.json") }
@@ -323,13 +424,16 @@ final class PlanCloud: ObservableObject {
             case .newerFormat?:
                 problem = "Update Triathlon on this device"
             case .differentPlan?:
-                otherPlan = outcome.cloudBook
+                otherPlan = outcome.otherPlan ?? outcome.cloudBook
+                otherPlanBytes = outcome.otherPlanBytes
+                otherPlanIsConflict = outcome.otherPlanIsConflict
+                cloudMainBook = outcome.otherPlanIsConflict ? outcome.cloudBook : nil
                 problem = "Two different plans — choose one in Settings › iCloud"
             case nil:
                 otherPlan = nil
                 if join.changesLocal {
                     // The plan here changed while the two were being joined: join again in a moment.
-                    guard store.takeFromCloud(join.book, takenAway: join.takenAway, version: version) else {
+                    guard store.takeFromCloud(join.book, takenAway: join.takenAway, version: version, from: otherDeviceWords) else {
                         settled = false
                         if store.bookVersion != version {
                             again = true
@@ -339,6 +443,12 @@ final class PlanCloud: ObservableObject {
                         }
                         break
                     }
+                    if !join.takenAway.isEmpty { took = join.takenAway.count }
+                }
+                if !join.changesCloud && join.clearConflicts {
+                    // The conflict copies held nothing the file does not: cleared, the file is not written again.
+                    let resolving = outcome.mergedConflicts
+                    await Task.detached(priority: .utility) { CloudFiles.clear(planURL, resolving: resolving) }.value
                 }
                 if join.changesCloud {
                     let joined = join.book, resolving = outcome.mergedConflicts
@@ -363,13 +473,18 @@ final class PlanCloud: ObservableObject {
         // 4. This device's own file.
         await writeDeviceFile(devicesFolder)
 
+        if let took {
+            let words = "\(took) thing\(took == 1 ? " was" : "s were") taken out by \(otherDeviceWords) — see Safety copies"
+            takenNotice = words
+            UserDefaults.standard.set(words, forKey: Self.takenKey)
+        }
         if let problem {
             set(.problem(problem))
             if case .member = planState {} else if problem.hasPrefix("Update") { planState = .newer }
         } else if settled {
             let now = Date()
             lastMet = now
-            set(.same(now))
+            set(takenNotice.map { SyncStatus.noted(now, $0) } ?? .same(now))
         } else {
             set(.working)
         }
@@ -439,27 +554,54 @@ final class PlanCloud: ObservableObject {
     }
 
     /*
-     * He picked one of two plans (TwoPlansView). The other is kept as a file
-     * in Before iCloud, never thrown away.
+     * He picked one of two plans (TwoPlansView). The one not kept goes into
+     * the list of safety copies, so it can be put back from the app.
      */
     func choose(keepThisDevice: Bool) async {
         guard let other = otherPlan, let root, let mine = store.book else { return }
         let planURL = root.appendingPathComponent("plan.json")
+        let otherBytes = otherPlanBytes, isConflict = otherPlanIsConflict
         if keepThisDevice {
-            store.keepAside(other, as: "other-plan")
-            let written = await Task.detached(priority: .userInitiated) { () -> Date? in
-                guard let data = try? mine.encoded() else { return nil }
-                return CloudFiles.write(data, to: planURL, resolving: [])
-            }.value
-            if written == nil { set(.problem("The plan could not be put in iCloud just now. Try again.")); return }
+            store.keepAside(other, as: "other-plan", tail: "icloud")
+            if isConflict {
+                // The file is this device's plan already: only the other one, beside it, is cleared — else it is offered for ever.
+                if let otherBytes { await Task.detached(priority: .userInitiated) { CloudFiles.clear(planURL, resolving: [otherBytes]) }.value }
+            } else {
+                let written = await Task.detached(priority: .userInitiated) { () -> Date? in
+                    guard let data = try? mine.encoded() else { return nil }
+                    return CloudFiles.write(data, to: planURL, resolving: [])
+                }.value
+                if written == nil { set(.problem("The plan could not be put in iCloud just now. Try again.")); return }
+            }
         } else {
-            store.keepAside(mine, as: "other-plan")
+            // The plan here (with what the iCloud file adds to it, when that is this same plan) is kept aside first.
+            let here = cloudMainBook.flatMap { try? BookMerge.merged(mine, $0) } ?? mine
+            store.keepAside(here, as: "other-plan", tail: "here")
             guard store.replaceWithCloudPlan(other) else { return }
+            if isConflict {
+                // The other plan was beside the file: it becomes the file, so the next meeting does not offer the old one back.
+                let written = await Task.detached(priority: .userInitiated) { () -> Date? in
+                    guard let data = try? other.encoded() else { return nil }
+                    return CloudFiles.write(data, to: planURL, resolving: otherBytes.map { [$0] } ?? [])
+                }.value
+                if written == nil { set(.problem("The plan could not be put in iCloud just now. Try again.")); return }
+            }
             originalChecked = false
             await original(root)
         }
         otherPlan = nil
+        otherPlanBytes = nil
+        otherPlanIsConflict = false
+        cloudMainBook = nil
         sync()
+    }
+
+    /* He has seen the words about what a meeting took out (the iCloud page or Safety copies). */
+    func takenNoticeSeen() {
+        guard takenNotice != nil else { return }
+        takenNotice = nil
+        UserDefaults.standard.removeObject(forKey: Self.takenKey)
+        if case .noted(let at, _) = status { set(.same(at)) }
     }
 
     /* Going back to Excel on the only device: the plan in iCloud is put aside (kept), so nothing adopts it later. */

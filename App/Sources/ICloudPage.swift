@@ -26,6 +26,11 @@ struct ICloudPage: View {
                 Text(detail(cloud)).font(.footnote).foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("icloud-detail")
+                if let taken = cloud.takenNotice {
+                    Text(taken).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("icloud-taken")
+                }
                 if cloud.clockBehind {
                     Text("This \(Device.word)’s clock is behind. Set it to the right time (Settings → General → Date & Time → Set Automatically), so the newest change always wins.")
                         .font(.footnote).foregroundStyle(Theme.danger)
@@ -33,7 +38,7 @@ struct ICloudPage: View {
                 }
 
                 if cloud.otherPlan != nil, let mine = store.book, let theirs = cloud.otherPlan {
-                    TwoPlansView(mine: mine, theirs: theirs) { keepMine in
+                    TwoPlansView(mine: mine, theirs: theirs, theirsFrom: cloud.otherDeviceWords) { keepMine in
                         Task { await cloud.choose(keepThisDevice: keepMine) }
                     }
                 }
@@ -93,6 +98,8 @@ struct ICloudPage: View {
             }
         }
         .sheet(item: $beforeCopy) { url in ShareSheet(items: [url]) }
+        // Said once: after he has seen it here, the words about what was taken out go.
+        .onDisappear { store.cloud.takenNoticeSeen() }
     }
 
     /* The device list, iPhone first, then iPad, then Mac. */
@@ -108,14 +115,17 @@ struct ICloudPage: View {
                 ? "Sign in to iCloud on this Mac (System Settings → your name → iCloud), then open Triathlon again. Until then the plan on this Mac is not shared."
                 : "Sign in to iCloud on this \(Device.word) (Settings → your name → iCloud), then open Triathlon again. Until then the plan on this \(Device.word) is not shared."
         case .working:
+            if let why = cloud.waitingWhy { return why }
             return store.planLivesHere || !Device.isPhone ? "Your plan is on its way between your devices." :
                 "Your plan still lives in Excel on this iPhone, so it is not shared yet."
+        case .noted(let at, _):
+            return "Last met iCloud " + WaitingForPlanView.when(at) + "."
         case .same(let at):
             if !store.planLivesHere && Device.isPhone { return "Your morning answers are shared. The plan is shared once it lives in this app." }
             return "Last met iCloud " + (at.map(WaitingForPlanView.when) ?? "just now") + "."
         case .problem:
             if cloud.otherPlan != nil {
-                return "Your iCloud holds a plan from another move into the app. Look at both below and choose the one to keep — the other is kept as a file, not thrown away."
+                return "Your iCloud holds a plan from another move into the app. Look at both below and choose the one to keep — the other is kept in Settings › Safety copies, where it can be put back."
             }
             return "Nothing on this \(Device.word) was changed. " + (cloud.lastMet.map { "Last met iCloud " + WaitingForPlanView.when($0) + "." } ?? "")
         }
@@ -135,30 +145,71 @@ struct StatusDot: View {
 /*
  * Two plans that were moved into the app separately (two Excel imports):
  * never joined by the app. Side by side, with what each holds; he picks one.
- * The other is kept as a file in Before iCloud.
+ * Taking the other plan replaces the one on this device, so it asks first,
+ * with both plans in words. The one not kept goes into Safety copies.
  */
 struct TwoPlansView: View {
     let mine: PlanBook
     let theirs: PlanBook
+    /* "your Mac" — or "your other devices" when it cannot be told. */
+    let theirsFrom: String
     let choose: (_ keepThisDevice: Bool) -> Void
+    @State private var confirming = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             SectionHeading(text: "Two different plans")
             HStack(alignment: .top, spacing: 10) {
                 side("On this \(Device.word)", mine, id: "two-plans-left") { choose(true) }
-                side("In iCloud", theirs, id: "two-plans-right") { choose(false) }
+                side("In iCloud, from \(theirsFrom)", theirs, id: "two-plans-right") { confirming = true }
+            }
+            if confirming {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Use that plan here?").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                    Text("On this \(Device.word): \(Self.words(mine)).\nIn iCloud, from \(theirsFrom): \(Self.words(theirs)).\nThe plan on this \(Device.word) is replaced by the one from \(theirsFrom). It is kept in Settings › Safety copies, where it can be put back.")
+                        .font(.footnote).foregroundStyle(Theme.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("two-plans-words")
+                    HStack(spacing: 10) {
+                        Button { confirming = false } label: {
+                            Text("Cancel").font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 34)
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("two-plans-cancel")
+                        Button { confirming = false; choose(false) } label: {
+                            Text("Use that plan here").font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 34)
+                        }
+                        .buttonStyle(.borderedProminent).tint(Theme.danger)
+                        .accessibilityIdentifier("two-plans-confirm")
+                    }
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
             }
         }
     }
 
+    private static func done(_ book: PlanBook) -> Int {
+        book.sessions.filter { $0.discipline.id != "rest" && $0.loggedInSheet && !$0.missed }.count
+    }
+
+    private static func last(_ book: PlanBook) -> Date {
+        book.stamps.values.filter { $0.timeIntervalSince1970 > 1_600_000_000 }.max() ?? book.origin.takenAt
+    }
+
+    /* "214 sessions, 31 done, last change Wed 25 Nov 2026, 09:12" */
+    static func words(_ book: PlanBook) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_GB")
+        f.dateFormat = "EEE d MMM yyyy, HH:mm"
+        return "\(book.sessions.count) sessions, \(done(book)) done, last change \(f.string(from: last(book)))"
+    }
+
     private func side(_ title: String, _ book: PlanBook, id: String, use: @escaping () -> Void) -> some View {
-        let done = book.sessions.filter { $0.discipline.id != "rest" && $0.loggedInSheet && !$0.missed }.count
-        let last = book.stamps.values.filter { $0.timeIntervalSince1970 > 1_600_000_000 }.max() ?? book.origin.takenAt
-        return VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
-            Text("\(book.sessions.count) sessions · \(done) done").font(.footnote).foregroundStyle(Theme.secondary)
-            Text("last change " + WaitingForPlanView.when(last)).font(.footnote).foregroundStyle(Theme.secondary)
+            Text("\(book.sessions.count) sessions · \(Self.done(book)) done").font(.footnote).foregroundStyle(Theme.secondary)
+            Text("last change " + WaitingForPlanView.when(Self.last(book))).font(.footnote).foregroundStyle(Theme.secondary)
             Text("moved in " + SettingsView.dayMonthYear(book.origin.takenAt)).font(.footnote).foregroundStyle(Theme.secondary)
             Button(action: use) {
                 Text("Use this one").font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 34)

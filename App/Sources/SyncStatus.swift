@@ -9,6 +9,7 @@ enum SyncStatus: Equatable {
     case working             // on its way up or down
     case same(Date?)         // the same on all devices; when they last met
     case problem(String)     // the words say which
+    case noted(Date, String) // the same on all devices, and a meeting took something out: the words say what (until he has looked)
 
     var words: String {
         switch self {
@@ -16,6 +17,7 @@ enum SyncStatus: Equatable {
         case .working: return "On its way"
         case .same: return "Same on all devices"
         case .problem(let why): return why
+        case .noted(_, let words): return words
         }
     }
 
@@ -23,7 +25,7 @@ enum SyncStatus: Equatable {
         switch self {
         case .off: return Theme.secondary
         case .working: return Theme.extraHour
-        case .same: return Theme.today
+        case .same, .noted: return Theme.today
         case .problem: return Theme.danger
         }
     }

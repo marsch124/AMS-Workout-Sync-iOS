@@ -24,6 +24,8 @@ struct AMSWorkoutSyncApp: App {
                         // The hikes and gym sessions outside the plan, for Load.
                         Task { await Diary.shared.readHealth(today: store.today) }
                     }
+                    // Going to the background: what was just logged goes to iCloud now, not at the next opening.
+                    if phase == .background { store.cloud.goingToBackground() }
                 }
         }
     }

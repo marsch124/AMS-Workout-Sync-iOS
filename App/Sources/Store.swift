@@ -294,8 +294,14 @@ final class Store: ObservableObject {
             // The flag decides. A plan that lives here is never quietly swapped
             // for an old copy of the Excel file: he would log into the wrong plan.
             home = .app
-            if var saved = (try? Data(contentsOf: bookURL)).flatMap({ try? PlanBook.decoded($0) }) {
-                let carried = carryIntoBook(&saved)
+            let raw = try? Data(contentsOf: bookURL)
+            if var saved = raw.flatMap({ try? PlanBook.decoded($0) }) {
+                // A plan written by 2.1 (format 1) is copied aside untouched, once, before anything saves over it.
+                let untouched = raw.map { (CloudFiles.formatNumber($0) ?? 1) < 2 } ?? false
+                let keptAside = !untouched || keepFormat1(raw!)
+                var carried = carryIntoBook(&saved)
+                // No copy (no room): the plan opens, and nothing is saved over the old file at opening.
+                if !keptAside { carried = false }
                 publish(saved)
                 // The move log and the workbook's mark go into the book once (2.1); the flag only after it is on disk.
                 if !carried || save(saved) { UserDefaults.standard.set(true, forKey: "moveLog.inBook") }
@@ -319,6 +325,13 @@ final class Store: ObservableObject {
         if let data = try? Data(contentsOf: cacheURL) {
             parse(data, cached: true)
         }
+    }
+
+    /* plan-format1.json beside the plan: the 2.1 file as it was, kept for good. False only if it could not be written. */
+    private func keepFormat1(_ data: Data) -> Bool {
+        let to = supportURL.appendingPathComponent("plan-format1.json")
+        if FileManager.default.fileExists(atPath: to.path) { return true }
+        return (try? data.write(to: to, options: .atomic)) != nil
     }
 
     var hasWorkbook: Bool { UserDefaults.standard.data(forKey: bookmarkKey) != nil || dropboxPath != nil || !plan.isEmpty }
@@ -1019,7 +1032,8 @@ final class Store: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FILE"] != nil { return }
         #endif
-        guard home == .app, copyOwed, !copying, let book, let target = dropboxCopyPath, Dropbox.shared.isConnected,
+        // The iPhone alone writes the spreadsheet copy to Dropbox: from three devices it would be overwritten in turns.
+        guard Device.isPhone, home == .app, copyOwed, !copying, let book, let target = dropboxCopyPath, Dropbox.shared.isConnected,
               let original = try? Data(contentsOf: originalURL) else { return }
         copying = true
         copyOwed = false
@@ -1055,25 +1069,59 @@ final class Store: ObservableObject {
 
     // MARK: putting a safety copy back
 
-    /* The days there is a safety copy for, newest first. */
+    /*
+     * Every safety copy, newest first, by a name the list understands:
+     *   "2026-11-25"                 the plan at the start of that day (plan-2026-11-25.json)
+     *   "2026-11-25-before-0912"     just before a copy was put back at 09:12
+     *   "before-merge-2026-11-25-091200-from-mac-took"   before a meeting with iCloud took something out
+     *   "other-plan-2026-11-25-091200"                   the plan put aside when he chose the other of two
+     */
     var safetyCopyDays: [String] {
-        ((try? FileManager.default.contentsOfDirectory(atPath: backupsURL.path)) ?? [])
-            .filter { $0.hasPrefix("plan-") && $0.hasSuffix(".json") }
-            .map { String($0.dropFirst(5).dropLast(5)) }.sorted().reversed()
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: backupsURL.path)) ?? []
+        var ids: [String] = []
+        for name in names where name.hasSuffix(".json") {
+            let bare = String(name.dropLast(5))
+            if name.hasPrefix("plan-") { ids.append(String(bare.dropFirst(5))) }
+            else if name.hasPrefix("before-merge-") && name.hasSuffix("-took.json") { ids.append(bare) }
+            else if name.hasPrefix("other-plan-") { ids.append(bare) }
+        }
+        return ids.sorted { Store.copyMoment($0) != Store.copyMoment($1) ? Store.copyMoment($0) > Store.copyMoment($1) : $0 > $1 }
+    }
+
+    /* "yyyy-MM-dd-HHmmss" of a safety copy's name, for the order of the list. */
+    static func copyMoment(_ id: String) -> String {
+        for prefix in ["before-merge-", "other-plan-"] where id.hasPrefix(prefix) { return String(id.dropFirst(prefix.count).prefix(17)) }
+        if let r = id.range(of: "-before-") { return String(id[..<r.lowerBound]) + "-" + String(id[r.upperBound...]).prefix(4) + "00" }
+        return String(id.prefix(10)) + "-000000"
+    }
+
+    private func copyURL(_ id: String) -> URL {
+        id.hasPrefix("before-merge-") || id.hasPrefix("other-plan-")
+            ? backupsURL.appendingPathComponent(id + ".json")
+            : backupsURL.appendingPathComponent("plan-\(id).json")
     }
 
     /* What a safety copy holds, for the list: nil if it will not open. */
     func safetyCopySummary(_ day: String) -> (sessions: Int, done: Int, changes: Int)? {
-        guard let data = try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json")),
+        guard let data = try? Data(contentsOf: copyURL(day)),
               let copy = try? PlanBook.decoded(data) else { return nil }
         let done = copy.sessions.filter { $0.discipline.id != "rest" && $0.loggedInSheet && !$0.missed }.count
         return (copy.sessions.count, done, copy.changes.count)
     }
 
+    /* Another device has met this plan in iCloud (now or ever): a copy put back then keeps what was logged since. */
+    var planIsShared: Bool { UserDefaults.standard.bool(forKey: PlanCloud.sharedKey) || cloud.otherDevicesUsePlan }
+
     /*
      * The plan as it was at the start of that day, put back. The plan as it
      * is now is kept beside it first (plan-before-restore-…), so putting a
      * copy back can itself be put right.
+     *
+     * Not shared: the whole copy, marked as a change made now. Shared with
+     * other devices: only the plan's own side goes back (days, words,
+     * lengths, which sessions are in it) and what he logged since the copy
+     * stays — else putting an old copy back on one device would take those
+     * logs out on every device (PlanBook.putBack).
      */
     @discardableResult
     func restoreSafetyCopy(_ day: String) -> Bool {
@@ -1081,14 +1129,23 @@ final class Store: ObservableObject {
             lastProblem = "A safety copy can be put back only while the plan lives in this app. Nothing was changed."
             return false
         }
-        guard let old = (try? Data(contentsOf: backupsURL.appendingPathComponent("plan-\(day).json"))).flatMap({ try? PlanBook.decoded($0) }),
+        guard let old = (try? Data(contentsOf: copyURL(day))).flatMap({ try? PlanBook.decoded($0) }),
               !old.isFromNewerApp else {
             lastProblem = "That safety copy could not be opened. Nothing was changed."
             return false
         }
-        // Marked as a change made now, so on the other devices it wins over what came after the copy —
-        // which is what putting it back means. What it takes out gets a removed mark the same way.
-        let copy = old.stamped(after: book ?? old)
+        let current = book ?? old
+        let copy: PlanBook
+        if !BookMerge.samePlan(old, current) {
+            // The other of two plans: put back whole, with its own marks; iCloud then asks which plan to keep.
+            copy = old
+        } else if planIsShared, let kept = PlanBook.putBack(old, over: current) {
+            copy = kept
+        } else {
+            // Marked as a change made now, so on the other devices it wins over what came after the copy —
+            // which is what putting it back means. What it takes out gets a removed mark the same way.
+            copy = old.stamped(after: current)
+        }
         guard let data = try? copy.encoded() else {
             lastProblem = "That safety copy could not be opened. Nothing was changed."
             return false
@@ -1221,10 +1278,10 @@ final class Store: ObservableObject {
         try? data.write(to: folder.appendingPathComponent("\(Store.stampNow()) \(name)"), options: .atomic)
     }
 
-    /* A whole plan kept as a file in Before iCloud (the one not chosen of two). */
-    func keepAside(_ book: PlanBook, as name: String) {
-        try? FileManager.default.createDirectory(at: beforeICloudURL, withIntermediateDirectories: true)
-        try? book.encoded().write(to: beforeICloudURL.appendingPathComponent("\(name)-\(Store.stampNow()).json"), options: .atomic)
+    /* A whole plan kept among the safety copies (the one not chosen of two), so it can be put back from the app. Never pruned. */
+    func keepAside(_ book: PlanBook, as name: String, tail: String) {
+        try? FileManager.default.createDirectory(at: backupsURL, withIntermediateDirectories: true)
+        try? book.encoded().write(to: backupsURL.appendingPathComponent("\(name)-\(Store.stampNow())-\(tail).json"), options: .atomic)
     }
 
     /*
@@ -1233,12 +1290,14 @@ final class Store: ObservableObject {
      * away from this device ("-took") are counted apart, so twenty quiet
      * meetings cannot push them out.
      */
-    private func keepBeforeMerge(took: Bool) -> Bool {
+    private func keepBeforeMerge(took: Bool, from: String) -> Bool {
         let fm = FileManager.default
         guard fm.fileExists(atPath: bookURL.path) else { return true }
         do {
             try fm.createDirectory(at: backupsURL, withIntermediateDirectories: true)
-            let name = "before-merge-\(Store.stampNow())\(took ? "-took" : "").json"
+            // "-from-mac-took": whose changes came in, for the words in the list of safety copies.
+            let who = from.replacingOccurrences(of: "your ", with: "").replacingOccurrences(of: " ", with: "_").lowercased()
+            let name = "before-merge-\(Store.stampNow())\(took ? "-from-\(who)-took" : "").json"
             let to = backupsURL.appendingPathComponent(name)
             if fm.fileExists(atPath: to.path) { try fm.removeItem(at: to) }
             try fm.copyItem(at: bookURL, to: to)
@@ -1258,10 +1317,10 @@ final class Store: ObservableObject {
      * only after a safety copy. On disk first, then on screen. Not marked:
      * its marks came with it.
      */
-    func takeFromCloud(_ joined: PlanBook, takenAway: [String], version: Int) -> Bool {
+    func takeFromCloud(_ joined: PlanBook, takenAway: [String], version: Int, from: String) -> Bool {
         guard home == .app, version == bookVersion, !joined.isFromNewerApp, !goingBack else { return false }
         keepSafetyCopy()
-        guard keepBeforeMerge(took: !takenAway.isEmpty) else {
+        guard keepBeforeMerge(took: !takenAway.isEmpty, from: from) else {
             lastProblem = "No room for a safety copy, so the plan from your other devices was not put in place. Nothing was changed."
             return false
         }
