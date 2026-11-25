@@ -309,8 +309,9 @@ final class Store: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.environment["AMSWS_FILE"] != nil { return }
         #endif
-        // The plan lives here: there is nothing elsewhere to read.
-        if home == .app { return }
+        // The plan lives here: there is nothing elsewhere to read. Coming to
+        // the front is a good moment to send a copy that is still owed.
+        if home == .app { copyToDropboxNow(); return }
         if let path = dropboxPath, Dropbox.shared.isConnected {
             if !queue.isEmpty { syncNow(); return }
             if plan.isEmpty { phase = .loading }
@@ -647,6 +648,7 @@ final class Store: ObservableObject {
         }
         publish(book)
         keepWeeklySpreadsheet(book)
+        copyToDropboxSoon()
     }
 
     private func keepSafetyCopy() {
@@ -754,6 +756,7 @@ final class Store: ObservableObject {
         lastProblem = nil
         publish(taken.book)
         keepWeeklySpreadsheet(taken.book, force: true)
+        copyToDropboxSoon()
     }
 
     /*
@@ -821,6 +824,60 @@ final class Store: ObservableObject {
             .filter { $0.lastPathComponent.hasPrefix("Triathlon plan ") && $0.pathExtension == "xlsx" }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
         for old in all.dropLast(8) { try? fm.removeItem(at: old) }
+    }
+
+    // MARK: a copy outside this phone
+
+    /*
+     * While Dropbox is still connected, the plan is also kept there as a
+     * spreadsheet beside the workbook it came from — a copy outside this
+     * phone, so a lost or broken phone does not take the plan with it. The
+     * app writes it and never reads it; the original workbook is not touched.
+     */
+    @Published private(set) var copiedToDropboxAt: Date? = UserDefaults.standard.object(forKey: "plan.lastDropboxCopy") as? Date
+    @Published private(set) var dropboxCopyProblem: String?
+    private var copyOwed = false
+    private var copying = false
+
+    static let dropboxCopyName = "Triathlon plan from the app.xlsx"
+
+    var dropboxCopyPath: String? {
+        guard let path = dropboxPath, let slash = path.lastIndex(of: "/") else { return nil }
+        return String(path[..<slash]) + "/" + Store.dropboxCopyName
+    }
+
+    /* A little after the last change, so a burst of taps makes one copy. */
+    private func copyToDropboxSoon() {
+        copyOwed = true
+        Task {
+            try? await Task.sleep(nanoseconds: 15_000_000_000)
+            self.copyToDropboxNow()
+        }
+    }
+
+    func copyToDropboxNow() {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_FILE"] != nil { return }
+        #endif
+        guard home == .app, copyOwed, !copying, let book, let target = dropboxCopyPath, Dropbox.shared.isConnected,
+              let original = try? Data(contentsOf: originalURL) else { return }
+        copying = true
+        copyOwed = false
+        Task {
+            defer { self.copying = false }
+            do {
+                let bytes = try PlanExport.workbook(book, template: original)
+                try await Dropbox.shared.uploadCopy(target, bytes)
+                let now = Date()
+                self.copiedToDropboxAt = now
+                UserDefaults.standard.set(now, forKey: "plan.lastDropboxCopy")
+                self.dropboxCopyProblem = nil
+            } catch {
+                // Still owed: tried again the next time the app comes to the front.
+                self.copyOwed = true
+                self.dropboxCopyProblem = error.localizedDescription
+            }
+        }
     }
 
     // MARK: changing the plan itself

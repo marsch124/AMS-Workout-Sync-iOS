@@ -220,6 +220,24 @@ final class Dropbox: NSObject, ASWebAuthenticationPresentationContextProviding {
         return RemoteFile(data: data, rev: newRev, name: meta["name"] as? String ?? "")
     }
 
+    /*
+     * A copy put beside the plan, whatever is there already: the spreadsheet
+     * the app writes of its own plan once the plan lives in the app. Written,
+     * never read back — so there is no revision to match and nothing to lose.
+     */
+    func uploadCopy(_ path: String, _ data: Data) async throws {
+        guard let url = URL(string: contentURL + "/files/upload") else { throw DropboxError.badResponse }
+        var request = URLRequest(url: url, timeoutInterval: 90)
+        request.httpMethod = "POST"
+        request.setValue("Bearer " + (try await token()), forHTTPHeaderField: "Authorization")
+        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        request.setValue(Self.apiArg(["path": path, "mode": "overwrite", "autorename": false, "mute": true]),
+                         forHTTPHeaderField: "Dropbox-API-Arg")
+        let (body, response) = try await URLSession.shared.upload(for: request, from: data)
+        guard let http = response as? HTTPURLResponse else { throw DropboxError.badResponse }
+        guard http.statusCode == 200 else { throw DropboxError.http(http.statusCode, String(decoding: body, as: UTF8.self)) }
+    }
+
     // MARK: plumbing
 
     private func rpc(_ endpoint: String, _ body: [String: Any]?) async throws -> [String: Any] {
