@@ -21,6 +21,7 @@ struct MoveView: View {
 
     @State private var day: Date
     @State private var swapWith: Workout?
+    @ObservedObject private var keeper = SuggestionKeeper.shared
 
     init(workout: Workout) {
         self.workout = workout
@@ -73,6 +74,8 @@ struct MoveView: View {
                          ? "Pick a different day first."
                          : "+1 moves it straight to tomorrow. Only the date is rewritten either way: the session keeps its place in every weekly total, because your sheet counts by week number and sport, never by date.")
                         .font(.caption).foregroundStyle(Theme.secondary)
+                    // His own move against the rule book: one grey line, never a block.
+                    OwnEditNote(text: chosenKey == workout.dayKey ? nil : keeper.note(forMoving: workout.key, to: chosenKey))
 
                     if !candidates.isEmpty {
                         SectionHeading(text: "Or swap it with")

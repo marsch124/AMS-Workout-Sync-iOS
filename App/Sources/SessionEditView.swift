@@ -43,6 +43,17 @@ struct SessionEditView: View {
     }
 
     private var adding: Bool { key == nil }
+    @ObservedObject private var keeper = SuggestionKeeper.shared
+
+    /* The page as it stands, for the grey line; the same draft Save would make. */
+    private var liveDraft: SessionDraft {
+        let typed = minutes.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: ".")
+        return SessionDraft(dayKey: dayKey(day) ?? initial.dayKey, sport: sport,
+                            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+                            minutes: Double(typed) ?? (typed.isEmpty ? nil : initial.minutes),
+                            intensity: zone.trimmingCharacters(in: .whitespacesAndNewlines),
+                            purpose: purpose, isKey: isKey)
+    }
     private var current: Discipline { Self.sports.first { $0.id == sport } ?? Disciplines.other }
 
     var body: some View {
@@ -131,6 +142,8 @@ struct SessionEditView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
+                    // His own change against the rule book: one grey line, never a block.
+                    OwnEditNote(text: keeper.note(forChanging: key, to: liveDraft))
                     if let problem {
                         Text(problem).font(.footnote).foregroundStyle(Theme.danger)
                             .frame(maxWidth: .infinity, alignment: .leading)

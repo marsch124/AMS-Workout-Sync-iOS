@@ -1,0 +1,249 @@
+import SwiftUI
+import WorkoutCore
+
+/*
+ * The suggestion on Today, directly under the morning question, in the
+ * plain voice: one change line, one reason line, and two equal buttons —
+ * "Take it" and "Keep my plan" weigh exactly the same, both outlined in the
+ * plan's blue (blue means changing the plan, everywhere), neither filled.
+ * "Other choice" shows at most two more that also passed every limit.
+ *
+ * After "Take it" the card's place says "Changed — Undo" until the day ends.
+ */
+struct SuggestionArea: View {
+    @ObservedObject private var keeper = SuggestionKeeper.shared
+
+    var body: some View {
+        if keeper.ladder.step != .none || keeper.card != nil || keeper.changed != nil {
+            VStack(alignment: .leading, spacing: 10) {
+                LadderLine()
+                if let entry = keeper.card {
+                    SuggestionCardView(entry: entry)
+                } else if let entry = keeper.changed {
+                    ChangedLine(entry: entry)
+                }
+            }
+            .onAppear { keeper.todayAppeared() }
+        } else {
+            // Nothing to show: no room taken either (the page spaces its rows 14 apart).
+            Color.clear.frame(height: 0).padding(.top, -14)
+                .accessibilityHidden(true)
+                .onAppear { keeper.todayAppeared() }
+        }
+    }
+}
+
+struct SuggestionCardView: View {
+    @ObservedObject private var keeper = SuggestionKeeper.shared
+    let entry: SuggestionEntry
+    @State private var showingOthers = false
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(entry.headline)
+                .font(.headline).foregroundStyle(Theme.text)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("suggestion-headline")
+            Text(entry.why)
+                .font(.subheadline).foregroundStyle(Theme.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("suggestion-why")
+
+            let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
+            layout {
+                if !entry.isReview {
+                    EqualButton(title: RuleBookWords.takeIt, id: "suggestion-take") { keeper.take(0) }
+                }
+                EqualButton(title: RuleBookWords.keepMyPlan, id: "suggestion-keep") { keeper.keepPlan() }
+            }
+            .padding(.top, 2)
+
+            if !entry.isReview && !entry.otherHeadlines.isEmpty {
+                if showingOthers || debugOthers {
+                    ForEach(Array(entry.otherHeadlines.prefix(2).enumerated()), id: \.offset) { i, words in
+                        Button { keeper.take(i + 1) } label: {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(words).font(.subheadline).foregroundStyle(Theme.text)
+                                    .multilineTextAlignment(.leading)
+                                Spacer(minLength: 4)
+                                Text(RuleBookWords.takeIt).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.plan)
+                            }
+                            .padding(.horizontal, 10).padding(.vertical, 7)
+                            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.surface2))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("suggestion-other-\(i + 1)")
+                    }
+                } else {
+                    Button(RuleBookWords.otherChoice) { withAnimation(.easeInOut(duration: 0.15)) { showingOthers = true } }
+                        .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.plan)
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("suggestion-other")
+                }
+            }
+
+            Text(RuleBookWords.footer)
+                .font(.caption2).foregroundStyle(Theme.secondary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("suggestion-card")
+    }
+
+    private var debugOthers: Bool {
+        #if DEBUG
+        return keeper.debugShowsOthers
+        #else
+        return false
+        #endif
+    }
+}
+
+/* One of the two equal answers: same size, same outline, neither filled. */
+private struct EqualButton: View {
+    let title: String
+    let id: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Theme.plan)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, minHeight: 36)
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.plan, lineWidth: 1.5))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
+    }
+}
+
+/* "Changed — Undo", where the card was, until the end of the day it was taken. */
+struct ChangedLine: View {
+    @ObservedObject private var keeper = SuggestionKeeper.shared
+    let entry: SuggestionEntry
+
+    private var words: [String] { RuleBookWords.changedUndo.components(separatedBy: " — ") }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text((words.first ?? "Changed") + " —")
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                    .accessibilityIdentifier("suggestion-changed")
+                Button(words.last ?? "Undo") { keeper.undo() }
+                    .settingsButton(tint: Theme.plan)
+                    .accessibilityIdentifier("suggestion-undo")
+                Spacer(minLength: 0)
+            }
+            Text(keeper.headline(entry, entry.takenIndex ?? 0))
+                .font(.footnote).foregroundStyle(Theme.secondary)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+    }
+}
+
+/* While a stop sign or an illness step is on: its fixed words, on Today. */
+struct LadderLine: View {
+    @ObservedObject private var keeper = SuggestionKeeper.shared
+
+    var body: some View {
+        let state = keeper.ladder
+        if state.step != .none {
+            VStack(alignment: .leading, spacing: 2) {
+                if let label = Self.label(state.step) {
+                    Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                }
+                Text(state.text).font(.footnote).foregroundStyle(Theme.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("ladder-line")
+        }
+    }
+
+    static func label(_ step: RBLadder) -> String? {
+        switch step {
+        case .paused: return RuleBookWords.pausedLabel
+        case .rest: return RuleBookWords.restLabel
+        default: return nil
+        }
+    }
+}
+
+/* The quiet "Stop sign" text button, on Today and on every session page. */
+struct StopSignButton: View {
+    @ObservedObject private var keeper = SuggestionKeeper.shared
+    @State private var open = false
+    /* On a session page: what the session shows while paused or resting. */
+    var showsState = false
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            if showsState, let label = LadderLine.label(keeper.ladder.step) {
+                Text(label).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                    .accessibilityIdentifier("session-ladder")
+            }
+            Button("Stop sign") { open = true }
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.secondary)
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("stop-sign")
+        }
+        .sheet(isPresented: $open) { StopSignView() }
+    }
+}
+
+/* "Something hurts?" — offered once, under "How hard was it?". */
+struct HurtsAsk: View {
+    @ObservedObject private var keeper = SuggestionKeeper.shared
+    let workout: Workout
+
+    static let places: [(id: String, word: String)] = [("calf", "Calf"), ("achilles", "Achilles"), ("knee", "Knee"), ("other", "Other")]
+
+    var body: some View {
+        if keeper.asksHurts(workout) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Something hurts?")
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                    .accessibilityIdentifier("hurts-ask")
+                FlowRow(spacing: 6) {
+                    ForEach(Self.places, id: \.id) { p in
+                        Button(p.word) { keeper.hurts(p.id, session: workout.key) }
+                            .settingsButton(tint: Theme.today)
+                            .accessibilityIdentifier("hurts-\(p.id)")
+                    }
+                    Button("Nothing hurts") { keeper.hurts(nil, session: workout.key) }
+                        .settingsButton(tint: Theme.today)
+                        .accessibilityIdentifier("hurts-none")
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        }
+    }
+}
+
+/* The one calm grey line under his own change. Never a block, never red, never a question. */
+struct OwnEditNote: View {
+    let text: String?
+    var body: some View {
+        if let text {
+            Text(text)
+                .font(.footnote).foregroundStyle(Theme.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("own-edit-note")
+        }
+    }
+}

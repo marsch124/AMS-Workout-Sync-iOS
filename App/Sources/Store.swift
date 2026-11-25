@@ -1445,4 +1445,31 @@ final class Store: ObservableObject {
             lastProblem = error.localizedDescription
         }
     }
+
+    // MARK: a suggestion he took (rule book)
+
+    /* A taken card's moves, written as ordinary changes with one why-line, in one save. Returns the changes' ids. */
+    func applySuggestion(_ moves: [Move], input: RuleBookInput, why: String) -> [String]? {
+        guard canChangePlan, var book else { return nil }
+        do {
+            let ids = try SuggestionApply.take(moves, input: input, to: &book, why: why)
+            guard !ids.isEmpty else { return [] }
+            return save(book) ? ids : nil
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
+    }
+
+    /* One Undo for the whole card. */
+    func undoSuggestion(_ ids: [String]) -> Bool {
+        guard var book else { return false }
+        do {
+            try SuggestionApply.undo(ids, in: &book)
+            return save(book)
+        } catch {
+            lastProblem = error.localizedDescription
+            return false
+        }
+    }
 }
