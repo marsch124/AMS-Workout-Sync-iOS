@@ -1,3 +1,4 @@
+import AMSIcons
 import SwiftUI
 import WorkoutCore
 
@@ -86,11 +87,50 @@ enum Theme {
     }
 }
 
+/// The app's hand-drawn icons, drawn from the central icon library (AMS-Icons).
+/// Same drawings, same strokes as the old template images: 1.9 on the 24-point
+/// box, and 2.1 for the back arrow, tick, bars and plus, as the web app drew them.
+/// The icon takes the foreground colour of the view around it.
 struct Glyph: View {
     let name: String
     var size: CGFloat = 22
+    private static let marks: [String: (AppMark, CGFloat)] = [
+        "icon-back": (.triBack, 2.1),
+        "icon-bike": (.triBike, 1.9),
+        "icon-breathing": (.triBreathing, 1.9),
+        "icon-camera": (.triCamera, 1.9),
+        "icon-check": (.triCheck, 2.1),
+        "icon-clock": (.triClock, 1.9),
+        "icon-cloud": (.triCloud, 1.9),
+        "icon-counts": (.triCounts, 2.1),
+        "icon-heart": (.triHeart, 1.9),
+        "icon-hike": (.triHike, 1.9),
+        "icon-meditation": (.triMeditation, 1.9),
+        "icon-mic": (.triMic, 1.9),
+        "icon-mobility": (.triMobility, 1.9),
+        "icon-other": (.triOther, 1.9),
+        "icon-pen": (.triPen, 1.9),
+        "icon-plan": (.triPlan, 1.9),
+        "icon-plus": (.triPlus, 2.1),
+        "icon-progress": (.triProgress, 1.9),
+        "icon-race": (.triRace, 1.9),
+        "icon-rest": (.moon, 1.9),
+        "icon-rowing": (.triRowing, 1.9),
+        "icon-run": (.triRun, 1.9),
+        "icon-settings": (.triSettings, 1.9),
+        "icon-share": (.triShare, 1.9),
+        "icon-ski": (.triSki, 1.9),
+        "icon-strength": (.triStrength, 1.9),
+        "icon-stretch": (.triStretch, 1.9),
+        "icon-swim": (.triSwim, 1.9),
+        "icon-sync": (.triSync, 1.9),
+        "icon-today": (.triToday, 1.9),
+        "icon-walk": (.triWalk, 1.9),
+        "icon-yoga": (.triYoga, 1.9),
+    ]
     var body: some View {
-        Image(name).resizable().renderingMode(.template).scaledToFit().frame(width: size, height: size)
+        let (mark, weight) = Glyph.marks[name] ?? (.triOther, 1.9)
+        AppMarkView(mark, size: size, lineWidth: weight)
     }
 }
 
