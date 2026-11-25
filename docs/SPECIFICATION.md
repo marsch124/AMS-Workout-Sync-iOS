@@ -1544,4 +1544,17 @@ Only when `canChangePlan` (`home == .app` and a book). The Store methods `change
 * No suggestions, no advice, no health claim; the app changes the plan only when told.
 * Not in 2.0, said honestly in What's new as "Coming next": iPad and Mac, the morning check with Garmin numbers, suggestions by the rule book, Claude built in, links to Workout Companion and Magic Morning.
 
-**Signs added.** Green tick in the side-by-side table = "the same on both sides"; red "differs"; red buttons "Go back to Excel" and "Take out of the plan" take something away; "Taken back" in grey; "Lives in this app". **Judgement for the owner:** the green tick otherwise means "done and nothing else" (11.5, N.6); in the side-by-side table it means "the same". This breaks the rule that a mark means one thing in the whole app. The guide says so openly, but a word ("Same") or an equals sign would be cleaner.
+**Signs added.** Green word "same" in the side-by-side table = the two figures agree (see P.15); red "differs"; red buttons "Go back to Excel" and "Take out of the plan" take something away; "Taken back" in grey; "Lives in this app". **Judgement for the owner:** the green tick otherwise means "done and nothing else" (11.5, N.6); in the side-by-side table it means "the same". This breaks the rule that a mark means one thing in the whole app. The guide says so openly, but a word ("Same") or an equals sign would be cleaner.
+
+
+### P.13 A copy outside the phone (added during 2.0)
+
+While Dropbox is connected and a plan path is known, `Store.copyToDropboxSoon()` runs after every save of the book: fifteen seconds after the last change, `copyToDropboxNow()` writes `PlanExport.workbook(book, template: plan-original.xlsx)` to `<folder of the old workbook>/Triathlon plan from the app.xlsx` through `Dropbox.uploadCopy` (mode `overwrite`, no revision: the file is written by the app and never read). A failure leaves the copy owed and it is tried again when the app next comes to the front (`refresh()` in app mode). `UserDefaults` key `plan.lastDropboxCopy`; Settings row id `plan-dropbox-copy`. The original workbook is never touched by this. Skipped in DEBUG runs that use `AMSWS_FILE`.
+
+### P.14 Tabs change at once
+
+`BottomBar` sets the tab without `withAnimation`. With the 0.2 s slide, the paged `TabView` could stop half-way between two pages when a tab was tapped after a session had been added from the Sessions tab (caught by `PlanChangeUITests`). Swiping between pages is unchanged. `SessionEditView.save()` also resigns the keyboard before closing.
+
+### P.15 Words, not the tick, in the side-by-side table
+
+The move-in page marks agreeing figures with the green word "same" and differing ones with the red word "differs". The done tick is not used there: it means done and nothing else.

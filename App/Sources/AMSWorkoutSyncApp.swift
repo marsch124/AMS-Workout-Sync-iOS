@@ -130,7 +130,7 @@ struct BottomBar: View {
                     if tab == item.id {
                         again(item.id)
                     } else {
-                        withAnimation(.easeInOut(duration: 0.2)) { tab = item.id }
+                        tab = item.id
                     }
                 } label: {
                     // Each tab keeps its own colour whether it is open or not,

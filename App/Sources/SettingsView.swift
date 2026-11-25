@@ -212,6 +212,10 @@ struct SettingsView: View {
                     action: ("Save a copy now", { copyURL = store.spreadsheetCopy() }), actionID: "plan-copy")
         Text("A copy is also kept every week in Files › On My iPhone › Triathlon.")
             .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
+        SettingsRow(title: "Copy in Dropbox", sub: dropboxCopyLine)
+            .accessibilityIdentifier("plan-dropbox-copy")
+        Text("The plan as a spreadsheet, named \u{201C}Triathlon plan from the app\u{201D}, beside the old Excel file — a copy outside this phone. The app writes it and never reads it.")
+            .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
         NavigationLink { PlanChangesView() } label: {
             SettingsRow(title: "Changes to the plan", sub: "\(store.planChanges.count) so far", chevron: true)
         }
@@ -225,6 +229,16 @@ struct SettingsView: View {
         if let why = store.homeProblem {
             Text(why).font(.footnote).foregroundStyle(Theme.danger).accessibilityIdentifier("plan-problem")
         }
+    }
+
+    /* When the copy outside this phone was last written, or why there is none. */
+    private var dropboxCopyLine: String {
+        guard Dropbox.shared.isConnected, store.dropboxCopyPath != nil else {
+            return "Dropbox is not connected, so there is no copy outside this phone"
+        }
+        if let why = store.dropboxCopyProblem { return "Could not be written just now (\(why)). Tried again when the app is next opened." }
+        guard let at = store.copiedToDropboxAt else { return "The first follows shortly after the plan next changes" }
+        return "last " + Self.dayMonth(at) + ", " + at.formatted(date: .omitted, time: .shortened)
     }
 
     private static func format(_ pattern: String) -> DateFormatter {

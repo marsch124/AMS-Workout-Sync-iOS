@@ -170,6 +170,9 @@ struct SessionEditView: View {
         let draft = SessionDraft(dayKey: dayKey(day) ?? "", sport: sport, title: words,
                                  minutes: typed.isEmpty ? nil : Double(typed),
                                  intensity: zone, purpose: purpose, isKey: isKey)
+        // The keyboard goes first: a page closed with it still up left the
+        // swipe pages underneath stuck half-way between two tabs.
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         if let key {
             store.changeSession(key, to: draft)
             dismiss()

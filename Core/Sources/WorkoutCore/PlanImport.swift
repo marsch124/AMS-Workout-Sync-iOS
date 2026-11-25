@@ -88,8 +88,8 @@ public struct PlanProof: Equatable {
             line("Missed", { $0.missed }),
             line("Still to come", { $0.toCome }),
             line("Extra activities", { $0.extras }),
-            line("Planned minutes so far", { $0.plannedMinutes }),
-            line("Recorded minutes so far", { $0.recordedMinutes })
+            line("Planned min so far", { $0.plannedMinutes }),
+            line("Recorded min so far", { $0.recordedMinutes })
         ]
     }
 }

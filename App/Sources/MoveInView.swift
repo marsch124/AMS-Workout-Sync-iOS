@@ -168,7 +168,7 @@ struct MoveInView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Done. The plan lives in this app now.").font(.headline).foregroundStyle(Theme.today)
                 .accessibilityIdentifier("movein-finished")
-            Text("Logging, moving and changing sessions all happen here. Dropbox is no longer read or written.")
+            Text("Logging, moving and changing sessions all happen here. Your Excel file is no longer read or written.")
             Text("The Excel file stays where it is, untouched. For three weeks you can go back.")
             Button { dismiss() } label: {
                 Text("Done").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
