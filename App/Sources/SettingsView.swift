@@ -161,6 +161,8 @@ struct SettingsView: View {
                     SectionHeading(text: "Claude")
                     ClaudeSettingsEntry()
 
+                    TodayNoteSettingsRow()
+
                     SectionHeading(text: "Reminders")
                     NavigationLink { RemindersSettingsView() } label: {
                         SettingsRow(title: "Reminders", sub: ReminderCentre.shared.settings.anyOn ? "On \u{2014} evening, Sunday, missed session" : "Off \u{2014} evening, Sunday, missed session", chevron: true)

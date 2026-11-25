@@ -92,6 +92,7 @@ private struct SystemLinks: ViewModifier {
             .onContinueUserActivity(CSSearchableItemActionType) { activity in
                 if let key = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String { open(.session(key)) }
             }
+            .modifier(TodayNoteHook(open: open))
             .onAppear { SpotlightIndex.shared.refresh(store) }
             .onReceive(store.objectWillChange.debounce(for: .seconds(1.5), scheduler: RunLoop.main)) { _ in
                 SpotlightIndex.shared.refresh(store)
