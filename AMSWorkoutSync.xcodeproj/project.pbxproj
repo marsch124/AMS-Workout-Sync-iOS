@@ -25,7 +25,9 @@
 		3B18EC3B9D29DE2C27133D11 /* WorkoutCore in Frameworks */ = {isa = PBXBuildFile; productRef = D690C9E09EB79AAE0C30F1A6 /* WorkoutCore */; };
 		3C47B4FB4567292271EB90F5 /* Neighbours.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30A622530862215769C87FA /* Neighbours.swift */; };
 		4C92AF2407F8B9021267FA3C /* PhotoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */; };
+		4FEC94AC696B1C83143E08E5 /* BodyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */; };
 		57C9D429EE28AAC34434A4E6 /* AMSIcons in Frameworks */ = {isa = PBXBuildFile; productRef = E5919F8033E8B81CB5A802AE /* AMSIcons */; };
+		5C344D8AF3B4D4BD5C52F7BD /* BodyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3844D13CF50F6EC65408A10 /* BodyView.swift */; };
 		5CCB2FFB5FB33334D047E2F2 /* Health.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CDFC67F6D3D022CEEC7F7CC /* Health.swift */; };
 		626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E3DEEE01504BE66D135FE3 /* Theme.swift */; };
 		66D43D228DD0E678D8D24C97 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338EA2CFBED1B8532ED07B0A /* Device.swift */; };
@@ -102,6 +104,7 @@
 		145AD2CD57182DB43079FC8C /* YearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearView.swift; sourceTree = "<group>"; };
 		18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViews.swift; sourceTree = "<group>"; };
 		201A884ED7294E23A8047706 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyUITests.swift; sourceTree = "<group>"; };
 		29C8793044EA9500B757D610 /* Diary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diary.swift; sourceTree = "<group>"; };
 		2D65F7293009826029A454FA /* WeekBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBoard.swift; sourceTree = "<group>"; };
 		2E6525576D143C59A4723612 /* DropboxViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxViews.swift; sourceTree = "<group>"; };
@@ -167,6 +170,7 @@
 		E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
 		F037AACECD68FCF5D26B2793 /* GarminClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminClient.swift; sourceTree = "<group>"; };
 		F207F8087FE96E561398E475 /* LoadViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadViews.swift; sourceTree = "<group>"; };
+		F3844D13CF50F6EC65408A10 /* BodyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyView.swift; sourceTree = "<group>"; };
 		F38E390EC5399EDD0A3C0D74 /* PlanCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanCloud.swift; sourceTree = "<group>"; };
 		F4563F8EA9F576F4025FC0CC /* ThursdayRidesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThursdayRidesUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -196,6 +200,7 @@
 		441A12163782FBD9175BF099 /* UITests */ = {
 			isa = PBXGroup;
 			children = (
+				25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */,
 				94330FB5692E564AA2B91591 /* ClaudeUITests.swift */,
 				3CD21785F71109598A32492D /* GarminMorningUITests.swift */,
 				95682B3A73FFB74EA927FA9E /* ICloudUITests.swift */,
@@ -253,6 +258,7 @@
 			isa = PBXGroup;
 			children = (
 				7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */,
+				F3844D13CF50F6EC65408A10 /* BodyView.swift */,
 				B529EE232AF8825876FC5F82 /* ClaudeClient.swift */,
 				DBE5703FD6208A73C4D662DA /* ClaudeKey.swift */,
 				698543645804785D12272ACB /* ClaudeSettingsView.swift */,
@@ -433,6 +439,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */,
+				5C344D8AF3B4D4BD5C52F7BD /* BodyView.swift in Sources */,
 				0EA5ED991C555FB333375817 /* ClaudeClient.swift in Sources */,
 				1401AE90F5F3B1855F06CD32 /* ClaudeKey.swift in Sources */,
 				6D2A31B2638080C9D69FBFE6 /* ClaudeSettingsView.swift in Sources */,
@@ -496,6 +503,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4FEC94AC696B1C83143E08E5 /* BodyUITests.swift in Sources */,
 				2D300B276F9CD592D072EEFB /* ClaudeUITests.swift in Sources */,
 				1DAF8A7B8F008223FA81CAC4 /* GarminMorningUITests.swift in Sources */,
 				D1B3CF6C1C812D872B5308CF /* ICloudUITests.swift in Sources */,
@@ -558,7 +566,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 81;
+				CURRENT_PROJECT_VERSION = 82;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -572,7 +580,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.5;
+				MARKETING_VERSION = 2.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -618,7 +626,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 81;
+				CURRENT_PROJECT_VERSION = 82;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -638,7 +646,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.5;
+				MARKETING_VERSION = 2.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -765,7 +773,7 @@
 			repositoryURL = "https://github.com/marsch124/AMS-Icons";
 			requirement = {
 				kind = revision;
-				revision = 142a2cb5374867b25a21cc3de2e552a7a729a6c3;
+				revision = 2c5c095593a9d1367f745beabbfa69a02bd355c0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

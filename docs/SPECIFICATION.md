@@ -2170,7 +2170,7 @@ Version shown: 2.6 (82), 25 November 2026. The base is the released 2.5 (81). On
 ### B.5 Switches and identifiers
 
 * **Identifiers (new):** `tab-body`, `side-body`, `body-page`, `body-hero`, `body-tile-sleep`, `body-tile-hrv`, `body-tile-resting`, `body-tile-stress`, `body-peek`, `body-peek-done`, `body-connect`, `body-empty`.
-* **DEBUG switches (new):** `AMSWS_FAKE_GARMIN` also gives the Body page invented numbers (see 14.6); `AMSWS_TAB=body` opens the iPhone on Body; `AMSWS_SIDE=body` opens the wide layout on Body.
+* **DEBUG switches (new):** `AMSWS_FAKE_GARMIN` also gives the Body page invented numbers (see 14.6); `AMSWS_TAB=body` opens the iPhone on Body; `AMSWS_SIDE=body` opens the wide layout on Body; `AMSWS_BODY_PEEK=sleep|hrv|resting|stress` opens the page with that tile's seven days standing open (for a picture).
 
 ### B.6 Signs added
 

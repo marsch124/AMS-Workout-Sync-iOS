@@ -13,7 +13,13 @@ struct BodyView: View {
     @ObservedObject private var reader = GarminReader.shared
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.scenePhase) private var phase
-    @State private var peek: BodyPage.Instrument?
+    /* A tile's seven days; for a picture it can stand open from the start (AMSWS_BODY_PEEK=sleep|hrv|resting|stress, DEBUG only). */
+    @State private var peek: BodyPage.Instrument? = {
+        #if DEBUG
+        if let name = ProcessInfo.processInfo.environment["AMSWS_BODY_PEEK"] { return BodyPage.Instrument(rawValue: name) }
+        #endif
+        return nil
+    }()
 
     private var wide: Bool { sizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone }
 
