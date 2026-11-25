@@ -192,15 +192,84 @@ struct LadderLine: View {
 }
 
 /*
- * The two quiet text buttons, on Today and on every session page: "Stop
- * sign" (opening it pauses suggestions) and "I'm ill", which opens only the
- * illness questions — a cold never has to read the stop sign's words.
+ * One small calm pill, "Not well?", on Today and on every session page. It
+ * opens a plate with the two ways in: "Stop sign" (opening it pauses
+ * suggestions) and "I'm ill", which opens only the illness questions — a cold
+ * never has to read the stop sign's words. The plate and both pages are one
+ * sheet whose content changes, so nothing is dismissed and presented twice.
  */
+struct NotWellPill: View {
+    enum Page: String, Identifiable {
+        case plate, stop, ill
+        var id: String { rawValue }
+    }
+    @State private var page: Page?
+
+    var body: some View {
+        Button("Not well?") { page = .plate }
+            .font(.caption.weight(.semibold))
+            .buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
+            .accessibilityIdentifier("not-well")
+            .sheet(item: $page) { p in
+                switch p {
+                case .plate: NotWellPlate(pick: { page = $0 }).presentationDetents([.medium])
+                case .stop: StopSignView()
+                case .ill: IllnessView()
+                }
+            }
+    }
+}
+
+/* The plate: two rows, each a button with one line under its words. */
+struct NotWellPlate: View {
+    let pick: (NotWellPill.Page) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 12) {
+                row("Stop sign",
+                    "Chest pain, unusual breathlessness, dizziness, a racing or uneven heartbeat. Opens the stop sign and pauses suggestions.",
+                    id: "stop-sign", page: .stop)
+                row("I\u{2019}m ill",
+                    "A cold, fever or stomach bug. Opens the illness questions and the steps back.",
+                    id: "ill-button", page: .ill)
+                Spacer(minLength: 0)
+            }
+            .padding(16)
+            .background(Theme.bg.ignoresSafeArea())
+            .navigationTitle("Not well?")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                        .keyboardShortcut(.cancelAction)
+                        .accessibilityIdentifier("not-well-close")
+                }
+            }
+        }
+    }
+
+    private func row(_ title: String, _ line: String, id: String, page: NotWellPill.Page) -> some View {
+        Button { pick(page) } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.headline).foregroundStyle(Theme.text)
+                Text(line).font(.subheadline).foregroundStyle(Theme.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
+    }
+}
+
+/* On a session page: what the session shows while paused or resting, then the pill. */
 struct StopSignButton: View {
     @ObservedObject private var keeper = SuggestionKeeper.shared
-    @State private var open = false
-    @State private var ill = false
-    /* On a session page: what the session shows while paused or resting. */
     var showsState = false
 
     var body: some View {
@@ -209,19 +278,8 @@ struct StopSignButton: View {
                 Text(label).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
                     .accessibilityIdentifier("session-ladder")
             }
-            Button("Stop sign") { open = true }
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(Theme.secondary)
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("stop-sign")
-            Button("I\u{2019}m ill") { ill = true }
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(Theme.secondary)
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("ill-button")
+            NotWellPill()
         }
-        .sheet(isPresented: $open) { StopSignView() }
-        .sheet(isPresented: $ill) { IllnessView() }
     }
 }
 

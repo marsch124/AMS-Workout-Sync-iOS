@@ -95,6 +95,8 @@ final class Neighbours: ObservableObject {
 
     // MARK: reading and writing
 
+    private static let takenOverKey = "neighbour.feelTakenOverDay"
+
     /* When the app comes to the front (and when Today appears): read, take over this morning's answer, hand on his own. */
     func cameToFront(today day: String) {
         today = day
@@ -105,8 +107,16 @@ final class Neighbours: ObservableObject {
             }
         }
         let own = Diary.shared.feel.answer(on: day)
-        if let taken = NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: own, today: day) {
+        // The marker says which day's answer in the diary came from the notes, not from this app.
+        let marked = UserDefaults.standard.string(forKey: Self.takenOverKey) == day
+        let sameAsTheirs = own != nil && notes?.feel?.day == day && notes?.feel?.from != "training"
+            && notes?.feel?.value == own?.rawValue
+        if let taken = NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: own, today: day,
+                                                   ownAnswerWasTakenOver: marked || sameAsTheirs) {
             Diary.shared.setFeel(taken, on: day)
+            UserDefaults.standard.set(day, forKey: Self.takenOverKey)
+        } else if sameAsTheirs {
+            UserDefaults.standard.set(day, forKey: Self.takenOverKey)
         } else if let own {
             writeFeel(own, day: day)
         }

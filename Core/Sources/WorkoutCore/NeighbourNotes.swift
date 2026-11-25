@@ -196,15 +196,21 @@ public enum NeighbourRules {
     static func addDays(_ key: String, _ days: Int) -> String { PlanView.addDays(key, days) }
 
     /*
-     * He answered in another app: this morning's answer for the diary, taken
-     * once. Nothing when the diary already holds an answer for today (the
-     * first answer of the day wins), when the note is of another day, or when
-     * the value is not one of the five.
+     * He answered in another app: this morning's answer for the diary. Taken
+     * when the diary holds no answer for today. An answer that was itself
+     * taken over from the notes (`ownAnswerWasTakenOver`) is not his own: the
+     * notes are followed, so when the other app changes its answer the same
+     * day, the new one replaces it. An answer given in this app is never
+     * replaced. Nothing when the note is of another day, is this app's own,
+     * or when the value is not one of the five.
      */
-    public static func takeOverFeel(notes: NeighbourNotes?, ownAnswerToday: Feel?, today: String) -> Feel? {
-        guard ownAnswerToday == nil, let notes, let feel = notes.feel,
-              feel.day == today, let v = feel.value else { return nil }
-        return Feel(rawValue: v)
+    public static func takeOverFeel(notes: NeighbourNotes?, ownAnswerToday: Feel?, today: String,
+                                    ownAnswerWasTakenOver: Bool = false) -> Feel? {
+        guard let notes, let feel = notes.feel, feel.day == today, let v = feel.value,
+              let theirs = Feel(rawValue: v) else { return nil }
+        guard let own = ownAnswerToday else { return theirs }
+        guard ownAnswerWasTakenOver, feel.from != "training", own != theirs else { return nil }
+        return theirs
     }
 
     /*

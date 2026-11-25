@@ -71,11 +71,16 @@ struct TodayView: View {
                         change: { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true } })
             // The morning question: once a day, one tap, and it is gone until
             // tomorrow. Nothing else on this screen reacts to the answer.
-            if (diary.feel.asks(on: today) && !neighbours.hasFeel(today: today)) || changingFeel {
-                FeelCard(current: diary.feel.answer(on: today)) { f in
+            // "Not well?" is one small pill: at the right end of the question's title while the
+            // question is open (no extra row), otherwise right-aligned on a row of its own.
+            let askingFeel = (diary.feel.asks(on: today) && !neighbours.hasFeel(today: today)) || changingFeel
+            if askingFeel {
+                FeelCard(current: diary.feel.answer(on: today), showsNotWell: store.planLivesHere) { f in
                     diary.setFeel(f, on: today)
                     withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false }
                 }
+            } else if store.planLivesHere {
+                HStack { Spacer(); NotWellPill() }.padding(.top, -6)
             }
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()
@@ -271,8 +276,12 @@ struct TodayView: View {
                         .accessibilityElement(children: .ignore)
                         .accessibilityIdentifier("feel-from-neighbour")
                         .accessibilityLabel(feel.spoken + " — from " + source)
-                        .contentShape(Rectangle())
-                        .onTapGesture { change() }
+                    // Not his answer to change here: the app that wrote it is the one to change it.
+                    Text("Answered in " + source + " — change it there.")
+                        .font(.caption).foregroundStyle(Theme.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 2)
+                        .accessibilityIdentifier("feel-from-neighbour-note")
                 }
                 GarminMorningRow(today: today, alone: !healthLine)
                 }
@@ -368,7 +377,7 @@ struct TodayView: View {
             let phase = view.phase(on: today)
             Text(phase.isEmpty ? "Today" : phase).font(.title3.weight(.bold)).foregroundStyle(Theme.today)
             Spacer()
-            if store.planLivesHere { StopSignButton() } else if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { DropboxChip(action: goToSettings) }
+            if store.canLog && !store.planLivesHere { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else if !store.planLivesHere && !store.canLog { DropboxChip(action: goToSettings) }
         }
         .padding(.top, 12)
     }

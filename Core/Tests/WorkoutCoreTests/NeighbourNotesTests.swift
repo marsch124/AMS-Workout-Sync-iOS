@@ -41,6 +41,19 @@ final class NeighbourNotesTests: XCTestCase {
         XCTAssertNil(NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: nil, today: "2026-11-26"))
     }
 
+    func testTakenOverAnswerFollowsTheNotesButOwnAnswerNeverChanges() throws {
+        // The neighbour changed its answer to "good" after it was taken over as "bad": follow.
+        let notes = NeighbourNotes.decode(json(sample))
+        XCTAssertEqual(NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: .bad, today: today, ownAnswerWasTakenOver: true), .good)
+        // Nothing to do when they already agree.
+        XCTAssertNil(NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: .good, today: today, ownAnswerWasTakenOver: true))
+        // An answer given in this app is never replaced.
+        XCTAssertNil(NeighbourRules.takeOverFeel(notes: notes, ownAnswerToday: .bad, today: today, ownAnswerWasTakenOver: false))
+        // Notes that carry this app's own answer are not followed.
+        let mine = NeighbourNotes(feel: NeighbourFeel(day: today, value: 2, at: nil, from: "training"))
+        XCTAssertNil(NeighbourRules.takeOverFeel(notes: mine, ownAnswerToday: .good, today: today, ownAnswerWasTakenOver: true))
+    }
+
     func testAnOldFeelIsReplacedAndOwnAnswerIsWritten() throws {
         let old = NeighbourNotes(feel: NeighbourFeel(day: "2026-11-24", value: 2, at: nil, from: "morning"))
         let written = try XCTUnwrap(NeighbourRules.writingFeel(notes: old, own: .great, today: today))
