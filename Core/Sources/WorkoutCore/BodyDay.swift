@@ -98,6 +98,43 @@ public struct BodyDay: Codable, Equatable {
         }
     }
 
+    /* Steps: today's, the goal when Garmin gives one, and the last seven days (a day without the watch is nil). */
+    public struct Steps: Codable, Equatable {
+        public var today: Double?
+        public var goal: Double?
+        public var days: [DayValue]
+        public init(today: Double?, goal: Double? = nil, days: [DayValue] = []) {
+            self.today = today; self.goal = goal; self.days = days
+        }
+    }
+
+    /*
+     * Intensity minutes: this week's total (a vigorous minute counts twice, as
+     * Garmin counts it), the weekly goal when Garmin gives one, this week's
+     * moderate and vigorous minutes, and the last seven days' totals.
+     */
+    public struct Intensity: Codable, Equatable {
+        public var weekTotal: Double?
+        public var goal: Double?
+        public var moderate: Double
+        public var vigorous: Double
+        public var days: [DayValue]
+        public init(weekTotal: Double?, goal: Double? = nil, moderate: Double = 0, vigorous: Double = 0, days: [DayValue] = []) {
+            self.weekTotal = weekTotal; self.goal = goal; self.moderate = moderate; self.vigorous = vigorous; self.days = days
+        }
+    }
+
+    /* One day of the Body Battery week: a thin curve (at most 48 readings) and the day's highest and lowest. */
+    public struct BatteryDay: Codable, Equatable {
+        public var day: String
+        public var points: [Point]
+        public var high: Double?
+        public var low: Double?
+        public init(day: String, points: [Point] = [], high: Double? = nil, low: Double? = nil) {
+            self.day = day; self.points = points; self.high = high; self.low = low
+        }
+    }
+
     /* The calendar day these numbers belong to, "2026-11-25". */
     public var day: String
     public var readAt: Date
@@ -106,15 +143,22 @@ public struct BodyDay: Codable, Equatable {
     public var hrv: HRV?
     public var resting: Resting?
     public var stress: Stress?
+    /* Added in 2.8; numbers kept on the phone before then simply have none of these. */
+    public var steps: Steps?
+    public var intensity: Intensity?
+    /* The last seven days' Body Battery, oldest first, today last. */
+    public var batteryWeek: [BatteryDay]?
 
     public init(day: String, readAt: Date, battery: Battery? = nil, sleep: Sleep? = nil, hrv: HRV? = nil,
-                resting: Resting? = nil, stress: Stress? = nil) {
+                resting: Resting? = nil, stress: Stress? = nil, steps: Steps? = nil, intensity: Intensity? = nil,
+                batteryWeek: [BatteryDay]? = nil) {
         self.day = day; self.readAt = readAt; self.battery = battery; self.sleep = sleep
         self.hrv = hrv; self.resting = resting; self.stress = stress
+        self.steps = steps; self.intensity = intensity; self.batteryWeek = batteryWeek
     }
 
     public var isEmpty: Bool {
-        battery == nil && sleep == nil && hrv == nil && resting == nil && stress == nil
+        battery == nil && sleep == nil && hrv == nil && resting == nil && stress == nil && steps == nil && intensity == nil
     }
 }
 
@@ -122,7 +166,11 @@ public struct BodyDay: Codable, Equatable {
 public struct GarminBodyFile: Codable, Equatable {
     public var body: BodyDay?
     public var lastTried: Date?
-    public init(body: BodyDay? = nil, lastTried: Date? = nil) { self.body = body; self.lastTried = lastTried }
+    /* The days kept day by day for the longer views (2.8); a file from before has none. */
+    public var history: BodyHistory?
+    public init(body: BodyDay? = nil, lastTried: Date? = nil, history: BodyHistory? = nil) {
+        self.body = body; self.lastTried = lastTried; self.history = history
+    }
 }
 
 public enum GarminBody {
@@ -279,7 +327,8 @@ public enum GarminBody {
      */
     public static func build(day: String, nightDay: String, readAt: Date, battery: BodyDay.Battery?,
                              sleepDays: [String: Double], hrv: GarminMorning.HRVNight, hrvDays: [String: Double],
-                             summaries: (resting: [String: Double], stressAverage: [String: Double], stressHighest: [String: Double])) -> BodyDay {
+                             summaries: (resting: [String: Double], stressAverage: [String: Double], stressHighest: [String: Double]),
+                             activity: ActivityDays = ActivityDays(), batteryWeek: [BodyDay.BatteryDay]? = nil) -> BodyDay {
         var sleep: BodyDay.Sleep?
         let nights = series(sleepDays, endingOn: nightDay)
         if nights.contains(where: { $0.value != nil }) {
@@ -310,6 +359,7 @@ public enum GarminBody {
         if stressLine.contains(where: { $0.value != nil }) || summaries.stressHighest[day] != nil {
             stress = BodyDay.Stress(average: summaries.stressAverage[day], highest: summaries.stressHighest[day], days: stressLine)
         }
-        return BodyDay(day: day, readAt: readAt, battery: battery, sleep: sleep, hrv: hrvOut, resting: resting, stress: stress)
+        return BodyDay(day: day, readAt: readAt, battery: battery, sleep: sleep, hrv: hrvOut, resting: resting, stress: stress,
+                       steps: steps(activity, day: day), intensity: intensity(activity, day: day), batteryWeek: batteryWeek)
     }
 }

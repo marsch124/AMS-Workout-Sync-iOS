@@ -149,7 +149,7 @@ actor GarminClient {
      * without losing the rest, and a seventh for yesterday's curve unless
      * the whole of it is already held (`yesterday`).
      */
-    func body(day: String, yesterday held: [BodyDay.Point]? = nil) async throws -> BodyDay {
+    func body(day: String, yesterday held: [BodyDay.Point]? = nil, week heldWeek: [BodyDay.BatteryDay]? = nil) async throws -> BodyDay {
         let now = Date()
         let from = GarminMorning.addDays(day, -GarminBody.history)
         let weekAgo = GarminMorning.addDays(day, -(GarminBody.shownDays - 1))
@@ -162,22 +162,54 @@ actor GarminClient {
         let hrvRange = try await tolerant("/hrv-service/hrv/daily/\(weekAgo)/\(day)")
         let summaries = try await tolerant("/usersummary-service/v2/dailysummaries", ["startDate": from, "endDate": day])
         var battery = GarminBody.battery(curve, activities: workouts, day: day, now: now)
-        if battery != nil {
-            if let held, !held.isEmpty {
+        var week: [BodyDay.BatteryDay]?
+        if let b = battery {
+            if let held, !held.isEmpty, GarminBody.weekIsHeld(heldWeek, day: day) {
+                // The days before today cannot change: only today's own curve is new.
                 battery?.yesterday = held
+                week = heldWeek
+                week?[6] = GarminBody.batteryWeek(nil, day: day, todayPoints: b.points)[6]
             } else {
-                // Today's own call stays exactly as it was; yesterday is asked for by itself.
-                let dayBefore = GarminMorning.addDays(day, -1)
-                let old = try await tolerant("/wellness-service/wellness/bodyBattery/reports/daily", ["startDate": dayBefore, "endDate": dayBefore])
+                // Today's own call stays exactly as it was; yesterday and the week before come from one report of seven days
+                // (start = 6 days ago, end = today). Yesterday's thin line is cut from it, as before.
+                let start = GarminMorning.addDays(day, -6)
+                let old = try await tolerant("/wellness-service/wellness/bodyBattery/reports/daily", ["startDate": start, "endDate": day])
                 let points = GarminBody.yesterday(old, day: day)
                 battery?.yesterday = points.isEmpty ? nil : points
+                let made = GarminBody.batteryWeek(old, day: day, todayPoints: b.points)
+                week = made.dropLast().contains { !$0.points.isEmpty } ? made : nil
             }
         }
         return GarminBody.build(day: day, nightDay: nightDay, readAt: now,
                                 battery: battery,
                                 sleepDays: GarminBody.sleepDays(sleepRange),
                                 hrv: GarminMorning.hrv(hrvNight), hrvDays: GarminBody.hrvDays(hrvRange),
-                                summaries: GarminBody.summaryDays(summaries))
+                                summaries: GarminBody.summaryDays(summaries),
+                                activity: GarminBody.activityDays(summaries), batteryWeek: week)
+    }
+
+    /*
+     * The longer views' days (4 or 12 weeks), asked for only when he picks
+     * one: sleep and HRV in pieces of at most 31 days (the Board's limit),
+     * and one daily-summaries read for the rest. `from` is the first day
+     * still missing; the caller keeps what is already held.
+     */
+    func history(from: String, to day: String) async throws -> BodyHistory {
+        var h = BodyHistory()
+        var s = from
+        while s <= day {
+            let e = min(GarminMorning.addDays(s, 30), day)
+            let sleep = try await tolerant("/sleep-service/sleep/dailySleepSummariesByDate", ["startDate": s, "endDate": e])
+            let hrv = try await tolerant("/hrv-service/hrv/daily/\(s)/\(e)")
+            h.sleep.merge(GarminBody.sleepDays(sleep)) { _, new in new }
+            h.hrv.merge(GarminBody.hrvDays(hrv)) { _, new in new }
+            s = GarminMorning.addDays(e, 1)
+        }
+        let summaries = try await tolerant("/usersummary-service/v2/dailysummaries", ["startDate": from, "endDate": day])
+        let d = GarminBody.summaryDays(summaries)
+        let a = GarminBody.activityDays(summaries)
+        h.resting = d.resting; h.stress = d.stressAverage; h.steps = a.steps; h.intensity = a.intensity
+        return h
     }
 
     // MARK: Finished sessions (round 28)
