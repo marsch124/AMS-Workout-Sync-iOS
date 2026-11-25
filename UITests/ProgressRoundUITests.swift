@@ -7,9 +7,9 @@ import XCTest
 final class ProgressRoundUITests: XCTestCase {
     override func setUp() { continueAfterFailure = false }
 
-    private func launch(_ switchName: String) -> XCUIApplication {
+    private func launch(_ switchName: String, plan name: String = "plan") -> XCUIApplication {
         let app = XCUIApplication()
-        let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
+        let plan = Bundle(for: Self.self).url(forResource: name, withExtension: "xlsx")!
         app.launchEnvironment["AMSWS_FILE"] = plan.path
         app.launchEnvironment["AMSWS_HOME"] = "app"
         app.launchEnvironment["AMSWS_TODAY"] = "2026-10-02"
@@ -41,7 +41,8 @@ final class ProgressRoundUITests: XCTestCase {
     }
 
     func testBestsCard() {
-        let app = launch("AMSWS_BESTS")
+        // The bests only count logged sessions, so this one needs the plan with four logged (plan-done.xlsx).
+        let app = launch("AMSWS_BESTS", plan: "plan-done")
         XCTAssertTrue(element(app, "bests-card").waitForExistence(timeout: 15), "no bests card")
     }
 
