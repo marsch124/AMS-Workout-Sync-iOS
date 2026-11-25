@@ -136,11 +136,11 @@ final class BookMergeTests: XCTestCase {
     func testTestResultsAreTheUnionAndTheLaterNumbersWin() throws {
         let b = try base()
         var x = b, y = b
-        x.record(TestResult(name: "Test 8", lthr: 150), now: at(10))
-        y.record(TestResult(name: "Test 9", lthr: 155), now: at(5))
+        x.record(TestResult(name: "Test 8", lthr: 160), now: at(10))
+        y.record(TestResult(name: "Test 9", lthr: 165), now: at(5))
         y.record(TestResult(name: "Test 8", lthr: 140), now: at(6))
         let all = try m(x, y)
-        XCTAssertEqual(all.tests.first { $0.name == "Test 8" }?.lthr, 150)
+        XCTAssertEqual(all.tests.first { $0.name == "Test 8" }?.lthr, 160)
         XCTAssertNotNil(all.tests.first { $0.name == "Test 9" })
         XCTAssertEqual(all.tests.count, Set(all.tests.map(\.name)).count)
         XCTAssertEqual(try bytes(all), try bytes(try m(y, x)))
