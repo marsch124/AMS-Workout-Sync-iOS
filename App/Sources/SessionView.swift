@@ -278,6 +278,7 @@ struct SessionView: View {
             let sport = w.discipline.id
             healthMatches = all.filter { sport == "other" || sport == "brick" || $0.sport == sport || (sport == "run" && $0.sport == "walk") }
         }
+        .onAppear { if ReminderCentre.shared.takeLogForm(for: key) { logging = true } }
         .sheet(isPresented: $logging) {
             if let w = store.workout(key), let mapping = store.mapping {
                 LogFormView(workout: w, mapping: mapping).environmentObject(store)
