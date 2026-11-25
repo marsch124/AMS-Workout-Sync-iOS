@@ -23,7 +23,7 @@ final class NeighbourUITests: XCTestCase {
 
     func testTheMorningQuestionIsNotAskedAndTheLineSaysWhereTheAnswerCame() {
         let app = launch()
-        let line = app.staticTexts["feel-from-neighbour"]
+        let line = app.descendants(matching: .any)["feel-from-neighbour"]
         XCTAssertTrue(line.waitForExistence(timeout: 15))
         XCTAssertEqual(line.label, "Feeling good — from Magic Morning")
         XCTAssertFalse(app.staticTexts["feel-question"].exists, "the question was asked although the answer was in the notes")
