@@ -3,13 +3,14 @@ import WorkoutCore
 
 /* The side list's rows, in order (his pick, 25 Nov 2026: one Plan page holds the week, the month and the year). */
 enum SideRow: String, CaseIterable {
-    case today, plan, sessions, progress, settings
+    case today, plan, sessions, body, progress, settings
 
     var title: String {
         switch self {
         case .today: return "Today"
         case .plan: return "Plan"
         case .sessions: return "Sessions"
+        case .body: return "Body"
         case .progress: return "Progress"
         case .settings: return "Settings"
         }
@@ -21,6 +22,7 @@ enum SideRow: String, CaseIterable {
         case .today: return Theme.today
         case .plan: return Theme.week
         case .sessions: return Theme.plan
+        case .body: return Theme.body
         case .progress: return Theme.progress
         case .settings: return Theme.settings
         }
@@ -77,6 +79,8 @@ struct WideRoot: View {
         case .sessions:
             PlanTab(path: $sessionsPath)
                 .environment(\.wideReadableLimit, 760)
+        case .body:
+            BodyView()
         case .progress:
             ProgressView()
         case .settings:
@@ -92,7 +96,7 @@ struct WideRoot: View {
         case .plan: planPath = NavigationPath()
         case .sessions: sessionsPath = NavigationPath()
         case .settings: settingsPath = NavigationPath()
-        case .progress: break
+        case .body, .progress: break
         }
     }
 }

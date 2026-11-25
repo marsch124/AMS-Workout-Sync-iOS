@@ -39,6 +39,13 @@ enum Theme {
     static let plan = Color.dynamic(light: 0x1266C8, dark: 0x3B9EFF)
     static let progress = Color.dynamic(light: 0x7C3AED, dark: 0xC084FC)
     static let settings = Color.dynamic(light: 0x5A6B7B, dark: 0x94A3B8)
+    /* Body's own colour, raspberry: its heading, its head card and its tab. No sport and no other page uses it. */
+    static let body = Color.dynamic(light: 0xC21E6E, dark: 0xF472B6)
+    /* The head card's fill (white words stand on it by day and by night). */
+    static let bodyFill = Color.dynamic(light: 0xC21E6E, dark: 0xB81868)
+    /* A tile, and the page behind: lightly tinted with Body's colour. */
+    static let bodyTile = Color.dynamic(light: 0xF7DFEA, dark: 0x3A1C2E)
+    static let bodyGround = Color.dynamic(light: 0xFBF1F6, dark: 0x1A0F16)
     /* The hour mark on the week's extra blocks: a warm amber that belongs to no
        sport — the bike's yellow would have said "ride" under a strip where it does. */
     static let extraHour = Color.dynamic(light: 0xDE9B26, dark: 0xF0B855)
@@ -109,6 +116,7 @@ struct Glyph: View {
     private static let marks: [String: (AppMark, CGFloat)] = [
         "icon-back": (.triBack, 2.1),
         "icon-bike": (.triBike, 1.9),
+        "icon-body": (.triBody, 1.9),
         "icon-breathing": (.triBreathing, 1.9),
         "icon-camera": (.triCamera, 1.9),
         "icon-check": (.triCheck, 2.1),

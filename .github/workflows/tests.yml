@@ -72,6 +72,8 @@ jobs:
           Core/.build/release/soak UITests/Fixtures/plan.xlsx "$RUNNER_TEMP/soak" 3
 
       - name: UI tests
+        # A runner whose simulator never starts used to hang until the job's 30 minutes ran out (25 Nov 2026).
+        timeout-minutes: 20
         run: |
           xcodebuild test \
             -project AMSWorkoutSync.xcodeproj \

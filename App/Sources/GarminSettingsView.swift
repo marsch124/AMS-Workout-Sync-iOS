@@ -7,7 +7,7 @@ struct GarminSettingsEntry: View {
     var body: some View {
         NavigationLink { GarminSettingsView() } label: {
             SettingsRow(title: reader.keySaved ? "Garmin · connected" : "Garmin · not connected",
-                        sub: reader.keySaved ? "Today shows your Garmin numbers"
+                        sub: reader.keySaved ? "Today and Body show your Garmin numbers"
                                              : "Overnight HRV, sleep, Body Battery and stress from your Garmin watch",
                         chevron: true)
         }
@@ -19,7 +19,7 @@ struct GarminSettingsEntry: View {
 /*
  * Connect Garmin once: he makes a personal key at connect.garmin.com and
  * pastes it here. It goes to the Keychain and is shown only as dots after
- * that. The numbers are shown on Today; they never change the plan.
+ * that. The numbers are shown on Today and on the Body page; they never change the plan.
  */
 struct GarminSettingsView: View {
     @EnvironmentObject var store: Store
@@ -60,12 +60,12 @@ struct GarminSettingsView: View {
             }
             Button("Keep it", role: .cancel) {}
         } message: {
-            Text("Today stops showing Garmin numbers. You can paste a key again at any time.")
+            Text("Today and Body stop showing Garmin numbers. You can paste a key again at any time.")
         }
     }
 
     @ViewBuilder private var notConnected: some View {
-        Text("Your Garmin watch knows things Apple Health does not hand over: overnight HRV, sleep, Body Battery and stress. Make a personal key once in your Garmin Connect account at connect.garmin.com, paste it here once, and Today shows those numbers beside your own normal.")
+        Text("Your Garmin watch knows things Apple Health does not hand over: overnight HRV, sleep, Body Battery and stress. Make a personal key once in your Garmin Connect account at connect.garmin.com, paste it here once, and Today and the Body page show those numbers beside your own normal.")
             .font(.footnote).foregroundStyle(Theme.secondary)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 2)

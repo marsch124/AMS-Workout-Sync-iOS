@@ -14,15 +14,15 @@ settings:
     DEVELOPMENT_TEAM: D24ENP83QQ
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "2.5"
-    CURRENT_PROJECT_VERSION: "81"
+    MARKETING_VERSION: "2.6"
+    CURRENT_PROJECT_VERSION: "82"
 packages:
   WorkoutCore:
     path: Core
   # The shared AMS icon hub: every mark this app draws comes from it (its own drawings live there as the tri… marks).
   AMSIcons:
     url: https://github.com/marsch124/AMS-Icons
-    revision: 142a2cb5374867b25a21cc3de2e552a7a729a6c3
+    revision: 2c5c095593a9d1367f745beabbfa69a02bd355c0
 targets:
   AMSWorkoutSync:
     type: application

@@ -72,6 +72,7 @@ struct RootView: View {
                       goToSettings: { withAnimation(.easeInOut(duration: 0.2)) { tab = "settings" } })
                 .tag("today")
             PlanTab(path: $planPath).tag("plan")
+            BodyView().tag("body")
             ProgressView().tag("progress")
             SettingsView(path: $settingsPath).tag("settings")
         }
@@ -157,6 +158,7 @@ struct RootView: View {
     private var tint: Color {
         switch tab {
         case "plan": return Theme.plan
+        case "body": return Theme.body
         case "progress": return Theme.progress
         case "settings": return Theme.settings
         default: return Theme.today
@@ -178,6 +180,8 @@ struct BottomBar: View {
      */
     private let items: [(id: String, label: String, icon: String, colour: Color)] = [
         ("today", "Today", "icon-swim", Theme.today), ("plan", "Sessions", "icon-bike", Theme.plan),
+        // Body sits in the middle with a mark of its own, the heart with a pulse line (his yes to the picture, 25 Nov 2026).
+        ("body", "Body", "icon-body", Theme.body),
         ("progress", "Progress", "icon-run", Theme.progress), ("settings", "Settings", "icon-strength", Theme.settings)
     ]
 
