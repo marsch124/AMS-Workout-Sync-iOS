@@ -30,6 +30,20 @@ do {
     for o in taken.oddities { print("    [\(o.kind)] \(o.place) \(o.words)") }
     print("  import proof: \(taken.proof.matches ? "matches" : "DOES NOT MATCH") (\(taken.proof.compared) sessions compared, \(taken.proof.differences.count) differences)")
 
+    // Zones worked out in the app, held against the ones Excel worked out.
+    let workbook = try Workbook(data: data)
+    let tests = PlanImport.tests(workbook)
+    if let zones = Zones.read(workbook) {
+        let mine = zones.recalculated(from: tests)
+        var differ: [String] = []
+        for (a, b) in zip(zones.tables, mine.tables) {
+            for (x, y) in zip(a.rows, b.rows) where x.value != y.value { differ.append("\(x.label): Excel \(x.value), app \(y.value)") }
+        }
+        if zones.current != mine.current { differ.append("the current row differs") }
+        if zones.latestTest != mine.latestTest { differ.append("latest test: Excel \(zones.latestTest), app \(mine.latestTest)") }
+        print("  tests \(tests.count) (\(tests.filter(\.hasNumbers).count) with numbers); zones worked out in the app: \(differ.isEmpty ? "same as Excel" : differ.joined(separator: " | "))")
+    }
+
     let outcome = try BookOracle.run(data, today: today)
     print("logging both ways: \(outcome.entries) entries")
     print("differences: \(outcome.differences.isEmpty ? "none" : String(outcome.differences.count))")
