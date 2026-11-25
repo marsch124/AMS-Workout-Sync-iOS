@@ -19,7 +19,8 @@ let package = Package(
         .executable(name: "stats-dump", targets: ["StatsDump"]),
         .executable(name: "zones-dump", targets: ["ZonesDump"]),
         .executable(name: "soak", targets: ["Soak"]),
-        .executable(name: "book-check", targets: ["BookCheck"])
+        .executable(name: "book-check", targets: ["BookCheck"]),
+        .executable(name: "rule-check", targets: ["RuleCheck"])
     ],
     targets: [
         .target(name: "WorkoutCore"),
@@ -31,6 +32,7 @@ let package = Package(
         .executableTarget(name: "ZonesDump", dependencies: ["WorkoutCore"]),
         .executableTarget(name: "Soak", dependencies: ["WorkoutCore"]),
         .executableTarget(name: "BookCheck", dependencies: ["WorkoutCore"]),
+        .executableTarget(name: "RuleCheck", dependencies: ["WorkoutCore"]),
         // The reading and writing logic on its own, without a simulator: seconds
         // to run, so every push can afford it.
         .testTarget(name: "WorkoutCoreTests", dependencies: ["WorkoutCore"], resources: [.copy("Fixtures")])
