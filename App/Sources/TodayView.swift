@@ -80,6 +80,7 @@ struct TodayView: View {
             }
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()
+            ReturnLadderCard(onToday: true)
             if view.plan.isEmpty {
                 // First run, no plan yet: no empty week drawing, one plain line saying where it comes from.
                 Text("No plan yet — Settings → Your plan brings it in.")
@@ -115,6 +116,7 @@ struct TodayView: View {
                                 .allowsHitTesting(false)
                         }
                     }
+                    TodayWeatherLine(workout: w, mapping: view.mapping)
                     if let s = neighbours.strength(for: w, among: sessions) { NeighbourDoneLine(workout: w, state: s).padding(.top, -6) }
                 }
             }
@@ -162,6 +164,7 @@ struct TodayView: View {
                 }
             }
 
+            if !view.plan.isEmpty { WeekSoFarStrip(view: view, today: today) }
             // Only tomorrow, as he asked: what to think about tonight, not the
             // week — and on its own pale blue ground, so the eye knows at once
             // that everything below the line is no longer today.

@@ -182,6 +182,8 @@ struct SettingsView: View {
                     }
                     }
 
+                    WeatherSettingsSection()
+
                     SectionHeading(text: "This app")
                     NavigationLink { GuideView() } label: {
                         SettingsRow(title: "How this works", sub: "The week strip, logging, syncing and what keeps your plan safe", chevron: true)
