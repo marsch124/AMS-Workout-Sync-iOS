@@ -1714,9 +1714,9 @@ An iPad or a Mac with no plan of its own has no Excel, no Dropbox and nothing to
 **The season** (`SeasonView.swift`, `season-view`; always above the heading row).
 
 * **Weeks.** From the book's weeks; a plan read from Excel has none, so they are made from its sessions. Weeks after the race's Monday are left out. Planned time per week is summed from the sessions as they stand now (moves included). Phases are runs of weeks with the same phase name.
-* **Bars** (`season-week-<n>`, height 104 points): height = planned time against the tallest week (at least 4 points); colour = `Theme.phase(index, of: phases)`, cool early, warm near the race, as on Progress; an **easy week** is the same colour at 38 % strength (pale) and shows "Easy" above it where the bar is at least 26 points wide; a **test week** shows "Test". **The outline** (2 points, text colour, 3 points outside the bars) stands round the bars of what the page shows: the week on Week, all the weeks of the month on Month (one outline round the run), none on Year. A tap on a bar sets that week and switches to Week. A thin green line (`season-today`, 1.5 points, label "Today") stands inside the week that holds today at the day's place, with the word "Today" at its top. Phase names (short: the part before a dash or colon) stand centred under their weeks in their colour, pushed apart only as far as they must be.
+* **Bars** (`season-week-<n>`, height 104 points): height = planned time against the tallest week (at least 4 points); colour = `Theme.phase(index, of: phases)`, cool early, warm near the race, as on Progress; every bar has the phase's **full colour** (since 2.4.1 (79) no bar is pale; before, an easy week was drawn at 38 % strength); a **test week** shows "T" and an **easy week** "E" above its bar, the whole words "Test" and "Easy" where the bar is at least 26 points wide (rule in "New in 2.4.1 (79)"). **The outline** (2 points, text colour, 3 points outside the bars) stands round the bars of what the page shows: the week on Week, all the weeks of the month on Month (one outline round the run), none on Year. A tap on a bar sets that week and switches to Week. A thin green line (`season-today`, 1.5 points, label "Today") stands inside the week that holds today at the day's place, with the word "Today" at its top. Phase names (short: the part before a dash or colon) stand centred under their weeks in their colour, pushed apart only as far as they must be.
 * **The race** (`season-race`): at the right above the bars, the race flag, the race's name (or "Race") and its date with the year, in the season colour (amber-brown). Only when the plan has a race.
-* **The key** (`season-key`), under the bars: "Pale = easy week · Tap a bar to see its week" (the first half only when the plan has an easy week).
+* **The key** (`season-key`), under the bars: with letters: "E = easy week · T = test week · Tap a bar to see its week" (only the letters that occur in the plan are named); with the whole words: "Tap a bar to see its week". (Before 2.4.1 (79): "Pale = easy week · Tap a bar to see its week".)
 
 **His numbers** (`PlanNumbers.swift`). Four cards on the surface colour, each with a purple bold title (the Progress colour); no judgement words:
 
@@ -1829,7 +1829,7 @@ The note under the other states: "Your iPhone, iPad and Mac show the same plan o
 * **Signs added** (each with words in How this works → Signs in this app):
   * the **sync dot**: green "Same on all devices" (or, with other words, what a meeting took out), amber "On its way", grey "iCloud is off", red = a problem, the words say which; never without its words;
   * the **Garmin dot**: green "Garmin · this morning, read …", grey "Garmin · older numbers from …";
-  * a **pale Season bar** = an easy week; the **outline** = the week or the weeks of the month being looked at; the **thin green line** with "Today" = today; the **flag** = the race;
+  * a **letter E above a Season bar** = an easy week, **T** = a test week (since 2.4.1 (79); before, a pale bar meant an easy week); the **outline** = the week or the weeks of the month being looked at; the **thin green line** with "Today" = today; the **flag** = the race;
   * the **Plan switch** (chosen word white on blue), the **blue frame** round a day or a cell while a session is dragged over it, "+ Add" and "Undo" in blue: the plan's blue;
   * on **Year**: solid, pale, hatched, empty-outline and race-colour squares and a dark frame (solid = recorded, pale = still to do, hatched = missed, empty outline = rest day, race colour = race day, dark frame = today), each in the key in words;
   * the green **"+N more"** in a month cell = more than three chips; a tap opens that day's week;
@@ -1841,10 +1841,10 @@ The note under the other states: "Your iPhone, iPad and Mac show the same plan o
   * *Amber sync dot and the amber block.* The sync dot's amber is `Theme.extraHour`, the colour of the amber block under the week card (a full hour of extra training time). Different place, size and shape; the dot always has its words. Recorded as the one near-collision of 2.2. The waiting page uses the same amber dot for "waiting".
   * *Red.* The red dot means a problem, as red words everywhere mean something went wrong; no change in meaning.
   * *Grey.* The grey sync dot (off) and the grey Garmin dot (older) both mean "not live"; no change.
-  * *Pale.* On the Season, a pale bar means an easy week; on the week card on Today a lighter block means still to do; and "paler tick" means an extra. Three uses of "paler", each in its own place; the Season bar says "Easy" in words where it has room and has a label for the screen reader.
+  * *Pale.* On the Season, a pale bar meant an easy week (until 2.4 (78); since 2.4.1 (79) it does not); on the week card on Today a lighter block means still to do; and "paler tick" means an extra. Three uses of "paler", each in its own place; the Season bar says "Easy" in words where it has room and has a label for the screen reader.
   * *Blue.* The side list's Plan and Sessions share the plan's blue, and so do the switch, + Add, Undo and the drag frame. All are about the plan; none of them means anything else.
   * *Today.* Today is green on the Season line, on the week board's day name and in a month cell, and a dark frame on a Year square. The word "Today" or the key's line says it in each place. Year uses a dark frame because a green one would be lost on the run's light green. Recorded as a near-collision.
-  * *Pale again.* On Year and in By sport, pale means still to do (as on the week card). The Season bar's pale means an easy week; the Season key says so in words ("Pale = easy week").
+  * *Pale again.* On Year and in By sport, pale means still to do (as on the week card). Until 2.4 (78) the Season bar's pale meant an easy week, and the key said so ("Pale = easy week"); since 2.4.1 (79) pale means still to do only.
   * *Amber-brown* (`Theme.season`, the Season's colour) is a different, darker orange than the amber block.
 * **Tests (new):** `Core/Tests/WorkoutCoreTests/BookMergeTests.swift` and `CloudMeetingTests.swift` (the join, two devices through a plain folder), `GarminMorningTests.swift` (the readers, the normal, the 30 minutes); UI tests `UITests/WideLayoutUITests.swift` (the Plan page with Week, Month and Year, the season, his numbers, the phone look unchanged), `ICloudUITests.swift` (the iCloud page, a second device waiting then opening the plan), `GarminMorningUITests.swift` (the line and the plate, no key no line, an empty key refused in words), all with `AMSWS_DEVICE`, `AMSWS_FAKE_CLOUD` and `AMSWS_FAKE_GARMIN`.
 
@@ -2036,3 +2036,21 @@ All the app's hand-drawn marks now come from the central AMS icon library that e
 * It does not buy, top up or change anything at Anthropic; it only says what happened.
 * It shows nothing for a short hiccup (no network, Anthropic busy, HTTP 429 or 5xx): only the log.
 * It does not change who may make cards (the iPhone only), the rule book, the plan or any figure.
+
+## New in 2.4.1 (79) — season bars: a letter for easy and test weeks
+
+One idea: **pale means one thing.** Only the season bars on iPad and Mac change; the iPhone has no season bars. Nothing in the plan, the rule book or the data changes. Version shown: 2.4.1 (79), 25 November 2026.
+
+**Before (2.4).** An easy week was a pale bar (38 % strength) and showed "Easy" above it only where the bar was at least 26 points wide; a test week showed "Test" only where there was room, and nothing on a narrow bar. The key read "Pale = easy week · Tap a bar to see its week". Pale also means still to do (Year, By sport, the week card on Today), so one sign had two meanings.
+
+**Now.**
+* Every bar (`season-week-<n>`, identifiers unchanged) has its phase's full colour. Easy weeks are still shorter bars, because less is planned.
+* **The letter rule** `PlanOverview.weekLetter(isEasy:isTest:)`: a test week shows "T"; otherwise an easy week shows "E"; otherwise nothing. A test week therefore always shows, also on a narrow bar.
+* **Words instead of letters** from a bar width of 26 points: "Test" and "Easy" take the place of "T" and "E".
+* **The key** (`season-key`): with letters, "E = easy week · T = test week · Tap a bar to see its week", naming only the letters that occur in the plan; with the whole words, "Tap a bar to see its week".
+* **The outline** round the chosen week (or the weeks of the month) grows by the letter's height, so it goes round the letter too.
+* Unchanged: bar height, phase colours, the Today line, the flag, tapping a bar, the screen-reader label.
+
+**Signs.** Pale now means still to do only. The sign-check finding "pale has two meanings" is closed. How this works (Plan, the season bars; Season) and Signs in this app (On iPad and Mac, the Plan page) say it in the same words.
+
+**Tests.** One small data test for `weekLetter` (test, easy, both, neither).
