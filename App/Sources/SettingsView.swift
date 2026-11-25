@@ -217,6 +217,11 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("plan-changes")
+        NavigationLink { SafetyCopiesView() } label: {
+            SettingsRow(title: "Put a safety copy back", sub: "The plan as it was at the start of an earlier day", chevron: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("plan-safety")
         if store.canGoBack, let until = store.canGoBackUntil {
             SettingsRow(title: "Go back to Excel",
                         sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now into the Excel file in Dropbox.",

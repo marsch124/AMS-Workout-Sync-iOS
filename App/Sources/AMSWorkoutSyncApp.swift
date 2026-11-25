@@ -79,6 +79,10 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_CHANGES"] != nil {
                 NavigationStack { PlanChangesView() }
             }
+            if ProcessInfo.processInfo.environment["AMSWS_SAFETY"] != nil {
+                let _ = store.debugSeedSafetyCopies()
+                NavigationStack { SafetyCopiesView() }
+            }
             if ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] != nil {
                 NavigationStack { MoveInView() }
             }

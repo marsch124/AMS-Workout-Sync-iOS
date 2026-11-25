@@ -1038,6 +1038,23 @@ final class Store: ObservableObject {
         return true
     }
 
+#if DEBUG
+    /* Picture and screen-test switch only: make sure two safety copies exist (the plan as it is, filed under the two days before today). */
+    func debugSeedSafetyCopies() {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: bookURL.path), safetyCopyDays.count < 2 else { return }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "yyyy-MM-dd"
+        guard let now = f.date(from: today) else { return }
+        try? fm.createDirectory(at: backupsURL, withIntermediateDirectories: true)
+        for back in 1...2 {
+            guard let d = Calendar.current.date(byAdding: .day, value: -back, to: now) else { continue }
+            let copy = backupsURL.appendingPathComponent("plan-\(f.string(from: d)).json")
+            if !fm.fileExists(atPath: copy.path) { try? fm.copyItem(at: bookURL, to: copy) }
+        }
+    }
+#endif
+
     // MARK: changing the plan itself
 
     /* Several sessions added in one go — one save, so it is all of them or none. Returns how many. */
