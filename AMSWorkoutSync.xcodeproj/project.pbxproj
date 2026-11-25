@@ -20,6 +20,7 @@
 		2637CE330B0A7644AD7FF6FE /* TestEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3467383EBFE6908BAAB805F7 /* TestEntryView.swift */; };
 		2A89E41D5CDB880B6E0ECCF7 /* PlanNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 732B30DD98E3680CB2EE7B37 /* PlanNumbers.swift */; };
 		2D300B276F9CD592D072EEFB /* ClaudeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94330FB5692E564AA2B91591 /* ClaudeUITests.swift */; };
+		378ED2FACF2AEF2AC6C27DCA /* DoneSessionGarmin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C2BBB856FF30E206B55975 /* DoneSessionGarmin.swift */; };
 		37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8173903887939F8A3DB90D8D /* ProgressView.swift */; };
 		397F613B7445E14D20C9656C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2CB3C689413A3D9CB97FA7 /* Photos.swift */; };
 		3B18EC3B9D29DE2C27133D11 /* WorkoutCore in Frameworks */ = {isa = PBXBuildFile; productRef = D690C9E09EB79AAE0C30F1A6 /* WorkoutCore */; };
@@ -62,6 +63,7 @@
 		B1CABD5E7ED197469D4C85AD /* SafetyCopiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868D688CF593B1074DAB4C08 /* SafetyCopiesView.swift */; };
 		B26A348E8757F3F57C510F55 /* ShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD39982CFB85EDA1755222A /* ShareText.swift */; };
 		B6B55CFCACC822A65E6DBD59 /* ThursdayRidesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4563F8EA9F576F4025FC0CC /* ThursdayRidesUITests.swift */; };
+		B8ECADD750A7508B54D0DC88 /* GarminActivityReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B823F9DBC61A22A88D87462 /* GarminActivityReader.swift */; };
 		BB179DE37CC85C7E3F846A8A /* StopSignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CF0A3A8F1A6CC4EFF1DB10 /* StopSignView.swift */; };
 		BE5BE9EBAD68976428A07A02 /* ThursdayRidesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D15A4D8DFEA91F33C0EB80C /* ThursdayRidesView.swift */; };
 		BE65B74716168B998B6AAD43 /* SafetyCopiesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB603BAFDFF677E317A068C /* SafetyCopiesUITests.swift */; };
@@ -78,6 +80,7 @@
 		E06C0A02051EBAAF581D9FF2 /* SessionAdviceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C2E906C05F4CBDC1115AE9 /* SessionAdviceUITests.swift */; };
 		E3CEEE308A9D47632AD0137B /* SuggestionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4ACA1DEDBF250EB3A08FBD /* SuggestionCard.swift */; };
 		ED9703E609284BEC66E8FF0F /* FeelViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B976AF5AD0AB85D2218A6C22 /* FeelViews.swift */; };
+		EF8316DBAF2759355B4C2501 /* GarminActivityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */; };
 		F152713F3C49201271BBD36B /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A03855A2195F5FD77B7F7C /* SessionView.swift */; };
 		F2F2BDCD888BD5FA0D0A875A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4D1347269B601D5C3B5B64A /* Assets.xcassets */; };
 		F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */; };
@@ -112,6 +115,7 @@
 		33984951D7E218F08026A8F1 /* MorningNumbersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorningNumbersView.swift; sourceTree = "<group>"; };
 		3467383EBFE6908BAAB805F7 /* TestEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEntryView.swift; sourceTree = "<group>"; };
 		3A6DE788768DC0B5B5E635B8 /* GarminReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminReader.swift; sourceTree = "<group>"; };
+		3B823F9DBC61A22A88D87462 /* GarminActivityReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminActivityReader.swift; sourceTree = "<group>"; };
 		3BFFF43913961BBC438C16AF /* LogFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFormView.swift; sourceTree = "<group>"; };
 		3CD21785F71109598A32492D /* GarminMorningUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminMorningUITests.swift; sourceTree = "<group>"; };
 		3E761F4FA612AABC7C820139 /* SessionEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEditView.swift; sourceTree = "<group>"; };
@@ -120,6 +124,7 @@
 		4CD39982CFB85EDA1755222A /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
 		4D0CBE37000D5FCA89C190E2 /* SyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminActivityUITests.swift; sourceTree = "<group>"; };
 		698543645804785D12272ACB /* ClaudeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSettingsView.swift; sourceTree = "<group>"; };
 		6D4B7A403EF7D24F842CE496 /* ZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesView.swift; sourceTree = "<group>"; };
 		70231C046226474A30263864 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -151,6 +156,7 @@
 		AD18E54C3FEFA618202370C3 /* MonthGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthGrid.swift; sourceTree = "<group>"; };
 		ADB40EE4205D1E5B3E2587DE /* AMSWorkoutSync.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AMSWorkoutSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34C3E12F5415EEF3C0EB341 /* GarminKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminKey.swift; sourceTree = "<group>"; };
+		B3C2BBB856FF30E206B55975 /* DoneSessionGarmin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneSessionGarmin.swift; sourceTree = "<group>"; };
 		B529EE232AF8825876FC5F82 /* ClaudeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeClient.swift; sourceTree = "<group>"; };
 		B976AF5AD0AB85D2218A6C22 /* FeelViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelViews.swift; sourceTree = "<group>"; };
 		BF26FBCCEB1477B7A9B00260 /* Suggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Suggestions.swift; sourceTree = "<group>"; };
@@ -202,6 +208,7 @@
 			children = (
 				25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */,
 				94330FB5692E564AA2B91591 /* ClaudeUITests.swift */,
+				6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */,
 				3CD21785F71109598A32492D /* GarminMorningUITests.swift */,
 				95682B3A73FFB74EA927FA9E /* ICloudUITests.swift */,
 				8E63B9B271B07D3FEA0FDBE0 /* NeighbourUITests.swift */,
@@ -265,10 +272,12 @@
 				201A884ED7294E23A8047706 /* Components.swift */,
 				338EA2CFBED1B8532ED07B0A /* Device.swift */,
 				29C8793044EA9500B757D610 /* Diary.swift */,
+				B3C2BBB856FF30E206B55975 /* DoneSessionGarmin.swift */,
 				8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */,
 				2E6525576D143C59A4723612 /* DropboxViews.swift */,
 				E8B0778365FA2EAD6A05938A /* ExtraViews.swift */,
 				B976AF5AD0AB85D2218A6C22 /* FeelViews.swift */,
+				3B823F9DBC61A22A88D87462 /* GarminActivityReader.swift */,
 				F037AACECD68FCF5D26B2793 /* GarminClient.swift */,
 				B34C3E12F5415EEF3C0EB341 /* GarminKey.swift */,
 				3A6DE788768DC0B5B5E635B8 /* GarminReader.swift */,
@@ -446,10 +455,12 @@
 				860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */,
 				66D43D228DD0E678D8D24C97 /* Device.swift in Sources */,
 				163E5A3AD7A1CA3083484F37 /* Diary.swift in Sources */,
+				378ED2FACF2AEF2AC6C27DCA /* DoneSessionGarmin.swift in Sources */,
 				8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */,
 				C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */,
 				DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */,
 				ED9703E609284BEC66E8FF0F /* FeelViews.swift in Sources */,
+				B8ECADD750A7508B54D0DC88 /* GarminActivityReader.swift in Sources */,
 				D5A5F6E52EDFFB03D272B9FA /* GarminClient.swift in Sources */,
 				F5AC4099D1CD846E646F673A /* GarminKey.swift in Sources */,
 				A89FAC644B427582DCAC5B22 /* GarminReader.swift in Sources */,
@@ -505,6 +516,7 @@
 			files = (
 				4FEC94AC696B1C83143E08E5 /* BodyUITests.swift in Sources */,
 				2D300B276F9CD592D072EEFB /* ClaudeUITests.swift in Sources */,
+				EF8316DBAF2759355B4C2501 /* GarminActivityUITests.swift in Sources */,
 				1DAF8A7B8F008223FA81CAC4 /* GarminMorningUITests.swift in Sources */,
 				D1B3CF6C1C812D872B5308CF /* ICloudUITests.swift in Sources */,
 				9340669904E7DB477DE5D179 /* NeighbourUITests.swift in Sources */,

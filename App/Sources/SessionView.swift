@@ -235,6 +235,7 @@ struct SessionView: View {
                             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                     }
 
+                    if w.state == .done, w.discipline.id != "rest" { DoneSessionGarmin(workout: w, mapping: mapping) }
                     PhotoStrip(owner: PhotoOwner(w))
                     StopSignButton(showsState: w.dayKey >= store.today)
                 }
