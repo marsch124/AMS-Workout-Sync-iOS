@@ -21,15 +21,20 @@ struct BodyView: View {
         return nil
     }()
 
+    /* A tapped workout's session opens on this page's own stack; its extra or its own facts on a plate (2.7). */
+    @State private var path: [String] = []
+    @State private var openExtra: ExtraSummary?
+    @State private var plate: BodyDay.Workout?
+
     private var wide: Bool { sizeClass == .regular && UIDevice.current.userInterfaceIdiom != .phone }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 8) {
                     heading
                     if let b = reader.bodyShown {
-                        BodyHero(battery: b.battery, day: b.day, tall: wide)
+                        BodyHero(battery: b.battery, day: b.day, tall: wide) { w in open(w, in: b) }
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: wide ? 4 : 2), spacing: 8) {
                             ForEach(BodyPage.Instrument.allCases) { i in
                                 BodyTile(tile: BodyPage.tile(i, b), tall: wide) { peek = i }
@@ -49,6 +54,8 @@ struct BodyView: View {
             .refreshable { await reader.readBody(today: store.today) }
             .background(Theme.bodyGround.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
+            // The session's page looks as it does when opened from Today; only the way back is Body's.
+            .navigationDestination(for: String.self) { key in SessionView(key: key).tint(Theme.today) }
         }
         .tint(Theme.body)
         .task { await reader.readBodyIfDue(today: store.today) }
@@ -60,6 +67,32 @@ struct BodyView: View {
         }
         .sheet(item: $peek) { i in
             if let b = reader.bodyShown { BodyPeek(instrument: i, day: b) }
+        }
+        .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
+        .sheet(item: $plate) { w in BodyWorkoutPlate(workout: w) }
+        #if DEBUG
+        .task {
+            // For a picture: AMSWS_BODY_WORKOUT=0|1… taps that workout on the curve from the start.
+            if let n = ProcessInfo.processInfo.environment["AMSWS_BODY_WORKOUT"].flatMap({ Int($0) }),
+               let b = reader.bodyShown, let all = b.battery?.workouts.sorted(by: { $0.start < $1.start }), all.indices.contains(n) {
+                open(all[n], in: b)
+            }
+        }
+        #endif
+    }
+
+    /* A tap on a workout on the curve only opens a page: the session, the extra, or the workout's own facts. */
+    private func open(_ w: BodyDay.Workout, in b: BodyDay) {
+        let all = b.battery?.workouts ?? []
+        guard let i = all.firstIndex(of: w) else { return }
+        let extras = store.allExtras
+        switch BodyTap.targets(for: all, day: b.day, sessions: store.displayed, extras: extras)[i] {
+        case .session(let key):
+            path = [key]
+        case .extra(let id):
+            if let x = extras.first(where: { $0.id == id }) { openExtra = x } else { plate = w }
+        case .facts:
+            plate = w
         }
     }
 
@@ -83,11 +116,12 @@ struct BodyView: View {
     }
 
     private var foot: some View {
-        Text("Tap a tile for its 7 days in numbers.\nFrom your Garmin watch · shown only, it changes no plan.")
+        Text("Tap a workout or a tile for more.\nFrom your Garmin watch · shown only, it changes no plan.")
             .font(.caption).foregroundStyle(Theme.secondary)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
             .padding(.top, 4)
+            .accessibilityIdentifier("body-foot")
     }
 
     /* No key yet: say so, with the one button that helps. */
@@ -128,10 +162,27 @@ struct BodyHero: View {
     let battery: BodyDay.Battery?
     let day: String
     var tall = false
+    var onWorkout: (BodyDay.Workout) -> Void = { _ in }
+
+    private var hasYesterday: Bool { (battery?.yesterday?.count ?? 0) > 1 && battery?.now != nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("BODY BATTERY").font(.caption.weight(.bold)).tracking(1).opacity(0.85)
+            HStack(spacing: 6) {
+                Text("BODY BATTERY").font(.caption.weight(.bold)).tracking(1).opacity(0.85)
+                    .accessibilityHidden(true)
+                Spacer(minLength: 0)
+                // The second line says what it is, right on the card: a piece of the line and its word.
+                if hasYesterday {
+                    HStack(spacing: 5) {
+                        YesterdayLine.sample.frame(width: 20, height: 8)
+                        Text("yesterday").font(.caption.weight(.semibold))
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("The thin line is yesterday")
+                    .accessibilityIdentifier("body-yesterday")
+                }
+            }
             if let b = battery, let now = b.now {
                 // The side figures stand right beside the big one, each next to its own words.
                 HStack(alignment: .center, spacing: 14) {
@@ -146,18 +197,21 @@ struct BodyHero: View {
                     .font(.footnote).opacity(0.92)
                     Spacer(minLength: 0)
                 }
-                BatteryCurve(battery: b, day: day).frame(height: tall ? 240 : 150)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(spoken)
+                .accessibilityIdentifier("body-hero")
+                BatteryCurve(battery: b, day: day, onWorkout: onWorkout).frame(height: tall ? 240 : 150)
             } else {
                 Text("No Body Battery readings yet today.").font(.subheadline).padding(.vertical, 10)
+                    .accessibilityLabel(spoken)
+                    .accessibilityIdentifier("body-hero")
             }
         }
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 8)
         .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.bodyFill))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(spoken)
-        .accessibilityIdentifier("body-hero")
+        .accessibilityElement(children: .contain)
     }
 
     private var spoken: String {
@@ -171,6 +225,37 @@ struct BodyHero: View {
 }
 
 /*
+ * How yesterday's line is drawn, in one place for the curve and for its
+ * word's sample. Not pale (pale means still to do) and not dotted (dotted
+ * means an extra): a thin line in a colour of its own.
+ */
+enum YesterdayLine {
+    /* 1 = thin dark line (the one built in), 2 = thin white line, 3 = white dashes. 2 and 3 only for the picture he chose from (DEBUG). */
+    static var look: Int {
+        #if DEBUG
+        if let n = ProcessInfo.processInfo.environment["AMSWS_YESTERDAY_LOOK"].flatMap({ Int($0) }) { return n }
+        #endif
+        return 1
+    }
+    static var colour: Color { look == 1 ? Theme.bodyYesterday : .white }
+    static var stroke: StrokeStyle {
+        switch look {
+        case 2: return StrokeStyle(lineWidth: 1.1, lineCap: .round, lineJoin: .round)
+        case 3: return StrokeStyle(lineWidth: 1.4, lineCap: .butt, lineJoin: .round, dash: [7, 5])
+        default: return StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round)
+        }
+    }
+    static var sample: some View {
+        Canvas { ctx, size in
+            var p = Path()
+            p.move(to: CGPoint(x: 1, y: size.height / 2))
+            p.addLine(to: CGPoint(x: size.width - 1, y: size.height / 2))
+            ctx.stroke(p, with: .color(colour), style: stroke)
+        }
+    }
+}
+
+/*
  * Body Battery from midnight to now, white on the card's colour. Each of the
  * day's workouts is a white bar over the curve with its name and cost above
  * it; the white dot is now, and the rest of the day stays empty.
@@ -178,14 +263,52 @@ struct BodyHero: View {
 struct BatteryCurve: View {
     let battery: BodyDay.Battery
     let day: String
+    var onWorkout: (BodyDay.Workout) -> Void = { _ in }
+
+    private var midnight: Date { Calendar.current.startOfDay(for: GarminMorning.date(day) ?? Date()) }
+    /* The room the curve is drawn in: the workouts' words stand above `top`, the hours under `bottom`. */
+    private static let left: CGFloat = 2, top: CGFloat = 32
+    private static func x(_ d: Date, from midnight: Date, width: CGFloat) -> CGFloat {
+        left + (width - 2 - left) * CGFloat(min(max(d.timeIntervalSince(midnight) / 86_400, 0), 1))
+    }
 
     var body: some View {
-        Canvas { ctx, size in
-            let midnight = Calendar.current.startOfDay(for: GarminMorning.date(day) ?? Date())
-            let left: CGFloat = 2, right = size.width - 2, top: CGFloat = 32, bottom = size.height - 16
-            func x(_ d: Date) -> CGFloat {
-                left + (right - left) * CGFloat(min(max(d.timeIntervalSince(midnight) / 86_400, 0), 1))
+        curve
+            .accessibilityHidden(true)
+            .overlay { GeometryReader { geo in taps(in: geo.size) } }
+    }
+
+    /*
+     * The Canvas cannot be tapped piece by piece, so each workout has a clear
+     * button laid over it: the column under its words, a finger wide at least.
+     */
+    private func taps(in size: CGSize) -> some View {
+        let workouts = battery.workouts.sorted { $0.start < $1.start }
+        let bars = workouts.map { w -> (lo: Double, hi: Double) in
+            let x0 = Self.x(w.start, from: midnight, width: size.width)
+            return (Double(x0), Double(max(Self.x(w.end, from: midnight, width: size.width), x0 + 3)))
+        }
+        let spans = BodyTap.spans(bars: bars, from: 0, to: Double(size.width))
+        let height = max(44, size.height - 16)
+        return ZStack {
+            ForEach(Array(workouts.enumerated()), id: \.offset) { i, w in
+                Button { onWorkout(w) } label: {
+                    Color.clear.contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .frame(width: CGFloat(spans[i].hi - spans[i].lo), height: height)
+                .position(x: CGFloat(spans[i].lo + spans[i].hi) / 2, y: height / 2)
+                .accessibilityLabel("\(BodyPage.label(w)), started \(GarminWords.time(w.start)). Opens it.")
+                .accessibilityIdentifier("body-workout-\(i)")
             }
+        }
+    }
+
+    private var curve: some View {
+        Canvas { ctx, size in
+            let midnight = self.midnight
+            let left = Self.left, right = size.width - 2, top = Self.top, bottom = size.height - 16
+            func x(_ d: Date) -> CGFloat { Self.x(d, from: midnight, width: size.width) }
             func y(_ v: Double) -> CGFloat { bottom - (bottom - top) * CGFloat(min(max(v, 0), 100) / 100) }
             let white = Color.white
 
@@ -226,6 +349,19 @@ struct BatteryCurve: View {
                 let row = (cx - width / 2 >= rowEnds[1] + 6) ? 1 : ((cx - width / 2 >= rowEnds[0] + 6) ? 0 : 1)
                 ctx.draw(t, at: CGPoint(x: cx, y: row == 1 ? top - 10 : top - 23), anchor: .center)
                 rowEnds[row] = cx + width / 2
+            }
+
+            // Yesterday, behind today: one thin line across the whole 24 hours, nothing filled under it.
+            let before = (battery.yesterday ?? []).filter { $0.value.isFinite }.sorted { $0.time < $1.time }
+            if before.count > 1, let dayBefore = Calendar.current.date(byAdding: .day, value: -1, to: midnight) {
+                let span = midnight.timeIntervalSince(dayBefore)
+                func xb(_ d: Date) -> CGFloat {
+                    left + (right - left) * CGFloat(min(max(d.timeIntervalSince(dayBefore) / span, 0), 1))
+                }
+                var old = Path()
+                old.move(to: CGPoint(x: xb(before[0].time), y: y(before[0].value)))
+                for p in before.dropFirst() { old.addLine(to: CGPoint(x: xb(p.time), y: y(p.value))) }
+                ctx.stroke(old, with: .color(YesterdayLine.colour), style: YesterdayLine.stroke)
             }
 
             let pts = battery.points.filter { $0.value.isFinite }.sorted { $0.time < $1.time }
@@ -354,6 +490,51 @@ struct BodyPeek: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .tint(Theme.body)
+    }
+}
+
+/* A workout the app has no session and no extra for: its own facts from Garmin, and Done. */
+struct BodyWorkoutPlate: View {
+    let workout: BodyDay.Workout
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        let rows = BodyTap.facts(workout, time: GarminWords.time)
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
+                    // The figure right beside its name, on the left.
+                    HStack(spacing: 10) {
+                        Text(row.name).foregroundStyle(Theme.secondary).frame(width: 112, alignment: .leading)
+                        Text(row.value).fontWeight(.semibold).foregroundStyle(Theme.text)
+                        Spacer(minLength: 0)
+                    }
+                    .font(.body)
+                    .padding(.vertical, 7)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("body-workout-row-\(i)")
+                    Divider()
+                }
+                Text("Not in your plan and not among your extras for this day.")
+                    .font(.footnote).foregroundStyle(Theme.secondary)
+                    .padding(.top, 10)
+                    .accessibilityIdentifier("body-workout-plate")
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 16).padding(.top, 6)
+            .background(Theme.bodyGround.ignoresSafeArea())
+            .navigationTitle(BodyTap.title(workout))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                        .keyboardShortcut(.cancelAction)
+                        .accessibilityIdentifier("body-workout-done")
+                }
+            }
+        }
+        .presentationDetents([.medium])
         .tint(Theme.body)
     }
 }

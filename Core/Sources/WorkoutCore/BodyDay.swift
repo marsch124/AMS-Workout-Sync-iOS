@@ -21,7 +21,7 @@ public struct BodyDay: Codable, Equatable {
     }
 
     /* A workout shown on the curve, and the points it cost. */
-    public struct Workout: Codable, Equatable {
+    public struct Workout: Codable, Equatable, Identifiable {
         public var id: String
         public var name: String
         /* Garmin's sport key, e.g. "running", "lap_swimming". */
@@ -39,10 +39,14 @@ public struct BodyDay: Codable, Equatable {
     public struct Battery: Codable, Equatable {
         public var points: [Point]
         public var workouts: [Workout]
+        /* Yesterday's whole curve, midnight to midnight, for the thin line behind today's (2.7). Nil or empty: no second line. */
+        public var yesterday: [Point]?
         public var now: Double? { points.last?.value }
         public var highest: Double? { points.map(\.value).max() }
         public var lowest: Double? { points.map(\.value).min() }
-        public init(points: [Point], workouts: [Workout] = []) { self.points = points; self.workouts = workouts }
+        public init(points: [Point], workouts: [Workout] = [], yesterday: [Point]? = nil) {
+            self.points = points; self.workouts = workouts; self.yesterday = yesterday
+        }
     }
 
     /* One day's value on a seven-day line; nil when that day has none. */
@@ -196,6 +200,38 @@ public enum GarminBody {
         }
         workouts.sort { $0.start < $1.start }
         return BodyDay.Battery(points: points, workouts: workouts)
+    }
+
+    /*
+     * Yesterday's whole curve for the thin line behind today's: every reading
+     * inside the 24 hours before `day`'s midnight, oldest first. The same
+     * daily report as today's, asked for the day before. It does not matter
+     * which day the answer files a reading under: only its own time counts.
+     */
+    public static func yesterday(_ json: Any?, day: String, calendar: Calendar = GarminMorning.calendar()) -> [BodyDay.Point] {
+        guard let midnight = M.date(day, calendar: calendar).map({ calendar.startOfDay(for: $0) }),
+              let before = calendar.date(byAdding: .day, value: -1, to: midnight) else { return [] }
+        var points: [BodyDay.Point] = []
+        for entry in M.list(json, inside: ["data"]) {
+            for item in (entry["bodyBatteryValuesArray"] as? [Any]) ?? [] {
+                guard let pair = item as? [Any], pair.count >= 2, let ms = finite(M.number(pair[0])),
+                      let v = finite(M.number(pair[1])), v >= 0, v <= 100 else { continue }
+                let t = Date(timeIntervalSince1970: ms / 1000)
+                if t >= before && t < midnight { points.append(.init(time: t, value: v)) }
+            }
+        }
+        return points.sorted { $0.time < $1.time }
+    }
+
+    /*
+     * Yesterday cannot change any more once its last reading is in, so a
+     * curve that runs to the last half hour before midnight is kept for the
+     * day; a shorter one (the watch had not sent the evening yet) is read again.
+     */
+    public static func yesterdayIsWhole(_ points: [BodyDay.Point]?, day: String, calendar: Calendar = GarminMorning.calendar()) -> Bool {
+        guard let last = points?.last?.time,
+              let midnight = M.date(day, calendar: calendar).map({ calendar.startOfDay(for: $0) }) else { return false }
+        return last >= midnight.addingTimeInterval(-30 * 60) && last < midnight
     }
 
     /*

@@ -144,8 +144,12 @@ actor GarminClient {
                                    restingDays: byDay.resting, stressDays: byDay.stress,
                                    bodyBatteryDays: bodyBatteryDays)
     }
-    /* The Body page's numbers: six small reads, any one of which may fail without losing the rest. */
-    func body(day: String) async throws -> BodyDay {
+    /*
+     * The Body page's numbers: six small reads, any one of which may fail
+     * without losing the rest, and a seventh for yesterday's curve unless
+     * the whole of it is already held (`yesterday`).
+     */
+    func body(day: String, yesterday held: [BodyDay.Point]? = nil) async throws -> BodyDay {
         let now = Date()
         let from = GarminMorning.addDays(day, -GarminBody.history)
         let weekAgo = GarminMorning.addDays(day, -(GarminBody.shownDays - 1))
@@ -157,8 +161,20 @@ actor GarminClient {
         let hrvNight = try await tolerant("/hrv-service/hrv/" + nightDay)
         let hrvRange = try await tolerant("/hrv-service/hrv/daily/\(weekAgo)/\(day)")
         let summaries = try await tolerant("/usersummary-service/v2/dailysummaries", ["startDate": from, "endDate": day])
+        var battery = GarminBody.battery(curve, activities: workouts, day: day, now: now)
+        if battery != nil {
+            if let held, !held.isEmpty {
+                battery?.yesterday = held
+            } else {
+                // Today's own call stays exactly as it was; yesterday is asked for by itself.
+                let dayBefore = GarminMorning.addDays(day, -1)
+                let old = try await tolerant("/wellness-service/wellness/bodyBattery/reports/daily", ["startDate": dayBefore, "endDate": dayBefore])
+                let points = GarminBody.yesterday(old, day: day)
+                battery?.yesterday = points.isEmpty ? nil : points
+            }
+        }
         return GarminBody.build(day: day, nightDay: nightDay, readAt: now,
-                                battery: GarminBody.battery(curve, activities: workouts, day: day, now: now),
+                                battery: battery,
                                 sleepDays: GarminBody.sleepDays(sleepRange),
                                 hrv: GarminMorning.hrv(hrvNight), hrvDays: GarminBody.hrvDays(hrvRange),
                                 summaries: GarminBody.summaryDays(summaries))

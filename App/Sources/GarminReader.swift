@@ -118,7 +118,9 @@ final class GarminReader: ObservableObject {
         bodyFile.lastTried = Date()
         let day = ProcessInfo.processInfo.environment["AMSWS_TODAY"] != nil ? today : GarminMorning.dayKey(Date())
         do {
-            let fresh = try await GarminClient.shared.body(day: day)
+            // Yesterday's curve is read once a day: when the whole of it is held for this day, it is not asked for again.
+            let held = body?.day == day ? body?.battery?.yesterday : nil
+            let fresh = try await GarminClient.shared.body(day: day, yesterday: GarminBody.yesterdayIsWhole(held, day: day) ? held : nil)
             // An empty answer never replaces numbers already held.
             if !fresh.isEmpty || body == nil {
                 body = fresh
@@ -158,16 +160,22 @@ final class GarminReader: ObservableObject {
                        bodyBattery: .init(value: 71, normal: 68, days: 9),
                        stress: .init(value: 28, normal: 31, days: 13))
     }
-    /* Invented, for pictures: a believable day with one workout. */
+    /* Invented, for pictures: a believable day with two workouts, and the day before it. */
     static func inventedBody(day: String) -> BodyDay {
         let cal = Calendar.current
         let midnight = cal.startOfDay(for: GarminMorning.date(day) ?? Date())
         func at(_ h: Double) -> Date { midnight.addingTimeInterval(h * 3600) }
-        // Charged in the night, a morning run, a slow drain after.
+        // Charged in the night, a morning run, strength at noon, a slow drain after.
         let shape: [(Double, Double)] = [(0, 38), (1, 46), (2, 55), (3, 63), (4, 71), (5, 78), (6, 82), (6.5, 80), (7, 74),
                                          (7.5, 66), (8, 58), (8.5, 55), (9.5, 53), (10.5, 50), (11.5, 47), (12.5, 44), (13.5, 40)]
         let points = shape.map { BodyDay.Point(time: at($0.0), value: $0.1) }
+        // The day before: a shorter night, a quiet day, an evening ride.
+        let before: [(Double, Double)] = [(0, 24), (1, 31), (2, 39), (3, 47), (4, 54), (5, 60), (6, 64), (7, 66), (8, 63), (9.5, 60),
+                                          (11, 57), (12.5, 54), (14, 51), (15.5, 49), (17, 47), (17.5, 43), (18, 36), (18.5, 30),
+                                          (19.5, 28), (21, 27), (22, 29), (23, 33), (23.9, 37)]
+        let yesterday = before.map { BodyDay.Point(time: at($0.0 - 24), value: $0.1) }
         let run = BodyDay.Workout(id: "invented-1", name: "Morning run", type: "running", start: at(6.75), end: at(7.75), drain: 17)
+        let strength = BodyDay.Workout(id: "invented-2", name: "Strength", type: "strength_training", start: at(12), end: at(12.75), drain: 6)
         let sleepNights = [6.8, 7.4, 5.9, 7.2, 8.0, 6.6, 7.3]
         let hrvDays = [58, 61, 57, 63, 66, 60, 64]
         let restDays = [49, 48, 50, 47, 48, 49, 47]
@@ -176,7 +184,8 @@ final class GarminReader: ObservableObject {
             v.enumerated().map { BodyDay.DayValue(day: GarminMorning.addDays(day, $0.offset - (v.count - 1)), value: $0.element) }
         }
         return BodyDay(day: day, readAt: at(13.6),
-                       battery: .init(points: points, workouts: [run]),
+                       battery: .init(points: points, workouts: [run, strength],
+                                      yesterday: ProcessInfo.processInfo.environment["AMSWS_BODY_NO_YESTERDAY"] != nil ? nil : yesterday),
                        sleep: .init(lastNight: 7.3, nights: line(sleepNights.map { Optional($0) }.enumerated().map { $0.offset == 2 ? nil : $0.element })),
                        hrv: .init(lastNight: 64, rangeLow: 52, rangeHigh: 68, stillLearning: false, days: line(hrvDays.map { Double($0) })),
                        resting: .init(today: 47, normal: 48.5, days: line(restDays.map { Double($0) })),

@@ -46,6 +46,8 @@ enum Theme {
     /* A tile, and the page behind: lightly tinted with Body's colour. */
     static let bodyTile = Color.dynamic(light: 0xF7DFEA, dark: 0x3A1C2E)
     static let bodyGround = Color.dynamic(light: 0xFBF1F6, dark: 0x1A0F16)
+    /* Yesterday's thin line on the head card: a deep plum, darker than the card, by day and by night. */
+    static let bodyYesterday = Color.dynamic(light: 0x4E0A2C, dark: 0x45082A)
     /* The hour mark on the week's extra blocks: a warm amber that belongs to no
        sport — the bike's yellow would have said "ride" under a strip where it does. */
     static let extraHour = Color.dynamic(light: 0xDE9B26, dark: 0xF0B855)

@@ -23,6 +23,27 @@ final class BodyDayTests: XCTestCase {
         """)
     }
 
+    /* Yesterday's line (2.7): only the readings inside yesterday's 24 hours, whatever day the answer files them under. */
+    func testYesterdaysCurveIsCutToYesterdays24Hours() {
+        let answer = json("""
+        [{"date":"2030-03-09","bodyBatteryValuesArray":[[\(ms(-25)), 11],[\(ms(-24)), 30],[\(ms(-12)), 75],[\(ms(-10)), null],[\(ms(-0.5)), 42]]},
+         {"date":"2030-03-10","bodyBatteryValuesArray":[[\(ms(-3)), 66],[\(ms(0)), 41],[\(ms(1)), 44]]}]
+        """)
+        let y = GarminBody.yesterday(answer, day: day, calendar: cal)
+        XCTAssertEqual(y.map(\.value), [30, 75, 66, 42])   // oldest first; the day before, the empty one and today's are left out
+        XCTAssertEqual(GarminBody.yesterday(nil, day: day, calendar: cal), [])
+        // It runs to 23:30, so it is whole and kept for the day; one that stops in the evening is read again.
+        XCTAssertTrue(GarminBody.yesterdayIsWhole(y, day: day, calendar: cal))
+        XCTAssertFalse(GarminBody.yesterdayIsWhole(Array(y.dropLast()), day: day, calendar: cal))
+        XCTAssertFalse(GarminBody.yesterdayIsWhole(nil, day: day, calendar: cal))
+        // An older file without yesterday still reads, and yesterday survives a round trip.
+        let old = try? JSONDecoder().decode(BodyDay.Battery.self, from: Data(#"{"points":[],"workouts":[]}"#.utf8))
+        XCTAssertNotNil(old)
+        XCTAssertNil(old?.yesterday)
+        let kept = BodyDay.Battery(points: [], yesterday: y)
+        XCTAssertEqual(try? JSONDecoder().decode(BodyDay.Battery.self, from: JSONEncoder().encode(kept)), kept)
+    }
+
     func testBatteryPointsNowHighLow() {
         let b = GarminBody.battery(curve(), activities: nil, day: day, now: noon.addingTimeInterval(-3 * 3600), calendar: cal)
         // "Now" is 09:00: the reading from before midnight, the empty one and the later one are left out.
