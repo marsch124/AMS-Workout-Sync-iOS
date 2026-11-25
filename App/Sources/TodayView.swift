@@ -58,7 +58,7 @@ struct TodayView: View {
 
         VStack(alignment: .leading, spacing: 14) {
             header(view, today)
-            if let waited = store.waitedTooLong { WaitingWarning(text: waited) }
+            if !store.planLivesHere, let waited = store.waitedTooLong { WaitingWarning(text: waited) }
             // "Feeling good" joins the night's numbers on the one line; a tap
             // on the line brings the question back to change the answer.
             MorningLine(feel: changingFeel ? nil : diary.feel.answer(on: today),
@@ -321,7 +321,7 @@ struct TodayView: View {
             let phase = view.phase(on: today)
             Text(phase.isEmpty ? "Today" : phase).font(.title3.weight(.bold)).foregroundStyle(Theme.today)
             Spacer()
-            if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { DropboxChip(action: goToSettings) }
+            if store.planLivesHere { EmptyView() } else if store.canLog { PlanChip(name: store.fileName, syncing: store.syncing, waiting: store.queue.count) } else { DropboxChip(action: goToSettings) }
         }
         .padding(.top, 12)
     }
