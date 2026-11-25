@@ -71,16 +71,12 @@ struct TodayView: View {
                         change: { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true } })
             // The morning question: once a day, one tap, and it is gone until
             // tomorrow. Nothing else on this screen reacts to the answer.
-            // "Not well?" is one small pill: at the right end of the question's title while the
-            // question is open (no extra row), otherwise right-aligned on a row of its own.
             let askingFeel = (diary.feel.asks(on: today) && !neighbours.hasFeel(today: today)) || changingFeel
             if askingFeel {
-                FeelCard(current: diary.feel.answer(on: today), showsNotWell: store.planLivesHere) { f in
+                FeelCard(current: diary.feel.answer(on: today)) { f in
                     diary.setFeel(f, on: today)
                     withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false }
                 }
-            } else if store.planLivesHere {
-                HStack { Spacer(); NotWellPill() }.padding(.top, -6)
             }
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()
@@ -208,6 +204,11 @@ struct TodayView: View {
                         .fill(Theme.tomorrow))
                 }
                 .padding(.horizontal, -12)
+            }
+            // "Not well?" — one small grey pill, the last thing on the page (2.4.2;
+            // before, at the top beside the morning question).
+            if store.planLivesHere {
+                HStack { Spacer(); NotWellPill(); Spacer() }
             }
         }
     }

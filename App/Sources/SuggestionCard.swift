@@ -199,7 +199,7 @@ struct LadderLine: View {
 }
 
 /*
- * One small calm pill, "Not well?", on Today and on every session page. It
+ * One small grey pill, "Not well?", at the foot of Today and of every session page. It
  * opens a plate with the two ways in: "Stop sign" (opening it pauses
  * suggestions) and "I'm ill", which opens only the illness questions — a cold
  * never has to read the stop sign's words. The plate and both pages are one
@@ -213,9 +213,11 @@ struct NotWellPill: View {
     @State private var page: Page?
 
     var body: some View {
+        // Grey and at the foot of the page (2.4.2): there when it is needed, never the
+        // first thing the eye meets ("very prominent … does not feel positive", 25 Nov 2026).
         Button("Not well?") { page = .plate }
-            .font(.caption.weight(.semibold))
-            .buttonStyle(.bordered).controlSize(.mini).tint(Theme.today)
+            .font(.caption)
+            .buttonStyle(.bordered).controlSize(.mini).tint(Theme.secondary)
             .accessibilityIdentifier("not-well")
             .sheet(item: $page) { p in
                 switch p {

@@ -87,18 +87,13 @@ private struct FaceEyes: Shape {
 struct FeelCard: View {
     /* Today's answer while he is changing it; nil the first time. */
     var current: Feel?
-    /* Today: the "Not well?" pill sits at the right end of the title, on no row of its own. */
-    var showsNotWell = false
     let pick: (Feel) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("How do you feel?")
-                    .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
-                    .accessibilityIdentifier("feel-question")
-                if showsNotWell { Spacer(); NotWellPill() }
-            }
+            Text("How do you feel?")
+                .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                .accessibilityIdentifier("feel-question")
             HStack(spacing: 6) {
                 ForEach(Feel.allCases) { f in
                     Button { pick(f) } label: {
