@@ -3,7 +3,7 @@ import WorkoutCore
 
 @main
 struct AMSWorkoutSyncApp: App {
-    @StateObject private var store = Store()
+    @StateObject private var store = IntentStore.shared
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
@@ -97,6 +97,13 @@ struct RootView: View {
             guard url.host == "today" else { return }
             tab = "today"
             todayPath = NavigationPath()
+        }
+        // Round 28: amsworkoutsync://session/<key> and a Spotlight result open that session's page; Spotlight is kept up to date.
+        .systemLinks { target in
+            guard case .session(let key) = target else { return }
+            tab = "today"
+            todayPath = NavigationPath()
+            todayPath.append(key)
         }
     }
 

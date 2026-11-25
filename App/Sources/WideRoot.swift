@@ -55,10 +55,19 @@ struct WideRoot: View {
     @State private var sessionsPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
     @State private var planPath = NavigationPath()
+    /* Round 28: the Keys plate (AMSWS_KEYS=1 opens it for a picture) and ⌘N's new-session page. */
+    @State private var showKeys: Bool = {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["AMSWS_KEYS"] != nil
+        #else
+        return false
+        #endif
+    }()
+    @State private var newSessionOn: WeekBoard.DayKey?
 
     var body: some View {
         HStack(spacing: 0) {
-            SideList(selection: $selection, again: backToFirstScreen)
+            SideList(selection: $selection, again: backToFirstScreen, openKeys: { showKeys = true })
             detail
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Theme.bg.ignoresSafeArea())
@@ -67,6 +76,49 @@ struct WideRoot: View {
             if weekStart.isEmpty { weekStart = PlanView.weekStart(store.today) }
             if month.isEmpty { month = PlanOverview.month(of: store.today) }
         }
+        .background { wideKeys }
+        .sheet(isPresented: $showKeys) { KeysPlate() }
+        .sheet(item: $newSessionOn) { day in
+            SessionEditView(key: nil, draft: SessionDraft(dayKey: day.id, sport: "run")).environmentObject(store)
+        }
+        .systemLinks { target in
+            selection = .today
+            switch target {
+            case .today: todayPath = NavigationPath()
+            case .session(let key):
+                todayPath = NavigationPath()
+                todayPath.append(key)
+            }
+        }
+    }
+
+    /* Round 28: ⌘N, ← →, ⌘T, ⌘F, ? — hooks into this root's own state. */
+    private var wideKeys: some View {
+        WideKeys(
+            newSession: {
+                guard store.canChangePlan else { return }
+                newSessionOn = WeekBoard.DayKey(id: KeyGuide.newSessionDay(
+                    today: store.today, onPlan: selection == .plan, mode: planMode.rawValue, weekStart: weekStart, month: month))
+            },
+            step: { direction in
+                guard selection == .plan, planPath.isEmpty, !showKeys, newSessionOn == nil else { return }
+                switch planMode {
+                case .week: weekStart = PlanView.addDays(weekStart.isEmpty ? PlanView.weekStart(store.today) : weekStart, 7 * direction)
+                case .month: month = PlanOverview.adding(direction, to: month.isEmpty ? PlanOverview.month(of: store.today) : month)
+                case .year: break
+                }
+            },
+            today: {
+                if selection == .plan {
+                    weekStart = PlanView.weekStart(store.today)
+                    month = PlanOverview.month(of: store.today)
+                } else {
+                    selection = .today
+                    todayPath = NavigationPath()
+                }
+            },
+            focusSearch: { SearchFocus.focus() },
+            showKeys: { showKeys = true })
     }
 
     @ViewBuilder private var detail: some View {
@@ -105,6 +157,7 @@ struct SideList: View {
     @EnvironmentObject var store: Store
     @Binding var selection: SideRow
     var again: (SideRow) -> Void = { _ in }
+    var openKeys: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -116,6 +169,16 @@ struct SideList: View {
                 rowButton(row, index)
             }
             Spacer(minLength: 12)
+            Button(action: openKeys) {
+                Text("Keys")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.settings)
+                    .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
+                    .padding(.horizontal, 10)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("keys-open")
             syncLine
         }
         .padding(.horizontal, 10)
