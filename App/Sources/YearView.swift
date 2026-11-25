@@ -102,7 +102,7 @@ struct YearView: View {
         .overlay {
             if inMonth && day == store.today {
                 RoundedRectangle(cornerRadius: 3.5, style: .continuous)
-                    .strokeBorder(Theme.text, lineWidth: 1.5)
+                    .strokeBorder(Theme.today, lineWidth: 1.5)
                     .padding(-2)
             }
         }
@@ -116,7 +116,7 @@ struct YearView: View {
             keyItem(StateFill(sport: "run", state: .missed, corner: 2.5), "Missed")
             keyItem(RoundedRectangle(cornerRadius: 2.5).strokeBorder(Theme.border, lineWidth: 1), "Rest day")
             if hasRace { keyItem(RoundedRectangle(cornerRadius: 2.5).fill(Theme.sport("race")), "Race day") }
-            keyItem(RoundedRectangle(cornerRadius: 3).strokeBorder(Theme.text, lineWidth: 1.5), "Today")
+            keyItem(RoundedRectangle(cornerRadius: 3).strokeBorder(Theme.today, lineWidth: 1.5), "Today")
             Text("Colour = the day's main sport \u{00B7} Tap a month to open it")
                 .font(.caption2).foregroundStyle(Theme.secondary)
         }

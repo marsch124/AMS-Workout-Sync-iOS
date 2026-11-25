@@ -8,6 +8,11 @@ import Foundation
  */
 public enum PlanOverview {
 
+    /* The number on the "All" filter: rest days are not sessions to do, so they stay out, as in the plan bar. */
+    public static func countedInAll(disciplineIds: [String], extras: Int) -> Int {
+        disciplineIds.filter { $0 != "rest" }.count + extras
+    }
+
     /* "2026-11" for a day key. */
     public static func month(of day: String) -> String { String(day.prefix(7)) }
 

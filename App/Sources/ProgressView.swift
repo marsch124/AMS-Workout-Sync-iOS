@@ -199,11 +199,14 @@ struct RoadCard: View {
                 }
                 Spacer(minLength: 8)
                 Button { withAnimation(.easeInOut(duration: 0.15)) { raceOpen.toggle() } } label: {
-                    ZStack {
-                        Circle().fill(Theme.progress.opacity(raceOpen ? 0.3 : 0.16))
-                        Glyph(name: "icon-race", size: 20).foregroundStyle(Theme.progress)
+                    HStack(spacing: 5) {
+                        ZStack {
+                            Circle().fill(Theme.progress.opacity(raceOpen ? 0.3 : 0.16))
+                            Glyph(name: "icon-race", size: 20).foregroundStyle(Theme.progress)
+                        }
+                        .frame(width: 38, height: 38)
+                        Text("The race").font(.caption.weight(.semibold)).foregroundStyle(Theme.progress)
                     }
-                    .frame(width: 38, height: 38)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("race-what")

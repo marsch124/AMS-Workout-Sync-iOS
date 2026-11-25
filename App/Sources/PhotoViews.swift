@@ -144,7 +144,7 @@ struct PhotoViewer: View {
                 ToolbarItemGroup(placement: .primaryAction) {
                     if let data = photos.data(current), let image = UIImage(data: data) {
                         ShareLink(item: Image(uiImage: image), preview: SharePreview("Session photo", image: Image(uiImage: image))) {
-                            Glyph(name: "icon-share", size: 20)
+                            HStack(spacing: 4) { Glyph(name: "icon-share", size: 20); Text("Send").font(.caption.weight(.semibold)) }
                         }
                     }
                     Button(role: .destructive) { confirmDelete = true } label: { Text("Delete") }
