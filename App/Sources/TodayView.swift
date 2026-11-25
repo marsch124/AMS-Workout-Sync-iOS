@@ -63,6 +63,7 @@ struct TodayView: View {
 
         VStack(alignment: .leading, spacing: 14) {
             header(view, today)
+            SundayCardArea()
             if !store.planLivesHere, let waited = store.waitedTooLong { WaitingWarning(text: waited) }
             // "Feeling good" joins the night's numbers on the one line; a tap
             // on the line brings the question back to change the answer.

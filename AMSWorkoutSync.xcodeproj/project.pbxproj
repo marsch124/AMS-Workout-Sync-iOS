@@ -9,10 +9,12 @@
 /* Begin PBXBuildFile section */
 		0472DFF26CE85F3ADE7D8932 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A14825F875D7AF6B7EE715C /* Store.swift */; };
 		068842FBE891613A61743D7E /* MorningNumbersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33984951D7E218F08026A8F1 /* MorningNumbersView.swift */; };
+		080DD764DF4938C6AE0E6476 /* RemindersSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A87A14F80DE0C328853F7C2 /* RemindersSettingsView.swift */; };
 		0911A9A46C299D035C2C1DFA /* WideRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1F16D5080FB2389E905D5B /* WideRoot.swift */; };
 		0EA5ED991C555FB333375817 /* ClaudeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B529EE232AF8825876FC5F82 /* ClaudeClient.swift */; };
 		1401AE90F5F3B1855F06CD32 /* ClaudeKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE5703FD6208A73C4D662DA /* ClaudeKey.swift */; };
 		163E5A3AD7A1CA3083484F37 /* Diary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C8793044EA9500B757D610 /* Diary.swift */; };
+		1897199A25178865546743B3 /* Reminders.swift in Sources */ = {isa = PBXBuildFile; fileRef = E538584C50859DE2E1568D9E /* Reminders.swift */; };
 		1DAF8A7B8F008223FA81CAC4 /* GarminMorningUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CD21785F71109598A32492D /* GarminMorningUITests.swift */; };
 		208A724EC312F4125C46AAA1 /* SeasonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04CBC958D9BB764875C6207 /* SeasonView.swift */; };
 		24C73D27839B03C65C5F9E82 /* SuggestionsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E7C3F09C67D051238AC768 /* SuggestionsSettingsView.swift */; };
@@ -29,6 +31,7 @@
 		57C9D429EE28AAC34434A4E6 /* AMSIcons in Frameworks */ = {isa = PBXBuildFile; productRef = E5919F8033E8B81CB5A802AE /* AMSIcons */; };
 		5C344D8AF3B4D4BD5C52F7BD /* BodyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3844D13CF50F6EC65408A10 /* BodyView.swift */; };
 		5CCB2FFB5FB33334D047E2F2 /* Health.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CDFC67F6D3D022CEEC7F7CC /* Health.swift */; };
+		5F2845F611697AD318BD1A19 /* RemindersUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6110D9A0DF97B6C5DD76DD /* RemindersUITests.swift */; };
 		626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E3DEEE01504BE66D135FE3 /* Theme.swift */; };
 		66D43D228DD0E678D8D24C97 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338EA2CFBED1B8532ED07B0A /* Device.swift */; };
 		69340F5D7DB031BC2C4C514E /* PlanHomeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8B9FBB415EA1C7819A2BA32 /* PlanHomeUITests.swift */; };
@@ -103,9 +106,11 @@
 		10B7D72488BA4C064C6365BB /* PlanPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPage.swift; sourceTree = "<group>"; };
 		145AD2CD57182DB43079FC8C /* YearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearView.swift; sourceTree = "<group>"; };
 		18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViews.swift; sourceTree = "<group>"; };
+		1C6110D9A0DF97B6C5DD76DD /* RemindersUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersUITests.swift; sourceTree = "<group>"; };
 		201A884ED7294E23A8047706 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyUITests.swift; sourceTree = "<group>"; };
 		29C8793044EA9500B757D610 /* Diary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diary.swift; sourceTree = "<group>"; };
+		2A87A14F80DE0C328853F7C2 /* RemindersSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersSettingsView.swift; sourceTree = "<group>"; };
 		2D65F7293009826029A454FA /* WeekBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBoard.swift; sourceTree = "<group>"; };
 		2E6525576D143C59A4723612 /* DropboxViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxViews.swift; sourceTree = "<group>"; };
 		338EA2CFBED1B8532ED07B0A /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -165,6 +170,7 @@
 		DD89521CE6E4403841FE2581 /* WaitingForPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForPlanView.swift; sourceTree = "<group>"; };
 		E30A622530862215769C87FA /* Neighbours.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Neighbours.swift; sourceTree = "<group>"; };
 		E3FFCF1DC05E464FB2ED3970 /* GarminSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminSettingsView.swift; sourceTree = "<group>"; };
+		E538584C50859DE2E1568D9E /* Reminders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reminders.swift; sourceTree = "<group>"; };
 		E7A03855A2195F5FD77B7F7C /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 		E8B0778365FA2EAD6A05938A /* ExtraViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraViews.swift; sourceTree = "<group>"; };
 		E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
@@ -207,6 +213,7 @@
 				8E63B9B271B07D3FEA0FDBE0 /* NeighbourUITests.swift */,
 				D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */,
 				A8B9FBB415EA1C7819A2BA32 /* PlanHomeUITests.swift */,
+				1C6110D9A0DF97B6C5DD76DD /* RemindersUITests.swift */,
 				BFB603BAFDFF677E317A068C /* SafetyCopiesUITests.swift */,
 				A6C2E906C05F4CBDC1115AE9 /* SessionAdviceUITests.swift */,
 				0760C47168862B5BDA6F9875 /* SuggestionUITests.swift */,
@@ -292,6 +299,8 @@
 				10B7D72488BA4C064C6365BB /* PlanPage.swift */,
 				A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */,
 				8173903887939F8A3DB90D8D /* ProgressView.swift */,
+				E538584C50859DE2E1568D9E /* Reminders.swift */,
+				2A87A14F80DE0C328853F7C2 /* RemindersSettingsView.swift */,
 				868D688CF593B1074DAB4C08 /* SafetyCopiesView.swift */,
 				D04CBC958D9BB764875C6207 /* SeasonView.swift */,
 				3E761F4FA612AABC7C820139 /* SessionEditView.swift */,
@@ -473,6 +482,8 @@
 				AA30994BA586B2B1CE7CFE27 /* PlanPage.swift in Sources */,
 				F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */,
 				37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */,
+				1897199A25178865546743B3 /* Reminders.swift in Sources */,
+				080DD764DF4938C6AE0E6476 /* RemindersSettingsView.swift in Sources */,
 				B1CABD5E7ED197469D4C85AD /* SafetyCopiesView.swift in Sources */,
 				208A724EC312F4125C46AAA1 /* SeasonView.swift in Sources */,
 				D1E894971B80D8FDD28D6814 /* SessionEditView.swift in Sources */,
@@ -510,6 +521,7 @@
 				9340669904E7DB477DE5D179 /* NeighbourUITests.swift in Sources */,
 				CF2044C1DC2BB66227A6EB49 /* PlanChangeUITests.swift in Sources */,
 				69340F5D7DB031BC2C4C514E /* PlanHomeUITests.swift in Sources */,
+				5F2845F611697AD318BD1A19 /* RemindersUITests.swift in Sources */,
 				BE65B74716168B998B6AAD43 /* SafetyCopiesUITests.swift in Sources */,
 				E06C0A02051EBAAF581D9FF2 /* SessionAdviceUITests.swift in Sources */,
 				7A1B933F0920090EB9B0EBBD /* SuggestionUITests.swift in Sources */,

@@ -6,16 +6,19 @@ struct AMSWorkoutSyncApp: App {
     @StateObject private var store = Store()
     @Environment(\.scenePhase) private var scenePhase
 
+    init() { ReminderCentre.shared.start() }
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(store)
-                .onAppear { SuggestionKeeper.shared.attach(store) }
+                .onAppear { SuggestionKeeper.shared.attach(store); ReminderCentre.shared.attach(store) }
                 .onChange(of: scenePhase) { _, phase in
                     // The plan may have been logged in the web app or edited in
                     // Excel since it was last read.
                     if phase == .active {
                         store.refresh()
+                        ReminderCentre.shared.replan()
                         // The night's numbers arrive while the app is closed, and
                         // Today read them once, at first sight. Opening the app
                         // is when they are wanted (27 October 2026: the line
@@ -94,6 +97,11 @@ struct RootView: View {
         .overlay { debugScreens }
         // amsworkoutsync://today, from Workouts or Magic Morning: the first screen.
         .onOpenURL { url in
+            if let key = ReminderCentre.shared.sessionKey(from: url) {
+                tab = "today"
+                todayPath = NavigationPath([key])
+                return
+            }
             guard url.host == "today" else { return }
             tab = "today"
             todayPath = NavigationPath()
@@ -105,6 +113,9 @@ struct RootView: View {
         #if DEBUG
             if let key = ProcessInfo.processInfo.environment["AMSWS_SESSION"] {
                 NavigationStack { SessionView(key: key) }
+            }
+            if ProcessInfo.processInfo.environment["AMSWS_REMINDERS_PAGE"] != nil {
+                NavigationStack { RemindersSettingsView() }
             }
             if ProcessInfo.processInfo.environment["AMSWS_CHANGES"] != nil {
                 NavigationStack { PlanChangesView() }

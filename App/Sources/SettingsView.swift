@@ -149,6 +149,13 @@ struct SettingsView: View {
                     SectionHeading(text: "Claude")
                     ClaudeSettingsEntry()
 
+                    SectionHeading(text: "Reminders")
+                    NavigationLink { RemindersSettingsView() } label: {
+                        SettingsRow(title: "Reminders", sub: ReminderCentre.shared.settings.anyOn ? "On \u{2014} evening, Sunday and missed-session notes" : "Off \u{2014} evening, Sunday and missed-session notes", chevron: true)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings-reminders-row")
+
                     SectionHeading(text: "Calendar").id("calendar")
                     if Device.isPhone {
                         CalendarSettings()
