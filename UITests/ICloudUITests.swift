@@ -61,4 +61,29 @@ final class ICloudUITests: XCTestCase {
         XCTAssertTrue(session.waitForExistence(timeout: 30), "the plan did not arrive and open")
         XCTAssertFalse(app.staticTexts["waiting-plan-title"].exists, "still waiting after the plan arrived")
     }
+
+    /*
+     * 2.4.1. An iPad (or Mac) that still shows an old workbook, as his Mac did
+     * from a link made in September: once the iPhone's plan is in iCloud, it
+     * takes that plan by itself and no longer offers Dropbox.
+     */
+    func testADeviceShowingTheOldWorkbookTakesThePlanFromICloud() {
+        let app = XCUIApplication()
+        app.launchEnvironment["AMSWS_FILE"] = plan.path          // the workbook on screen, the plan NOT living in the app
+        app.launchEnvironment["AMSWS_TODAY"] = "2026-09-16"
+        app.launchEnvironment["AMSWS_RESET"] = "1"
+        app.launchEnvironment["AMSWS_DEVICE"] = "ipad"
+        app.launchEnvironment["AMSWS_FAKE_CLOUD"] = freshFolder()
+        app.launchEnvironment["AMSWS_CLOUD_SEED"] = plan.path     // the iPhone has put the plan in iCloud
+        app.launch()
+
+        let session = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'today-session'")).firstMatch
+        XCTAssertTrue(session.waitForExistence(timeout: 30), "no plan on screen")
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.buttons["today-connect-dropbox"])
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 30), .completed,
+                       "still on the old workbook: Today offers Dropbox although the plan is in iCloud")
+        // The plan lives in the app now: it can be added to here.
+        XCTAssertTrue(app.buttons["today-add-extra"].waitForExistence(timeout: 10) || app.buttons["not-well"].waitForExistence(timeout: 5),
+                      "the plan from iCloud did not become the plan here")
+    }
 }

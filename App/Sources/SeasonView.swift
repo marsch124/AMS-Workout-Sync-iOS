@@ -3,8 +3,10 @@ import WorkoutCore
 
 /*
  * The season of the wide look: every plan week up to the race as a bar. The
- * height is the week's planned hours, the colour its phase; an easy week is
- * pale and says "Easy" where there is room, a test week says "Test". A clear
+ * height is the week's planned hours, the colour its phase, always in full:
+ * an easy week carries the letter E above its bar and a test week T (the
+ * words Easy and Test where a bar is wide enough). Pale is not used here: it
+ * means "still to do" elsewhere. A clear
  * outline marks the chosen week, a line marks today, and the race's flag stands
  * at the right with its name and date. Tap a bar to choose that week.
  */
@@ -113,6 +115,11 @@ struct SeasonView: View {
     var pick: ((String) -> Void)? = nil
 
     private let barArea: CGFloat = 104
+    /* From this bar width the whole words Easy and Test fit; below it the letters E and T stand in. */
+    private static let wordWidth: CGFloat = 26
+    /* The room a letter or word takes above its bar. */
+    private static let markHeight: CGFloat = 12
+    @State private var lettersShown = true
     private let gap: CGFloat = 2
 
     var body: some View {
@@ -173,6 +180,8 @@ struct SeasonView: View {
                     todayMark(x: x, width: geo.size.width)
                 }
             }
+            .onAppear { lettersShown = barW < Self.wordWidth }
+            .onChange(of: barW < Self.wordWidth) { _, narrow in lettersShown = narrow }
         }
     }
 
@@ -181,7 +190,11 @@ struct SeasonView: View {
     private func outline(_ data: SeasonData, chosen: Set<String>, barW: CGFloat, tallest: Double) -> some View {
         let picked = data.weeks.indices.filter { chosen.contains(data.weeks[$0].monday) }
         if let first = picked.first, let last = picked.last {
-            let top = picked.map { barHeight(data.weeks[$0], tallest: tallest) }.max() ?? 4
+            // The outline goes round a week's letter too.
+            let top = picked.map { i -> CGFloat in
+                let w = data.weeks[i]
+                return barHeight(w, tallest: tallest) + (w.isEasy || w.isTest ? Self.markHeight : 0)
+            }.max() ?? 4
             RoundedRectangle(cornerRadius: 4, style: .continuous)
                 .strokeBorder(Theme.text, lineWidth: 2)
                 .frame(width: CGFloat(last - first + 1) * (barW + gap) - gap + 6, height: top + 6)
@@ -213,16 +226,19 @@ struct SeasonView: View {
         let colour = Theme.phase(w.phaseIndex, of: max(data.phases.count, 2))
         let height = barHeight(w, tallest: tallest)
         let word = w.isTest ? "Test" : (w.isEasy ? "Easy" : nil)
+        let letter = PlanOverview.weekLetter(isEasy: w.isEasy, isTest: w.isTest)
         let shape = RoundedRectangle(cornerRadius: 2, style: .continuous)
         return Button { if let pick { pick(w.monday) } else { weekStart = w.monday } } label: {
             VStack(spacing: 1) {
                 Spacer(minLength: 0)
-                if let word, width >= 26 {
-                    Text(word).font(.system(size: 9, weight: .semibold)).foregroundStyle(Theme.secondary)
+                if let word, let letter {
+                    Text(width >= Self.wordWidth ? word : letter)
+                        .font(.system(size: 9, weight: .bold)).foregroundStyle(Theme.secondary)
                         .lineLimit(1).fixedSize()
+                        .frame(height: Self.markHeight - 1)
                 }
                 shape
-                    .fill(colour.opacity(w.isEasy ? 0.38 : 1))
+                    .fill(colour)
                     .frame(height: height)
             }
             .frame(width: width, height: barArea)
@@ -262,10 +278,10 @@ struct SeasonView: View {
         .accessibilityHidden(true)
     }
 
-    /* What the pale bars mean and what a tap does, said on the screen itself. */
+    /* What the letters mean and what a tap does, said on the screen itself. */
     private func key(_ data: SeasonData) -> some View {
-        let hasEasy = data.weeks.contains(where: \.isEasy)
-        return Text((hasEasy ? "Pale = easy week \u{00B7} " : "") + "Tap a bar to see its week")
+        return Text(PlanOverview.seasonKey(hasEasy: data.weeks.contains(where: \.isEasy),
+                                           hasTest: data.weeks.contains(where: \.isTest), lettersShown: lettersShown))
             .font(.caption2).foregroundStyle(Theme.secondary)
             .accessibilityIdentifier("season-key")
     }

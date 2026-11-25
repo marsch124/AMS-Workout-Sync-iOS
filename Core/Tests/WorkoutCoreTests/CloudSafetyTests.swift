@@ -256,4 +256,11 @@ final class CloudSafetyTests: XCTestCase {
             if dice.int(10) < 6 { mac = one }
         }
     }
+
+    /* 2.4.1: an iPad or Mac that only shows the old workbook takes iCloud's plan; the iPhone on Excel is asked instead. */
+    func testAnIPadOrMacShowingTheOldWorkbookTakesTheCloudPlan() {
+        XCTAssertTrue(PlanMeeting.takesCloudPlanOverWorkbook(isPhone: false, cloudHasPlan: true))
+        XCTAssertFalse(PlanMeeting.takesCloudPlanOverWorkbook(isPhone: false, cloudHasPlan: false), "nothing in iCloud: the workbook stays on screen")
+        XCTAssertFalse(PlanMeeting.takesCloudPlanOverWorkbook(isPhone: true, cloudHasPlan: true), "the iPhone decides on its move-in page")
+    }
 }

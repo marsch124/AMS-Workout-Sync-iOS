@@ -392,8 +392,15 @@ final class PlanCloud: ObservableObject {
             // Moving in, going back, or a plan here that would not open: iCloud waits.
             settled = false
         case .excel:
-            // The plan still lives in Excel on this device: it is not shared. The move-in page offers iCloud's plan.
-            break
+            // The iPhone: the plan still lives in Excel here and is not shared; the move-in page offers iCloud's plan.
+            // An iPad or Mac only shows an old workbook: once the plan is in iCloud it takes that one, unasked.
+            if PlanMeeting.takesCloudPlanOverWorkbook(isPhone: Device.isPhone, cloudHasPlan: read != .absent) {
+                switch await adopt(read) {
+                case .waiting: settled = false
+                case .problem(let why): problem = why
+                case .done: break
+                }
+            }
         case .empty:
             switch await adopt(read) {
             case .waiting: settled = false
@@ -518,7 +525,7 @@ final class PlanCloud: ObservableObject {
                 planState = .newer
                 return .problem("Update Triathlon on this device")
             case .success(let book)?:
-                guard store.adoptFromCloud(book) else { return .waiting }
+                guard store.adoptFromCloud(book) || store.adoptOverOldWorkbook(book) else { return .waiting }
                 let from = devices.contains { $0.kind == Device.Kind.iPhone.rawValue && $0.id != Device.id } ? "your iPhone" : "iCloud"
                 planState = .arrived(sessions: book.sessions.count, lastChange: book.stamps.values.filter { $0.timeIntervalSince1970 > 1_600_000_000 }.max(), from: from)
                 showingArrival = true

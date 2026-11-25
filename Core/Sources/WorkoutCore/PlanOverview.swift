@@ -13,6 +13,25 @@ public enum PlanOverview {
         disciplineIds.filter { $0 != "rest" }.count + extras
     }
 
+    /*
+     * The letter above a week's bar on the season bars: T for a test week,
+     * else E for an easy week, else none. (Pale is kept for "still to do".)
+     */
+    public static func weekLetter(isEasy: Bool, isTest: Bool) -> String? {
+        isTest ? "T" : (isEasy ? "E" : nil)
+    }
+
+    /* The line under the season bars: only the letters that occur are named; none when the whole words are shown. */
+    public static func seasonKey(hasEasy: Bool, hasTest: Bool, lettersShown: Bool) -> String {
+        var parts: [String] = []
+        if lettersShown {
+            if hasEasy { parts.append("E = easy week") }
+            if hasTest { parts.append("T = test week") }
+        }
+        parts.append("Tap a bar to see its week")
+        return parts.joined(separator: " \u{00B7} ")
+    }
+
     /* "2026-11" for a day key. */
     public static func month(of day: String) -> String { String(day.prefix(7)) }
 

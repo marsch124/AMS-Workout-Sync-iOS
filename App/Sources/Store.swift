@@ -1344,6 +1344,16 @@ final class Store: ObservableObject {
         return makeHome(cloudBook)
     }
 
+    /*
+     * An iPad or Mac that only shows an old workbook: iCloud's plan becomes the
+     * plan here, exactly as on the iPhone's move-in page (anything waiting is
+     * written into it). The workbook's copy on this device is left where it is.
+     */
+    func adoptOverOldWorkbook(_ cloudBook: PlanBook) -> Bool {
+        guard PlanMeeting.takesCloudPlanOverWorkbook(isPhone: Device.isPhone, cloudHasPlan: true) else { return false }
+        return useCloudPlan(cloudBook)
+    }
+
     /* The iPhone on Excel, on the move-in page: iCloud's plan becomes the plan here; what waits is written into it. */
     func useCloudPlan(_ cloudBook: PlanBook) -> Bool {
         guard home == .excel, !takingIn, !switching, !cloudBook.isFromNewerApp else { return false }

@@ -137,6 +137,18 @@ public enum PlanMeeting {
     }
 
     /*
+     * A device that still shows a workbook (the plan in Excel) while iCloud holds
+     * the plan from the app. The iPhone is asked, on its move-in page: its Excel
+     * plan may be the one he works in. An iPad or Mac never held the plan itself:
+     * a link to the workbook from before 2.2 only SHOWS the old Excel file, which
+     * nobody writes any more. So there iCloud's plan is taken without asking
+     * (2.4.1; the Mac had gone on showing the old file and offering Dropbox).
+     */
+    public static func takesCloudPlanOverWorkbook(isPhone: Bool, cloudHasPlan: Bool) -> Bool {
+        !isPhone && cloudHasPlan
+    }
+
+    /*
      * May a device that holds a plan put it into iCloud? Always when the file is
      * there (it is joined first). When the file is not there, only if no other
      * device says its plan lives in the app: else the file is most likely still
