@@ -81,15 +81,15 @@ struct GarminMorningRow: View {
             let left = max(1, Fortnight.daysNeeded - f.days)
             return Text(" (" + (left == 1 ? "normal tomorrow" : "normal in \(left) days") + ")").foregroundStyle(Theme.secondary)
         }
-        return Text(" (\(d.figure))").foregroundStyle(d.colour)
+        return Text("\u{00A0}(\(d.figure))").foregroundStyle(d.colour)
     }
 
     private func line(_ g: MorningNumbers) -> Text {
         var parts: [Text] = []
-        if let f = g.hrv { parts.append(name("HRV ") + value(GarminWords.whole(f.value)) + bracket(f, lowerIsBetter: false)) }
-        if let f = g.sleepHours { parts.append(name("Sleep ") + value(GarminWords.sleep(f.value))) }
-        if let f = g.resting { parts.append(name("Resting ") + value(GarminWords.whole(f.value)) + bracket(f, lowerIsBetter: true)) }
-        if let f = g.bodyBattery { parts.append(name("Body Battery ") + value(GarminWords.whole(f.value))) }
+        if let f = g.hrv { parts.append(name("HRV\u{00A0}") + value(GarminWords.whole(f.value)) + bracket(f, lowerIsBetter: false)) }
+        if let f = g.sleepHours { parts.append(name("Sleep\u{00A0}") + value(GarminWords.sleep(f.value).replacingOccurrences(of: " ", with: "\u{00A0}"))) }
+        if let f = g.resting { parts.append(name("Resting\u{00A0}") + value(GarminWords.whole(f.value)) + bracket(f, lowerIsBetter: true)) }
+        if let f = g.bodyBattery { parts.append(name("Body\u{00A0}Battery\u{00A0}") + value(GarminWords.whole(f.value))) }
         guard var out = parts.first else { return Text("") }
         for part in parts.dropFirst() { out = out + Text(" · ").foregroundStyle(Theme.secondary) + part }
         return out

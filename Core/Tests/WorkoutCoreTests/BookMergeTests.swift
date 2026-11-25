@@ -137,7 +137,7 @@ final class BookMergeTests: XCTestCase {
         let b = try base()
         var x = b, y = b
         x.record(TestResult(name: "Test 8", lthr: 160), now: at(10))
-        y.record(TestResult(name: "Test 9", lthr: 155), now: at(5))
+        y.record(TestResult(name: "Test 9", lthr: 165), now: at(5))
         y.record(TestResult(name: "Test 8", lthr: 140), now: at(6))
         let all = try m(x, y)
         XCTAssertEqual(all.tests.first { $0.name == "Test 8" }?.lthr, 160)

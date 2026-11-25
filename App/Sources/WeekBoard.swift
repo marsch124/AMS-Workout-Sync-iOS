@@ -302,6 +302,7 @@ struct DayColumn: View {
             guard let key = items.first else { return false }
             return drop(key)
         } isTargeted: { targeted = $0 }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("week-day-\(day.dayKey)")
     }
 }

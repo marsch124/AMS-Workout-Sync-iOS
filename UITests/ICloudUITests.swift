@@ -56,9 +56,9 @@ final class ICloudUITests: XCTestCase {
         // The iPhone has put the plan in iCloud meanwhile (the fixture workbook, taken in).
         app.launchEnvironment["AMSWS_CLOUD_SEED"] = plan.path
         app.launch()
-        XCTAssertTrue(app.descendants(matching: .any)["waiting-plan-ready"].waitForExistence(timeout: 15), "the plan did not arrive")
+        // The "ready" words stand for two seconds only, so the proof is the opened plan itself.
         let session = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'today-session'")).firstMatch
-        XCTAssertTrue(session.waitForExistence(timeout: 10), "the plan did not open after arriving")
+        XCTAssertTrue(session.waitForExistence(timeout: 30), "the plan did not arrive and open")
         XCTAssertFalse(app.staticTexts["waiting-plan-title"].exists, "still waiting after the plan arrived")
     }
 }

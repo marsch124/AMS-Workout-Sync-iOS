@@ -68,6 +68,14 @@ final class WideLayoutUITests: XCTestCase {
         // The fixture names no phase and no race, so their rows and flag are not expected here.
     }
 
+    /* On a wide window (an iPad on its side) Progress stands in two columns. */
+    func testProgressStandsInTwoColumns() {
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = launch(side: "progress")
+        XCTAssertTrue(app.descendants(matching: .any)["progress-two-columns"].waitForExistence(timeout: 15),
+                      "Progress is not in two columns on a wide window")
+    }
+
     /* On the iPhone nothing of the wide look appears: the four tabs, no side list. */
     func testThePhoneLookIsUnchanged() {
         let app = launch()
