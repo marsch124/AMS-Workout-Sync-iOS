@@ -159,6 +159,7 @@ struct SessionView: View {
                                         }
                                     }
                                     .mainSmallButton()
+                                    .keyboardShortcut(.space, modifiers: [])
                                     .accessibilityIdentifier("session-done-as-planned")
                                 }
                                 Button { logging = true } label: {
