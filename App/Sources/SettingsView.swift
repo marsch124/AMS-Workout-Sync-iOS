@@ -19,6 +19,9 @@ struct SettingsView: View {
     @State private var browsing = false
     @State private var connecting = false
     @State private var problem: String?
+    @State private var movingIn = false
+    @State private var copyURL: URL?
+    @State private var confirmGoBack = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -29,7 +32,9 @@ struct SettingsView: View {
                         .accessibilityIdentifier("settings-title")
 
                     SectionHeading(text: "Your plan")
-                    if Dropbox.shared.isConnected {
+                    if store.planLivesHere {
+                        appHomeRows
+                    } else if Dropbox.shared.isConnected {
                         SettingsRow(title: store.fileName.isEmpty ? "No plan chosen yet" : store.fileName,
                                     sub: planLine,
                                     action: store.dropboxPath == nil ? nil : ("Change", { browsing = true }))
@@ -59,11 +64,16 @@ struct SettingsView: View {
                             SettingsRow(title: store.fileName, sub: "Read only · " + readLine)
                         }
                     }
+                    if !store.planLivesHere, store.view != nil {
+                        SettingsRow(title: "Move the plan into this app",
+                                    sub: "Now the plan lives in the Excel file in Dropbox.",
+                                    action: ("Start", { movingIn = true }), actionID: "plan-move-in")
+                    }
                     if let problem = problem ?? store.lastProblem {
                         Text(problem).font(.footnote).foregroundStyle(Theme.danger)
                     }
 
-                    if Dropbox.shared.isConnected {
+                    if Dropbox.shared.isConnected, !(store.planLivesHere && store.queue.isEmpty) {
                         SectionHeading(text: "Waiting to sync")
                         if store.queue.isEmpty {
                             SettingsRow(title: "Nothing waiting",
@@ -84,7 +94,7 @@ struct SettingsView: View {
                     // What the app made of the sheet, in one grey line: it matters
                     // only when something looks wrong, so it no longer takes a
                     // heading and two cards to say it.
-                    if let mapping = store.mapping {
+                    if !store.planLivesHere, let mapping = store.mapping {
                         Text("\(mapping.sheets.joined(separator: ", ")) · \(store.plan.count) sessions · \(mapping.units.duration) and \(mapping.units.distance) · done is written \(mapping.doneValue)")
                             .font(.caption).foregroundStyle(Theme.secondary)
                             .padding(.horizontal, 2)
@@ -127,13 +137,16 @@ struct SettingsView: View {
                         // and picks the plan again. Say so before he presses it.
                         let waiting = store.queue.count
                         SettingsRow(title: Dropbox.shared.account.isEmpty ? "Connected" : Dropbox.shared.account,
-                                    sub: waiting == 0
+                                    sub: store.planLivesHere ? "Only needed for going back to Excel." : waiting == 0
                                         ? "The app can read and write only the files you point it at."
                                         : "The app can read and write only the files you point it at. \(waiting) entr\(waiting == 1 ? "y is" : "ies are") still waiting to be sent — disconnecting keeps them on this phone, but nothing goes to Dropbox until you connect and choose the plan again.",
                                     action: ("Disconnect", {
                                         Dropbox.shared.disconnect()
                                         store.dropboxPath = nil
                                     }))
+                    } else if store.planLivesHere {
+                        SettingsRow(title: "Not connected", sub: "Only needed for going back to Excel.",
+                                    action: ("Connect", { Task { await connect() } }))
                     } else {
                         SettingsRow(title: "Not connected", sub: "Use Connect Dropbox above.")
                     }
@@ -165,12 +178,68 @@ struct SettingsView: View {
             }
         }
         .workbookPicker(isPresented: $picking)
+        .sheet(item: $copyURL) { url in ShareSheet(items: [url]) }
+        .sheet(isPresented: $movingIn) {
+            NavigationStack { MoveInView() }.environmentObject(store)
+        }
+        .confirmationDialog("Go back to Excel?", isPresented: $confirmGoBack, titleVisibility: .visible) {
+            Button("Go back", role: .destructive) { store.goBackToExcel() }
+            Button("Stay in the app", role: .cancel) {}
+        }
         .sheet(isPresented: $browsing) {
             DropboxBrowser(path: "") { file in
                 browsing = false
                 store.chooseDropbox(file)
             }
         }
+    }
+
+    /* The "Your plan" section once the plan lives in this app: nothing about the workbook. */
+    @ViewBuilder
+    private var appHomeRows: some View {
+        let copies = store.safetyCopies
+        SettingsRow(title: "Lives in this app", sub: store.switchedAt.map { "since " + Self.dayMonthYear($0) } ?? "")
+            .accessibilityIdentifier("plan-home")
+        if let book = store.book {
+            SettingsRow(title: "\(book.sessions.count) sessions · \(book.extras.count) extra activities",
+                        sub: "Everything in the plan, kept on this phone")
+        }
+        SettingsRow(title: "Safety copies",
+                    sub: copies.count == 0 ? "None yet — the first is made when the plan next changes"
+                        : "\(copies.count) day\(copies.count == 1 ? "" : "s"), newest " + (copies.newest.map(Self.dayKeyShort) ?? ""))
+        SettingsRow(title: "Spreadsheet copy",
+                    sub: store.lastSpreadsheetCopy.map { "last " + Self.dayMonth($0) } ?? "none yet",
+                    action: ("Save a copy now", { copyURL = store.spreadsheetCopy() }), actionID: "plan-copy")
+        Text("A copy is also kept every week in Files › On My iPhone › Triathlon.")
+            .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
+        NavigationLink { PlanChangesView() } label: {
+            SettingsRow(title: "Changes to the plan", sub: "\(store.planChanges.count) so far", chevron: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("plan-changes")
+        if store.canGoBack, let until = store.canGoBackUntil {
+            SettingsRow(title: "Go back to Excel",
+                        sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now back into the Excel file in Dropbox.",
+                        action: ("Go back to Excel", { confirmGoBack = true }), actionID: "plan-go-back")
+        }
+        if let why = store.homeProblem {
+            Text(why).font(.footnote).foregroundStyle(Theme.danger).accessibilityIdentifier("plan-problem")
+        }
+    }
+
+    private static func format(_ pattern: String) -> DateFormatter {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_GB")
+        f.dateFormat = pattern
+        return f
+    }
+    private static let dmyFormat = format("d MMM yyyy")
+    private static let dmFormat = format("d MMM")
+    static func dayMonthYear(_ d: Date) -> String { dmyFormat.string(from: d) }
+    static func dayMonth(_ d: Date) -> String { dmFormat.string(from: d) }
+    static func dayKeyShort(_ key: String) -> String {
+        let f = format("yyyy-MM-dd")
+        return f.date(from: key).map(dayMonth) ?? key
     }
 
     private var planLine: String {
@@ -258,12 +327,13 @@ struct FilledSettingsButton: ViewModifier {
 /* A row with a title, a grey line under it and, at most, one small button on the right. */
 struct SettingsRow: View {
     /* Buttons that take something away are red; every other one is green. */
-    static let takesAway: Set<String> = ["Disconnect", "Discard", "Stop", "Take them out"]
+    static let takesAway: Set<String> = ["Disconnect", "Discard", "Stop", "Take them out", "Go back to Excel"]
 
     let title: String
     let sub: String
     var action: (String, () -> Void)? = nil
     var chevron = false
+    var actionID: String? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -275,6 +345,7 @@ struct SettingsRow: View {
             if let action {
                 Button(action.0, action: action.1)
                     .settingsButton(tint: SettingsRow.takesAway.contains(action.0) ? Theme.danger : Theme.today)
+                    .accessibilityIdentifier(actionID ?? "settings-row-action")
             }
             if chevron {
                 Text("›").font(.title2).foregroundStyle(Theme.secondary)

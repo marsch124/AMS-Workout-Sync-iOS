@@ -1,0 +1,181 @@
+import SwiftUI
+import WorkoutCore
+
+/*
+ * Settings → Move the plan into this app. The workbook is taken in and counted
+ * against what the app made of it; he looks at both sides; only his tap on the
+ * switch moves the plan in. Until then nothing is saved, and the Excel file is
+ * never touched.
+ */
+struct MoveInView: View {
+    @EnvironmentObject var store: Store
+    @Environment(\.dismiss) private var dismiss
+    @State private var switched = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The plan moves in").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
+                    .accessibilityIdentifier("movein-title")
+                if switched {
+                    finished
+                } else {
+                    intro
+                    if let taken = store.incoming {
+                        proof(taken)
+                    } else {
+                        Button { store.takePlanIn() } label: {
+                            Text(store.takingIn ? "Counting…" : "Take the plan in and count")
+                                .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                        .buttonStyle(.borderedProminent).tint(Theme.today)
+                        .accessibilityIdentifier("movein-take")
+                    }
+                    if let why = store.homeProblem {
+                        Text(why).font(.footnote).foregroundStyle(Theme.danger)
+                            .accessibilityIdentifier("movein-problem")
+                    }
+                    if store.incoming == nil {
+                        Button("Cancel") { store.cancelTakingIn(); dismiss() }
+                            .settingsButton(tint: Theme.secondary)
+                            .accessibilityIdentifier("movein-cancel")
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 32)
+        }
+        .background(Theme.bg.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        #if DEBUG
+        .onAppear {
+            guard ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] != nil, store.incoming == nil, !store.planLivesHere else { return }
+            store.takePlanIn()
+        }
+        .onChange(of: store.incoming == nil) { _, none in
+            guard !none, ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] == "done" else { return }
+            store.makeAppTheHome()
+            switched = store.planLivesHere
+        }
+        #endif
+    }
+
+    private var intro: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Today the plan lives in the Excel file in Dropbox. Here it moves into this app.")
+            Text("1 · The app takes the file in and counts both sides.")
+            Text("2 · You look at the counts.")
+            Text("3 · You tap the switch. The Excel file is left exactly as it is.")
+        }
+        .font(.subheadline).foregroundStyle(Theme.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func proof(_ taken: PlanImport) -> some View {
+        let proof = taken.proof
+        SectionHeading(text: "Excel and the app, side by side")
+        VStack(spacing: 0) {
+            ForEach(Array(proof.lines.enumerated()), id: \.offset) { index, line in
+                HStack(spacing: 8) {
+                    Text(line.label).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                    Text("Excel \(line.before) · App \(line.after)").font(.subheadline).foregroundStyle(Theme.secondary)
+                    Spacer(minLength: 0)
+                    mark(same: line.same)
+                }
+                .padding(.vertical, 6)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("proof-row-\(index)")
+            }
+        }
+        .padding(.horizontal, 14).padding(.vertical, 4)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+
+        VStack(alignment: .leading, spacing: 4) {
+            if proof.matches {
+                Text("Everything matches.").font(.headline).foregroundStyle(Theme.today)
+            } else {
+                Text("Something differs — nothing was changed.").font(.headline).foregroundStyle(Theme.danger)
+                ForEach(Array(proof.differences.prefix(10).enumerated()), id: \.offset) { _, words in
+                    Text(words).font(.footnote).foregroundStyle(Theme.secondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("proof-verdict")
+
+        if !proof.after.months.isEmpty {
+            SectionHeading(text: "Month by month")
+            VStack(spacing: 0) {
+                ForEach(Array(proof.after.months.enumerated()), id: \.offset) { index, m in
+                    let same = proof.before.months.first { $0.month == m.month } == m
+                    HStack(spacing: 8) {
+                        Text("\(m.label) · \(m.sessions) sessions · \(m.done) done · \(m.missed) missed · \(m.plannedMinutes) planned min · \(m.recordedMinutes) recorded min")
+                            .font(.footnote).foregroundStyle(Theme.text)
+                        Spacer(minLength: 0)
+                        mark(same: same)
+                    }
+                    .padding(.vertical, 5)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("proof-month-\(index)")
+                }
+            }
+            .padding(.horizontal, 14).padding(.vertical, 4)
+            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        }
+
+        if !taken.oddities.isEmpty {
+            SectionHeading(text: "Looked odd in the file")
+            ForEach(Array(taken.oddities.enumerated()), id: \.offset) { index, odd in
+                Text(odd.words).font(.footnote).foregroundStyle(Theme.text)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.surface))
+                    .accessibilityIdentifier("proof-odd-\(index)")
+            }
+            Text("Taken in exactly as written. Nothing was changed; correct any of them later with the pen.")
+                .font(.caption).foregroundStyle(Theme.secondary)
+        }
+
+        if proof.matches {
+            Button {
+                store.makeAppTheHome()
+                switched = store.planLivesHere
+            } label: {
+                Text("Make this app the plan’s home").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent).tint(Theme.today)
+            .accessibilityIdentifier("movein-switch")
+            .padding(.top, 6)
+        }
+        Button("Cancel") { store.cancelTakingIn(); dismiss() }
+            .settingsButton(tint: Theme.secondary)
+            .accessibilityIdentifier("movein-cancel")
+    }
+
+    /* The green tick means "the same" here; a difference is said in words, in red. */
+    @ViewBuilder
+    private func mark(same: Bool) -> some View {
+        if same {
+            DoneTick().scaleEffect(0.8).frame(width: 22, height: 22)
+        } else {
+            Text("differs").font(.caption.weight(.bold)).foregroundStyle(Theme.danger)
+        }
+    }
+
+    private var finished: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Done. The plan lives in this app now.").font(.headline).foregroundStyle(Theme.today)
+                .accessibilityIdentifier("movein-finished")
+            Text("Logging, moving and changing sessions all happen here. Dropbox is no longer read or written.")
+            Text("The Excel file stays where it is, untouched. For three weeks you can go back.")
+            Button { dismiss() } label: {
+                Text("Done").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent).tint(Theme.today)
+            .accessibilityIdentifier("movein-done")
+        }
+        .font(.subheadline).foregroundStyle(Theme.secondary)
+    }
+}
