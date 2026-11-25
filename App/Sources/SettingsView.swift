@@ -212,6 +212,13 @@ struct SettingsView: View {
             .accessibilityIdentifier("plan-dropbox-copy")
         Text("A spreadsheet named \u{201C}Triathlon plan from the app\u{201D}, saved beside your Excel file. It is a copy outside this phone.")
             .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
+        if store.canChangePlan {
+            NavigationLink { ThursdayRidesView() } label: {
+                SettingsRow(title: "Thursday rides", sub: "One easy ride every Thursday, from next Monday to your race", chevron: true)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("plan-rides")
+        }
         NavigationLink { PlanChangesView() } label: {
             SettingsRow(title: "Changes to the plan", sub: "\(store.planChanges.count) so far", chevron: true)
         }

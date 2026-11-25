@@ -79,6 +79,9 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_CHANGES"] != nil {
                 NavigationStack { PlanChangesView() }
             }
+            if ProcessInfo.processInfo.environment["AMSWS_RIDES"] != nil {
+                NavigationStack { ThursdayRidesView() }
+            }
             if ProcessInfo.processInfo.environment["AMSWS_MOVEIN"] != nil {
                 NavigationStack { MoveInView() }
             }
