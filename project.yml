@@ -19,9 +19,10 @@ settings:
 packages:
   WorkoutCore:
     path: Core
-  # TODO main agent: pin to the pushed revision (url: https://github.com/marsch124/AMS-Icons, revision: <hash>) before release
+  # The shared AMS icon hub: every mark this app draws comes from it (its own drawings live there as the tri… marks).
   AMSIcons:
-    path: ../../AMS-Icons
+    url: https://github.com/marsch124/AMS-Icons
+    revision: 142a2cb5374867b25a21cc3de2e552a7a729a6c3
 targets:
   AMSWorkoutSync:
     type: application

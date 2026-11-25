@@ -1220,7 +1220,7 @@ The native reader and writer are line-for-line ports of the web app's, and are p
 
 * `parity.py` (reading, field by field), `write-parity.py` (writing: same parts, same order, same headers and CRC; unchanged parts the same compressed bytes; changed parts the same bytes once unpacked), `stats-parity.py` (Progress figures), `zones-parity.py` (an independent reader in openpyxl).
 * `make-scenarios.py`, `make-edge-books.py` (eight workbooks that reach rare branches: no calcPr, formulas and calcChain in result columns, date-styled dates, the 1904 date system, h:mm:ss durations, one row per section, a stale dimension), `js-dump.js`, `js-write.js` (web app side).
-* `make_assets.py` copies the web app's hand-drawn icons into the asset catalog; `render-icon.js` and `app-icon.svg` make the app icon; `ExportOptions.plist` is the App Store Connect export.
+* The icons come from the central AMS-Icons package since 2.4 (the `tri…` app marks; `make_assets.py` is gone); `render-icon.js` and `app-icon.svg` make the app icon; `ExportOptions.plist` is the App Store Connect export.
 * These need the web app served on `http://localhost:7810/`, Playwright and Chrome. Every change to the writer or to `buildEdits` must be re-run through them before it ships.
 * Build the mapping in any harness with `Plan.mapping(for:)`, never the bare `autoDetect`: otherwise the duration unit stays hours and a harness writes seconds into a minutes column.
 
@@ -2018,7 +2018,7 @@ One idea: **when something is not as it seems, the screen says so in words, and 
 2. **Waiting to sync.** The "Waiting to sync" labels (cards, the session's page) and the waiting headline on a session's page are **grey** (before: green, which means done). Green means done only.
 3. **"Send it now".** In the red warning at the top of Today (logging has waited more than a day; only while the plan is in Excel) the button "Send it now" is **green** (before: red). Red stays for the warning's frame and for things that take something away.
 4. **Words beside marks.** The share mark says **"Send"** (a session's page, and photographs); the flag on Progress says **"The race"**; in Move, "+1" reads **"+1 day"**; the small mark on an extra reads **"Counts as training"** (before: marks alone).
-5. **Sessions, the number on All.** All no longer counts rest days, so All = Done + Missed + Upcoming and matches the bar above the list (before: All was larger).
+5. **Sessions, the four numbers.** No number counts rest days any more (`PlanTab.filterCount`, rule `PlanOverview.countedInAll`; before: Upcoming and All counted rest days still to come, and so did the bar). All = Done + Missed + Upcoming, and the bar is drawn from the same three counts. The lists themselves still show rest days.
 6. **Race day badge.** A race day's badge shows the **flag** (before: the general "other" mark), so the flag means the race everywhere (Progress, the Plan page's season bars, badges).
 
 ### X.4 Icons

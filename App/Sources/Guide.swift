@@ -81,7 +81,7 @@ struct GuideView: View {
         Part(id: "The Sessions tab", body: [
             "Four lists — Upcoming, Done, Missed, All — each with the number of things in it, and under them one bar for the whole plan: solid recorded, hatched missed, light still to come. The words and the bar stay at the top while the list scrolls under them, so choosing another list never means scrolling back.",
             "Sessions and extra workouts are listed together under Done and All, each on the day it happened.",
-            "The number on All does not count rest days (since 2.4; before, All was larger than the three lists added up). So All is Done plus Missed plus Upcoming, and it matches the bar above."
+            "No number here counts rest days (since 2.4; before, Upcoming and All counted them). A rest day is not a session to do. The lists still show rest days. All is Done plus Missed plus Upcoming, and the bar above shows the same three."
         ]),
         Part(id: "On iPad and Mac", body: [
             "On an iPad, and on a Mac (where the app is installed from TestFlight and runs as the iPad app), the tabs are a list down the left side: Today, Plan, Sessions, Progress, Settings, each word in its own colour. The app opens on Today. Tap a row to go there; tap the row you are already on to come back to its first screen. On a Mac, Command and 1 to 5 choose a row, and Escape is Cancel on every page that has Cancel. At the foot of the list the sync dot says, in words, whether the plan is the same on all devices.",
@@ -312,7 +312,7 @@ struct WhatsNewView: View {
             "Fixed: Waiting to sync, and the waiting headline on a session's page, are grey (before: green, which means done). Green now means done and nothing else.",
             "Changed: the button Send it now in the red warning at the top of Today is green (before: red). Red stays for the warning's frame and for things that take something away.",
             "Changed: buttons that were only a mark now carry a word. The share mark says Send, on a session's page and on photographs. The flag on Progress says The race. In Move, +1 now reads +1 day. The small mark on an extra now reads Counts as training.",
-            "Fixed: on Sessions, the number on All no longer counts rest days. All is now Done plus Missed plus Upcoming, and it matches the bar above (before: All was larger).",
+            "Fixed: on Sessions, the numbers no longer count rest days. Before, Upcoming and All counted every rest day still to come as if it were a session, and the bar did too. Now Upcoming holds only sessions to do, All is Done plus Missed plus Upcoming, and the bar shows the same three. Your Upcoming and All numbers are therefore smaller than yesterday, by the number of rest days ahead. The lists still show the rest days.",
             "Fixed: a race day's badge shows the flag (before: the general other mark), so the flag means the race everywhere.",
             "Changed: all the app's hand-drawn marks now come from the central AMS icon library that every AMS app shares. Nothing looks different.",
             "Unchanged: your plan, logging, Missed, Move, Swap, extras, Progress, zones, tests, iCloud, Garmin, the Training calendar, photographs and the neighbour apps' notes. Your Excel file is not touched.",
@@ -465,7 +465,7 @@ struct WhatsNewView: View {
         ]),
         Release(version: "1.1 (64)", date: "12 October 2026", headline: "A bar under the four counts", items: [
             "Under Upcoming, Done, Missed and All there is now one bar for the whole plan: solid for what is recorded, hatched for what was missed, light for what is still to come — the same three signs the week strip on Today uses, in this tab's blue.",
-            "It is counted from the same lists the four numbers are counted from, so the picture and the figures cannot disagree. All is not part of it: that one holds rest days too, which are not sessions anybody does."
+            "It is counted from the same lists the four numbers are counted from, so the picture and the figures cannot disagree. Rest days are in none of them: they are not sessions anybody does."
         ]),
         Release(version: "1.1 (63)", date: "12 October 2026", headline: "+1 moves it to tomorrow", items: [
             "The Move sheet carries a +1 beside its heading: one tap and the session is on tomorrow, without the date wheel. It is the move made most often.",

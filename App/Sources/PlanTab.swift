@@ -218,9 +218,9 @@ struct PlanTab: View {
      * it holds rest days too, which are not sessions anybody does.
      */
     private func planBar(_ view: PlanView) -> some View {
-        let done = rows(.done, view).count
-        let missed = rows(.missed, view).count
-        let todo = rows(.upcoming, view).count
+        let done = filterCount(.done, view)
+        let missed = filterCount(.missed, view)
+        let todo = filterCount(.upcoming, view)
         let total = done + missed + todo
         return GeometryReader { geo in
             let gap: CGFloat = 1.5
@@ -295,10 +295,16 @@ struct PlanTab: View {
      * about the plan, which an extra is never part of: it is logged at the
      * moment it is made.
      */
-    /* The number on a filter: All leaves rest days out, so the filters add up to the plan bar. */
+    /*
+     * The number on a filter. Rest days are not sessions anybody does, so no
+     * number counts them (the lists still show them), and All is the other
+     * three added up: the four numbers and the bar can never disagree.
+     */
     private func filterCount(_ range: Range, _ view: PlanView) -> Int {
-        guard range == .all else { return rows(range, view).count }
-        return PlanOverview.countedInAll(disciplineIds: list(.all, view).map(\.discipline.id), extras: view.extras.count)
+        func count(_ r: Range) -> Int {
+            PlanOverview.countedInAll(disciplineIds: list(r, view).map(\.discipline.id), extras: r == .done ? view.extras.count : 0)
+        }
+        return range == .all ? count(.done) + count(.missed) + count(.upcoming) : count(range)
     }
 
     private func rows(_ range: Range, _ view: PlanView) -> [Row] {
