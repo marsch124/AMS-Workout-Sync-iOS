@@ -64,7 +64,7 @@ struct GuideView: View {
             "To change a session: open it and tap Change. The page Change session has Day, Sport, What you do, Length in minutes, Zone or effort, Purpose and Key session, with Cancel and Save. The session keeps its photographs, its place in the Training calendar and its move history.",
             "To make a new one: Sessions tab → + Session. It opens the page New session.",
             "To take one out: Change → the red button Take out of the plan.",
-            "Settings → Changes to the plan lists every change, newest first, with Before and Now. Tap Undo to undo one; it asks first. What you logged since stays. A change that is undone stays in the list, marked Undone.",
+            "Settings → Changes to the plan lists every change, newest first, with Before and Now. Tap Undo to undo one; it asks first. What you logged since stays. A change that is undone stays in the list, marked Undone. Only the newest change to a session can be undone; an older one says Changed again since.",
             "The app changes the plan only when you tell it to."
         ]),
         Part(id: "Extra workouts", body: [
@@ -184,11 +184,12 @@ struct WhatsNewView: View {
             "Copy in Dropbox: the app also saves the plan there as a spreadsheet, Triathlon plan from the app, beside your Excel file. It is written a little after each change and never read back. Settings → Your plan → Copy in Dropbox shows when.",
             "Go back to Excel: for three weeks a red button writes the plan into your Excel file in Dropbox and makes Excel the plan's home again. If that file changed in the meantime, the app refuses and does nothing. After three weeks the button goes.",
             "New, once the plan lives in the app: on a session's page, Change opens Change session (Day, Sport, What you do, Length in minutes, Zone or effort, Purpose, Key session; Cancel and Save) with a red Take out of the plan. On the Sessions tab, + Session opens New session.",
-            "Settings → Changes to the plan lists every change, newest first, with Before and Now and an Undo button. A change that is undone stays in the list, marked Undone. It never undoes what you logged. A session keeps its photographs, its place in the Training calendar and its move history.",
+            "Settings → Changes to the plan lists every change, newest first, with Before and Now and an Undo button. A change that is undone stays in the list, marked Undone. Only the newest change to a session can be undone; an older one says Changed again since. It never undoes what you logged. A session keeps its photographs, its place in the Training calendar and its move history.",
             "Unchanged: Today, Sessions, Progress, the two questions, Load, Apple Health, the Training calendar and photographs work as before, with the plan in Excel or in the app.",
             "Good to know: a spreadsheet copy does not change after it is made. Until the iPad and Mac versions come, the plan lives on this iPhone only. Your iPhone's own iCloud copy includes it, and so do the safety copies.",
             "Fixed: tapping a tab at the bottom now changes the page at once. It used to slide, and after adding a session the pages could stop half-way between two tabs. Swiping is unchanged.",
             "New: How this works has two new parts, Where the plan lives and Changing the plan. Every other part says what holds before and after the switch. Signs in this app explains the new marks.",
+            "Checked before release: the move was rehearsed on a copy of a real plan, every session and every month compared, and a team of reviewers tried to break it. What they found was fixed first: a change is shown only once it is safely saved, a plan that will not open is put back from its newest safety copy, and the Excel file is read once more at the moment you tap the switch.",
             "Coming next, with no dates: the app on iPad and Mac, a morning check with Garmin numbers, suggestions by the rule book, Claude built in, and links to Workout Companion and Magic Morning."
         ]),
         Release(version: "1.2 (73)", date: "24 November 2026", headline: "A new name, how you feel, how hard it was, and your load", items: [
