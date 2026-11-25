@@ -8,10 +8,20 @@ import WorkoutCore
  */
 struct ZonesView: View {
     @EnvironmentObject var store: Store
+    @State private var entering = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                if store.canChangePlan {
+                    SectionHeading(text: "Your tests")
+                    if !store.tests.isEmpty { TestsList() }
+                    Button { entering = true } label: {
+                        Text("Enter a test result").font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.borderedProminent).tint(Theme.today)
+                    .accessibilityIdentifier("test-enter")
+                }
                 if let z = store.zones {
                     let known = z.current.filter { !$0.value.isEmpty }
                     SectionHeading(text: "In use")
@@ -63,6 +73,12 @@ struct ZonesView: View {
         .background(Theme.bg.ignoresSafeArea())
         .navigationTitle("Your zones")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $entering) { TestEntryView() }
+        .onAppear {
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["AMSWS_TEST"] == "new", store.canChangePlan { entering = true }
+            #endif
+        }
     }
 }
 
