@@ -129,6 +129,8 @@ public struct PlanBook: Codable, Equatable {
     public var sessions: [Workout]
     public var extras: [ExtraRecord]
     public var zones: Zones?
+    /* The test blocks, in order: those with numbers and those still to come. The zones follow the last numbers. */
+    public var tests: [TestResult] = []
     public var weeks: [PlanWeek]
     /* Units and which boxes a session has, as the workbook had them. */
     public var mapping: Mapping
@@ -162,6 +164,7 @@ public struct PlanBook: Codable, Equatable {
         sessions = read
         extras = (try? c.decode([ExtraRecord].self, forKey: .extras)) ?? []
         zones = try? c.decodeIfPresent(Zones.self, forKey: .zones)
+        tests = (try? c.decode([TestResult].self, forKey: .tests)) ?? []
         weeks = (try? c.decode([PlanWeek].self, forKey: .weeks)) ?? []
         origin = (try? c.decode(PlanOrigin.self, forKey: .origin))
             ?? PlanOrigin(fileName: "", takenAt: Date(timeIntervalSince1970: 0), sessions: sessions.count, extras: extras.count)
@@ -515,6 +518,20 @@ public struct PlanBook: Codable, Equatable {
         sessions = PlanBook.inOrder(sessions)
         stamps[change.key] = now
         changes[c].undone = true
+    }
+
+    // MARK: tests and zones
+
+    /*
+     * A test's numbers, entered in the app. The test takes the place of the
+     * one with its name, or joins the end; the zones are then worked out
+     * afresh from the last numbers there are — a zone changes from a test and
+     * from nothing else.
+     */
+    public mutating func record(_ test: TestResult, now: Date = Date()) {
+        if let i = tests.firstIndex(where: { $0.name == test.name }) { tests[i] = test } else { tests.append(test) }
+        zones = zones?.recalculated(from: tests)
+        stamps["tests"] = now
     }
 
     // MARK: weeks and phases

@@ -262,14 +262,25 @@ final class Store: ObservableObject {
         }
         #endif
         if UserDefaults.standard.string(forKey: homeKey) == Home.app.rawValue {
-            if let data = try? Data(contentsOf: bookURL), let saved = try? PlanBook.decoded(data) {
-                home = .app
+            // The flag decides. A plan that lives here is never quietly swapped
+            // for an old copy of the Excel file: he would log into the wrong plan.
+            home = .app
+            if let saved = (try? Data(contentsOf: bookURL)).flatMap({ try? PlanBook.decoded($0) }) {
                 publish(saved)
                 return
             }
-            // The flag says the plan lives here and the book will not open:
-            // say so, and fall back to the last workbook read rather than show nothing.
-            lastProblem = "The plan in this app could not be opened. Its safety copies are safe — see Settings."
+            if let rescued = newestSafetyCopy() {
+                let aside = supportURL.appendingPathComponent("plan-unreadable-\(Int(Date().timeIntervalSince1970)).json")
+                try? FileManager.default.moveItem(at: bookURL, to: aside)
+                try? rescued.data.write(to: bookURL, options: .atomic)
+                publish(rescued.book)
+                lastProblem = "The plan in this app could not be opened, so the safety copy of \(rescued.day) was put back. Anything you changed after that day is missing. The file that would not open is kept."
+                return
+            }
+            let why = "The plan kept in this app could not be opened, and there is no safety copy on this phone. Nothing was changed. The spreadsheet copies in Files and in Dropbox still hold your plan."
+            lastProblem = why
+            phase = .failed(why)
+            return
         }
         if let data = try? Data(contentsOf: cacheURL) {
             parse(data, cached: true)
@@ -661,6 +672,19 @@ final class Store: ObservableObject {
         let all = ((try? fm.contentsOfDirectory(at: backupsURL, includingPropertiesForKeys: nil)) ?? [])
             .filter { $0.lastPathComponent.hasPrefix("plan-") }.sorted { $0.lastPathComponent < $1.lastPathComponent }
         for old in all.dropLast(30) { try? fm.removeItem(at: old) }
+    }
+
+    /* The newest safety copy that still opens. */
+    private func newestSafetyCopy() -> (book: PlanBook, data: Data, day: String)? {
+        let names = ((try? FileManager.default.contentsOfDirectory(atPath: backupsURL.path)) ?? [])
+            .filter { $0.hasPrefix("plan-") && $0.hasSuffix(".json") }.sorted().reversed()
+        for name in names {
+            if let data = try? Data(contentsOf: backupsURL.appendingPathComponent(name)),
+               let book = try? PlanBook.decoded(data) {
+                return (book, data, String(name.dropFirst(5).dropLast(5)))
+            }
+        }
+        return nil
     }
 
     /* How many days have a safety copy, and the newest one's day. */

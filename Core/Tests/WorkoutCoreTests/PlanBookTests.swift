@@ -94,6 +94,23 @@ final class PlanBookTests: XCTestCase {
         XCTAssertEqual(PlanImport.differences(book.sessions, reopened.sessions), [])
     }
 
+    func testATestEnteredInTheAppChangesTheZonesAndNothingElseDoes() throws {
+        var book = try book()
+        let zones = try XCTUnwrap(book.zones, "the test plan has a zones sheet")
+        XCTAssertFalse(book.tests.isEmpty, "the test rows come in with the plan")
+        // Worked out in the app from the same numbers, the tables say what Excel said.
+        XCTAssertEqual(zones.recalculated(from: book.tests).tables, zones.tables)
+
+        let before = try XCTUnwrap(zones.lthr)
+        let next = try XCTUnwrap(book.tests.first { !$0.hasNumbers } ?? book.tests.last)
+        book.record(TestResult(name: next.name, week: next.week, dates: next.dates, lthr: before + 10))
+        XCTAssertEqual(book.zones?.lthr, before + 10)
+        XCTAssertNotEqual(book.zones?.tables.first { $0.kind == .heart }, zones.tables.first { $0.kind == .heart })
+        // A number the new test does not carry stays the last one known.
+        XCTAssertEqual(book.zones?.tables.first { $0.kind == .swim }, zones.tables.first { $0.kind == .swim })
+        XCTAssertEqual(try PlanBook.decoded(try book.encoded()).tests, book.tests)
+    }
+
     func testAWeekHeadingGivesItsMonday() {
         XCTAssertEqual(PlanImport.monday(of: "07 Sep – 13 Sep 2026"), "2026-09-07")
         XCTAssertEqual(PlanImport.monday(of: "28 Dec – 03 Jan 2027"), "2026-12-28")

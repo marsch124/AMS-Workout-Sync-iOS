@@ -124,6 +124,7 @@ public struct PlanImport {
             weeks: weeks.sorted { $0.monday < $1.monday },
             mapping: mapping,
             origin: PlanOrigin(fileName: fileName, takenAt: now, sessions: sessions.count, extras: extras.count))
+        book.tests = tests(workbook)
         // The proof is taken on the book as it comes back off the disk, not on
         // the one in memory: what is stored is what he will be training from.
         book = try PlanBook.decoded(try book.encoded())
