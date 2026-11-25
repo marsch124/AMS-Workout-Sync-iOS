@@ -39,7 +39,7 @@ public enum RuleBook {
 
     public static func evaluate(_ input: RuleBookInput) -> Outcome {
         let order: [(RuleBookInput) -> [Candidate]?] = [
-            section5, cameInBreaking, t3BackAfterBreak, t2MissedKey, hurts, t1Tired, t4LongTooFar, t5BigWeek,
+            section5, cameInBreaking, away, t3BackAfterBreak, t2MissedKey, hurts, t1Tired, t4LongTooFar, t5BigWeek,
             t6Behind, backToBack
         ]
         // A trigger whose every candidate fails gives the next one its turn,

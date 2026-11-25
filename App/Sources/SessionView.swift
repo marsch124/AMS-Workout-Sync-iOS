@@ -64,6 +64,7 @@ struct SessionView: View {
                             }
                         }
                         if !w.phase.isEmpty { Pill(text: w.phase) }
+                        AwayChip(workout: w)
                     }
 
                     // Strength done in Workouts: one line, and one button that logs it.
@@ -75,6 +76,9 @@ struct SessionView: View {
                             .font(.footnote.weight(.semibold)).foregroundStyle(Theme.secondary)
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("open-workouts")
+                    }
+                    if w.discipline.id == "strength" {
+                        NoGymEntry(workout: w, minutes: Int(((Plan.plannedSeconds(w, mapping) ?? 0) / 60).rounded()))
                     }
 
                     ForEach(Array(w.sections.enumerated()), id: \.offset) { _, section in

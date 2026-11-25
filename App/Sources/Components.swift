@@ -98,6 +98,7 @@ struct SessionCard: View {
                     }
                     if workout.missed { Pill(text: "Missed", tint: Theme.danger) }
                     if let label = workout.waitingLabel { Pill(text: label, tint: Theme.secondary) }
+                    AwayChip(workout: workout)
                     if cornerRoom == 0 {
                         PhotoCountPill(count: PhotoStore.shared.count(for: PhotoOwner(workout)))
                     }

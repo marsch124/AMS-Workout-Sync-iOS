@@ -121,6 +121,13 @@ struct RootView: View {
             if let key = ProcessInfo.processInfo.environment["AMSWS_SESSION"] {
                 NavigationStack { SessionView(key: key) }
             }
+            if ProcessInfo.processInfo.environment["AMSWS_AWAY_PAGE"] != nil {
+                NavigationStack { AwayPage() }
+            }
+            if ProcessInfo.processInfo.environment["AMSWS_NOGYM"] != nil, ProcessInfo.processInfo.environment["AMSWS_SESSION"] == nil,
+               let w = store.displayed.first(where: { $0.discipline.id == "strength" && !$0.logged }) ?? store.displayed.first(where: { $0.discipline.id == "strength" }) {
+                NavigationStack { SessionView(key: w.key) }
+            }
             if ProcessInfo.processInfo.environment["AMSWS_REMINDERS_PAGE"] != nil {
                 NavigationStack { RemindersSettingsView() }
             }
