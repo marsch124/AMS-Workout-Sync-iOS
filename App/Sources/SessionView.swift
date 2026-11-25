@@ -76,6 +76,21 @@ struct SessionView: View {
                         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
                     }
 
+                    // Two calm lines of general habit, on a session still to do and on a done one.
+                    if let fuel = SessionAdvice.fuelLine(for: w, mapping) {
+                        Text(fuel).font(.footnote).foregroundStyle(Theme.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("session-fuel")
+                    }
+                    if let protein = SessionAdvice.proteinLine(for: w) {
+                        Text(protein).font(.footnote).foregroundStyle(Theme.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("session-protein")
+                    }
+                    if w.state != .done, !w.missed, let plan = SessionAdvice.intervalSteps(for: w, mapping) {
+                        GarminCard(plan: plan)
+                    }
+
                     if let label = w.waitingLabel {
                         Text("Logged on this phone · " + label.lowercased()).font(.headline).foregroundStyle(Theme.today)
                     }
@@ -338,5 +353,59 @@ struct SessionView: View {
         if let h = w.results["maxHr"] { out.append(("Max heart rate", h.text + " bpm")) }
         if let e = w.results["rpe"] { out.append(("Effort", e.text + " / 10")) }
         return out
+    }
+}
+
+/*
+ * How to build an interval session once in the Garmin Connect app. One line
+ * until it is opened; no account, no network. "Copy the steps" puts the plain
+ * text on the clipboard.
+ */
+private struct GarminCard: View {
+    let plan: IntervalPlan
+    @State private var open = false
+    @State private var copied = false
+
+    init(plan: IntervalPlan) {
+        self.plan = plan
+        #if DEBUG
+        _open = State(initialValue: ProcessInfo.processInfo.environment["AMSWS_GARMIN"] == "1")
+        #endif
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button { open.toggle() } label: {
+                HStack(spacing: 6) {
+                    Text("Build it like this in Garmin Connect").font(.subheadline.weight(.semibold))
+                    Text("\u{203A}").font(.subheadline.weight(.semibold))
+                        .rotationEffect(open ? .degrees(90) : .zero)
+                    Spacer(minLength: 0)
+                }
+                .foregroundStyle(Theme.plan)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("garmin-card")
+            if open {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(SessionAdvice.garminLines(for: plan).enumerated()), id: \.offset) { _, line in
+                        Text(line).font(.footnote).foregroundStyle(Theme.text)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Text(SessionAdvice.garminTemplateLine).font(.footnote).foregroundStyle(Theme.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button(copied ? "Copied" : "Copy the steps") {
+                    UIPasteboard.general.string = SessionAdvice.garminText(for: plan)
+                    copied = true
+                }
+                .settingsButton(tint: Theme.plan)
+                .accessibilityIdentifier("garmin-copy")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
     }
 }
