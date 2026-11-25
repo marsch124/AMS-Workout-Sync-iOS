@@ -46,7 +46,7 @@ struct ICloudPage: View {
                 Button { cloud.syncNow() } label: {
                     Text("Sync now").font(.headline).frame(maxWidth: .infinity, minHeight: 40)
                 }
-                .buttonStyle(.borderedProminent).tint(Theme.settings)
+                .buttonStyle(.borderedProminent).tint(Theme.today)   // the main button is never grey
                 .accessibilityIdentifier("icloud-sync-now")
 
                 SectionHeading(text: "Your devices")
