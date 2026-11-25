@@ -70,6 +70,10 @@ struct BodyView: View {
                 .padding(.horizontal, wide ? 22 : 12)
                 .padding(.bottom, 14)
                 .frame(maxWidth: .infinity)
+                #if DEBUG
+                // For a picture: AMSWS_BODY_SHIFT=<points> moves the page up as if scrolled.
+                .offset(y: -(ProcessInfo.processInfo.environment["AMSWS_BODY_SHIFT"].flatMap { Double($0) } ?? 0))
+                #endif
             }
             .refreshable { await reader.readBody(today: store.today) }
             .background(Theme.bodyGround.ignoresSafeArea())
@@ -94,6 +98,10 @@ struct BodyView: View {
         .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
         .sheet(item: $plate) { w in BodyWorkoutPlate(workout: w) }
         #if DEBUG
+        .task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if ProcessInfo.processInfo.environment["AMSWS_BODY_SHARE"] != nil, let b = reader.bodyShown { makePicture(b) }
+        }
         .task {
             // For a picture: AMSWS_BODY_WORKOUT=0|1… taps that workout on the curve from the start.
             if let n = ProcessInfo.processInfo.environment["AMSWS_BODY_WORKOUT"].flatMap({ Int($0) }),
@@ -160,7 +168,16 @@ struct BodyView: View {
             .environment(\.colorScheme, scheme)
         let renderer = ImageRenderer(content: card)
         renderer.scale = 3
-        if let image = renderer.uiImage { picture = SharedPicture(image: image) }
+        if let image = renderer.uiImage {
+            #if DEBUG
+            // For a picture: AMSWS_BODY_SHARE=1 saves the shared image into the temporary folder instead of opening the share sheet.
+            if ProcessInfo.processInfo.environment["AMSWS_BODY_SHARE"] != nil {
+                try? image.pngData()?.write(to: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("body-share.png"))
+                return
+            }
+            #endif
+            picture = SharedPicture(image: image)
+        }
     }
 
     /* Large and centred, in Body's colour; under it the day and when the numbers were read. */
@@ -496,7 +513,7 @@ struct BodyBars: View {
     var band: ClosedRange<Double>? = nil
     var span: BodyPage.Span = .week
 
-    private static let gutter: CGFloat = 30
+    private static let gutter: CGFloat = 36
 
     private func label(_ i: Int, _ d: BodyDay.DayValue) -> String {
         if span == .week { return String(Dates.short(d.day).prefix(1)) }
@@ -517,7 +534,7 @@ struct BodyBars: View {
                     .frame(height: max(6, height * CGFloat(f.upperBound - f.lowerBound)))
                     .overlay(alignment: .leading) {
                         Text("normal").font(.caption2).foregroundStyle(Theme.secondary)
-                            .lineLimit(1).minimumScaleFactor(0.55).padding(.leading, 3).frame(width: Self.gutter, alignment: .leading)
+                            .lineLimit(1).minimumScaleFactor(0.7).padding(.leading, 4).frame(width: Self.gutter - 3, alignment: .leading)
                     }
                     .offset(y: height * CGFloat(1 - f.upperBound))
             }
@@ -531,6 +548,7 @@ struct BodyBars: View {
                                 RoundedRectangle(cornerRadius: 3.5, style: .continuous)
                                     .fill(Theme.body)
                                     .frame(height: max(4, height * CGFloat(f)))
+                                    .frame(maxWidth: days.count <= 4 ? 26 : .infinity) // four weeks: slim bars, not blocks
                             } else {
                                 Text("–").font(.caption2).foregroundStyle(Theme.secondary)
                             }
@@ -719,6 +737,7 @@ struct BodyPeek: View {
     var body: some View {
         let rows = BodyPage.rows(instrument, day, span: span, history: history)
         NavigationStack {
+            ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
                     // The figure right beside its day, on the left.
@@ -743,7 +762,8 @@ struct BodyPeek: View {
                 }
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 16).padding(.top, 6)
+            .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 12)
+            }
             .background(Theme.bodyGround.ignoresSafeArea())
             .navigationTitle(instrument.title + (span == .week ? " · last 7 days" : " · \(span.title)"))
             .navigationBarTitleDisplayMode(.inline)
