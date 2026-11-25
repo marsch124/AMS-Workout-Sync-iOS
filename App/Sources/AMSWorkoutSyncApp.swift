@@ -129,6 +129,19 @@ struct RootView: View {
                let w = store.displayed.first(where: { $0.discipline.id == "strength" && !$0.logged }) ?? store.displayed.first(where: { $0.discipline.id == "strength" }) {
                 NavigationStack { SessionView(key: w.key) }
             }
+            // Screen walks: the first done session of a sport (AMSWS_DONE=run|bike|swim), or of any sport (=any).
+            // Screen walks: the first planned (not done) session of a sport, e.g. AMSWS_PLANNED=swim.
+            if let sp = ProcessInfo.processInfo.environment["AMSWS_PLANNED"], let w = store.displayed.first(where: { !$0.logged && $0.discipline.id == sp }) {
+                NavigationStack { SessionView(key: w.key) }
+            }
+            let day = ProcessInfo.processInfo.environment["AMSWS_DONE_DAY"]   // optional: only that day
+            if let sp = ProcessInfo.processInfo.environment["AMSWS_DONE"], let w = store.displayed.first(where: { $0.logged && (sp == "any" || $0.discipline.id == sp) && (day == nil || $0.dayKey == day) }) {
+                NavigationStack { SessionView(key: w.key) }
+            }
+            // Screen walks: the Time in zones card alone on a Progress-coloured page (with AMSWS_ZONES_CARD=1).
+            if ProcessInfo.processInfo.environment["AMSWS_ZONES_ONLY"] != nil {
+                ScrollView { ZonesWeekCard().padding(16) }.background(Theme.bg.ignoresSafeArea()).environmentObject(store)
+            }
             if ProcessInfo.processInfo.environment["AMSWS_REMINDERS_PAGE"] != nil {
                 NavigationStack { RemindersSettingsView() }
             }

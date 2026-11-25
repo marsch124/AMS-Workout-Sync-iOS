@@ -52,6 +52,19 @@ struct PlanTab: View {
         var id: String { rawValue }
     }
 
+    private var sessionButtonRow: some View {
+        HStack(spacing: 8) {
+            PlanPrintButton()
+            if store.canChangePlan {
+                Button("+ Session") { addingSession = true }
+                    .settingsButton(tint: Theme.plan)
+                    .accessibilityIdentifier("sessions-add")
+            }
+            ClaudeAskButton(inline: true)
+            Spacer(minLength: 0)
+        }
+    }
+
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
@@ -60,21 +73,18 @@ struct PlanTab: View {
                     // a pinned section header, so choosing another list never
                     // means scrolling back to the top (his ask, 2026-09-29).
                     LazyVStack(alignment: .leading, spacing: 12, pinnedViews: [.sectionHeaders]) {
-                        // The small "+ Session" sits on the heading's line, at its right
-                        // end, so the pinned row of four words is left exactly as he placed it.
-                        HStack(alignment: .firstTextBaseline) {
-                            Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
-                                .accessibilityIdentifier("sessions-title")
-                            Spacer(minLength: 0)
-                            PlanPrintButton()
-                            if store.canChangePlan {
-                                Button("+ Session") { addingSession = true }
-                                    .settingsButton(tint: Theme.plan)
-                                    .accessibilityIdentifier("sessions-add")
-                            }
+                        // The heading stands alone; under it one tidy row of small word buttons
+                        // (Print, + Session, Ask about your plan), so nothing crowds the heading
+                        // on a normal iPhone width. The pinned row of four words is left as he placed it.
+                        Text("Sessions").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text)
+                            .accessibilityIdentifier("sessions-title")
+                            .padding(.top, 12).padding(.horizontal, 16)
+                        ViewThatFits(in: .horizontal) {
+                            sessionButtonRow
+                            ScrollView(.horizontal, showsIndicators: false) { sessionButtonRow }
                         }
-                        .padding(.top, 12).padding(.horizontal, 16)
-                        ClaudeAskButton(inset: 16)
+                        .padding(.horizontal, 16)
+                        ClaudeAskButton(inset: 16, troubleOnly: true)
                         SessionSearchField(query: $query)
                             .padding(.horizontal, 16)
                         if SessionSearch.isActive(query) {

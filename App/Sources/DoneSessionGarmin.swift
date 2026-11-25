@@ -41,8 +41,10 @@ struct DoneSessionGarmin: View {
         }
         #if DEBUG
         if GarminKey.isFake {
-            let rows = LastTime.rows(now: LastTime.Figures(minutes: 62, km: 10.2, hr: 138, rpe: 6),
-                                     last: LastTime.Figures(minutes: 58, km: 9.6, hr: 141, rpe: 7))
+            var n = nowFigures
+            if n.rpe == 0 { n.rpe = 6 }
+            let rows = LastTime.rows(now: n, last: LastTime.Figures(minutes: n.minutes - 4, km: (n.km * 0.94 * 10).rounded() / 10,
+                                                                    hr: n.hr + 3, rpe: n.rpe + 1))
             return LastTimeCard.Card(day: GarminMorning.addDays(workout.dayKey, -7), rows: rows)
         }
         #endif
@@ -157,7 +159,9 @@ private struct RouteMap: View {
 
     var body: some View {
         Map(initialPosition: .rect(Self.rect(coords)), interactionModes: []) {
-            MapPolyline(coordinates: coords).stroke(colour, lineWidth: 4)
+            // A white edge under the line, so a green run stays clear on a green map and a blue swim on blue water.
+            MapPolyline(coordinates: coords).stroke(Color.white, lineWidth: 8)
+            MapPolyline(coordinates: coords).stroke(colour, lineWidth: 4.5)
         }
         .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
     }

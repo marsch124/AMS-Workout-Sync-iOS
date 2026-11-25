@@ -306,17 +306,26 @@ struct PlanPrintSheet: View {
             GeometryReader { geo in
                 if let data {
                     let size = data.kind.pageSize
-                    let scale = min(geo.size.width / size.width, geo.size.height / size.height)
-                    PrintPage(data: data)
-                        .scaleEffect(scale, anchor: .topLeading)
-                        .frame(width: size.width * scale, height: size.height * scale, alignment: .topLeading)
-                        .shadow(color: .black.opacity(0.25), radius: 4, y: 1)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityIdentifier("print-preview")
-                        .accessibilityLabel("Preview: \(data.heading), \(data.sessionCount) sessions")
+                    let fit = min(geo.size.width / size.width, geo.size.height / size.height)
+                    // On a narrow phone the whole page is only a few millimetres of words, so it is shown larger
+                    // and can be dragged around; the printout itself is always the whole page.
+                    let scale = geo.size.width < 500 ? max(fit, 0.95) : fit
+                    let zoom: CGFloat = scale / fit
+                    ScrollView(zoom > 1 ? [.horizontal, .vertical] : []) {
+                        PrintPage(data: data)
+                            .scaleEffect(scale, anchor: .topLeading)
+                            .frame(width: size.width * scale, height: size.height * scale, alignment: .topLeading)
+                            .shadow(color: .black.opacity(0.25), radius: 4, y: 1)
+                            .frame(maxWidth: zoom > 1 ? nil : .infinity, maxHeight: zoom > 1 ? nil : .infinity)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityIdentifier("print-preview")
+                            .accessibilityLabel("Preview: \(data.heading), \(data.sessionCount) sessions")
+                    }
+                    .frame(width: geo.size.width, height: geo.size.height)
                 }
             }
+            Text("Drag the page to read it. The printout is the whole page.").font(.caption).foregroundStyle(Theme.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 8) {
                 Button("Cancel") { dismiss() }
                     .keyboardShortcut(.cancelAction)
@@ -336,6 +345,10 @@ struct PlanPrintSheet: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("print-sheet")
         .sheet(item: $payload) { p in ActivitySheet(items: p.items) }
+        #if DEBUG
+        // Screen walks: AMSWS_PRINT_PDF=1 writes the real PDF into the app's temporary folder as soon as the sheet opens.
+        .onAppear { if ProcessInfo.processInfo.environment["AMSWS_PRINT_PDF"] != nil { _ = makePDF() } }
+        #endif
     }
 
     // MARK: the PDF

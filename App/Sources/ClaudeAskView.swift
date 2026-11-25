@@ -87,16 +87,26 @@ struct ClaudeAskButton: View {
     @ObservedObject private var client = ClaudeClient.shared
     @State private var showing = false
     var inset: CGFloat = 0
+    /* On the Sessions page the button stands in one row with Print and + Session; its calm trouble line is shown under that row. */
+    var inline = false
+    var troubleOnly = false
 
     var body: some View {
         if client.canWrite {
-            if let trouble = client.trouble {
+            if inline && client.trouble == nil {
+                Button("Ask about your plan") { showing = true }
+                    .settingsButton(tint: Theme.plan)
+                    .accessibilityIdentifier("claude-ask-open")
+                    .sheet(isPresented: $showing) { NavigationStack { ClaudeAskView(inSheet: true) } }
+            } else if inline {
+                EmptyView()
+            } else if let trouble = client.trouble {
                 Text(trouble.restLine).font(.footnote).foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, inset)
                     .accessibilityIdentifier("claude-ask-trouble")
-            } else {
+            } else if !troubleOnly {
                 HStack {
                     Button("Ask about your plan") { showing = true }
                         .settingsButton(tint: Theme.plan)

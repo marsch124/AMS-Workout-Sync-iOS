@@ -28,7 +28,12 @@ enum ClaudeDebug {
 
 extension ClaudeClient {
     /* Claude is on (with a key), or a picture switch stands in for it. */
-    var canWrite: Bool { isOn || ClaudeDebug.forced }
+    var canWrite: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_ASK_BUTTON"] != nil { return true }
+        #endif
+        return isOn || ClaudeDebug.forced
+    }
 }
 
 /* The reviews kept on this device, one per week. */
