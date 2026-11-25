@@ -144,13 +144,13 @@ struct SeasonView: View {
         var date = Dates.short(raceDay)
         if let d = parseDayKey(raceDay) { date += " " + String(utc.component(.year, from: d)) }
         let name = SeasonData.raceName(data.raceTitle) ?? "Race"
-        return HStack(spacing: 4) {
+        return RaceSheetLink { HStack(spacing: 4) {
             Spacer(minLength: 0)
             Glyph(name: "icon-race", size: 14).foregroundStyle(Theme.season)
             Text(name + " \u{00B7} " + date)
                 .font(.caption.weight(.semibold)).foregroundStyle(Theme.season)
                 .lineLimit(1)
-        }
+        } }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("season-race")
     }
