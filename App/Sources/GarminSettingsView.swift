@@ -34,6 +34,7 @@ struct GarminSettingsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 if reader.keySaved { connected } else { notConnected }
+                GymFolderSection(today: store.today)
                 Text("The key stays on this device only. The numbers are shown, they never change your plan.")
                     .font(.caption).foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
