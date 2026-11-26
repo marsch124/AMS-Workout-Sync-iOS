@@ -46,6 +46,7 @@
 		4E6B34A71117045A8AB3848B /* RacePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC9FE1BD710D6061C830192E /* RacePage.swift */; };
 		4FEC94AC696B1C83143E08E5 /* BodyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */; };
 		54AE55B92F2529F788232282 /* TestHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500418BE406E5EED0261B44 /* TestHistory.swift */; };
+		56849CD6E19D0F6E102E58A3 /* FeelNote210UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62546944BDC0F336DFE992B6 /* FeelNote210UITests.swift */; };
 		57C9D429EE28AAC34434A4E6 /* AMSIcons in Frameworks */ = {isa = PBXBuildFile; productRef = E5919F8033E8B81CB5A802AE /* AMSIcons */; };
 		59F1F45FFE23F277C18D0890 /* PoolCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F134FA8C0441903261DC2A /* PoolCard.swift */; };
 		5C344D8AF3B4D4BD5C52F7BD /* BodyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3844D13CF50F6EC65408A10 /* BodyView.swift */; };
@@ -204,6 +205,7 @@
 		6090A62F8CCF0EC2AA253E3F /* KeyCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCommands.swift; sourceTree = "<group>"; };
 		61EE91A2E0FEDE026D96EAD4 /* LogExtrasUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExtrasUITests.swift; sourceTree = "<group>"; };
 		6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminActivityUITests.swift; sourceTree = "<group>"; };
+		62546944BDC0F336DFE992B6 /* FeelNote210UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelNote210UITests.swift; sourceTree = "<group>"; };
 		636C2EEA9C94AE6D5D8AAC84 /* Body29GymUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29GymUITests.swift; sourceTree = "<group>"; };
 		698543645804785D12272ACB /* ClaudeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSettingsView.swift; sourceTree = "<group>"; };
 		6D4B7A403EF7D24F842CE496 /* ZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesView.swift; sourceTree = "<group>"; };
@@ -327,6 +329,7 @@
 				DADAAD1BA967E052E18FAFBF /* ClaudeReviewUITests.swift */,
 				94330FB5692E564AA2B91591 /* ClaudeUITests.swift */,
 				3A190B1AB035CA6BDF46BF1F /* FavouritesUITests.swift */,
+				62546944BDC0F336DFE992B6 /* FeelNote210UITests.swift */,
 				6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */,
 				3CD21785F71109598A32492D /* GarminMorningUITests.swift */,
 				95682B3A73FFB74EA927FA9E /* ICloudUITests.swift */,
@@ -733,6 +736,7 @@
 				8AC56DC57B04E7000D243214 /* ClaudeReviewUITests.swift in Sources */,
 				2D300B276F9CD592D072EEFB /* ClaudeUITests.swift in Sources */,
 				25373DDA23B843ADB5C10401 /* FavouritesUITests.swift in Sources */,
+				56849CD6E19D0F6E102E58A3 /* FeelNote210UITests.swift in Sources */,
 				EF8316DBAF2759355B4C2501 /* GarminActivityUITests.swift in Sources */,
 				1DAF8A7B8F008223FA81CAC4 /* GarminMorningUITests.swift in Sources */,
 				D1B3CF6C1C812D872B5308CF /* ICloudUITests.swift in Sources */,
@@ -802,7 +806,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 85;
+				CURRENT_PROJECT_VERSION = 86;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -816,7 +820,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.9;
+				MARKETING_VERSION = 2.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -862,7 +866,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 85;
+				CURRENT_PROJECT_VERSION = 86;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -882,7 +886,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.9;
+				MARKETING_VERSION = 2.10;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
