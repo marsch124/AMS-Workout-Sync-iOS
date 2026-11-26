@@ -119,7 +119,7 @@ actor GarminClient {
     }
 
     /* A call whose failure only means "no number": the key and the connection still end the read. */
-    private func tolerant(_ path: String, _ query: [String: String] = [:]) async throws -> Any? {
+    func tolerant(_ path: String, _ query: [String: String] = [:]) async throws -> Any? {
         do { return try await get(path, query) } catch let f as GarminFailure {
             if f == .noKey || f == .keyRefused || f == .offline { throw f }
             return nil

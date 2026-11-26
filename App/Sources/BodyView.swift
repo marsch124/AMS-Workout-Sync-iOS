@@ -59,6 +59,8 @@ struct BodyView: View {
                                 BodyTile(tile: BodyPage.tile(i, b, span: span, history: reader.history), span: span, tall: wide) { peek = i }
                             }
                         }
+                        // 2.9: the Board's cards the page lacked (Training and Health).
+                        BodyMoreCards(day: b.day, wide: wide) { w, all, day in open(w, among: all, day: day) }
                         shareButton(b)
                         foot
                     } else if !reader.keySaved {
@@ -75,18 +77,29 @@ struct BodyView: View {
                 .offset(y: -(ProcessInfo.processInfo.environment["AMSWS_BODY_SHIFT"].flatMap { Double($0) } ?? 0))
                 #endif
             }
-            .refreshable { await reader.readBody(today: store.today) }
+            .refreshable {
+                await reader.readBody(today: store.today)
+                await BodyMoreCards.read(today: store.today)
+            }
             .background(Theme.bodyGround.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
             // The session's page looks as it does when opened from Today; only the way back is Body's.
             .navigationDestination(for: String.self) { key in SessionView(key: key).tint(Theme.today) }
         }
         .tint(Theme.body)
-        .task { await reader.readBodyIfDue(today: store.today) }
+        .task {
+            await reader.readBodyIfDue(today: store.today)
+            await BodyMoreCards.readIfDue(today: store.today)
+        }
         // A longer view asks Garmin for its days only when he picks it (and at most once in 30 minutes per view).
         .task(id: span) { await reader.readHistoryIfDue(span, today: store.today) }
         .onChange(of: phase) { _, now in
-            if now == .active { Task { await reader.readBodyIfDue(today: store.today) } }
+            if now == .active {
+                Task {
+                    await reader.readBodyIfDue(today: store.today)
+                    await BodyMoreCards.readIfDue(today: store.today)
+                }
+            }
         }
         .onChange(of: reader.keySaved) { _, saved in
             if saved { Task { await reader.readBodyIfDue(today: store.today) } }
@@ -114,10 +127,14 @@ struct BodyView: View {
 
     /* A tap on a workout on the curve only opens a page: the session, the extra, or the workout's own facts. */
     private func open(_ w: BodyDay.Workout, in b: BodyDay) {
-        let all = b.battery?.workouts ?? []
+        open(w, among: b.battery?.workouts ?? [], day: b.day)
+    }
+
+    /* The same for any day's workouts (2.9: the month's list): `all` = every workout of that day. */
+    private func open(_ w: BodyDay.Workout, among all: [BodyDay.Workout], day: String) {
         guard let i = all.firstIndex(of: w) else { return }
         let extras = store.allExtras
-        switch BodyTap.targets(for: all, day: b.day, sessions: store.displayed, extras: extras)[i] {
+        switch BodyTap.targets(for: all, day: day, sessions: store.displayed, extras: extras)[i] {
         case .session(let key):
             path = [key]
         case .extra(let id):
