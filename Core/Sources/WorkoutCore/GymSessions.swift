@@ -2,7 +2,7 @@ import Foundation
 
 /*
  * 2.9 (Body page, Gym sessions): AMS Workout Companion writes its sessions into one file in
- * iCloud Drive (AMS Garmin/Workout Companion sessions.json); the Garmin Board reads the same file.
+ * iCloud Drive (Documents/03 Home/02 IT/01 SW/AMS Triathlon Training/AMS Workout Companion app to Garmin/Workout Companion sessions.json); the Garmin Board reads the same file.
  * These are the Board's reading rules, kept the same: every field checked, a session needs a valid
  * day, newest first, at most 60; the compare line against the session before; the best set per machine.
  * The app only reads; it never writes the file.
