@@ -2,7 +2,7 @@
 
 > **Name note.** This app was called **Workout Sync** up to version 1.1 (72). From 1.2 (73) the shown name is **AMS Triathlon Training**. It is the same app: same bundle id `com.schabbauer.AMSWorkoutSync`, same URL scheme `amsworkoutsync://`, same repository. Source file names, the Xcode target and the Swift package still say "WorkoutSync" or "WorkoutCore". Where this document quotes a text the app shows, the quote is what the code says today (version 1.2 (73)); section 12.6 records the texts that were renamed in 1.2 and the places that keep the old word on purpose.
 
-This document describes the app **as the code is today** (2.16 build 92, 26 November 2026; the last sections, "New in 2.6" to "New in 2.16", are the newest and win where they differ). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
+This document describes the app **as the code is today** (2.17 build 93, 26 November 2026; the last sections, "New in 2.6" to "New in 2.17", are the newest and win where they differ). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
 
 Source layout:
 
@@ -1854,7 +1854,7 @@ The note under the other states: "Your iPhone, iPad and Mac show the same plan o
 
 ### W.7 What 2.2 deliberately does not do
 
-* It never writes to Garmin and puts nothing on the watch; the Garmin numbers never change a plan, and no rule uses them.
+* It never writes to Garmin and puts nothing on the watch; the Garmin numbers never change a plan, and no rule uses them (2.17: except the strength tick, which uses a Garmin strength activity, not a number).
 * It gives no advice and says nothing medical.
 * It sends nothing anywhere but the user's own iCloud (and the read-only request to Garmin from a device that has a key).
 * Photographs are not shared between devices; the Garmin key is not shared; safety copies are per device. The spreadsheet copy in Dropbox is written by the iPhone only.
@@ -1972,7 +1972,7 @@ Row `settings-suggestions` under "Changes to the plan" in Settings → Your plan
 ### V.8 What 2.3 deliberately does not do
 
 * It never changes the plan without a tap. It never adds a session, lengthens, hardens, makes up the missed, or touches a test, a race simulation, the race or race week.
-* It is never driven by sleep, resting pulse, Body Battery, stress or HRV; Garmin's numbers still never reach a rule.
+* It is never driven by sleep, resting pulse, Body Battery, stress or HRV; Garmin's numbers still never reach a rule (2.17: except the strength tick of a session; see "New in 2.17").
 * It never speaks like a doctor: fixed words, the footer on every card, the Stop sign sends him to a doctor, not to a number.
 * Claude never decides whether a card appears, never adds a choice, never changes the plan and never receives the key's owner's name, photographs, notes, tests, weight, or Health's and Garmin's morning numbers (walks and hikes of 30 minutes or more the watch recorded go as extras, as listed above).
 * The cards, his answers to them and the Claude key, switch, count and log are per device; the iPad and Mac make no cards. The pause and the illness steps are shared through iCloud (`pause.json`), and stay per device only with iCloud off.
@@ -2191,7 +2191,7 @@ GitHub's test run (`.github/workflows/tests.yml`) gives up on a test machine tha
 
 ### B.9 What 2.6 deliberately does not do
 
-It does not change any plan, make any suggestion (sleep least of all), write anything to Garmin, or replace the Mac's AMS Garmin Board.
+It does not change any plan (2.17: except that a Garmin strength activity can tick a planned strength session, outside this page), make any suggestion (sleep least of all), write anything to Garmin, or replace the Mac's AMS Garmin Board.
 
 ### B.10 Tests
 
@@ -2679,3 +2679,28 @@ His asks: strength ticks itself like mobility; the origin line on every device; 
 * **Identifiers.** `mobility-sources` (new); `neighbour-done`, `neighbour-log`, `open-workouts`, `stretch-line` unchanged.
 * **Words in the app.** What's new has "2.16 (92)"; How this works changed in Your two neighbour apps (Strength ticked from Workout Companion, Mobility count, Mobility ticked from Magic Morning) and Signs in this app.
 * **Tests.** Data: `Tick216Tests` (strength ticks: only today and earlier, 14 days back; first session of a day; each note once; logged, missed or waiting left alone; minutes or planned length; effort; fallback when neither; origin stored and cleared; mobility count by source).
+
+## New in 2.17 (93) — Strength ticked from Garmin, the strength count (26 Nov 2026)
+
+Version shown: 2.17 (93), 26 November 2026. The base is the released 2.16 (92). His asks: strength ticks itself from the Garmin watch too, on any device with a key; Progress counts the month's strength.
+
+* **A. Strength count on Progress.** In the Load card, directly under "Mobility: 3 from Magic Morning · 1 by hand" (`mobility-sources`), a new grey line "Strength: 3 of 4 this month" (invented numbers), identifier `strength-month`, computed by `NeighbourRules.strengthMonth(_:today:)` giving (done, planned). It counts the plan's strength sessions in this calendar month from the 1st up to and including today: done = logged as done; planned = all of them in that span. A missed session counts as not done (it is in planned only). Sessions later this month are not counted yet. Shown once this month has at least one planned strength session up to today (on the 1st of a month with no strength that day it is hidden). iPhone, iPad and Mac. A count, never a judgement; nothing reacts to it.
+* **B. Strength ticked from Garmin.** `GarminStrengthTick.run(store:)` (app) runs when the app comes to the front (foreground hook) and when Today appears (Today's `.task`), after `Neighbours.tickFromNeighbours` (so Workout Companion comes first on the iPhone). It runs on any device where the Garmin key is saved (iPhone, iPad or Mac; the key is per device, Settings → Garmin); without a key it does nothing and nothing changes.
+* **What is asked.** Garmin's activities of the last 14 days (the same activity list as the done-session reader, read only). Nothing is written to Garmin.
+* **How often.** At most once every 10 minutes (the last try is kept in UserDefaults `garmin.strengthTick.lastTried`, per device), and only when a strength session is still to do in those 14 days (otherwise Garmin is not asked at all).
+* **What ticks.** A Garmin strength activity of 600 seconds or more ticks a planned strength session still to do on the same day. The session is logged as done through the ordinary logging (`Store.log`) with the activity's minutes as its time. No effort goes in (Garmin does not hold the 1-10), so How hard was it? can still be asked.
+* **Which days.** Today and the 13 days before; never a day ahead. Only the first strength session still to do on a day; one session per activity.
+* **Left alone.** A session marked missed or waiting to be sent. A session that already had a log, even one he cleared, is never ticked from Garmin (a session with a `log:` stamp in the book is skipped), so clearing a Garmin tick sticks, on every device.
+* **Once, on every device.** Each Garmin activity ticks one session once. The activity is remembered in the log itself: `LogEntry.tickedFrom` is "garmin:<activity id>" and travels with the log through iCloud (like "morning" and "workouts" since 2.16), so another device sees the activity as used.
+* **Workout Companion first.** On the iPhone a Workout Companion note ticks the session before Garmin is asked; Garmin then finds the session done and leaves it.
+* **Core.** `NeighbourRules.garminStrengthTicks(todo:activities:used:today:)` (pure): one per day, the first unused strength activity of 600 seconds or more on that day, by start time; days <= today. `NeighbourRules.garminIdsUsed(_:)`: the activity ids from logs whose `tickedFrom` is "garmin:<activity id>". `NeighbourRules.tickedLine(from:)` now also gives "Ticked from Garmin" for "garmin:…" (and still "Ticked from Magic Morning" for "morning", "Ticked from Workout Companion" for "workouts").
+* **Words.** The session shows the grey line "Ticked from Garmin" on Today and on its page (`NeighbourDoneLine`), on iPhone, iPad and Mac.
+* **Excel copy.** Unchanged: the field is kept out of the Excel copy and the copy check; the Done box still says Yes.
+* **Undo.** Open the session and change or clear the log; clearing removes the mark and the session is never ticked from Garmin again.
+* **C. Unchanged.** Mobility is still ticked from Magic Morning only; the Mobility count is as in 2.16. Strength from Workout Companion is as in 2.16.
+* **Garmin and the plan.** The earlier statements that Garmin data never reaches the plan or the log now carry the exception: the strength tick (a Garmin strength activity ticks a planned strength session). Garmin's numbers (morning line, Body) still reach no plan, no rule and no suggestion.
+* **Signs.** New grey lines: "Ticked from Garmin" and "Strength: n of n this month"; both are notes, not judgements. The tick (done) keeps its one meaning.
+* **Identifiers.** `strength-month` (new); `mobility-sources`, `neighbour-done`, `stretch-line` unchanged.
+* **DEBUG switch.** `AMSWS_FAKE_GARMIN=1` (see 14.6) now also gives an invented 40-minute strength activity today, for pictures and screen tests.
+* **Words in the app.** What's new has "2.17 (93)"; How this works changed in Strength ticked from Garmin (new), Mobility count and Strength count, Strength ticked from Workout Companion, the Garmin parts and Signs in this app.
+* **Tests.** Data: `Tick217Tests` (one per day, first unused activity of 10 minutes or more; under 10 minutes ticks nothing; only today and the 13 days before; each activity once; logged, cleared, missed or waiting left alone; the "garmin:" mark stored, read and cleared; the tick line; the strength count). Screen: `GarminTick217UITests` (the fake activity ticks the session and the grey line "Ticked from Garmin" and the `strength-month` line show).

@@ -67,6 +67,13 @@ struct LoadCard: View {
         return "Mobility: \(n.fromMorning) from Magic Morning · \(n.byHand) by hand"
     }
 
+    /* "Strength: 3 of 4 this month"; nil until this month has a planned strength session up to today. */
+    private var strengthLine: String? {
+        let n = NeighbourRules.strengthMonth(store.displayed, today: store.today)
+        guard n.planned > 0 else { return nil }
+        return "Strength: \(n.done) of \(n.planned) this month"
+    }
+
     private func figure(_ n: Double?) -> String {
         guard let n else { return "—" }
         return Self.number.string(from: NSNumber(value: n.rounded())) ?? "\(Int(n.rounded()))"
@@ -136,6 +143,11 @@ struct LoadCard: View {
             if let line = mobilityLine {
                 Text(line).font(.caption).foregroundStyle(Theme.secondary)
                     .accessibilityIdentifier("mobility-sources")
+            }
+            // 2.17: this month's strength sessions so far — done, of planned. On every device.
+            if let line = strengthLine {
+                Text(line).font(.caption).foregroundStyle(Theme.secondary)
+                    .accessibilityIdentifier("strength-month")
             }
 
             if !board.toScore.isEmpty {

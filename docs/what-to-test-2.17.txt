@@ -1,0 +1,19 @@
+AMS Triathlon Training 2.17 (93) - what to test
+
+This version has two new things: a strength session now also ticks itself from your Garmin watch, and Progress counts your strength sessions for the month. Say what you saw if anything looks wrong.
+
+1. On the Garmin watch, record a Strength activity of 10 minutes or more on a day that has a planned strength session in Triathlon (do not use Workout Companion for it). Let it sync to Garmin Connect. Then open Triathlon on a device where your Garmin key is saved (iPhone, iPad or Mac).
+
+2. The strength session of that day should now be done by itself, with the activity's minutes as its time. Nothing to tap. A grey line should say Ticked from Garmin, on Today and on the session's page. No effort is filled in; How hard was it? can still be asked. It can take up to 10 minutes before the app asks Garmin again.
+
+3. Open Progress and look at the Load card. Under the Mobility line there should be a grey line like Strength: 3 of 4 this month. It counts this month's planned strength sessions up to today: how many are done, out of how many were planned.
+
+4. Open the Garmin-ticked session and clear its log. Close the app, open it again, and look on another device too. The session should stay cleared and not be ticked again.
+
+5. Workout Companion still comes first: on the iPhone, finish a workout in Workout Companion on a day with a planned strength session. The grey line should say Ticked from Workout Companion, not Ticked from Garmin.
+
+6. Things that should stay as they are: a session you marked missed is left alone, a day ahead is never ticked, only the first strength session still to do on a day is ticked, and Mobility is still ticked from Magic Morning only. Without a Garmin key nothing changes.
+
+7. Undo, only if you want it: open the session and change or clear the log.
+
+Only your own devices can prove these: the real watch activity in Garmin Connect, and the iCloud arrival on the iPad and the Mac.

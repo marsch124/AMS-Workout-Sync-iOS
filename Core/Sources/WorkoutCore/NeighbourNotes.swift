@@ -303,13 +303,60 @@ public enum NeighbourRules {
     /* The note's `from` as it goes into the log (2.16): "morning" for Magic Morning, else "workouts". */
     public static func tickSource(_ note: NeighbourDone) -> String { note.from == "morning" ? "morning" : "workouts" }
 
-    /* "Ticked from Magic Morning" / "Ticked from Workout Companion" for a log's `tickedFrom`; nil when logged by hand. */
+    /* "Ticked from Magic Morning" / "… Workout Companion" / "… Garmin" (2.17) for a log's `tickedFrom`; nil when logged by hand. */
     public static func tickedLine(from: String?) -> String? {
         switch from {
         case "morning": return "Ticked from Magic Morning"
         case "workouts": return "Ticked from Workout Companion"
+        case let f? where f == "garmin" || f.hasPrefix("garmin:"): return "Ticked from Garmin"
         default: return nil
         }
+    }
+
+    /*
+     * Strength ticked from Garmin (2.17): per day up to today, the first strength session still to do gets
+     * the first Garmin strength activity of that day (by start time) that is 10 minutes or longer and not
+     * used yet. `used` holds the activity ids already in a log (`garminIdsUsed`).
+     */
+    public static let garminMinimumSeconds: Double = 600
+
+    public static func garminStrengthTicks(todo: [(key: String, day: String)], activities: [GarminActivitySummary],
+                                           used: Set<Int> = [], today: String) -> [(key: String, activity: GarminActivitySummary)] {
+        let strength = activities
+            .filter { GarminActivity.family(ofGarmin: $0.typeKey) == "strength" && $0.seconds >= garminMinimumSeconds }
+            .sorted { ($0.startGMT ?? .distantPast, $0.id) < ($1.startGMT ?? .distantPast, $1.id) }
+        var taken = used
+        var days = Set<String>()
+        var out: [(key: String, activity: GarminActivitySummary)] = []
+        for s in todo.sorted(by: { $0.day < $1.day }) where s.day <= today && !days.contains(s.day) {
+            guard let a = strength.first(where: { $0.day == s.day && !taken.contains($0.id) }) else { continue }
+            out.append((key: s.key, activity: a))
+            taken.insert(a.id)
+            days.insert(s.day)
+        }
+        return out
+    }
+
+    /* "garmin:<activity id>" — what a Garmin tick leaves in the log. */
+    public static func garminSource(_ a: GarminActivitySummary) -> String { "garmin:\(a.id)" }
+
+    /* The Garmin activities already used by a tick, read from the logs themselves — the same on every device. */
+    public static func garminIdsUsed(_ sessions: [Workout]) -> Set<Int> {
+        Set(sessions.compactMap { w in
+            guard let from = tickedFrom(w), from.hasPrefix("garmin:") else { return nil }
+            return Int(from.dropFirst("garmin:".count))
+        })
+    }
+
+    /* Progress (2.17): the plan's strength sessions from the 1st of this month up to today — done, of planned. Missed = not done. */
+    public static func strengthMonth(_ sessions: [Workout], today: String) -> (done: Int, planned: Int) {
+        let month = String(today.prefix(7))
+        var done = 0, planned = 0
+        for w in sessions where w.discipline.id == "strength" && w.dayKey.hasPrefix(month) && w.dayKey <= today {
+            planned += 1
+            if w.logged && !w.missed && w.pending?.missed != true { done += 1 }
+        }
+        return (done, planned)
     }
 
     /* Where a session's tick came from: what is waiting to be written first, else what the plan holds. */

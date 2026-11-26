@@ -29,6 +29,7 @@ struct AMSWorkoutSyncApp: App {
                         Task { await Diary.shared.readHealth(today: store.today) }
                         Neighbours.shared.cameToFront(today: store.today)
                         Neighbours.shared.tickFromNeighbours(store: store)
+                        Task { await GarminStrengthTick.run(store: store) }
                     }
                     // Going to the background: what was just logged goes to iCloud now, not at the next opening.
                     if phase == .background { store.cloud.goingToBackground() }
