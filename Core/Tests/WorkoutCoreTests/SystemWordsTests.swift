@@ -68,6 +68,11 @@ final class SystemWordsTests: XCTestCase {
         let url = URL(string: text)!
         XCTAssertEqual(SystemLink.sessionKey(host: url.host, path: url.path), key)
         XCTAssertNil(SystemLink.sessionKey(host: "today", path: ""))
+        // 2.11: the page links for AMS Deck Mate's page group "Triathlon".
+        XCTAssertEqual(SystemLink.page(host: "plan"), "plan")
+        XCTAssertEqual(SystemLink.page(host: "Body"), "body")
+        XCTAssertNil(SystemLink.page(host: "today"))   // Today has its own link, as before
+        XCTAssertNil(SystemLink.page(host: "session"))
     }
 
     func testKeysListAndNewSessionDay() {

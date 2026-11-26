@@ -73,6 +73,8 @@ final class SpotlightIndex {
 enum SystemTarget {
     case today
     case session(String)
+    /* 2.11: a page by its name in `SystemLink.pages` (plan, sessions, body, progress, settings). */
+    case page(String)
 }
 
 /*
@@ -88,6 +90,7 @@ private struct SystemLinks: ViewModifier {
             .onOpenURL { url in
                 if url.host == "today" { open(.today) }
                 else if let key = SystemLink.sessionKey(host: url.host, path: url.path) { open(.session(key)) }
+                else if let page = SystemLink.page(host: url.host) { open(.page(page)) }
             }
             .onContinueUserActivity(CSSearchableItemActionType) { activity in
                 if let key = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String { open(.session(key)) }

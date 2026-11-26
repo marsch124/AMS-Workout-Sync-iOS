@@ -2,7 +2,7 @@
 
 > **Name note.** This app was called **Workout Sync** up to version 1.1 (72). From 1.2 (73) the shown name is **AMS Triathlon Training**. It is the same app: same bundle id `com.schabbauer.AMSWorkoutSync`, same URL scheme `amsworkoutsync://`, same repository. Source file names, the Xcode target and the Swift package still say "WorkoutSync" or "WorkoutCore". Where this document quotes a text the app shows, the quote is what the code says today (version 1.2 (73)); section 12.6 records the texts that were renamed in 1.2 and the places that keep the old word on purpose.
 
-This document describes the app **as the code is today** (2.10 build 86, 26 November 2026; the last sections, "New in 2.6" to "New in 2.10", are the newest and win where they differ). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
+This document describes the app **as the code is today** (2.11 build 87, 26 November 2026; the last sections, "New in 2.6" to "New in 2.11", are the newest and win where they differ). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
 
 Source layout:
 
@@ -2564,3 +2564,29 @@ On the Body page each card's own colour only tells the cards apart; it means not
 ### F.5 Not changed
 
 The plan, logging, suggestions by the rule book, the Stop sign and I'm ill, the neighbour apps' notes and the Excel file.
+
+## New in 2.11 (87) — a link to every page
+
+Version shown: 2.11 (87), 26 November 2026. The base is the released 2.10 (86). The owner asked for AMS Deck Mate (his Stream Deck app, Mac 0.24) to open Triathlon's pages, which needs a link for each page. Nothing on any screen changed. All examples are invented.
+
+### G.1 The links
+
+* **Before.** One page link existed, `amsworkoutsync://today`, besides `amsworkoutsync://session/<id>`. Deck Mate's keys Plan, Body, Progress and Settings only brought Triathlon to the front.
+* **Now.** Five more host names are known: `plan`, `sessions`, `body`, `progress`, `settings`. With `today` there are six page links: `amsworkoutsync://today`, `://plan`, `://sessions`, `://body`, `://progress`, `://settings`.
+* **Core (`SystemWords.swift`).** `SystemLink.pages` lists the five names. `SystemLink.page(host:)` returns the page for a host name, or nothing when the name is not one of them. `SystemTarget.page(String)` is the new target that carries the name. The `today` link and the `session/<id>` link are unchanged, and so is their handling.
+* **iPhone.** The tab is chosen by name: the tab whose name equals the host opens. The iPhone has no Sessions tab, so `sessions` is mapped to `plan` and the Plan tab opens.
+* **iPad and Mac.** The side list row is chosen with `SideRow(rawValue:)` from the name, so `plan`, `sessions`, `body`, `progress` and `settings` each open their own row.
+* **Unknown names.** A host that is not in the list opens nothing and changes nothing.
+* **Other apps.** The links work from any app that can open a link: Shortcuts, Raycast, PARAGON, Safari and Deck Mate. A link only opens a page; it never changes the plan or logs anything.
+
+### G.2 Why: Deck Mate's page group Triathlon (Mac 0.24, in AMS Deck Mate)
+
+The group shows whenever Triathlon is in front on the Mac. Keys: Training today, Today (green), Plan (blue), Body (pink), Progress (purple), Body Battery, Sleep, Resting pulse, Stress, Steps (these five from the Garmin Board), the Ironman plan, Workouts, Workouts 7 days, Settings (slate) and a key back to AMS Deck. The colours are Triathlon's own page colours. Its keys Plan, Body, Progress and Settings use the links above. Deck Mate's side is described in Deck Mate's own specification.
+
+### G.3 Signs and colours
+
+No new mark, button or colour in this app. How this works has a short part, Open Triathlon from other apps, inside Keys, Spotlight and Siri, and a paragraph in Signs in this app.
+
+### G.4 Not changed
+
+The screens, the plan, logging, Spotlight (its session links), Siri and Shortcuts phrases, the neighbour apps' notes, the Excel file.

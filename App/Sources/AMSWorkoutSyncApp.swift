@@ -108,10 +108,17 @@ struct RootView: View {
         }
         // Round 28: amsworkoutsync://session/<key> and a Spotlight result open that session's page; Spotlight is kept up to date.
         .systemLinks { target in
-            guard case .session(let key) = target else { return }
-            tab = "today"
-            todayPath = NavigationPath()
-            todayPath.append(key)
+            switch target {
+            case .session(let key):
+                tab = "today"
+                todayPath = NavigationPath()
+                todayPath.append(key)
+            case .page(let name):
+                // 2.11: the page's tab; the iPhone has no Sessions tab, so "sessions" opens Plan.
+                tab = name == "sessions" ? "plan" : name
+            case .today:
+                break   // the .onOpenURL above already opened Today
+            }
         }
     }
 

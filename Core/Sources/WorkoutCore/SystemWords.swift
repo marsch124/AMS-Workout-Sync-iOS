@@ -178,6 +178,16 @@ public enum SystemLink {
         "amsworkoutsync://session/" + (key.addingPercentEncoding(withAllowedCharacters: safe) ?? key)
     }
 
+    /* 2.11 — the pages a link opens (AMS Deck Mate's page group "Triathlon"): amsworkoutsync://plan, …/sessions,
+       …/body, …/progress, …/settings. amsworkoutsync://today stays as it was. */
+    public static let pages = ["plan", "sessions", "body", "progress", "settings"]
+
+    /* The page a link names in its host, or nil when it names none of `pages`. */
+    public static func page(host: String?) -> String? {
+        guard let name = host?.lowercased(), pages.contains(name) else { return nil }
+        return name
+    }
+
     /* The session key in a link's host and path (the path already decoded, as URL gives it), or nil if the link is not a session link. */
     public static func sessionKey(host: String?, path: String) -> String? {
         guard host == "session" else { return nil }

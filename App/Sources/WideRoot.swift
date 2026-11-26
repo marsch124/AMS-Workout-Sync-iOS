@@ -82,12 +82,17 @@ struct WideRoot: View {
             SessionEditView(key: nil, draft: SessionDraft(dayKey: day.id, sport: "run")).environmentObject(store)
         }
         .systemLinks { target in
-            selection = .today
             switch target {
-            case .today: todayPath = NavigationPath()
+            case .today:
+                selection = .today
+                todayPath = NavigationPath()
             case .session(let key):
+                selection = .today
                 todayPath = NavigationPath()
                 todayPath.append(key)
+            case .page(let name):
+                // 2.11: amsworkoutsync://plan and the other pages pick that row of the side list.
+                if let row = SideRow(rawValue: name) { selection = row }
             }
         }
     }

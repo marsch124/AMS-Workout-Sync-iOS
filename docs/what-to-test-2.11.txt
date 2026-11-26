@@ -1,0 +1,19 @@
+AMS Triathlon Training 2.11 (87) - what to test
+
+This version has one new thing: a link to every page. Nothing on the screens changed. Say what you saw if anything looks wrong.
+
+1. The links in Safari. Type amsworkoutsync://plan in Safari's address bar. Triathlon should open on Plan. Then try amsworkoutsync://body, amsworkoutsync://progress, amsworkoutsync://settings and amsworkoutsync://today. Each should open its own page.
+
+2. Sessions on an iPhone. amsworkoutsync://sessions should open the Plan tab (the iPhone has no Sessions tab). On an iPad or a Mac it should open Sessions in the side list.
+
+3. iPad and Mac. Each link should choose the matching row in the side list, even when Triathlon was already open on another page.
+
+4. A wrong name. Try amsworkoutsync://nothing. Triathlon may come to the front but should stay as it was, with nothing changed.
+
+5. Deck Mate (Mac 0.24). With Triathlon in front, the page group Triathlon should show. Press Plan (blue), Body (pink), Progress (purple), Settings (slate) and Today (green): each should open its own page, not only bring Triathlon to the front. Check the other keys: Training today, Body Battery, Sleep, Resting pulse, Stress, Steps, Ironman plan, Workouts, Workouts 7 days, and the key back to AMS Deck.
+
+6. Other apps. Make a Shortcut with Open URL amsworkoutsync://progress, or type it in Raycast. It should open Progress.
+
+7. Nothing else moved. Spotlight results still open their session, Siri's phrases still work, and Today, Body, Progress and Settings look as before.
+
+Only your own devices can prove these: the links from Safari, Shortcuts and Raycast, the side list choice on an iPad and a Mac, and Deck Mate's Triathlon keys.
