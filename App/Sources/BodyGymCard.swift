@@ -4,9 +4,9 @@ import WorkoutCore
 
 /*
  * 2.9 lane "gym": the Gym sessions card on the Body page. The machines, sets and weights are logged in
- * AMS Workout Companion, which writes them into AMS Garmin/Workout Companion sessions.json in iCloud
+ * AMS Workout Companion, which writes them into AMS Workout Companion app to Garmin/Workout Companion sessions.json in iCloud
  * Drive (the Garmin Board reads the same file). The app may not read another folder unless he picks it,
- * so he chooses the "AMS Garmin" folder once (Settings › Garmin, or the card); the choice is kept on this
+ * so he chooses the "AMS Workout Companion app to Garmin" folder once (renamed from "AMS Garmin" on 26 Nov 2026, his ask) (Settings › Garmin, or the card); the choice is kept on this
  * device as a security-scoped bookmark. The app only reads the file; it never writes it.
  */
 @MainActor
@@ -52,7 +52,7 @@ final class GymReader: ObservableObject {
         lastToday = today
         if Self.fake {
             if Self.fakeNoFolder { state = .noFolder; sessions = []; folderName = nil } else {
-                sessions = Self.invented(today: today); state = .ready; folderName = "AMS Garmin"
+                sessions = Self.invented(today: today); state = .ready; folderName = "AMS Workout Companion app to Garmin"
             }
             lastRead = Date()
             return
@@ -169,8 +169,8 @@ struct GymCard: View {
 
     @ViewBuilder private var empty: some View {
         Text(reader.state == .noFile
-             ? "No gym sessions found in that folder yet. They appear once AMS Workout Companion has saved one to AMS Garmin."
-             : "Your gym sessions come from AMS Workout Companion. Tap Choose folder and pick AMS Garmin in iCloud Drive — once.")
+             ? "No gym sessions found in that folder yet. They appear once the Workout Companion app has saved one there."
+             : "Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once.")
             .font(.caption).foregroundStyle(Theme.secondary)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityIdentifier("body-gym-empty")
@@ -256,7 +256,7 @@ struct GymCard: View {
     }
 }
 
-/* Settings › Garmin: where he chooses the AMS Garmin folder once. */
+/* Settings › Garmin: where he chooses the AMS Workout Companion app to Garmin folder once. */
 struct GymFolderSection: View {
     let today: String
     @ObservedObject private var reader = GymReader.shared
@@ -265,12 +265,12 @@ struct GymFolderSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Gym sessions").font(.headline).foregroundStyle(Theme.settings)
-            Text("From AMS Workout Companion, as on your Garmin Board.")
+            Text("From the Workout Companion app, as on your Garmin Board.")
                 .font(.footnote).foregroundStyle(Theme.secondary)
             if reader.hasFolder {
                 HStack(spacing: 8) {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(reader.folderName ?? "AMS Garmin").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
+                        Text(reader.folderName ?? "AMS Workout Companion app to Garmin").font(.body.weight(.semibold)).foregroundStyle(Theme.text)
                             .accessibilityIdentifier("garmin-gym-folder")
                         Text(reader.newest.map { "Newest session: " + GymSessions.dayText($0.date) } ?? "No session found in it yet")
                             .font(.footnote).foregroundStyle(Theme.secondary)
@@ -282,8 +282,11 @@ struct GymFolderSection: View {
                         .accessibilityIdentifier("garmin-gym-change")
                 }
             } else {
+                Text("In iCloud Drive: AMS Workout Companion app to Garmin")
+                    .font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
+                    .accessibilityIdentifier("garmin-gym-where")
                 Button { choosing = true } label: {
-                    Text("Choose the AMS Garmin folder").font(.body.weight(.semibold)).foregroundStyle(.white)
+                    Text("Choose the folder").font(.body.weight(.semibold)).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 10)
                         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.settings))
                 }
