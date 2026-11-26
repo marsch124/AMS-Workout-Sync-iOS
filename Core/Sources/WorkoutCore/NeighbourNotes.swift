@@ -267,6 +267,27 @@ public enum NeighbourRules {
         return distinct(notes).first { $0.kind == "strength" && $0.day == day && !used.contains($0.id ?? "") }
     }
 
+    /*
+     * Mobility ticked from Magic Morning (2.15): each planned mobility session still to do, on a day up to
+     * today that has a stretch note not used yet, gets that note — the first such session of a day only,
+     * each note once. `todo` holds the sessions still to do (key and day); `used` the note ids already logged.
+     */
+    public static func mobilityTicks(todo: [(key: String, day: String)], notes: NeighbourNotes?, used: Set<String> = [],
+                                     today: String) -> [(key: String, note: NeighbourDone)] {
+        guard let notes, (notes.format ?? NeighbourNotes.knownFormat) <= NeighbourNotes.knownFormat else { return [] }
+        let stretches = distinct(notes).filter { $0.kind == "stretch" && !($0.id ?? "").isEmpty }
+        var taken = used
+        var days = Set<String>()
+        var out: [(key: String, note: NeighbourDone)] = []
+        for s in todo.sorted(by: { $0.day < $1.day }) where s.day <= today && !days.contains(s.day) {
+            guard let note = stretches.first(where: { $0.day == s.day && !taken.contains($0.id ?? "") }), let id = note.id else { continue }
+            out.append((key: s.key, note: note))
+            taken.insert(id)
+            days.insert(s.day)
+        }
+        return out
+    }
+
     /* On how many of the last `lastDays` mornings (today included) he stretched. nil when there is no stretch note at all. */
     public static func stretchMornings(in notes: NeighbourNotes?, lastDays: Int = 7, today: String) -> Int? {
         guard let notes, (notes.format ?? NeighbourNotes.knownFormat) <= NeighbourNotes.knownFormat else { return nil }
@@ -277,9 +298,9 @@ public enum NeighbourRules {
         return days.count
     }
 
-    /* "Done in Workouts at 07:40 · 35 min" — the time in the phone's own zone; a missing part is left out. */
+    /* "Done in Workouts at 07:40 · 35 min" (or "Done in Magic Morning …" for its notes) — the time in the phone's own zone; a missing part is left out. */
     public static func doneLine(_ note: NeighbourDone, timeZone: TimeZone = .current) -> String {
-        var line = "Done in Workouts"
+        var line = "Done in " + (note.from == "morning" ? "Magic Morning" : "Workouts")
         if let at = note.at, let date = ISO8601DateFormatter().date(from: at) {
             var cal = Calendar(identifier: .gregorian)
             cal.timeZone = timeZone

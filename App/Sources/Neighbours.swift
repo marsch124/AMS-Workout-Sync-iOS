@@ -172,6 +172,8 @@ final class Neighbours: ObservableObject {
 
     /* A strength session still to do, on a day with a note from Workouts: the first one still to do is offered it. */
     func strength(for w: Workout, among day: [Workout]) -> Strength? {
+        // 2.15: a mobility session ticked from Magic Morning says so; it is never offered (it ticks by itself).
+        if w.discipline.id == "mobility" { return w.state == .done && loggedFrom[w.key] != nil ? .logged : nil }
         guard w.discipline.id == "strength" else { return nil }
         if w.state == .done { return loggedFrom[w.key] != nil ? .logged : nil }
         guard w.state == .todo,
@@ -192,6 +194,38 @@ final class Neighbours: ObservableObject {
         store.log(w, entry)
         loggedFrom[w.key] = id
         UserDefaults.standard.set(loggedFrom, forKey: loggedKey)
+    }
+
+    /*
+     * 2.15: a planned mobility session still to do, on a morning he stretched in Magic Morning, is ticked
+     * by itself with the stretch's minutes (the planned length when the note has none) — today and the
+     * days before, as far back as the notes go, each note once. iPhone only: the notes live there; the
+     * log reaches the iPad and the Mac through iCloud like any other.
+     */
+    func tickMobility(store: Store) {
+        guard store.canLog else { return }
+        let day = store.today
+        let oldest = PlanView.addDays(day, -(NeighbourRules.keepDays - 1))
+        let sessions = store.displayed
+        let todo = sessions.filter {
+            $0.discipline.id == "mobility" && !$0.logged && !$0.missed && !store.isWaiting($0.key)
+                && $0.dayKey <= day && $0.dayKey >= oldest
+        }.map { (key: $0.key, day: $0.dayKey) }
+        guard !todo.isEmpty else { return }
+        let ticks = NeighbourRules.mobilityTicks(todo: todo, notes: notes, used: Set(loggedFrom.values), today: day)
+        var changed = false
+        for t in ticks {
+            guard let w = sessions.first(where: { $0.key == t.key }), let id = t.note.id else { continue }
+            var minutes = t.note.minutes ?? 0
+            if minutes <= 0, let mapping = store.mapping, let s = Plan.plannedSeconds(w, mapping), s > 0 { minutes = Int((s / 60).rounded()) }
+            guard minutes > 0 else { continue }
+            var entry = LogEntry()
+            entry.actualDuration = String(minutes)
+            store.log(w, entry)
+            loggedFrom[w.key] = id
+            changed = true
+        }
+        if changed { UserDefaults.standard.set(loggedFrom, forKey: loggedKey) }
     }
 
     /* "Stretching: 4 of the last 7 mornings"; nil when there is no stretch note at all. */
@@ -241,7 +275,7 @@ struct NeighbourDoneLine: View {
     private var text: String {
         switch state {
         case .offer(let note): return NeighbourRules.doneLine(note)
-        case .logged: return "Logged from Workouts"
+        case .logged: return workout.discipline.id == "mobility" ? "Ticked from Magic Morning" : "Logged from Workouts"
         }
     }
 }

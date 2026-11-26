@@ -1,0 +1,21 @@
+AMS Triathlon Training 2.15 (91) - what to test
+
+This version has one new thing: a mobility session ticks itself when you stretched in Magic Morning. Say what you saw if anything looks wrong.
+
+1. Do a Magic Morning routine on a Monday, Wednesday or Friday, with a stretching step that takes a minute or more.
+
+2. Open Triathlon on the iPhone. The planned mobility session of that day should now be ticked by itself, with the stretching minutes as its time. Nothing to tap.
+
+3. Look at the session on Today and on its page. A grey line should say Ticked from Magic Morning.
+
+4. A strength session should be as before: Done in Workouts with the button Log it, and Logged from Workouts after your tap. It is never ticked by itself.
+
+5. A morning without stretching should tick nothing. A mobility session you already logged or marked missed should be left as it is. A day ahead should never be ticked.
+
+6. After a little while the same tick should show on your iPad and your Mac.
+
+7. Undo, only if you want it: open the session and change or clear the log. It should not tick again.
+
+8. Progress should still say Stretching: N of the last 7 mornings, as before.
+
+Only your own devices can prove these: the real Magic Morning note on your iPhone, and the iCloud arrival on the iPad and the Mac.
