@@ -57,6 +57,7 @@ public enum BodyPage {
         if t.contains("walk") { return "Walk" }
         if t.contains("yoga") { return "Yoga" }
         if t.contains("row") { return "Row" }
+        if t.contains("breath") { return "Breathing" }
         let first = name.split(separator: " ").first.map(String.init) ?? ""
         return first.isEmpty ? "Workout" : first
     }

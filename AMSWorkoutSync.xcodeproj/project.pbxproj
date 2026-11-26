@@ -31,6 +31,7 @@
 		2A89E41D5CDB880B6E0ECCF7 /* PlanNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 732B30DD98E3680CB2EE7B37 /* PlanNumbers.swift */; };
 		2C53F81FAA4B04B0F30075BB /* MonthReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB465B75555C1C3005BC6FA /* MonthReport.swift */; };
 		2D300B276F9CD592D072EEFB /* ClaudeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94330FB5692E564AA2B91591 /* ClaudeUITests.swift */; };
+		3702A4225E4FCC7EADCA4E99 /* Body29HealthUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B07C8CAA3448D16A80CF30 /* Body29HealthUITests.swift */; };
 		375029A7F041CC327A0E570A /* LogExtrasUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EE91A2E0FEDE026D96EAD4 /* LogExtrasUITests.swift */; };
 		378ED2FACF2AEF2AC6C27DCA /* DoneSessionGarmin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C2BBB856FF30E206B55975 /* DoneSessionGarmin.swift */; };
 		37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8173903887939F8A3DB90D8D /* ProgressView.swift */; };
@@ -92,6 +93,7 @@
 		AA30994BA586B2B1CE7CFE27 /* PlanPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B7D72488BA4C064C6365BB /* PlanPage.swift */; };
 		AE4B787B0C3121743BEC221B /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5419017E5E37523852FF0B4F /* TodayView.swift */; };
 		AEFF0862782DA869C0A3032B /* ZonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B7A403EF7D24F842CE496 /* ZonesView.swift */; };
+		AF56B73E5EE984647A8F32E3 /* Body29LoadUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D6D04E4108EDA362A543F0D /* Body29LoadUITests.swift */; };
 		AF72E6B63B39A76B4CE3FD46 /* MoveInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31BD686DB20769B48D01346 /* MoveInView.swift */; };
 		AFC447F2AECDEB2E500F137C /* GarminSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3FFCF1DC05E464FB2ED3970 /* GarminSettingsView.swift */; };
 		B1CABD5E7ED197469D4C85AD /* SafetyCopiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868D688CF593B1074DAB4C08 /* SafetyCopiesView.swift */; };
@@ -110,12 +112,14 @@
 		CB080B263FD367CDE72DE2D1 /* ICloudPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85023E759390F5DB87FEF135 /* ICloudPage.swift */; };
 		CCD143B8CF5B477AAD12838F /* NoGymViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2868B313DCDCED271A6F56 /* NoGymViews.swift */; };
 		CDC48ABE7B6292F9266DFCFD /* ClaudeAskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5873A7FB121A853AF07ECEE1 /* ClaudeAskView.swift */; };
+		CDD21ADA5CF5698A08BF5372 /* Body29WorkoutsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDDA160CDB65F23569E3E9B /* Body29WorkoutsUITests.swift */; };
 		CF2044C1DC2BB66227A6EB49 /* PlanChangeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */; };
 		CFB5629FD0291B55CE501A48 /* WorkoutSyncUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901F20941815D8CBD3B54485 /* WorkoutSyncUITests.swift */; };
 		D1B3CF6C1C812D872B5308CF /* ICloudUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95682B3A73FFB74EA927FA9E /* ICloudUITests.swift */; };
 		D1E894971B80D8FDD28D6814 /* SessionEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E761F4FA612AABC7C820139 /* SessionEditView.swift */; };
 		D4C2E681FAD8F8E023070715 /* BodyMoreCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 308540CF5AE126FCBACE2562 /* BodyMoreCards.swift */; };
 		D5A5F6E52EDFFB03D272B9FA /* GarminClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F037AACECD68FCF5D26B2793 /* GarminClient.swift */; };
+		D6D0DE725107E5B86F10D0FB /* Body29GymUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636C2EEA9C94AE6D5D8AAC84 /* Body29GymUITests.swift */; };
 		D6D2B8994D1D346CBC1D4227 /* RaceGearUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4673C7D692452D69755906B /* RaceGearUITests.swift */; };
 		DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B0778365FA2EAD6A05938A /* ExtraViews.swift */; };
 		DCC98486393429484165CBE3 /* MonthReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9895C58C6C9022C875A2DAC /* MonthReview.swift */; };
@@ -183,11 +187,13 @@
 		4050A7154CFB8357CC22F817 /* SpotlightIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndex.swift; sourceTree = "<group>"; };
 		41F26771CF90A03C5E86FB7C /* TestEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEntryUITests.swift; sourceTree = "<group>"; };
 		4545506F79E4D9D433E6C2FB /* RaceEditViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaceEditViews.swift; sourceTree = "<group>"; };
+		45B07C8CAA3448D16A80CF30 /* Body29HealthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29HealthUITests.swift; sourceTree = "<group>"; };
 		47216E26B6949D16961FB9A4 /* SessionPurposeLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPurposeLine.swift; sourceTree = "<group>"; };
 		4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingCalendar.swift; sourceTree = "<group>"; };
 		4BB465B75555C1C3005BC6FA /* MonthReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthReport.swift; sourceTree = "<group>"; };
 		4CD39982CFB85EDA1755222A /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
 		4D0CBE37000D5FCA89C190E2 /* SyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
+		4D6D04E4108EDA362A543F0D /* Body29LoadUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29LoadUITests.swift; sourceTree = "<group>"; };
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		55FB6D42E4F80D931071380B /* FuelNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuelNotes.swift; sourceTree = "<group>"; };
 		568AC3CF2DBB08F666AE1F48 /* Favourites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Favourites.swift; sourceTree = "<group>"; };
@@ -197,6 +203,7 @@
 		6090A62F8CCF0EC2AA253E3F /* KeyCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCommands.swift; sourceTree = "<group>"; };
 		61EE91A2E0FEDE026D96EAD4 /* LogExtrasUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExtrasUITests.swift; sourceTree = "<group>"; };
 		6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminActivityUITests.swift; sourceTree = "<group>"; };
+		636C2EEA9C94AE6D5D8AAC84 /* Body29GymUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29GymUITests.swift; sourceTree = "<group>"; };
 		698543645804785D12272ACB /* ClaudeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSettingsView.swift; sourceTree = "<group>"; };
 		6D4B7A403EF7D24F842CE496 /* ZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesView.swift; sourceTree = "<group>"; };
 		6E9EECF821F9A0C789D085EC /* TodayWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWeather.swift; sourceTree = "<group>"; };
@@ -246,6 +253,7 @@
 		B71A992D42543C308CF9B634 /* ProgressLook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressLook.swift; sourceTree = "<group>"; };
 		B976AF5AD0AB85D2218A6C22 /* FeelViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelViews.swift; sourceTree = "<group>"; };
 		BB5107E621693DC31B150148 /* BodyLoadCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyLoadCards.swift; sourceTree = "<group>"; };
+		BBDDA160CDB65F23569E3E9B /* Body29WorkoutsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29WorkoutsUITests.swift; sourceTree = "<group>"; };
 		BF26FBCCEB1477B7A9B00260 /* Suggestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Suggestions.swift; sourceTree = "<group>"; };
 		BFB603BAFDFF677E317A068C /* SafetyCopiesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetyCopiesUITests.swift; sourceTree = "<group>"; };
 		C072FF4A1F6A436264BA5F42 /* GearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearView.swift; sourceTree = "<group>"; };
@@ -309,6 +317,10 @@
 			isa = PBXGroup;
 			children = (
 				9B86E55B10FCCF54499FBECC /* AwayUITests.swift */,
+				636C2EEA9C94AE6D5D8AAC84 /* Body29GymUITests.swift */,
+				45B07C8CAA3448D16A80CF30 /* Body29HealthUITests.swift */,
+				4D6D04E4108EDA362A543F0D /* Body29LoadUITests.swift */,
+				BBDDA160CDB65F23569E3E9B /* Body29WorkoutsUITests.swift */,
 				25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */,
 				DADAAD1BA967E052E18FAFBF /* ClaudeReviewUITests.swift */,
 				94330FB5692E564AA2B91591 /* ClaudeUITests.swift */,
@@ -709,6 +721,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				11EB1E3C3078AD01F74A83AC /* AwayUITests.swift in Sources */,
+				D6D0DE725107E5B86F10D0FB /* Body29GymUITests.swift in Sources */,
+				3702A4225E4FCC7EADCA4E99 /* Body29HealthUITests.swift in Sources */,
+				AF56B73E5EE984647A8F32E3 /* Body29LoadUITests.swift in Sources */,
+				CDD21ADA5CF5698A08BF5372 /* Body29WorkoutsUITests.swift in Sources */,
 				4FEC94AC696B1C83143E08E5 /* BodyUITests.swift in Sources */,
 				8AC56DC57B04E7000D243214 /* ClaudeReviewUITests.swift in Sources */,
 				2D300B276F9CD592D072EEFB /* ClaudeUITests.swift in Sources */,
@@ -782,7 +798,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 84;
+				CURRENT_PROJECT_VERSION = 85;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -796,7 +812,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.8;
+				MARKETING_VERSION = 2.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -842,7 +858,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 84;
+				CURRENT_PROJECT_VERSION = 85;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -862,7 +878,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.8;
+				MARKETING_VERSION = 2.9;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

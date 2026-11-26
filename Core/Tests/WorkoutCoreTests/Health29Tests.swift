@@ -58,4 +58,12 @@ final class Health29Tests: XCTestCase {
         XCTAssertEqual(BodyHealth.waterFill(w)!, 1250.0 / 3000, accuracy: 0.001)
         XCTAssertNil(BodyHealth.dayFacts(s, day: "2030-03-14").energy)
     }
+
+    /* 2.9 look-over: "about" is rounded to a quarter of an hour, a whole hour written "8h". */
+    func testNeedIsRoundedToAQuarter() {
+        let n = (0..<7).map { BodyHealth.Night(day: "2030-01-0\($0 + 1)", sleptMinutes: 420, needMinutes: $0 == 0 ? 459 : 480) }
+        XCTAssertEqual(BodyHealth.sleepLine(n), "Need about 8h a night")
+        let m = (0..<7).map { BodyHealth.Night(day: "2030-01-0\($0 + 1)", sleptMinutes: 420, needMinutes: 455) }
+        XCTAssertEqual(BodyHealth.sleepLine(m), "Need about 7h\u{00A0}30m a night")
+    }
 }

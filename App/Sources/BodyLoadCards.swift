@@ -81,7 +81,7 @@ final class BodyLoadReader: ObservableObject {
             let d = GarminMorning.addDays(day, -k)
             f.workouts.append(LoadWorkout(day: d, load: 40 + Double((k * 29) % 45), vo2max: k == 3 ? 51 : nil))
         }
-        f.fitness = FitnessAgeNumbers(fitnessAge: 48.6, realAge: 58)
+        f.fitness = FitnessAgeNumbers(fitnessAge: 52.4, realAge: 58)
         return f
     }
     #endif

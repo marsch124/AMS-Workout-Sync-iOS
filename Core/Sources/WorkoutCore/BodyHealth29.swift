@@ -62,7 +62,10 @@ public enum BodyHealth {
     public static func sleepLine(_ nights: [Night]) -> String {
         let needs = nights.map(\.needMinutes)
         let avg = needs.isEmpty ? fallbackNeedMinutes : needs.reduce(0, +) / Double(needs.count)
-        var s = "Need about " + formatDuration(avg.rounded() * 60) + " a night"
+        // "about" means about: the need is rounded to a quarter of an hour, and a whole hour is written "8h".
+        let q = Int((avg / 15).rounded()) * 15
+        let need = q % 60 == 0 ? "\(q / 60)h" : formatDuration(Double(q) * 60)
+        var s = "Need about " + need + " a night"
         let m = missingNights(nights)
         if m > 0 { s += " \u{00B7} \(m) night\(m == 1 ? "" : "s") without the watch" }
         return s
