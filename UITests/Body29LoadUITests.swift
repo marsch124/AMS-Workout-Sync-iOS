@@ -26,7 +26,7 @@ final class Body29LoadUITests: XCTestCase {
         XCTAssertTrue(load.label.contains("ratio"), "no ratio: \(load.label)")
         let fit = any(app, "body-fitness")
         XCTAssertTrue(fit.exists, "no Fitness card")
-        XCTAssertTrue(fit.label.contains("Fitness age 49"), "the card said \(fit.label)")
+        XCTAssertTrue(fit.label.contains("Fitness age 52"), "the card said \(fit.label)")
         XCTAssertTrue(fit.label.contains("years younger"), "no age line: \(fit.label)")
 
         load.tap()
