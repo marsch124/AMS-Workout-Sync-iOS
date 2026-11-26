@@ -227,3 +227,21 @@ iPad carry `-pad` or start with `pln-` / `hom-02`, `hom-03`.
   - `AMSWS_TAB=today AMSWS_FAKE_WEATHER=1 AMSWS_HOME=app`
 
 No script line found (taken by hand; see PICTURES.md): gar-02-page-nokey, rem-03-away-page, set-06-foot, tod-08-garmin-plate
+
+## Added for 2.9 (85) — all with `AMSWS_FAKE_GARMIN=1`, `AMSWS_HOME=app`, `AMSWS_TODAY=2026-09-16`, the invented plan (`UITests/Fixtures/plan.xlsx`)
+- **bod-12-training**
+  - `AMSWS_TAB=body AMSWS_BODY_SHIFT=700`
+- **bod-13-load-sheet**
+  - `AMSWS_TAB=body AMSWS_BODY_SHEET=load`
+- **bod-14-month**
+  - `AMSWS_TAB=body AMSWS_BODY_SHIFT=1250`
+- **bod-16-health**
+  - `AMSWS_TAB=body AMSWS_BODY_SHIFT=1850`
+- **bod-18-weight-sheet**
+  - `AMSWS_TAB=body AMSWS_BODY_SHEET=weight`
+- **bod-19-gym-nofolder**
+  - `AMSWS_TAB=body AMSWS_BODY_SHIFT=700 AMSWS_GYM_NO_FOLDER=1`
+- **gar-07-gym-choose**
+  - `AMSWS_TAB=settings AMSWS_GARMIN_PAGE=1 AMSWS_GYM_NO_FOLDER=1`
+- **gar-08-gym-chosen**
+  - `AMSWS_TAB=settings AMSWS_GARMIN_PAGE=1`

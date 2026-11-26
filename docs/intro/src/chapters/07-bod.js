@@ -133,6 +133,69 @@ function bodTiles(S) {
         <span class="k-muted bod-note">${t.note}</span>${bodBars(i, S.bod_span)}</button>`; }).join('')}</div>`;
 }
 
+/* ---- New in 2.9 (85): the Training part under the tiles. The app's own invented figures (the picture switch AMSWS_FAKE_GARMIN). ---- */
+const BOD_GYM = [
+  { day: 'Mon 14 Sep', len: '1h 04m', kg: '4,320', counts: '4 machines · 11 sets · felt good · 2 days ago', vs: 'vs the one before: +2 sets · −17 min · +640 kg', m: [0, 1, 2, 3], w: 100 },
+  { day: 'Fri 11 Sep', len: '1h 21m', kg: '3,680', counts: '3 machines · 9 sets · felt ok · 5 days ago', m: [0, 1, 2], w: 85 },
+  { day: 'Mon 7 Sep', len: '1h 02m', kg: '2,950', counts: '3 machines · 9 sets · felt great · 9 days ago', m: [1, 2, 3], w: 68 },
+  { day: 'Thu 3 Sep', len: '55m', kg: '1,980', counts: '2 machines · 6 sets · 13 days ago', m: [0, 1], w: 46 },
+];
+const BOD_MACH = [['Leg press', 'best 90 kg × 10'], ['Chest press', 'best 40 kg × 12'], ['Seated row', 'best 37.5 kg × 10'], ['Exercise bike', '15 min · level 6']];
+/* Workouts this month, newest first: tag, tag colour class, day and time, name, length, distance, pulse. */
+const BOD_MONTH = [
+  ['Breathing', 'g', 'Wed 16 · 18:17', 'Sample Breathing', '1h 14m', '', ''], ['Ride', 'ride', 'Wed 16 · 07:18', 'Sample Trainer', '1h 21m', '23.0 km', '144 bpm'],
+  ['Hike', 'g', 'Tue 15 · 18:15', 'Sample Hike', '1h 00m', '16.0 km', '132 bpm'], ['Run', 'run', 'Tue 15 · 07:16', 'Sample Easy Run', '1h 07m', '18.0 km', '136 bpm'],
+  ['Walk', 'g', 'Mon 14 · 18:13', 'Sample Walk', '46m', '11.0 km', '124 bpm'], ['Strength', 'str', 'Mon 14 · 07:14', 'Sample Strength', '53m', '', '128 bpm'],
+  ['Swim', 'swim', 'Sun 13 · 18:11', 'Sample Swim', '32m', '5.5 km', '116 bpm'], ['Ride', 'ride', 'Sun 13 · 07:12', 'Sample Ride', '39m', '8.0 km', '120 bpm'],
+  ['Run', 'run', 'Sat 12 · 07:10', 'Sample Run', '25m', '3.0 km', '112 bpm'],
+];
+const bodMonthRow = (w, i, act) => `<${act ? 'button data-act="bod.mrow" data-arg="' + i + '" data-t="bod.mrow:' + i + '"' : 'div'} class="bod-mrow">
+  <span class="k-line bod-mtop"><i class="bod-tag bod-tag-${w[1]}">${w[0].toUpperCase()}</i><span class="k-muted k-small">${w[2]}</span></span>
+  <b>${w[3]}</b><span class="k-muted k-small">${[w[4], w[5], w[6]].filter(Boolean).join(' · ')}</span></${act ? 'button' : 'div'}>`;
+
+function bodTraining(S) {
+  const g = BOD_GYM[S.bod_gym || 0], latest = !S.bod_gym;
+  return `<h2 class="k-h2 bod-part">Training</h2>
+    <div class="bod-two">
+      <button class="bod-tile" data-act="bod.load" data-t="bod.load"><span class="bod-tname">TRAINING LOAD</span>
+        <span class="bod-fig"><b>288</b><span>7 days</span></span><span class="k-muted bod-note">4-week average 252 · ratio 1.14</span>
+        <b class="bod-word">Productive</b><span class="bod-scale"><i class="bod-steady"></i><u></u></span></button>
+      <div class="bod-tile" data-t="bod.fitness"><span class="bod-tname">FITNESS</span>
+        <span class="bod-fig"><b>52</b><span>fitness age</span></span><span class="k-muted bod-note bod-wrap">Real age 58 · 6 years younger</span>
+        <span class="k-muted bod-note bod-wrap">VO2 max: Garmin does not share it yet</span></div></div>
+    <div class="bod-card bod-gym" data-t="bod.gym"><span class="bod-cap">GYM SESSIONS</span>
+      <span class="bod-fig"><b>${g.kg}</b><span>kg</span></span>
+      <span class="k-muted k-small">${g.day} · City Gym · ${g.len}</span><span class="k-muted k-small">${g.counts}</span>
+      ${g.vs ? `<span class="k-muted k-small">${g.vs}</span>` : ''}
+      <div class="k-col bod-mach">${g.m.map(k => `<span><b>${BOD_MACH[k][0]}</b> <span class="k-muted">· ${BOD_MACH[k][1]}${latest && k === 0 ? ' · new best' : ''}</span></span>`).join('')}</div>
+      ${BOD_GYM.map((r, i) => `<button class="bod-grow${(S.bod_gym || 0) === i ? ' bod-sel' : ''}" data-act="bod.gym" data-arg="${i}" data-t="bod.grow:${i}">
+        <span><b>${r.day}</b> <span class="k-muted">City Gym · ${r.len}</span> <b>${r.kg} kg</b></span><i style="width:${r.w}%"></i></button>`).join('')}
+      ${latest ? '' : `<button class="k-link bod-back" data-act="bod.gymback" data-t="bod.gymback">Back to the latest</button>`}
+      <span class="k-muted bod-tiny">Tap a session to see it here.</span></div>
+    <div class="bod-card bod-month" data-t="bod.month"><span class="bod-cap">WORKOUTS · SEPTEMBER</span>
+      <span class="bod-fig"><b>9</b><span>this month</span></span><span class="k-muted k-small">7h 57m · 84.5 km</span>
+      ${BOD_MONTH.slice(0, 6).map((w, i) => bodMonthRow(w, i, true)).join('')}
+      <button class="k-link" data-act="bod.all" data-t="bod.all">All 9 workouts</button>
+      <span class="k-muted bod-tiny">Tap a workout to open it.</span></div>`;
+}
+
+/* The Health part: sleep debt (slept, need in minutes; null = no watch), weight, energy, water. */
+const BOD_NIGHTS = [['Thu 10 Sep', 'T', 408, 480], ['Fri 11 Sep', 'F', 444, 480], ['Sat 12 Sep', 'S', null, 460], ['Sun 13 Sep', 'S', 432, 500],
+  ['Mon 14 Sep', 'M', 480, 480], ['Tue 15 Sep', 'T', 396, 460], ['Wed 16 Sep', 'W', 438, 480]];
+const bodHM = m => `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
+function bodHealth(S) {
+  return `<h2 class="k-h2 bod-part">Health</h2>
+    <button class="bod-card bod-btn" data-act="bod.sleepdebt" data-t="bod.sleepdebt"><span class="bod-cap">SLEEP DEBT</span>
+      <span class="bod-fig"><b>−4h 42m</b><span>7 nights</span></span>
+      <span class="k-muted k-small">Need about 8h a night · 1 night without the watch. Tap for each night.</span>
+      <span class="bod-nights">${BOD_NIGHTS.map((n, i) => `<span class="bod-night"><span class="bod-need">${n[2] == null ? '<u>–</u>' : `<b style="height:${Math.round(100 * Math.min(1, n[2] / n[3]))}%"></b>`}</span><em class="${i === 6 ? 'bod-today' : ''}">${n[1]}</em></span>`).join('')}</span></button>
+    <div class="bod-card" data-t="bod.weight"><span class="bod-cap">WEIGHT</span><span class="bod-fig"><b>72.2</b><span>kg</span></span>
+      <span class="k-muted k-small">Weighed Tue 15 Sep · +0.4 kg in 90 days · goal 78.0 kg. Tap for each weigh-in.</span></div>
+    <div class="bod-two"><div class="bod-tile"><span class="bod-tname">ENERGY</span><span class="bod-fig"><b>2,480</b><span>kcal</span></span><span class="k-muted bod-note bod-wrap">Active 520 · resting 1,960</span></div>
+      <div class="bod-tile"><span class="bod-tname">WATER</span><span class="bod-fig"><b>1,250</b><span>ml</span></span><span class="k-muted bod-note bod-wrap">Goal 3,000 ml · 42%</span>
+        <span class="bod-scale bod-water"><i></i></span></div></div>`;
+}
+
 CHAPTER({
   id: 'bod',
   title: 'Body',
@@ -140,7 +203,7 @@ CHAPTER({
   needs: 'A Garmin key saved in Settings (the chapter Garmin and Health shows how), and a watch that has sent its numbers to Garmin.',
   gives: 'One raspberry page for what your watch keeps about you: Body Battery through the day, six tiles with their days, and every workout one press from its page.',
   start: () => ({ part: 'body', screen: 'bod.page', bod_mode: 'full', bod_span: '7', bod_noy: false, bod_low: false, bod_pulled: false, bod_shared: false,
-    bod_peek: null, bod_plate: false }),
+    bod_peek: null, bod_plate: false, bod_gym: 0, bod_from: '', bod_loadseen: false, bod_all: false, bod_mopen: false, bod_slept: false }),
   screens: {
     'bod.page': S => S.bod_mode === 'nokey' ? SCREENS['bod.nokey'](S) : S.bod_mode === 'empty' ? SCREENS['bod.empty'](S) : `
       ${S.bod_low ? '' : `${bodHeading(S)}
@@ -150,6 +213,17 @@ CHAPTER({
       <div class="bod-sharebox"><button class="bod-share" data-act="bod.share" data-t="bod.share">${icon('share')}<span>Share</span></button>
         <span class="k-muted bod-tiny">The picture shows your Garmin numbers of today.</span>
         <span class="k-muted bod-tiny bod-foot" data-t="bod.foot">Tap a workout or a tile for more.<br>From your Garmin watch · shown only, it changes no plan.</span></div>`,
+    /* 2.9 (85): the page lower down, the Training part. */
+    'bod.train': S => `${bodTraining(S)}${bodHealth(S)}`,
+    /* A strength session's page with the small GYM block (2.9). */
+    'bod.gymblock': S => `
+      ${K.back('Today', 'bod.back', { t: 'bod.back' })}
+      <span class="k-line">${K.sport('strength', { size: 40 })}<span class="k-col"><span class="k-sportword k-sp-strength">Strength</span><span class="k-muted">Monday 14 September</span></span></span>
+      <b class="bod-sestitle">Strength A</b>
+      <div class="bod-card bod-gym" data-t="bod.gymblk"><span class="bod-cap">GYM</span>
+        <span class="k-muted k-small">City Gym · 1h 04m · 4 machines · 11 sets · 4,320 kg</span>
+        <div class="k-col bod-mach">${BOD_MACH.map((m, k) => `<span><b>${m[0]}</b> <span class="k-muted">· ${m[1]}</span></span>`).join('')}</div></div>
+      <span class="k-muted k-small">Only a strength session shows it, and only when the gym file has a session on that day.</span>`,
     'bod.nokey': S => `${bodHeading(S)}
       <div class="bod-card bod-msg"><span>Connect your Garmin key to see your body's numbers here.</span>
         <button class="bod-share bod-wide" data-act="bod.connect" data-t="bod.connect"><span>Open Garmin settings</span></button></div>`,
@@ -194,19 +268,42 @@ CHAPTER({
         <div class="bod-prow"><span class="k-muted">Body Battery</span><b>−6</b></div></div>
       <span class="k-muted k-small">Not in your plan and not among your extras for this day.</span>
       <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
+    /* 2.9 (85): the 12 weeks of load, the whole month's workouts. */
+    'bod.load': S => `<h3>Training load</h3>
+      <span class="bod-cap">WEEKLY LOAD · LAST 12 WEEKS</span>
+      <div class="bod-wbars">${[62, 100, 90, 82, 78, 96, 80, 70, 62, 100, 48, 92].map((h, i) => `<span><b style="height:${h * .6}px" class="${i === 11 ? 'bod-now' : ''}"></b><em>${i === 11 ? 'now' : 11 - i}</em></span>`).join('')}</div>
+      <span class="k-muted k-small">Each bar is 7 days of load; the numbers count the weeks back from now.</span>
+      <b>Productive · ratio 1.14</b>
+      <span class="k-muted k-small">The ratio sets the last 7 days against your usual week of the past 4 weeks. Around 0.8 to 1.3 is a steady week.</span>
+      <span class="k-muted k-small">This week is close to your usual.</span>
+      <span class="k-muted k-small">The words are the Garmin Board’s own reading, not Garmin’s.</span>
+      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
+    'bod.month': S => `<h3>Workouts · September</h3>
+      <div class="k-col bod-mlist">${BOD_MONTH.map((w, i) => bodMonthRow(w, i, false)).join('')}</div>
+      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
+    'bod.sleep': S => `<h3>Sleep debt · last 7 nights</h3>
+      <div class="k-col">${BOD_NIGHTS.slice().reverse().map(n => `<div class="bod-prow"><span class="k-muted">${n[0]}</span><b class="${n[2] == null ? 'bod-none' : ''}">${n[2] == null ? 'no reading' : bodHM(n[2]) + ' of ' + bodHM(n[3])}</b></div>`).join('')}</div>
+      <span class="k-muted k-small">Sleep and naps against the need Garmin gives for each night (8h where it gives none). A night without the watch is left out.</span>
+      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
     'bod.keyhelp': S => `<h3>Garmin has its own chapter</h3>
       <span>The key goes in once, on the page Settings › Garmin. The chapter Garmin and Health shows it step by step.</span>
       <div class="k-foot">${K.btn('Done', 'sheet.close', { main: true })}</div>`,
   },
   actions: {
     'bod.wk'(arg, S) { if (arg === '0') { S.screen = 'bod.session'; S.bod_session = true; } else { S.sheet = 'bod.plate'; S.bod_plate = true; } },
-    'bod.back'(arg, S) { S.screen = S.bod_mode === 'nokey' ? 'bod.nokey' : 'bod.page'; },
+    'bod.back'(arg, S) { S.screen = S.bod_mode === 'nokey' ? 'bod.nokey' : S.bod_from === 'train' ? 'bod.train' : 'bod.page'; },
     'bod.tile'(arg, S) { S.bod_peek = arg; S.sheet = 'bod.peek'; },
     'bod.span'(arg, S) { S.bod_span = arg; },
     'bod.done'(arg, S) { S.sheet = null; },
     'bod.share'(arg, S) { S.bod_shared = true; toast('The share sheet opens with the page as one picture.'); },
     'bod.pull'(arg, S) { S.bod_pulled = true; toast('Reading from Garmin…'); },
     'bod.connect'(arg, S) { S.screen = 'bod.garmin'; S.bod_garmin = true; },
+    'bod.load'(arg, S) { S.sheet = 'bod.load'; S.bod_loadseen = true; },
+    'bod.gym'(arg, S) { S.bod_gym = +arg; },
+    'bod.gymback'(arg, S) { S.bod_gym = 0; },
+    'bod.all'(arg, S) { S.sheet = 'bod.month'; S.bod_all = true; },
+    'bod.mrow'(arg, S) { S.bod_mopen = true; toast('It opens the way a press on the curve does.'); },
+    'bod.sleepdebt'(arg, S) { S.sheet = 'bod.sleep'; S.bod_slept = true; },
     'bod.keyhelp'(arg, S) { S.sheet = 'bod.keyhelp'; },
   },
   steps: [
@@ -248,6 +345,47 @@ CHAPTER({
       robot: [['act', 'bod.span', '12w']] },
     { kind: 'look', head: 'The page on 4 weeks', shot: 'bod-08-range-4w',
       text: 'With 4 weeks chosen, every tile shows four bars, one for each week, named by its Monday’s day of the month: 24, 31, 7 and 14. The grey line gives the 4-week average. The note under the switch says what a bar is.' },
+    { kind: 'look', head: 'Under the tiles: Training', shot: 'bod-12-training',
+      text: 'Scroll past the six tiles to a raspberry heading, <b>Training</b>. First <b>Training load</b> and <b>Fitness</b> side by side, then the wide <b>Gym sessions</b> card. Training load is the last 7 days (288), the 4-week average and the ratio, with a word: here Productive.',
+      hint: 'The word is the Garmin Board’s own reading: Recovery, Maintaining, Productive or Overreaching. Only Overreaching is red. Fitness sets Garmin’s fitness age against your real age; VO2 max shows only when a workout holds it.', real: 'Body, under the tiles' },
+    { kind: 'try', head: 'Open the training load', set: { screen: 'bod.train' }, target: 'bod.load',
+      text: 'Press the <b>Training load</b> card.',
+      until: S => S.sheet === 'bod.load', ok: 'A page rises with twelve weekly bars. The last, in full colour, is this week so far. It only shows; it gives no advice.',
+      robot: [['act', 'bod.load']], real: 'Body › Training load' },
+    { kind: 'look', head: 'Twelve weeks of load', shot: 'bod-13-load-sheet',
+      text: 'The page <b>Training load</b> has twelve slim bars, one for each week; the numbers count the weeks back, and <b>now</b> is this week. Under them: <b>Productive · ratio 1.14</b> and three calm sentences. Around 0.8 to 1.3 is a steady week. <b>Done</b> closes it.' },
+    { kind: 'try', head: 'Look at an older gym session', set: { screen: 'bod.train' }, target: 'bod.grow:1',
+      text: 'In the <b>Gym sessions</b> card, press the row <b>Fri 11 Sep</b>.',
+      until: S => S.bod_gym === 1, ok: 'The card now shows that session: its kilograms, place, length and machines. The row is shaded. <b>Back to the latest</b> brings the newest one back.',
+      hint: 'The card shows the gym sessions you log in AMS Workout Companion. It has no page of its own; the six latest sit under it as rows, each with a slim bar for its kilograms.',
+      robot: [['act', 'bod.gym', '1']], real: 'Body › Gym sessions' },
+    { kind: 'look', head: 'Before the gym folder is chosen', shot: 'bod-19-gym-nofolder',
+      text: 'Until you choose the folder, the Gym sessions card is small: a grey line says to choose the AMS Garmin folder once in Settings › Garmin, with a button <b>Choose folder</b> beside it. Workouts · September stands right under it.',
+      hint: 'The app only reads that folder and writes nothing in it. The choice stays on this device: the iPad and the Mac each need their own.', real: 'Body › Gym sessions' },
+    { kind: 'look', head: 'The gym block on a strength session', set: { screen: 'bod.gymblock' }, target: 'bod.gymblk',
+      text: 'Open a strength session on a day you trained in the gym and a small <b>GYM</b> block shows that day’s place, length, machines, sets, kilograms and each machine’s best set. Other kinds of session show nothing, and so does a strength day with no gym session.' },
+    { kind: 'look', head: 'Workouts this month', shot: 'bod-14-month',
+      text: 'The wide card <b>Workouts · September</b> counts the month: 9 workouts, 7h 57m and 84.5 km. Under it the newest six, each with a coloured tag for its sport, day and time, name, length, distance and pulse. The rows above are the gym sessions.',
+      hint: 'A workout of Garmin’s that your plan does not have is here too; a grey tag means a sport with no colour in the plan. A press on a row opens the workout as a press on the curve does, and changes nothing.', real: 'Body › Workouts' },
+    { kind: 'try', head: 'See the whole month', set: { screen: 'bod.train' }, target: 'bod.all',
+      text: 'Press <b>All 9 workouts</b>.',
+      until: S => S.sheet === 'bod.month', ok: 'A page lists the month’s workouts, newest first. <b>Done</b> closes it; a press on a row closes it and opens that workout.',
+      hint: 'The button shows only when the month has more than six workouts.',
+      robot: [['act', 'bod.all']], real: 'Body › All workouts' },
+    { kind: 'look', head: 'Health: four more cards', shot: 'bod-16-health',
+      text: 'Below Training comes a raspberry heading, <b>Health</b>: <b>Sleep debt</b> with its seven bars, <b>Weight</b> with a thin line, then <b>Energy</b> (today’s calories) and <b>Water</b> with a slim bar against Garmin’s goal. All four are only shown.',
+      hint: 'Energy grows through the day. Water is what you logged in Garmin Connect: the app does not log it. A card with nothing yet says in one grey line what is missing, never a zero.', real: 'Body, under Training' },
+    { kind: 'try', head: 'Open the sleep debt', set: { screen: 'bod.train' }, target: 'bod.sleepdebt',
+      text: 'Press the <b>Sleep debt</b> card.',
+      until: S => S.sheet === 'bod.sleep', ok: 'Each of the 7 nights, newest first: what you slept of what you needed. A night without the watch says no reading and is left out. Sleep never leads to a suggestion.',
+      hint: 'The thin grey outline behind each bar is that night’s need. A dash is a night with no reading. Naps count; where Garmin gives no need, 8 hours is used.',
+      robot: [['act', 'bod.sleepdebt']], real: 'Body › Sleep debt' },
+    { kind: 'look', head: 'Weight: every weigh-in', shot: 'bod-18-weight-sheet',
+      text: 'A press on the <b>Weight</b> card opens a page with each weigh-in of the last 90 days, newest first, each day beside its kilograms. The card itself gives the latest, its day, the change in 90 days and Garmin’s goal when it has one.',
+      hint: 'It is never red and gives no advice.' },
+    { kind: 'check', head: 'What does the app do with the gym folder?', text: 'You choose the AMS Garmin folder once. What does the app do with what is in it?',
+      answers: ['It reads the gym sessions and writes nothing in it', 'It writes your plan into it', 'It sends the sessions to Garmin'], right: 0,
+      ok: 'Right: it only reads, and the choice stays on this device.' },
     { kind: 'try', head: 'Share the page', set: { bod_low: true }, target: 'bod.share',
       text: 'Press <b>Share</b>, near the foot.',
       until: S => S.bod_shared, ok: 'The page becomes one picture, in the look you see now, day or night. It leaves the app only where you choose to send it.',

@@ -62,3 +62,39 @@
 .bod-sestitle { font-size: 17px; line-height: 1.2 }
 .bod-gtitle { text-align: center; font-size: 14px }
 .bod-fake { color: var(--win-muted); padding: 8px 10px }
+
+/* 2.9 (85): the Training part. */
+.bod-part { color: var(--pc); font-size: 17px; margin-top: 4px }
+.bod-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px }
+.bod-note.bod-wrap { white-space: normal }
+.bod-word { font-size: 11.5px }
+.bod-scale { position: relative; display: block; width: 100%; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--pc) 22%, var(--win)); margin-top: 3px }
+.bod-steady { position: absolute; left: 40%; width: 25%; top: 0; bottom: 0; background: color-mix(in srgb, var(--pc) 60%, var(--win)); border-radius: 4px }
+.bod-scale u { position: absolute; left: 57%; top: -2px; width: 12px; height: 12px; border-radius: 50%; background: var(--pc); border: 2px solid var(--win) }
+.bod-gym, .bod-month { gap: 3px }
+.bod-mach { gap: 1px; font-size: 11.5px; margin: 3px 0 }
+.bod-grow { display: block; width: 100%; text-align: left; border: 0; font: inherit; font-size: 11px; color: inherit; background: none; border-radius: 7px; padding: 4px 6px; cursor: pointer }
+.bod-grow i { display: block; height: 3px; border-radius: 2px; background: var(--pc); opacity: .7; margin-top: 2px }
+.bod-grow.bod-sel { background: color-mix(in srgb, var(--pc) 16%, var(--win)) }
+.bod-back { font-size: 11.5px; align-self: flex-start }
+.bod-mrow { display: flex; flex-direction: column; gap: 1px; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--win-line); background: none; font: inherit; color: inherit; padding: 5px 0; cursor: pointer }
+div.bod-mrow { cursor: default }
+.bod-mtop { gap: 6px }
+.bod-tag { font-style: normal; font-size: 9.5px; font-weight: 700; letter-spacing: .03em; padding: 1px 7px; border-radius: 10px; background: var(--card-2); color: var(--win-fg) }
+.bod-tag-run { background: var(--sp-run); color: #fff } .bod-tag-ride { background: var(--sp-bike); color: #fff } .bod-tag-swim { background: var(--sp-swim); color: #fff }
+.bod-tag-str { background: var(--sp-strength); color: #fff }
+.bod-mlist { max-height: 380px; overflow: auto }
+.bod-wbars { display: flex; align-items: flex-end; gap: 3px; height: 74px }
+.bod-wbars span { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100% }
+.bod-wbars b { display: block; width: 100%; background: color-mix(in srgb, var(--pc) 55%, var(--win)); border-radius: 3px }
+.bod-wbars b.bod-now { background: var(--pc) }
+.bod-wbars em { font-style: normal; font-size: 9px; color: var(--win-muted) }
+.bod-btn { border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100% }
+.bod-nights { display: flex; gap: 3px; margin-top: 3px }
+.bod-night { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px }
+.bod-need { display: flex; align-items: flex-end; width: 100%; height: 34px; border: 1px solid color-mix(in srgb, var(--win-muted) 55%, transparent); border-radius: 5px; justify-content: center }
+.bod-need b { display: block; width: 100%; background: var(--pc); border-radius: 3px }
+.bod-need u { text-decoration: none; color: var(--win-muted); font-size: 10px }
+.bod-night em { font-style: normal; font-size: 10px; color: var(--win-muted) }
+.bod-water i { width: 42%; background: var(--pc); border-radius: 4px; position: absolute; inset: 0 auto 0 0 }
+.bod-tag-run, .bod-tag-ride, .bod-tag-swim, .bod-tag-str { color: #1c1c1e }
