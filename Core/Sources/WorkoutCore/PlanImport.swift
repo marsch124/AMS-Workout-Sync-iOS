@@ -252,7 +252,7 @@ public struct PlanImport {
             check("planned", w.planned, o.planned)
             check("done", w.loggedInSheet, o.loggedInSheet)
             check("missed", w.missed, o.missed)
-            for field in Set(w.results.keys).union(o.results.keys).sorted() {
+            for field in Set(w.results.keys).union(o.results.keys).sorted() where field != PlanBook.tickedFromField {
                 let x = w.results[field], y = o.results[field]
                 if x?.text != y?.text || x?.number != y?.number {
                     out.append("\(w.key) \(field): \(x?.text ?? "empty") became \(y?.text ?? "empty")")

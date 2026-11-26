@@ -47,7 +47,7 @@ struct TodayView: View {
             }
             .background(Theme.bg.ignoresSafeArea())
             .refreshable { store.refresh() }
-            .task { neighbours.cameToFront(today: store.today); neighbours.tickMobility(store: store) }
+            .task { neighbours.cameToFront(today: store.today); neighbours.tickFromNeighbours(store: store) }
             .navigationDestination(for: String.self) { key in SessionView(key: key) }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $addingExtra) { day in ExtraFormView(day: day.key).environmentObject(store) }

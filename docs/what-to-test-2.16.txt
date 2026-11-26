@@ -1,0 +1,19 @@
+AMS Triathlon Training 2.16 (92) - what to test
+
+This version has three new things: a strength session ticks itself when you finished a workout in Workout Companion, the "ticked from" line now also shows on the iPad and the Mac, and Progress counts your mobility. Say what you saw if anything looks wrong.
+
+1. In Workout Companion, finish a Sets & reps workout on a day that has a planned strength session in Triathlon (a gym visit works too).
+
+2. Open Triathlon on the iPhone. The strength session of that day should now be done by itself, with the workout's minutes as its time and its effort filled in, if you gave one. Nothing to tap. A grey line should say Ticked from Workout Companion, on Today and on the session's page.
+
+3. After a little while, look on the iPad and the Mac. The same grey line should show there too. The mobility line Ticked from Magic Morning should show there as well.
+
+4. Open Progress and look at the Load card. Under Stretching there should be a grey line like Mobility: 3 from Magic Morning · 1 by hand. It shows once at least one mobility session is logged.
+
+5. On a strength session's page, the small grey button should now say Open Workout Companion (it said Open Workouts before). The morning line should say from Workout Companion, not from Workouts.
+
+6. Things that should stay as they are: a session you already logged or marked missed is left alone, a day ahead is never ticked, and a day with two strength sessions ticks only the first one still to do.
+
+7. Undo, only if you want it: open the session and change or clear the log. The grey line should go when you clear the log.
+
+Only your own devices can prove these: the real Workout Companion note on your iPhone, and the iCloud arrival on the iPad and the Mac.

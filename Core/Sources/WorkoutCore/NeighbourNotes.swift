@@ -274,18 +274,60 @@ public enum NeighbourRules {
      */
     public static func mobilityTicks(todo: [(key: String, day: String)], notes: NeighbourNotes?, used: Set<String> = [],
                                      today: String) -> [(key: String, note: NeighbourDone)] {
+        ticks(kind: "stretch", todo: todo, notes: notes, used: used, today: today)
+    }
+
+    /* Strength ticked from Workout Companion (2.16): the same rule, with its `strength` notes. */
+    public static func strengthTicks(todo: [(key: String, day: String)], notes: NeighbourNotes?, used: Set<String> = [],
+                                     today: String) -> [(key: String, note: NeighbourDone)] {
+        ticks(kind: "strength", todo: todo, notes: notes, used: used, today: today)
+    }
+
+    /* The one rule behind both: per day up to today, the first session still to do gets the first unused note of `kind`. */
+    public static func ticks(kind: String, todo: [(key: String, day: String)], notes: NeighbourNotes?, used: Set<String> = [],
+                             today: String) -> [(key: String, note: NeighbourDone)] {
         guard let notes, (notes.format ?? NeighbourNotes.knownFormat) <= NeighbourNotes.knownFormat else { return [] }
-        let stretches = distinct(notes).filter { $0.kind == "stretch" && !($0.id ?? "").isEmpty }
+        let found = distinct(notes).filter { $0.kind == kind && !($0.id ?? "").isEmpty }
         var taken = used
         var days = Set<String>()
         var out: [(key: String, note: NeighbourDone)] = []
         for s in todo.sorted(by: { $0.day < $1.day }) where s.day <= today && !days.contains(s.day) {
-            guard let note = stretches.first(where: { $0.day == s.day && !taken.contains($0.id ?? "") }), let id = note.id else { continue }
+            guard let note = found.first(where: { $0.day == s.day && !taken.contains($0.id ?? "") }), let id = note.id else { continue }
             out.append((key: s.key, note: note))
             taken.insert(id)
             days.insert(s.day)
         }
         return out
+    }
+
+    /* The note's `from` as it goes into the log (2.16): "morning" for Magic Morning, else "workouts". */
+    public static func tickSource(_ note: NeighbourDone) -> String { note.from == "morning" ? "morning" : "workouts" }
+
+    /* "Ticked from Magic Morning" / "Ticked from Workout Companion" for a log's `tickedFrom`; nil when logged by hand. */
+    public static func tickedLine(from: String?) -> String? {
+        switch from {
+        case "morning": return "Ticked from Magic Morning"
+        case "workouts": return "Ticked from Workout Companion"
+        default: return nil
+        }
+    }
+
+    /* Where a session's tick came from: what is waiting to be written first, else what the plan holds. */
+    public static func tickedFrom(_ w: Workout) -> String? {
+        if let p = w.pending, !p.missed, let from = p.tickedFrom, !from.isEmpty { return from }
+        return w.results[PlanBook.tickedFromField]?.text
+    }
+
+    /*
+     * Progress (2.16): the mobility sessions logged in the plan — those ticked from Magic Morning, and the
+     * rest ("by hand"). Missed ones are not counted.
+     */
+    public static func mobilitySources(_ sessions: [Workout]) -> (fromMorning: Int, byHand: Int) {
+        var morning = 0, hand = 0
+        for w in sessions where w.discipline.id == "mobility" && w.logged && !w.missed && w.pending?.missed != true {
+            if tickedFrom(w) == "morning" { morning += 1 } else { hand += 1 }
+        }
+        return (morning, hand)
     }
 
     /* On how many of the last `lastDays` mornings (today included) he stretched. nil when there is no stretch note at all. */
@@ -298,9 +340,9 @@ public enum NeighbourRules {
         return days.count
     }
 
-    /* "Done in Workouts at 07:40 · 35 min" (or "Done in Magic Morning …" for its notes) — the time in the phone's own zone; a missing part is left out. */
+    /* "Done in Workout Companion at 07:40 · 35 min" (or "Done in Magic Morning …" for its notes) — the time in the phone's own zone; a missing part is left out. */
     public static func doneLine(_ note: NeighbourDone, timeZone: TimeZone = .current) -> String {
-        var line = "Done in " + (note.from == "morning" ? "Magic Morning" : "Workouts")
+        var line = "Done in " + (note.from == "morning" ? "Magic Morning" : "Workout Companion")
         if let at = note.at, let date = ISO8601DateFormatter().date(from: at) {
             var cal = Calendar(identifier: .gregorian)
             cal.timeZone = timeZone

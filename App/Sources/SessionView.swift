@@ -79,7 +79,7 @@ struct SessionView: View {
                         NeighbourDoneLine(workout: w, state: s)
                     }
                     if w.discipline.id == "strength", neighbours.workoutsInstalled {
-                        Button("Open Workouts") { neighbours.openWorkouts() }
+                        Button("Open Workout Companion") { neighbours.openWorkouts() }
                             .font(.footnote.weight(.semibold)).foregroundStyle(Theme.secondary)
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("open-workouts")

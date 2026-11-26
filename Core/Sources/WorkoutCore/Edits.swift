@@ -31,6 +31,8 @@ public struct LogEntry: Codable {
     public var missed = false
     public var moveTo: String?
     public var weekdayNames: [Int: String]?
+    /* 2.16: the neighbour app a tick came from ("morning" = Magic Morning, "workouts" = Workout Companion); nil when logged by hand. */
+    public var tickedFrom: String?
 
     public init() {}
 
@@ -59,6 +61,7 @@ public struct LogEntry: Codable {
         missed = (try? c.decodeIfPresent(Bool.self, forKey: .missed)) ?? false
         moveTo = try? c.decodeIfPresent(String.self, forKey: .moveTo)
         weekdayNames = try? c.decodeIfPresent([Int: String].self, forKey: .weekdayNames)
+        tickedFrom = try? c.decodeIfPresent(String.self, forKey: .tickedFrom)
     }
 
     func number(_ id: String) -> String? {

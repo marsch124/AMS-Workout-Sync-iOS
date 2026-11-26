@@ -106,8 +106,8 @@ final class NeighbourNotesTests: XCTestCase {
 
     func testDoneLine() {
         let note = NeighbourDone(id: "a", day: today, kind: "strength", minutes: 35, at: "2026-11-25T07:40:02Z")
-        XCTAssertEqual(NeighbourRules.doneLine(note, timeZone: TimeZone(identifier: "UTC")!), "Done in Workouts at 07:40 · 35 min")
-        XCTAssertEqual(NeighbourRules.doneLine(NeighbourDone(id: "b", day: today, kind: "strength")), "Done in Workouts")
+        XCTAssertEqual(NeighbourRules.doneLine(note, timeZone: TimeZone(identifier: "UTC")!), "Done in Workout Companion at 07:40 · 35 min")
+        XCTAssertEqual(NeighbourRules.doneLine(NeighbourDone(id: "b", day: today, kind: "strength")), "Done in Workout Companion")
     }
 
     /* An answer taken over from the notes keeps the note's own time, never later than now. */

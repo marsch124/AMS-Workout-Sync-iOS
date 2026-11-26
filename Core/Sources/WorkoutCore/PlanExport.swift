@@ -179,7 +179,8 @@ public enum PlanExport {
                 continue
             }
             if let star = starred(o), star != w.isKey { out.append("\(w.title) on \(w.dayKey): the key-session star differs in the copy") }
-            for field in Set(w.results.keys).union(o.results.keys) where w.results[field]?.text != o.results[field]?.text {
+            for field in Set(w.results.keys).union(o.results.keys) where field != PlanBook.tickedFromField
+                && w.results[field]?.text != o.results[field]?.text {
                 out.append("\(w.title) on \(w.dayKey): \(field) reads differently in the copy")
             }
             if out.count > 30 { break }

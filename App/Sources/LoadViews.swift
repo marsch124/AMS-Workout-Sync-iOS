@@ -48,6 +48,7 @@ struct LoadCard: View {
     let board: LoadBoard
     @ObservedObject private var diary = Diary.shared
     @ObservedObject private var neighbours = Neighbours.shared
+    @EnvironmentObject private var store: Store
     /* The Health workout whose row of numbers is open. */
     @State private var asking: String?
 
@@ -58,6 +59,13 @@ struct LoadCard: View {
         f.maximumFractionDigits = 0
         return f
     }()
+
+    /* "Mobility: 3 from Magic Morning · 1 by hand"; nil until one mobility session is logged. */
+    private var mobilityLine: String? {
+        let n = NeighbourRules.mobilitySources(store.displayed)
+        guard n.fromMorning + n.byHand > 0 else { return nil }
+        return "Mobility: \(n.fromMorning) from Magic Morning · \(n.byHand) by hand"
+    }
 
     private func figure(_ n: Double?) -> String {
         guard let n else { return "—" }
@@ -123,6 +131,11 @@ struct LoadCard: View {
             if let stretch = neighbours.stretchLine {
                 Text(stretch).font(.caption).foregroundStyle(Theme.secondary)
                     .accessibilityIdentifier("stretch-line")
+            }
+            // 2.16: the mobility sessions logged so far — ticked from Magic Morning, or logged by hand. On every device.
+            if let line = mobilityLine {
+                Text(line).font(.caption).foregroundStyle(Theme.secondary)
+                    .accessibilityIdentifier("mobility-sources")
             }
 
             if !board.toScore.isEmpty {

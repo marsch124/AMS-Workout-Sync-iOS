@@ -155,7 +155,7 @@ final class Neighbours: ObservableObject {
             ?? Diary.shared.feelFrom[day]
         switch from {
         case "morning": return "Magic Morning"
-        case "workouts": return "Workouts"
+        case "workouts": return "Workout Companion"
         default: return nil
         }
     }
@@ -170,12 +170,19 @@ final class Neighbours: ObservableObject {
         case logged
     }
 
-    /* A strength session still to do, on a day with a note from Workouts: the first one still to do is offered it. */
+    /*
+     * The grey line under a mobility or strength session: "Ticked from …" once a neighbour's note logged it
+     * (2.16: read from the log itself, so iPad and Mac show it too; a log of an earlier version is known by
+     * the note id this iPhone kept). Strength still to do, with a note it could not be ticked from (no
+     * minutes, no planned length): the note's line and "Log it", for the first one of the day still to do.
+     */
     func strength(for w: Workout, among day: [Workout]) -> Strength? {
-        // 2.15: a mobility session ticked from Magic Morning says so; it is never offered (it ticks by itself).
-        if w.discipline.id == "mobility" { return w.state == .done && loggedFrom[w.key] != nil ? .logged : nil }
+        guard w.discipline.id == "mobility" || w.discipline.id == "strength" else { return nil }
+        if w.state == .done {
+            if NeighbourRules.tickedFrom(w) != nil { return .logged }
+            return loggedFrom[w.key] != nil ? .logged : nil
+        }
         guard w.discipline.id == "strength" else { return nil }
-        if w.state == .done { return loggedFrom[w.key] != nil ? .logged : nil }
         guard w.state == .todo,
               day.first(where: { $0.discipline.id == "strength" && $0.state == .todo })?.key == w.key,
               let note = NeighbourRules.strengthNote(for: w.dayKey, in: notes, used: Set(loggedFrom.values)) else { return nil }
@@ -191,6 +198,7 @@ final class Neighbours: ObservableObject {
         guard minutes > 0 else { return }
         entry.actualDuration = String(minutes)
         if let e = note.effort, (1...10).contains(e) { entry.rpe = String(e) }
+        entry.tickedFrom = NeighbourRules.tickSource(note)
         store.log(w, entry)
         loggedFrom[w.key] = id
         UserDefaults.standard.set(loggedFrom, forKey: loggedKey)
@@ -199,20 +207,27 @@ final class Neighbours: ObservableObject {
     /*
      * 2.15: a planned mobility session still to do, on a morning he stretched in Magic Morning, is ticked
      * by itself with the stretch's minutes (the planned length when the note has none) — today and the
-     * days before, as far back as the notes go, each note once. iPhone only: the notes live there; the
-     * log reaches the iPad and the Mac through iCloud like any other.
+     * days before, as far back as the notes go, each note once.
+     * 2.16: a planned strength session the same way from a finished Workout Companion workout, with its
+     * minutes and its effort. iPhone only: the notes live there; the log, with where it came from,
+     * reaches the iPad and the Mac through iCloud like any other.
      */
-    func tickMobility(store: Store) {
+    func tickFromNeighbours(store: Store) {
         guard store.canLog else { return }
         let day = store.today
         let oldest = PlanView.addDays(day, -(NeighbourRules.keepDays - 1))
         let sessions = store.displayed
-        let todo = sessions.filter {
-            $0.discipline.id == "mobility" && !$0.logged && !$0.missed && !store.isWaiting($0.key)
-                && $0.dayKey <= day && $0.dayKey >= oldest
-        }.map { (key: $0.key, day: $0.dayKey) }
-        guard !todo.isEmpty else { return }
-        let ticks = NeighbourRules.mobilityTicks(todo: todo, notes: notes, used: Set(loggedFrom.values), today: day)
+        func todo(_ sport: String) -> [(key: String, day: String)] {
+            sessions.filter {
+                $0.discipline.id == sport && !$0.logged && !$0.missed && !store.isWaiting($0.key)
+                    && $0.dayKey <= day && $0.dayKey >= oldest
+            }.map { (key: $0.key, day: $0.dayKey) }
+        }
+        let mobility = todo("mobility"), strength = todo("strength")
+        guard !mobility.isEmpty || !strength.isEmpty else { return }
+        let used = Set(loggedFrom.values)
+        let ticks = NeighbourRules.mobilityTicks(todo: mobility, notes: notes, used: used, today: day)
+            + NeighbourRules.strengthTicks(todo: strength, notes: notes, used: used, today: day)
         var changed = false
         for t in ticks {
             guard let w = sessions.first(where: { $0.key == t.key }), let id = t.note.id else { continue }
@@ -221,6 +236,8 @@ final class Neighbours: ObservableObject {
             guard minutes > 0 else { continue }
             var entry = LogEntry()
             entry.actualDuration = String(minutes)
+            if w.discipline.id == "strength", let e = t.note.effort, (1...10).contains(e) { entry.rpe = String(e) }
+            entry.tickedFrom = NeighbourRules.tickSource(t.note)
             store.log(w, entry)
             loggedFrom[w.key] = id
             changed = true
@@ -252,7 +269,7 @@ final class Neighbours: ObservableObject {
     }
 }
 
-/* "Done in Workouts at 07:40 · 35 min" with one small green "Log it"; afterwards "Logged from Workouts". */
+/* "Ticked from Workout Companion" / "Ticked from Magic Morning"; or, when a strength note could not tick by itself, "Done in Workout Companion at 07:40 · 35 min" with one small green "Log it". */
 struct NeighbourDoneLine: View {
     @EnvironmentObject var store: Store
     let workout: Workout
@@ -275,7 +292,9 @@ struct NeighbourDoneLine: View {
     private var text: String {
         switch state {
         case .offer(let note): return NeighbourRules.doneLine(note)
-        case .logged: return workout.discipline.id == "mobility" ? "Ticked from Magic Morning" : "Logged from Workouts"
+        case .logged:
+            return NeighbourRules.tickedLine(from: NeighbourRules.tickedFrom(workout))
+                ?? NeighbourRules.tickedLine(from: workout.discipline.id == "mobility" ? "morning" : "workouts") ?? ""
         }
     }
 }

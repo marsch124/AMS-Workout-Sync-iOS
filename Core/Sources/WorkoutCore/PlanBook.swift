@@ -141,6 +141,8 @@ public enum Applied: Equatable { case written, dropped }
 public struct PlanBook: Codable, Equatable {
     public static let currentFormat = 2
     public static let appSheet = "App"
+    /* 2.16: the result box that says which neighbour app ticked a session. It lives in the app only: no column in Excel. */
+    public static let tickedFromField = "tickedFrom"
 
     public var format: Int = PlanBook.currentFormat
     public var sessions: [Workout]
@@ -315,8 +317,16 @@ public struct PlanBook: Codable, Equatable {
             }
         }
         w.loggedInSheet = Plan.isLogged(w.results)
-        w.logged = w.loggedInSheet
         w.missed = w.results["done"].map { normalise($0.text) == normalise(mapping.missedValue) } ?? false
+        // 2.16: where a tick came from travels with the log (never into Excel). An effort or a changed
+        // length keeps it; a session no longer logged, or marked missed, loses it.
+        if !w.loggedInSheet || w.missed {
+            w.results[PlanBook.tickedFromField] = nil
+        } else if let from = entry.tickedFrom, !from.isEmpty {
+            w.results[PlanBook.tickedFromField] = ResultValue(text: from, number: nil, date: nil)
+        }
+        w.loggedInSheet = Plan.isLogged(w.results)
+        w.logged = w.loggedInSheet
         w.pending = nil
         w.pendingMove = nil
         sessions[i] = w

@@ -36,6 +36,6 @@ final class MobilityTickTests: XCTestCase {
 
     func testTheDoneLineNamesTheAppTheNoteCameFrom() {
         XCTAssertEqual(NeighbourRules.doneLine(stretch("x", today, 12)), "Done in Magic Morning · 12 min")
-        XCTAssertEqual(NeighbourRules.doneLine(NeighbourDone(id: "y", day: today, kind: "strength", from: "workouts")), "Done in Workouts")
+        XCTAssertEqual(NeighbourRules.doneLine(NeighbourDone(id: "y", day: today, kind: "strength", from: "workouts")), "Done in Workout Companion")
     }
 }

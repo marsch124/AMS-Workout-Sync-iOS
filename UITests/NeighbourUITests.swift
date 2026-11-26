@@ -29,24 +29,22 @@ final class NeighbourUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["feel-question"].exists, "the question was asked although the answer was in the notes")
     }
 
-    func testStrengthDoneElsewhereIsLoggedOnlyByTheButton() {
+    /* 2.16: a finished Workout Companion workout ticks today's strength session by itself — no Log it. */
+    func testStrengthDoneInWorkoutCompanionTicksItself() {
         let app = launch()
         let done = app.staticTexts["neighbour-done"].firstMatch
-        XCTAssertTrue(done.waitForExistence(timeout: 15), "no done line on today's strength card")
-        XCTAssertTrue(done.label.hasPrefix("Done in Workouts at 07:40"), done.label)
-        XCTAssertTrue(done.label.hasSuffix("35 min"), done.label)
+        XCTAssertTrue(done.waitForExistence(timeout: 15), "no line on today's strength card")
+        XCTAssertEqual(done.label, "Ticked from Workout Companion")
+        XCTAssertFalse(app.buttons["neighbour-log"].exists, "Log it is offered although the session ticked itself")
 
         let strength = app.buttons["today-session-2026-09-13-strength"]
         XCTAssertTrue(strength.waitForExistence(timeout: 5))
         strength.tap()
         XCTAssertTrue(app.staticTexts["session-title"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["open-workouts"].exists, "no Open Workouts although the app is there")
-        let log = app.buttons["neighbour-log"].firstMatch
-        XCTAssertTrue(log.waitForExistence(timeout: 5))
-        log.tap()
+        XCTAssertTrue(app.buttons["open-workouts"].exists, "no Open Workout Companion although the app is there")
+        XCTAssertEqual(app.buttons["open-workouts"].label, "Open Workout Companion")
         let after = app.staticTexts["neighbour-done"].firstMatch
         XCTAssertTrue(after.waitForExistence(timeout: 5))
-        XCTAssertEqual(after.label, "Logged from Workouts")
-        XCTAssertFalse(app.buttons["neighbour-log"].exists, "Log it is offered again")
+        XCTAssertEqual(after.label, "Ticked from Workout Companion")
     }
 }
