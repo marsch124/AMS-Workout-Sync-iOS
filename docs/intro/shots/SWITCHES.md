@@ -242,6 +242,8 @@ No script line found (taken by hand; see PICTURES.md): gar-02-page-nokey, rem-03
 - **bod-19-gym-nofolder**
   - `AMSWS_TAB=body AMSWS_BODY_SHIFT=700 AMSWS_GYM_NO_FOLDER=1`
 - **gar-07-gym-choose**
-  - `AMSWS_TAB=settings AMSWS_GARMIN_PAGE=1 AMSWS_GYM_NO_FOLDER=1`
+  - `AMSWS_TAB=settings AMSWS_GARMIN_PAGE=1 AMSWS_FAKE_GARMIN=1 AMSWS_GYM_NO_FOLDER=1`
 - **gar-08-gym-chosen**
-  - `AMSWS_TAB=settings AMSWS_GARMIN_PAGE=1`
+  - `AMSWS_TAB=settings AMSWS_GARMIN_PAGE=1 AMSWS_FAKE_GARMIN=1`
+- **tod-09-feel-note** (2.12 build; grant location first: `simctl privacy <udid> grant location-always com.schabbauer.AMSWorkoutSync`)
+  - `AMSWS_TAB=today AMSWS_FEEL_NOTE=1 AMSWS_FAKE_WEATHER=1`

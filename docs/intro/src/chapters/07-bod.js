@@ -360,7 +360,7 @@ CHAPTER({
       hint: 'The card shows the gym sessions you log in the Workout Companion app. It has no page of its own; the six latest sit under it as rows, each with a slim bar for its kilograms.',
       robot: [['act', 'bod.gym', '1']], real: 'Body › Gym sessions' },
     { kind: 'look', head: 'Before the gym folder is chosen', shot: 'bod-19-gym-nofolder',
-      text: 'Until you choose the folder, the Gym sessions card is small: a grey line says: “Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once.” A button <b>Choose folder</b> sits beside it. Workouts · September stands right under it.',
+      text: 'Until you choose the folder, the Gym sessions card is small: a grey line says: “Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once.” Under it a button, <b>Choose folder</b>. Workouts · September stands right under the card.',
       hint: 'The app only reads that folder and writes nothing in it. The choice stays on this device: the iPad and the Mac each need their own.', real: 'Body › Gym sessions' },
     { kind: 'look', head: 'The gym block on a strength session', set: { screen: 'bod.gymblock' }, target: 'bod.gymblk',
       text: 'Open a strength session on a day you trained in the gym and a small <b>GYM</b> block shows that day’s place, length, machines, sets, kilograms and each machine’s best set. Other kinds of session show nothing, and so does a strength day with no gym session.' },
