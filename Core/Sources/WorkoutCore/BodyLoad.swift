@@ -79,7 +79,7 @@ public enum BodyLoad {
         return out
     }
 
-    /* "Real age 60 · 9 years younger" in calm words. */
+    /* "Real age 58 · 6 years younger" in calm words. */
     public static func ageLine(_ n: FitnessAgeNumbers) -> String? {
         guard let real = n.realAge else { return nil }
         let diff = real - Int(n.fitnessAge.rounded())

@@ -84,7 +84,7 @@ public enum GymSessions {
         return Array(list.prefix(60))
     }
 
-    /* "Tue 24 Nov" (English, whatever the phone's language). */
+    /* "Mon 9 Mar" (English, whatever the phone's language). */
     public static func dayText(_ key: String) -> String {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_GB")
@@ -112,12 +112,12 @@ public enum GymSessions {
         v == v.rounded() ? BodyPage.grouped(v) : String(format: "%.1f", v)
     }
 
-    /* "Tue 24 Nov · Basic-Fit · 1h 10m" */
+    /* "Mon 9 Mar · City Gym · 55m" */
     public static func headLine(_ s: GymSession) -> String {
         [dayText(s.date), s.gym, s.minutes.map { formatDuration($0 * 60) }].compactMap { $0 }.joined(separator: " · ")
     }
 
-    /* "4 machines · 12 sets · felt good · 2 days ago" (the day only for the latest session). */
+    /* "4 machines · 11 sets · felt good · 3 days ago" (the day only for the latest session). */
     public static func countsLine(_ s: GymSession, today: String?) -> String {
         var parts: [String] = []
         if let m = s.machines ?? (s.entries.isEmpty ? nil : s.entries.count) { parts.append(plural(m, "machine", "machines")) }
@@ -132,7 +132,7 @@ public enum GymSessions {
         return (r < 0 ? "\u{2212}" : "+") + BodyPage.grouped(Double(abs(r))) + unit
     }
 
-    /* "vs the one before: +0 sets · −38 min · +1 482 kg" — a part is left out when either session lacks it; nil without a session before. */
+    /* "vs the one before: +2 sets · −17 min · +640 kg" — a part is left out when either session lacks it; nil without a session before. */
     public static func compareLine(_ latest: GymSession, _ before: GymSession?) -> String? {
         guard let before else { return nil }
         var parts: [String] = []
@@ -145,7 +145,7 @@ public enum GymSessions {
     private static func weight(_ t: String) -> Double? { Double(t.replacingOccurrences(of: ",", with: ".")) }
 
     /*
-     * The best set of a machine as "32 kg × 15". The file writes sets as "32 × 15, 35 × 12 kg",
+     * The best set of a machine as "90 kg × 10". The file writes sets as "80 × 12, 90 × 10 kg",
      * "50 kg × 12, 10" (bare numbers go on with the same weight), "BW × 12" (body weight) or
      * "20 min · level 5" (cardio). The best set is the heaviest weight, the most reps at it.
      * Without a parsable weight: the top weight alone, else the sets as written, else the set count.
@@ -180,7 +180,7 @@ public enum GymSessions {
         return nil
     }
 
-    /* The machine's line on the card: "Seated leg curl · best 32 kg × 15" ("best" only when a weight is known). */
+    /* The machine's line on the card: "Leg press · best 90 kg × 10" ("best" only when a weight is known). */
     public static func machineLine(_ e: GymEntry) -> String {
         guard let b = bestSet(e) else { return e.name }
         let weighed = b.contains(" kg")

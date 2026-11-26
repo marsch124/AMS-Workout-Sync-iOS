@@ -9,7 +9,7 @@ final class Gym29Tests: XCTestCase {
        "bests":["Leg curl"],"entries":[
          {"name":"Leg curl","muscle":"Legs","sets":"30 × 15, 32,5 × 12, 32,5 × 10 kg","setCount":3,"topKg":32.5,"pain":false},
          {"name":"Rower","sets":"20 min · level 5","setCount":1}]},
-      {"id":"b","date":"2026-11-23","minutes":108,"sets":6,"liftedKg":1518,"feel":"weird","entries":[
+      {"id":"b","date":"2026-11-23","minutes":82,"sets":6,"liftedKg":2360,"feel":"weird","entries":[
          {"name":"Press","sets":"50 kg × 12, 10","setCount":2,"topKg":50},{"name":"","sets":"x"}]},
       {"date":"not a day","minutes":5},
       {"id":"c","date":"2026-11-10","minutes":-4}
@@ -30,7 +30,7 @@ final class Gym29Tests: XCTestCase {
         let a = l[1]
         XCTAssertEqual(GymSessions.headLine(a), "Fri 20 Nov · Test Gym · 1h\u{00A0}10m")
         XCTAssertEqual(GymSessions.countsLine(a, today: "2026-11-22"), "2 machines · 6 sets · felt good · 2 days ago")
-        XCTAssertEqual(GymSessions.compareLine(l[0], a), "vs the one before: +0 sets · +38 min · \u{2212}1,482 kg".replacingOccurrences(of: "\u{2212}1,482", with: "\u{2212}1,482"))
+        XCTAssertEqual(GymSessions.compareLine(l[0], a), "vs the one before: +0 sets · +12 min · \u{2212}640 kg")
         XCTAssertNil(GymSessions.compareLine(l[2], nil))
     }
 

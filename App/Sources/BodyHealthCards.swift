@@ -88,7 +88,7 @@ final class BodyHealthReader: ObservableObject {
         let need = [480.0, 480, 460, 500, 480, 460, 480]
         f.nights = (0..<7).map { BodyHealth.Night(day: GarminMorning.addDays(day, $0 - 6), sleptMinutes: slept[$0].map { $0 * 60 }, needMinutes: need[$0]) }
         f.weight.points = stride(from: 88, through: 1, by: -3).map { k in
-            BodyHealth.Weighing(day: GarminMorning.addDays(day, -k), kg: 80.0 + Double((k * 7) % 5) / 10 - Double(k) / 300)
+            BodyHealth.Weighing(day: GarminMorning.addDays(day, -k), kg: 72.0 + Double((k * 7) % 5) / 10 - Double(k) / 300)
         }
         f.weight.goalKg = 78
         let noWater = ProcessInfo.processInfo.environment["AMSWS_BODY_NO_WATER"] != nil

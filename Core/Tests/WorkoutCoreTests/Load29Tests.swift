@@ -14,16 +14,16 @@ final class Load29Tests: XCTestCase {
         XCTAssertEqual(s.weeks.last, 200)
         XCTAssertEqual(BodyLoad.word(0.79), "Recovery")
         XCTAssertEqual(BodyLoad.word(1.0), "Maintaining")
-        XCTAssertEqual(BodyLoad.word(1.12), "Productive")
+        XCTAssertEqual(BodyLoad.word(1.13), "Productive")
         XCTAssertTrue(BodyLoad.isDanger(1.31)); XCTAssertFalse(BodyLoad.isDanger(1.3))
         XCTAssertEqual(BodyLoad.scalePosition(3), 1)
         XCTAssertNil(BodyLoad.summary([], today: "2026-09-16").ratio)
     }
 
     func testAgeLine() {
-        XCTAssertEqual(BodyLoad.ageLine(.init(fitnessAge: 50.8, realAge: 60)), "Real age 60 · 9 years younger")
-        XCTAssertEqual(BodyLoad.ageLine(.init(fitnessAge: 61, realAge: 60)), "Real age 60 · 1 year older")
-        XCTAssertEqual(BodyLoad.ageLine(.init(fitnessAge: 60.2, realAge: 60)), "Real age 60 · the same")
+        XCTAssertEqual(BodyLoad.ageLine(.init(fitnessAge: 52.2, realAge: 58)), "Real age 58 · 6 years younger")
+        XCTAssertEqual(BodyLoad.ageLine(.init(fitnessAge: 59, realAge: 58)), "Real age 58 · 1 year older")
+        XCTAssertEqual(BodyLoad.ageLine(.init(fitnessAge: 58.2, realAge: 58)), "Real age 58 · the same")
         XCTAssertNil(BodyLoad.ageLine(.init(fitnessAge: 50, realAge: nil)))
     }
 

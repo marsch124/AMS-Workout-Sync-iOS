@@ -49,7 +49,7 @@ public enum BodyHealth {
         return counted.reduce(0) { $0 + ($1.sleptMinutes! - $1.needMinutes) }
     }
 
-    /* "−16h 55m" short, "+1h 05m" over, "0m" exactly level. */
+    /* "−6h 40m" short, "+1h 05m" over, "0m" exactly level. */
     public static func balanceFigure(_ minutes: Double) -> String {
         let r = minutes.rounded()
         if r == 0 { return "0m" }
@@ -114,7 +114,7 @@ public enum BodyHealth {
     public static func kg(_ v: Double) -> String { String(format: "%.1f", v) }
     public static func signedKg(_ v: Double) -> String { (v < 0 ? "\u{2212}" : "+") + String(format: "%.1f", abs(v)) }
 
-    /* "Weighed Mon 30 Oct · +0.3 kg in 90 days"; `dayWords` is the last weigh-in's day already written. */
+    /* "Weighed Mon 2 Mar · +0.6 kg in 90 days"; `dayWords` is the last weigh-in's day already written. */
     public static func weightLine(dayWords: String, change: Double?, goalKg: Double?) -> String {
         var s = "Weighed " + dayWords
         if let c = change { s += " \u{00B7} " + (abs(c) < 0.05 ? "no change" : signedKg(c) + " kg") + " in 90 days" }

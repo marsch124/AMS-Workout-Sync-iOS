@@ -10,7 +10,7 @@ public struct MonthWorkout: Codable, Equatable, Identifiable {
     public var name: String
     /* Garmin's own sport key: "running", "walking", "breathwork" … */
     public var type: String
-    /* The day he lived it ("2026-11-25") and the clock time of the start ("18:12"), both as his own local stamp. */
+    /* The day he lived it ("2026-11-25") and the clock time of the start ("07:45"), both as his own local stamp. */
     public var day: String
     public var time: String
     public var start: Date
@@ -68,7 +68,7 @@ public enum MonthWorkouts {
         (list.count, list.reduce(0) { $0 + $1.seconds }, list.reduce(0) { $0 + ($1.metres ?? 0) })
     }
 
-    /* "41h 43m · 321.8 km"; the time alone when no workout has a distance. */
+    /* "18h 20m · 142.5 km"; the time alone when no workout has a distance. */
     public static func totalsLine(_ list: [MonthWorkout]) -> String {
         let t = totals(list)
         let time = formatDuration((t.seconds / 60).rounded() * 60)
@@ -102,7 +102,7 @@ public enum MonthWorkouts {
         return nil
     }
 
-    /* "Wed 25 · 18:12" */
+    /* "Wed 25 · 07:45" */
     public static func whenText(_ w: MonthWorkout) -> String {
         guard let d = M.date(w.day) else { return w.time }
         let c = M.calendar()

@@ -35,7 +35,7 @@ final class Health29Tests: XCTestCase {
         let t = BodyHealth.weightTrend(range: r, goal: g)
         XCTAssertEqual(t.points.map(\.day), ["2030-01-02", "2030-03-10"])
         XCTAssertEqual(BodyHealth.weightChange(t.points), 0.3)
-        XCTAssertEqual(BodyHealth.weightLine(dayWords: "Sun 10 Mar", change: 0.3, goalKg: nil), "Weighed Sun 10 Mar \u{00B7} +0.3 kg in 90 days")
+        XCTAssertEqual(BodyHealth.weightLine(dayWords: "Sun 10 Mar", change: 0.6, goalKg: nil), "Weighed Sun 10 Mar \u{00B7} +0.6 kg in 90 days")
         XCTAssertEqual(t.goalKg, 78.0)
         let single = BodyHealth.weightTrend(range: json(#"{"previousDateWeight":{"calendarDate":"2030-02-01","weight":79700}}"#), goal: nil)
         XCTAssertEqual(single.points.count, 1)

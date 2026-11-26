@@ -34,10 +34,10 @@ final class Body29GymUITests: XCTestCase {
     func testTheCardShowsTheLatestSessionAndSwitchesToAnother() {
         let app = launch(noFolder: false)
         XCTAssertTrue(scrolled(app, to: "body-gym-card").exists, "no Gym sessions card")
-        XCTAssertTrue(any(app, "body-gym-head").label.contains("Basic-Fit"), "the head line said \(any(app, "body-gym-head").label)")
+        XCTAssertTrue(any(app, "body-gym-head").label.contains("City Gym"), "the head line said \(any(app, "body-gym-head").label)")
         XCTAssertTrue(any(app, "body-gym-counts").label.contains("4 machines"), "counts: \(any(app, "body-gym-counts").label)")
         XCTAssertTrue(any(app, "body-gym-compare").label.hasPrefix("vs the one before"), "no compare line")
-        XCTAssertTrue(any(app, "body-gym-machine-0").label.contains("Seated leg curl"), "no machine line")
+        XCTAssertTrue(any(app, "body-gym-machine-0").label.contains("Leg press"), "no machine line")
         XCTAssertFalse(any(app, "body-gym-back").exists)
         any(app, "body-gym-row-g2").tap()
         XCTAssertTrue(any(app, "body-gym-back").waitForExistence(timeout: 3), "no way back to the latest")

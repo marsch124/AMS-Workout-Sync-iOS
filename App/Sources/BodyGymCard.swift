@@ -103,15 +103,15 @@ final class GymReader: ObservableObject {
     /* Invented sample sessions for the picture switch (AMSWS_FAKE_GARMIN); the days follow today. */
     private static func invented(today: String) -> [GymSession] {
         func day(_ n: Int) -> String { PlanView.addDays(today, -n) }
-        let curl = GymEntry(name: "Seated leg curl", muscle: "Legs", sets: "30 × 15, 32 × 15, 32 × 12 kg", setCount: 3, topKg: 32)
+        let curl = GymEntry(name: "Leg press", muscle: "Legs", sets: "80 × 12, 90 × 10, 90 × 8 kg", setCount: 3, topKg: 90)
         let press = GymEntry(name: "Chest press", muscle: "Chest", sets: "40 kg × 12, 10", setCount: 2, topKg: 40)
         let row = GymEntry(name: "Seated row", muscle: "Back", sets: "35 × 12, 37,5 × 10 kg", setCount: 2, topKg: 37.5)
         let bike = GymEntry(name: "Exercise bike", sets: "15 min · level 6", setCount: 1)
         return [
-            GymSession(id: "g1", date: day(2), minutes: 70, gym: "Basic-Fit", feel: "good", machines: 4, sets: 12, liftedKg: 4_320, bests: ["Seated leg curl"], entries: [curl, press, row, bike]),
-            GymSession(id: "g2", date: day(5), minutes: 108, gym: "Basic-Fit", feel: "ok", machines: 3, sets: 12, liftedKg: 2_838, entries: [curl, press, row]),
-            GymSession(id: "g3", date: day(9), minutes: 62, gym: "Basic-Fit", feel: "great", machines: 3, sets: 9, liftedKg: 2_950, entries: [press, row, bike]),
-            GymSession(id: "g4", date: day(13), minutes: 55, gym: "Basic-Fit", machines: 2, sets: 6, liftedKg: 1_980, entries: [curl, press]),
+            GymSession(id: "g1", date: day(2), minutes: 64, gym: "City Gym", feel: "good", machines: 4, sets: 11, liftedKg: 4_320, bests: ["Leg press"], entries: [curl, press, row, bike]),
+            GymSession(id: "g2", date: day(5), minutes: 81, gym: "City Gym", feel: "ok", machines: 3, sets: 9, liftedKg: 3_680, entries: [curl, press, row]),
+            GymSession(id: "g3", date: day(9), minutes: 62, gym: "City Gym", feel: "great", machines: 3, sets: 9, liftedKg: 2_950, entries: [press, row, bike]),
+            GymSession(id: "g4", date: day(13), minutes: 55, gym: "City Gym", machines: 2, sets: 6, liftedKg: 1_980, entries: [curl, press]),
         ]
     }
 }
@@ -131,7 +131,7 @@ private extension View {
     func gymFolderImporter(_ on: Binding<Bool>, today: String) -> some View { modifier(GymFolderImporter(isPresented: on, today: today)) }
 }
 
-/* The machine's line split in its name and what follows it ("best 32 kg × 15"). */
+/* The machine's line split in its name and what follows it ("best 90 kg × 10"). */
 private func machineParts(_ e: GymEntry) -> (String, String) {
     let line = GymSessions.machineLine(e)
     return (e.name, String(line.dropFirst(e.name.count)))
