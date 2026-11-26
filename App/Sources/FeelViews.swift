@@ -83,11 +83,22 @@ private struct FaceEyes: Shape {
     }
 }
 
-/* The morning question. One tap answers it; the card is then gone until tomorrow. */
+/*
+ * The morning question. A tap on a face saves it at once; the card then stays
+ * for "Anything to add?" — a few words that travel with the answer. Save keeps
+ * them, Skip leaves any earlier comment as it was.
+ */
 struct FeelCard: View {
     /* Today's answer while he is changing it; nil the first time. */
     var current: Feel?
+    /* The comment already given today, put in the field. */
+    var note: String = ""
     let pick: (Feel) -> Void
+    var saveNote: (String) -> Void = { _ in }
+    var skip: () -> Void = {}
+
+    @State private var text = ""
+    @FocusState private var focused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -114,9 +125,49 @@ struct FeelCard: View {
                     .accessibilityLabel(f.word)
                 }
             }
+            if current != nil {
+                Text("Anything to add?")
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(Theme.text)
+                    .padding(.top, 2)
+                TextField("A few words, like slept badly or sore legs", text: $text, axis: .vertical)
+                    .lineLimit(1...4)
+                    .font(.subheadline)
+                    .focused($focused)
+                    .onChange(of: text) { _, new in if new.count > 200 { text = String(new.prefix(200)) } }
+                    .padding(.horizontal, 10).padding(.vertical, 8)
+                    .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.surface2))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.border, lineWidth: 1))
+                    .accessibilityIdentifier("feel-note-field")
+                HStack(spacing: 10) {
+                    Button { saveNote(text.trimmingCharacters(in: .whitespacesAndNewlines)) } label: {
+                        Text("Save").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, minHeight: 36)
+                            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.today))
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .keyboardShortcut(.defaultAction)
+                    .accessibilityIdentifier("feel-note-save")
+                    Button { skip() } label: {
+                        Text("Skip").font(.subheadline).foregroundStyle(Theme.secondary)
+                            .padding(.horizontal, 14).frame(minHeight: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("feel-note-skip")
+                }
+            }
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .onAppear {
+            text = note
+            if current != nil { focused = true }
+        }
+        .onChange(of: current) { old, new in
+            if old == nil, new != nil { focused = true }
+        }
     }
 }
 

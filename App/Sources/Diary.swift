@@ -25,6 +25,8 @@ final class Diary: ObservableObject {
     private var stamps: [String: Date] = [:]
     /* Day → the other app that gave that morning's answer ("morning" = Magic Morning); none when he answered here. */
     @Published private(set) var feelFrom: [String: String] = [:]
+    /* Day → the few words he added to that morning's answer (2.10). */
+    @Published private(set) var notes: [String: String] = [:]
 
     /* A change here: iCloud is met a moment later. */
     var onChange: (() -> Void)?
@@ -35,9 +37,12 @@ final class Diary: ObservableObject {
         var found: [Load.Found] = []
         var stamps: [String: Date] = [:]
         var feelFrom: [String: String] = [:]
+        var notes: [String: String] = [:]
 
-        init(feel: FeelLog, answers: [String: Double], found: [Load.Found], stamps: [String: Date], feelFrom: [String: String]) {
+        init(feel: FeelLog, answers: [String: Double], found: [Load.Found], stamps: [String: Date], feelFrom: [String: String],
+             notes: [String: String]) {
             self.feel = feel; self.answers = answers; self.found = found; self.stamps = stamps; self.feelFrom = feelFrom
+            self.notes = notes
         }
 
         /* A field that is missing is an older file, and gets its default — never "unreadable, start empty". */
@@ -48,6 +53,7 @@ final class Diary: ObservableObject {
             found = (try? c.decodeIfPresent([Load.Found].self, forKey: .found)) ?? []
             stamps = (try? c.decodeIfPresent([String: Date].self, forKey: .stamps)) ?? [:]
             feelFrom = (try? c.decodeIfPresent([String: String].self, forKey: .feelFrom)) ?? [:]
+            notes = (try? c.decodeIfPresent([String: String].self, forKey: .notes)) ?? [:]
         }
     }
 
@@ -71,6 +77,7 @@ final class Diary: ObservableObject {
             found = saved.found
             stamps = saved.stamps
             feelFrom = saved.feelFrom
+            notes = saved.notes
         }
         #if DEBUG
         // AMSWS_FEEL=4 answers this morning's question for a picture; "week"
@@ -86,11 +93,15 @@ final class Diary: ObservableObject {
                 feel.set(f, on: today)
             }
         }
+        // AMSWS_FEEL_NOTE=1: Good is picked and the card waits in its comment step.
+        if env["AMSWS_FEEL_NOTE"] != nil {
+            feel.set(.good, on: env["AMSWS_TODAY"] ?? PlanView.todayKey())
+        }
         #endif
     }
 
     private func save() {
-        let saved = Saved(feel: feel, answers: answers, found: found, stamps: stamps, feelFrom: feelFrom)
+        let saved = Saved(feel: feel, answers: answers, found: found, stamps: stamps, feelFrom: feelFrom, notes: notes)
         if let data = try? JSONEncoder().encode(saved) { try? data.write(to: fileURL, options: .atomic) }
     }
 
@@ -104,6 +115,21 @@ final class Diary: ObservableObject {
         save()
         onChange?()
         Neighbours.shared.writeFeel(value, day: day)
+    }
+
+    /* The few words with this morning's answer; empty = none. Saved here and in the iCloud join like the answer. */
+    func setFeelNote(_ text: String, on day: String, at: Date = Date()) {
+        var doc = self.doc
+        doc.setNote(text, on: day, now: at)
+        notes = doc.notes
+        stamps = doc.stamps
+        save()
+        onChange?()
+    }
+
+    func feelNote(on day: String) -> String? {
+        guard let n = notes[day]?.trimmingCharacters(in: .whitespacesAndNewlines), !n.isEmpty else { return nil }
+        return n
     }
 
     /* Today's answer is the one another app gave: say so to the other devices too (the answer itself stays). */
@@ -128,7 +154,7 @@ final class Diary: ObservableObject {
     // MARK: iCloud (2.1)
 
     /* The answers as they travel. */
-    var doc: DiaryDoc { DiaryDoc(feel: feel.days, answers: answers, stamps: stamps, feelFrom: feelFrom) }
+    var doc: DiaryDoc { DiaryDoc(feel: feel.days, answers: answers, stamps: stamps, feelFrom: feelFrom, notes: notes) }
 
     /* The answers joined with the other devices', put in place here. */
     func takeFromCloud(_ joined: DiaryDoc) {
@@ -136,6 +162,7 @@ final class Diary: ObservableObject {
         answers = joined.answers
         stamps = joined.stamps
         feelFrom = joined.feelFrom
+        notes = joined.notes
         save()
     }
 
