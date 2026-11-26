@@ -56,6 +56,12 @@ final class TodayNotePublisher {
                                    weekDoneSeconds: hours.done, weekPlannedSeconds: hours.planned)
     }
 
+    /* 2.9: the day turned while the app stayed open: a note for the new day, even when nothing else changed. */
+    func publishIfNewDay(_ store: Store) {
+        guard let last, last.day != store.today else { return }
+        publish(store, force: true)
+    }
+
     /* `force`: the app came to the front, so the moment of writing is renewed even when nothing changed. */
     func publish(_ store: Store, force: Bool = false) {
         guard let note = Self.note(store) else { return }
@@ -85,6 +91,19 @@ struct TodayNoteHook: ViewModifier {
             .onChange(of: phase) { _, p in if p == .active { TodayNotePublisher.shared.publish(store, force: true) } }
             .onReceive(store.objectWillChange.debounce(for: .seconds(1), scheduler: RunLoop.main)) { _ in
                 TodayNotePublisher.shared.publish(store)
+            }
+            // 2.9: the day can turn while the app stays open (on the Mac it often runs hidden for AMS Tria Menu).
+            // Before, the note kept yesterday's day until the app came to the front. Now midnight rewrites it, and a
+            // check every five minutes catches a missed midnight (a sleeping Mac). The Body numbers are read here too,
+            // so a start in the background keeps garmin-body.json current without the Body page being opened.
+            .onAppear { Task { await GarminReader.shared.readBodyIfDue(today: store.today) } }
+            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged).receive(on: RunLoop.main)) { _ in
+                TodayNotePublisher.shared.publishIfNewDay(store)
+                Task { await GarminReader.shared.readBodyIfDue(today: store.today) }
+            }
+            .onReceive(Timer.publish(every: 300, on: .main, in: .common).autoconnect()) { _ in
+                TodayNotePublisher.shared.publishIfNewDay(store)
+                Task { await GarminReader.shared.readBodyIfDue(today: store.today) }
             }
             .onOpenURL { url in
                 guard let key = SystemLink.doneKey(host: url.host, path: url.path) else { return }
