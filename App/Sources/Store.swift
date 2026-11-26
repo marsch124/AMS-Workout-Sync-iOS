@@ -1488,6 +1488,37 @@ final class Store: ObservableObject {
         }
     }
 
+    /* Mobility Mon · Wed · Fri and strength Tue · Thu (2.14): the whole change in one save, all of it or none. */
+    func applyMobilityStrength(_ c: MobilityStrength.Change) -> MobilityStrength.Done? {
+        guard canChangePlan, var book, !c.isEmpty else { return nil }
+        do {
+            try MobilityStrength.apply(c, to: &book)
+            guard save(book) else { return nil }
+            return MobilityStrength.Done(mobility: c.mobilityCount, moved: c.moves.count, strength: c.strengthAdded)
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
+    }
+
+    /* One Undo for a whole round of it, in one save. Returns how many changes were taken back. */
+    @discardableResult
+    func undoMobilityStrength(batch: String) -> Int {
+        guard var book else { return 0 }
+        do {
+            let n = try MobilityStrength.undo(batch: batch, in: &book)
+            guard n > 0, save(book) else { return 0 }
+            return n
+        } catch {
+            lastProblem = error.localizedDescription
+            return 0
+        }
+    }
+
+    func mobilityStrengthUndoable(_ changes: [PlanChange]) -> [PlanChange] {
+        guard let book else { return [] }
+        return MobilityStrength.undoable(changes, book: book)
+    }
 
     /* Sessions can be changed, added and taken out only once the plan lives here. */
     var canChangePlan: Bool { home == .app && book != nil && !goingBack }

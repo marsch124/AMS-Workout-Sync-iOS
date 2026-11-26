@@ -19,7 +19,13 @@ struct PlanChangesView: View {
                         .accessibilityIdentifier("changes-empty")
                 }
                 ForEach(Array(changes.enumerated()), id: \.element.id) { index, change in
-                    if let batch = RepeatRule.batch(of: change.why) {
+                    if let batch = MobilityStrength.batch(of: change.why) {
+                        // One round of Mobility and strength = one entry, shown at its newest change.
+                        if changes.firstIndex(where: { MobilityStrength.batch(of: $0.why) == batch }) == index {
+                            MobilityStrengthChangeRow(changes: changes.filter { MobilityStrength.batch(of: $0.why) == batch },
+                                                      batch: batch, index: index)
+                        }
+                    } else if let batch = RepeatRule.batch(of: change.why) {
                         // One repeat = one entry, shown at its newest session.
                         if changes.firstIndex(where: { RepeatRule.batch(of: $0.why) == batch }) == index {
                             RepeatChangeRow(changes: changes.filter { RepeatRule.batch(of: $0.why) == batch }, index: index)

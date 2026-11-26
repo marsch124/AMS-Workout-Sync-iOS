@@ -1,0 +1,21 @@
+AMS Triathlon Training 2.14 (90) - what to test
+
+This version has one new thing: Mobility and strength. Mobility every Monday, Wednesday and Friday, strength every Tuesday and Thursday, 30 minutes each. Say what you saw if anything looks wrong.
+
+1. The page. Open Settings, Your plan, Mobility and strength (under Thursday rides). Read the weeks. Each row should look like Week 13 · Mon 30 Nov, then Mobility Mon · Wed · Fri, then Strength Mon → Tue · Wed → Thu (or + Thu), and the minutes before → after. Nothing should change yet.
+
+2. Cancel. Tap Cancel (Escape on a Mac). The page closes and your plan is as it was.
+
+3. Change. Open the page again and tap the full-colour button Change N weeks. A green line should say how many mobility sessions were added, how many strength sessions moved and how many were added. The button goes and the top button says Done.
+
+4. Look at next week on Plan. Monday, Wednesday and Friday should each have 30 minutes of violet mobility called Mobility: hips, hamstrings, calves, upper back. Strength should be on Tuesday and Thursday only, 30 minutes each, with the exercises it had before. Friday should still be a rest day. Race week should have mobility only, and nothing after the race.
+
+5. Days you did already. A day you logged or marked missed should be as it was. No day should have two mobility sessions.
+
+6. Open the page again. It should say These days are already in your plan.
+
+7. Other devices. After a little while the same sessions should show on your iPad and your Mac, one mobility session per day, never two.
+
+8. Undo, only if you want it. Settings, Changes to the plan: the whole change is one entry, Mobility and strength days, with one Undo. Undo takes the mobility out and puts the moved strength back on Monday and Wednesday. Anything you logged since stays.
+
+Only your own devices can prove these: the iCloud arrival on the iPad and the Mac, and how the weeks look in your real plan.

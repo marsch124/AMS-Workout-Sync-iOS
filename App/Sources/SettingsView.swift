@@ -281,6 +281,11 @@ struct SettingsView: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("plan-rides")
+            NavigationLink { MobilityStrengthView() } label: {
+                SettingsRow(title: "Mobility and strength", sub: "Mobility Mon \u{00B7} Wed \u{00B7} Fri, strength Tue \u{00B7} Thu, 30 min each", chevron: true)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("plan-mobility-strength")
         }
         NavigationLink { FavouritesSettingsView() } label: {
             SettingsRow(title: "Favourite sessions", sub: "\(FavouritesShelf.list.count) kept \u{2014} fill the New session page in one tap", chevron: true)

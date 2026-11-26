@@ -14,8 +14,8 @@ settings:
     DEVELOPMENT_TEAM: D24ENP83QQ
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "2.13"
-    CURRENT_PROJECT_VERSION: "89"
+    MARKETING_VERSION: "2.14"
+    CURRENT_PROJECT_VERSION: "90"
 packages:
   WorkoutCore:
     path: Core

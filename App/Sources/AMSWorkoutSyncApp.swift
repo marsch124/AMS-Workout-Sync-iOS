@@ -179,6 +179,9 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_RIDES"] != nil {
                 NavigationStack { ThursdayRidesView() }
             }
+            if ProcessInfo.processInfo.environment["AMSWS_MOBILITY"] != nil {
+                NavigationStack { MobilityStrengthView() }
+            }
             if ProcessInfo.processInfo.environment["AMSWS_RACE_PAGE"] != nil {
                 NavigationStack { RacePage() }.environmentObject(store)
             }
