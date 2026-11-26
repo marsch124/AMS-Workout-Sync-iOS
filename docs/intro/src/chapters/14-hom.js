@@ -53,7 +53,7 @@ CHAPTER({
       <span class="k-muted k-small">${S.hom_cloud === 'same' ? 'Last met iCloud 07:12.' : 'Your plan is on its way between your devices.'}</span>
       <button class="k-btn k-main k-full" data-act="hom.sync" data-t="hom.sync"><span>Sync now</span></button>
       <span class="k-cap">Your devices</span>
-      <div class="k-card"><span class="k-small"><b>iPhone · this one</b> · last seen 07:12 · 2.12 (88)</span><span class="k-small"><b>iPad</b> · last seen 07:10 · 2.12 (88)</span></div>
+      <div class="k-card"><span class="k-small"><b>iPhone · this one</b> · last seen 07:12 · 2.13 (89)</span><span class="k-small"><b>iPad</b> · last seen 07:10 · 2.12 (88)</span></div>
       <span class="k-cap">What is shared</span>
       <span class="k-muted k-small">The plan, everything you log and change, and your morning and how-hard answers are the same on your iPhone, iPad and Mac. Apple Health numbers come from your iPhone. The Training calendar and Dropbox stay on your iPhone.</span>`,
     /* The page an iPad or a Mac shows before the plan has arrived (it stands in for Today). */

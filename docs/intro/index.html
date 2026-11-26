@@ -2915,7 +2915,7 @@ CHAPTER({
       hint: 'The card shows the gym sessions you log in the Workout Companion app. It has no page of its own; the six latest sit under it as rows, each with a slim bar for its kilograms.',
       robot: [['act', 'bod.gym', '1']], real: 'Body › Gym sessions' },
     { kind: 'look', head: 'Before the gym folder is chosen', shot: 'bod-19-gym-nofolder',
-      text: 'Until you choose the folder, the Gym sessions card is small: a grey line says: “Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once.” Under it a button, <b>Choose folder</b>. Workouts · September stands right under the card.',
+      text: 'Until you choose the folder, the Gym sessions card is small: a grey line says: “Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin — it is in iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training. Once.” Under it a button, <b>Choose folder</b>. Workouts · September stands right under the card.',
       hint: 'The app only reads that folder and writes nothing in it. The choice stays on this device: the iPad and the Mac each need their own.', real: 'Body › Gym sessions' },
     { kind: 'look', head: 'The gym block on a strength session', set: { screen: 'bod.gymblock' }, target: 'bod.gymblk',
       text: 'Open a strength session on a day you trained in the gym and a small <b>GYM</b> block shows that day’s place, length, machines, sets, kilograms and each machine’s best set. Other kinds of session show nothing, and so does a strength day with no gym session.' },
@@ -4191,7 +4191,7 @@ CHAPTER({
       text: 'Today’s Garmin line and the Body page get their numbers from your Garmin watch, through one personal key. Once the key is saved, Settings › Garmin says Connected, shows the key only as dots, and says when it was last read. Read again now asks Garmin at once. The numbers are only shown: they never change your plan.',
       hint: 'The key stays on the device where you pasted it. An iPad or a Mac that should show the numbers needs its own key. The app only asks Garmin for numbers; nothing of your plan, notes or answers is sent to it.', real: 'Settings › Garmin' },
     { kind: 'look', head: 'Gym sessions: choose a folder once', shot: 'gar-07-gym-choose',
-      text: 'With a key saved, the Garmin page has a second part, <b>Gym sessions</b>: “From the Workout Companion app, as on your Garmin Board.” and “In iCloud Drive: AMS Workout Companion app to Garmin”. Press <b>Choose the folder</b> once and pick that folder in your iCloud Drive. Body’s Gym sessions card then fills.',
+      text: 'With a key saved, the Garmin page has a second part, <b>Gym sessions</b>: “From the Workout Companion app, as on your Garmin Board.” and “Where: iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training › AMS Workout Companion app to Garmin”. Press <b>Choose the folder</b> once and pick that folder; it sits in iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training. Body’s Gym sessions card then fills.',
       hint: 'The app only reads the folder and writes nothing in it. The choice stays on this device: the iPad and the Mac each choose their own. The Gym sessions card on Body offers the same choice.', real: 'Settings › Garmin › Gym sessions' },
     { kind: 'look', head: 'Once the folder is chosen', shot: 'gar-08-gym-chosen',
       text: 'After the choice the part shows the folder’s name, <b>AMS Workout Companion app to Garmin</b>, and the day of the newest session: Newest session: Mon 14 Sep. A small <b>Change</b> button picks another folder.' },
@@ -4307,7 +4307,7 @@ CHAPTER({
       <span class="k-muted k-small">${S.hom_cloud === 'same' ? 'Last met iCloud 07:12.' : 'Your plan is on its way between your devices.'}</span>
       <button class="k-btn k-main k-full" data-act="hom.sync" data-t="hom.sync"><span>Sync now</span></button>
       <span class="k-cap">Your devices</span>
-      <div class="k-card"><span class="k-small"><b>iPhone · this one</b> · last seen 07:12 · 2.12 (88)</span><span class="k-small"><b>iPad</b> · last seen 07:10 · 2.12 (88)</span></div>
+      <div class="k-card"><span class="k-small"><b>iPhone · this one</b> · last seen 07:12 · 2.13 (89)</span><span class="k-small"><b>iPad</b> · last seen 07:10 · 2.12 (88)</span></div>
       <span class="k-cap">What is shared</span>
       <span class="k-muted k-small">The plan, everything you log and change, and your morning and how-hard answers are the same on your iPhone, iPad and Mac. Apple Health numbers come from your iPhone. The Training calendar and Dropbox stay on your iPhone.</span>`,
     /* The page an iPad or a Mac shows before the plan has arrived (it stands in for Today). */
@@ -4499,6 +4499,9 @@ CHAPTER({
     'set.new': S => `
       ${K.back('Settings', 'set.back')}
       <b class="set-title">What’s new</b>
+      <div class="k-card"><b>2.13 (89)</b><span class="k-muted k-small">26 November 2026</span>
+        <b class="k-small">The gym folder now lives in your AMS Triathlon Training folder</b>
+        <span class="k-small">Body and Settings › Garmin · Changed: the folder AMS Workout Companion app to Garmin no longer sits at the top of iCloud Drive. The card before the choice and Settings › Garmin › Gym sessions now say where it is: iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training. The button is still Choose the folder.</span></div>
       <div class="k-card"><b>2.12 (88)</b><span class="k-muted k-small">26 November 2026</span>
         <b class="k-small">The gym folder has a new name, and the words around it say the Workout Companion app</b>
         <span class="k-small">Body and Settings › Garmin · Changed: the card before the choice says: Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once. Settings › Garmin › Gym sessions says: From the Workout Companion app, as on your Garmin Board; In iCloud Drive: AMS Workout Companion app to Garmin; and the button Choose the folder. Once chosen, it shows that folder’s name.</span></div>
@@ -4570,7 +4573,7 @@ CHAPTER({
     { kind: 'try', head: 'Garmin, Claude and the rest', text: 'Press the row <b>Claude</b>.', set: { screen: 'set.l2' }, target: 'set.row:claude', until: S => S.set_pick === 'claude',
       ok: 'Optional, and it needs your own key. Its own chapter teaches it. Garmin has one too, and Apple Health follows it.', robot: [['act', 'set.pick', 'claude']] },
     { kind: 'look', head: 'The foot of Settings', shot: 'set-06-foot',
-      text: 'Below Claude: <b>Your two neighbour apps</b>, <b>Reminders</b>, <b>Weather</b>, <b>Calendar</b> and <b>Dropbox</b> (the last two are on the iPhone only). Then <b>This app</b>, with <b>How this works</b> and <b>What’s new</b>; What’s new reads the version under its name, here AMS Triathlon Training 2.12 (88).',
+      text: 'Below Claude: <b>Your two neighbour apps</b>, <b>Reminders</b>, <b>Weather</b>, <b>Calendar</b> and <b>Dropbox</b> (the last two are on the iPhone only). Then <b>This app</b>, with <b>How this works</b> and <b>What’s new</b>; What’s new reads the version under its name, here AMS Triathlon Training 2.13 (89).',
       hint: 'On an iPad and a Mac the word Keys at the foot of the side list shows every key.', real: 'Settings, at the foot' },
     { kind: 'try', head: 'Open How this works', text: 'Press <b>How this works</b>.', set: { screen: 'set.l3' }, target: 'set.row:guide', until: S => S.screen === 'set.guide',
       ok: 'One long page. Each part has a green heading; the last part is Signs in this app.', robot: [['act', 'set.guide']] },
@@ -4580,7 +4583,7 @@ CHAPTER({
       robot: [['act', 'set.sign', 'tick'], ['act', 'set.sign', 'red'], ['act', 'set.sign', 'moon'], ['act', 'set.sign', 'dot'], ['act', 'set.sign', 'blue'], ['act', 'set.sign', 'main']],
       real: 'How this works › Signs in this app' },
     { kind: 'try', head: 'See what is new', text: 'Press <b>What’s new</b>. Every version stands there, newest first.', set: { screen: 'set.l3' }, target: 'set.row:new', until: S => S.screen === 'set.new',
-      ok: 'The entry 2.12 (88), 26 November 2026, says every new, changed and fixed thing, in plain words.', robot: [['act', 'set.new']] },
+      ok: 'The entry 2.13 (89), 26 November 2026, says every new, changed and fixed thing, in plain words.', robot: [['act', 'set.new']] },
     { kind: 'look', head: 'Your favourite sessions', shot: 'set-04-favourites',
       text: 'Settings \u203a Your plan \u203a Favourite sessions. A blue card counts them (here 3 favourites, kept for the New session page and on all your devices). Each row has three lines at the left, the session\u2019s mark, its name, length, zone and sport, and the small buttons <b>Rename</b> and <b>Remove</b>.',
       hint: 'Done is at the top left.', real: 'Settings \u203a Your plan \u203a Favourite sessions' },
@@ -4607,7 +4610,7 @@ function setList(S, id, withHead) {
     return K.nav(r[0], 'set.pick', { arg: key, sub: r[1], t: 'set.row:' + key });
   };
   const extra = id === 'set.l3' ? `<span class="k-cap">This app</span>${K.nav('How this works', 'set.guide', { sub: 'The week strip, logging, syncing and what keeps your plan safe', t: 'set.row:guide' })}
-      ${K.nav('What’s new', 'set.new', { sub: 'AMS Triathlon Training 2.12 (88)', t: 'set.row:new' })}` : '';
+      ${K.nav('What’s new', 'set.new', { sub: 'AMS Triathlon Training 2.13 (89)', t: 'set.row:new' })}` : '';
   return `${withHead ? '<h1 class="k-h1">Settings</h1>' : ''}
     ${picked ? `<div class="k-band k-ok" data-t="set.card">${icon('info')}<span class="k-small"><b>${esc(picked[0])}</b> — ${esc(picked[2])} ${picked[3] ? 'Taught in: ' + esc(picked[3]) + '.' : ''}</span></div>` : ''}
     ${SET_GROUPS[id].map(([g, keys]) => `<span class="k-cap">${esc(g)}</span>${keys.map(row).join('')}`).join('')}${extra}`;
@@ -4648,7 +4651,7 @@ FINALE = {
       items: [
         '<b>Body</b> with your own Garmin numbers: today’s curve, yesterday’s thin line, and a press on a workout.',
         '<b>Body › Training and Health</b> with your own Garmin numbers: set the eight cards beside your Garmin Board — Training load, Fitness, Gym sessions, Workouts this month, Sleep debt, Weight, Energy and Water. The figures should agree; if one does not, tell Claude which.',
-        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the folder</b> (AMS Workout Companion app to Garmin) once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from the Workout Companion app.',
+        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the folder</b> (AMS Workout Companion app to Garmin, in iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training) once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from the Workout Companion app.',
         'On a <b>strength session’s page</b> on a day you trained in the gym: the small <b>GYM</b> block with that day’s place, length and best sets.',
         'A press on a workout in <b>Workouts this month</b> that is not in your plan: it should open its small plate, and change nothing.',
         'A done session with <b>From your watch</b>: the route, the pulse line and the laps.',

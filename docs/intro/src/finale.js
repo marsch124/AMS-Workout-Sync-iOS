@@ -32,7 +32,7 @@ FINALE = {
       items: [
         '<b>Body</b> with your own Garmin numbers: today’s curve, yesterday’s thin line, and a press on a workout.',
         '<b>Body › Training and Health</b> with your own Garmin numbers: set the eight cards beside your Garmin Board — Training load, Fitness, Gym sessions, Workouts this month, Sleep debt, Weight, Energy and Water. The figures should agree; if one does not, tell Claude which.',
-        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the folder</b> (AMS Workout Companion app to Garmin) once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from the Workout Companion app.',
+        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the folder</b> (AMS Workout Companion app to Garmin, in iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training) once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from the Workout Companion app.',
         'On a <b>strength session’s page</b> on a day you trained in the gym: the small <b>GYM</b> block with that day’s place, length and best sets.',
         'A press on a workout in <b>Workouts this month</b> that is not in your plan: it should open its small plate, and change nothing.',
         'A done session with <b>From your watch</b>: the route, the pulse line and the laps.',
