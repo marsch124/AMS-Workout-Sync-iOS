@@ -2,7 +2,7 @@
 
 > **Name note.** This app was called **Workout Sync** up to version 1.1 (72). From 1.2 (73) the shown name is **AMS Triathlon Training**. It is the same app: same bundle id `com.schabbauer.AMSWorkoutSync`, same URL scheme `amsworkoutsync://`, same repository. Source file names, the Xcode target and the Swift package still say "WorkoutSync" or "WorkoutCore". Where this document quotes a text the app shows, the quote is what the code says today (version 1.2 (73)); section 12.6 records the texts that were renamed in 1.2 and the places that keep the old word on purpose.
 
-This document describes the app **as the code is today** (2.9 build 85, 26 November 2026; the last sections, "New in 2.6" to "New in 2.9", are the newest and win where they differ). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
+This document describes the app **as the code is today** (2.10 build 86, 26 November 2026; the last sections, "New in 2.6" to "New in 2.10", are the newest and win where they differ). Sections 1 to 15 were written for 1.2, where the plan lives in Excel; **from 2.0 the plan may instead live in the app — read the last section, "New in 2.0 (74)", beside every section that speaks of the workbook, Dropbox or waiting to sync.** **From 2.2 the app also runs on iPad and Mac and shares the plan through iCloud; sections 1.2 (iPhone only, portrait only) and 2 (the bottom bar) describe the iPhone, and the last section, "New in 2.2 (76)", describes the rest.** **From 2.3 the app can suggest changes by a fixed rule book, can ask Claude to pick among them (optional, off until a key is typed), and talks to two neighbour apps; the last section, "New in 2.3 (77)", describes them.** Where a code comment and the code disagree, the code wins. Every rule names the file that holds it. All examples are invented.
 
 Source layout:
 
@@ -2516,3 +2516,51 @@ A slim raspberry bar in Training load with a darker steady stretch (0.8 to 1.3) 
 
 * **Data tests** (`Core/Tests/WorkoutCoreTests`): `Load29Tests` (3), `Health29Tests` (3), `Gym29Tests` (4), `Workouts29Tests` (2), `BodyReadDue29Tests`. **Screen tests** (compiled, not run locally): `Body29LoadUITests`, `Body29HealthUITests` (2), `Body29GymUITests` (2), `Body29WorkoutsUITests`.
 * **Unproven**: no screen of any new card was seen by the lanes; Garmin's real answers were checked by shape with a read-only tool, not read inside the app (84 days of workouts, sleep needs, weigh-ins); the real folder picker, the bookmark and a real gym file never ran (and on a real Mac the read access of the iPad app); the gym block on a strength session on screen; the tap on a month workout without a plan session; the two fixes across a real midnight and a real Mac login. Known: the 12-week bars count back "11 … 1, now" weeks; the month counts only the first 99 workouts; the gym and load figures write thousands with a comma.
+
+## New in 2.10 (86) — A comment with How do you feel?, and a colour for every Body card
+
+Version shown: 2.10 (86), 26 November 2026. The base is the released 2.9 (85). The owner asked on 26 November 2026 for three things: a comment beside the morning answer, "a multitude of colours" on the Body page ("I hate this boring colour"), and clearer words on the gym card. Where an older section says every Body card is raspberry, this section is the newer. All examples are invented.
+
+### F.1 Today: a comment with How do you feel?
+
+* **Before.** One tap on a face saved the answer and the card was gone. **Now.** The tap saves the answer at once, and the card stays with the question `Anything to add?`, a text field with the prompt `A few words, like slept badly or sore legs` (`feel-note-field`), and two buttons: `Save` (green, full colour; `feel-note-save`) and `Skip` (`feel-note-skip`; Escape on a Mac). Either button closes the card for the day.
+* **The comment line.** When a comment exists it shows under the morning line, grey, in quotes (`feel-note-line`). A tap on it opens the card again to change it; saving an empty field removes the comment.
+* **Where it is kept.** In the app's diary with the answer, and through the diary to the owner's own iCloud, so the iPad and the Mac show it. Core: `DiaryDoc.notes` maps a day to its comment; the mark is `note:<day>` and the newest write wins. It is never written into the plan or the Excel file, and no rule of the rule book reads it: it leads to no advice.
+* **Neighbour apps.** An answer taken over from Magic Morning or Workouts has no comment here, and the card is not shown for it.
+* **Switch (DEBUG).** `AMSWS_FEEL_NOTE=1` shows the comment step for a picture.
+
+### F.2 Body: a colour of its own for every card (`App/Sources/BodyHues.swift`)
+
+* **Before.** Every tile and card on the Body page used Body's raspberry (`Theme.body`). **Now.** Each card has its own hue: the card's name, the marks and bars of its figures and its pale ground (`Theme.bodyTile` tinted) use it, and so does the page the card opens.
+* **Code.** `BodyHue` holds one hue for each card (light and dark values); the card's view receives it through the environment as `.bodyHue(…)`, so inner marks and bars read the same value.
+* **Palette** (light first, then dark; hex):
+
+| Card | Colour | Light | Dark |
+|---|---|---|---|
+| Sleep, Sleep debt | indigo | 4F46E5 | A5B4FC |
+| HRV | teal | 0D9488 | 5EEAD4 |
+| Resting pulse | fuchsia | C026D3 | F0ABFC |
+| Stress | amber | D97706 | FCD34D |
+| Steps | lime | 65A30D | BEF264 |
+| Intensity minutes | blue | 2563EB | 93C5FD |
+| Training load | violet | 7C3AED | C4B5FD |
+| Fitness | cyan | 0891B2 | 67E8F9 |
+| Gym sessions | orange | EA580C | FDBA74 |
+| Workouts this month | pink | DB2777 | F9A8D4 |
+| Weight | purple | 9333EA | D8B4FE |
+| Energy | gold | CA8A04 | FDE047 |
+| Water | sky blue | 0EA5E9 | 7DD3FC |
+
+* **Unchanged, still raspberry.** Body Battery (the big card and the 7 days of curves), the page heading, the headings `Training` and `Health`, the range buttons (7 days, 4 weeks, 12 weeks) and Share. Today's weekday letter stays bold green and the `normal` band stays grey. No card uses the green of today and done, or the red of a warning (red still appears only for `Overreaching` and the like).
+
+### F.3 Body: clearer words on the Gym sessions card
+
+Before the folder is chosen the card says `Your gym sessions come from AMS Workout Companion. Tap Choose folder and pick AMS Garmin in iCloud Drive — once.` The button `Choose folder` opens the folder choice directly. Settings › Garmin › Gym sessions still has the same choice.
+
+### F.4 Signs added
+
+On the Body page each card's own colour only tells the cards apart; it means nothing else, raspberry is still Body, and no card takes the green of today and done or the red of a warning. On Today, grey words in quotes under the morning line are the owner's own comment for the day. No new symbol-only button.
+
+### F.5 Not changed
+
+The plan, logging, suggestions by the rule book, the Stop sign and I'm ill, the neighbour apps' notes and the Excel file.
