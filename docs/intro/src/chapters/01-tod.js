@@ -54,7 +54,7 @@ CHAPTER({
   gives: 'The whole day on one page: how you feel, the week so far, today’s session with its weather, what you missed, and tomorrow.',
   start: () => ({ device: 'phone', part: 'today', screen: 'tod.today', sheet: null,
     tod_feel: null, tod_changing: false, tod_from: null, tod_key: false, tod_extras: [], tod_garmin_line: false, tod_plateseen: false,
-    tod_what: '', tod_dur: '', tod_count: 'no', tod_tried: false, tod_sunday: true, tod_back: false }),
+    tod_note: '', tod_noting: false, tod_what: '', tod_dur: '', tod_count: 'no', tod_tried: false, tod_sunday: true, tod_back: false }),
   screens: {
     /* The top of Today, in the app's order: heading, morning line, the question, the week card, today's session and its weather,
        extras, the Garmin line, Week so far. */
@@ -65,9 +65,12 @@ CHAPTER({
       ${S.tod_from && S.tod_feel ? `<span class="tod-line" data-t="tod.line">Feeling <b>${todFeelWord(S.tod_feel)}</b> — from ${esc(S.tod_from)}</span>
         <span class="k-muted k-small" data-t="tod.fromnote">Answered in ${esc(S.tod_from)} — change it there.</span>`
         : answered ? `<button class="tod-line" data-act="tod.change" data-t="tod.line">Feeling <b>${todFeelWord(S.tod_feel)}</b></button>` : ''}
+      ${answered && !S.tod_noting && !S.tod_from && S.tod_note ? `<button class="tod-comment" data-act="tod.reopen" data-t="tod.comment">“${esc(S.tod_note)}”</button>` : ''}
       ${S.tod_garmin_line ? todGarmin : ''}
-      ${!S.tod_from && (!S.tod_feel || S.tod_changing) ? `<div class="k-card" data-t="tod.ask"><b class="k-small">How do you feel?</b>
-        <div class="tod-faces">${TOD_FEELS.map(([id, w]) => `<button class="tod-face ${S.tod_feel === id ? 'tod-on' : ''}" data-act="tod.feel" data-arg="${id}" data-t="tod.f:${id}">${icon('tod-' + id)}<span>${w}</span></button>`).join('')}</div></div>` : ''}
+      ${!S.tod_from && (!S.tod_feel || S.tod_changing || S.tod_noting) ? `<div class="k-card" data-t="tod.ask"><b class="k-small">How do you feel?</b>
+        <div class="tod-faces">${TOD_FEELS.map(([id, w]) => `<button class="tod-face ${S.tod_feel === id ? 'tod-on' : ''}" data-act="tod.feel" data-arg="${id}" data-t="tod.f:${id}">${icon('tod-' + id)}<span>${w}</span></button>`).join('')}</div>
+        ${S.tod_noting && S.tod_feel ? `<b class="k-small">Anything to add?</b>${K.input('tod_note', S, { ph: 'A few words, like slept badly or sore legs', t: 'tod.notefield' })}
+          <div class="tod-noterow">${K.btn('Skip', 'tod.skip', { t: 'tod.skip' })}${K.btn('Save', 'tod.savenote', { main: true, t: 'tod.savenote' })}</div>` : ''}</div>` : ''}
       ${todWeek(S)}
       ${todSession(S)}
       ${todWeather}
@@ -116,7 +119,11 @@ CHAPTER({
       <div class="k-foot">${K.btn('Done', 'tod.plateclose', { t: 'tod.platedone', main: true })}</div>`,
   },
   actions: {
-    'tod.feel'(arg, S) { S.tod_feel = arg; S.tod_changing = false; },
+    'tod.feel'(arg, S) { S.tod_feel = arg; S.tod_changing = false; S.tod_noting = true; },
+    'tod.savenote'(arg, S) { S.tod_note = String(S.tod_note).trim(); S.tod_noting = false; },
+    'tod.skip'(arg, S) { S.tod_noting = false; },
+    'tod.reopen'(arg, S) { S.tod_noting = true; },
+    'key'(key, S) { if (key === 'Escape' && S.tod_noting) S.tod_noting = false; },
     'tod.change'(arg, S) { S.tod_changing = true; },
     'tod.key'(arg, S, el) { S.tod_key = !S.tod_key; },
     'tod.open'(arg, S) { S.screen = 'tod.session'; S.tod_back = false; },
@@ -142,12 +149,20 @@ CHAPTER({
       hint: 'You never have to do anything here. Every card is there to read.' },
     { kind: 'try', head: 'Answer the morning question', target: 'tod.f:good',
       text: 'Under the heading a card asks <b>How do you feel?</b> Press <b>Good</b>.',
-      until: S => S.tod_feel === 'good', ok: 'The card is gone until tomorrow. The morning line now says Feeling good.', robot: [['act', 'tod.feel', 'good']],
+      until: S => S.tod_feel === 'good', ok: 'The face stays, outlined, and the card stays open with a new question, Anything to add? You can leave it for the next step.', robot: [['act', 'tod.feel', 'good']],
       real: 'Today, top', hint: 'Five faces: Bad, Tired, OK, Good, Great. Answered once a day. It is never written into the plan. With suggestions on, two poor mornings in a row (Bad or Tired) can bring a card; there is no score.' },
     { kind: 'try', head: 'Change your answer', set: { tod_feel: 'ok' }, target: S => S.tod_changing ? 'tod.f:great' : 'tod.line',
       text: 'Press the words <b>Feeling OK</b> under the heading. The question comes back with your answer outlined. Press <b>Great</b>.',
-      until: S => S.tod_feel === 'great' && !S.tod_changing, ok: 'The line says Feeling great. A later tap on a face replaces the earlier one: there is one answer a day.',
+      until: S => S.tod_feel === 'great' && !S.tod_changing, ok: 'Your answer is now Great. A later tap on a face replaces the earlier one: there is one answer a day.',
       robot: [['act', 'tod.change'], ['act', 'tod.feel', 'great']] },
+    { kind: 'try', head: 'Add a few words to your answer', set: { tod_feel: 'good', tod_noting: true }, target: S => S.tod_noting ? (S.tod_note ? 'tod.savenote' : 'tod.notefield') : 'tod.comment',
+      text: 'After a face, the card asks <b>Anything to add?</b> Type a few words, like “slept badly”, and press <b>Save</b>. <b>Skip</b> leaves it empty; on a Mac, Escape does the same.',
+      until: S => !S.tod_noting && S.tod_note === 'slept badly', ok: 'The card closes. Under the line Feeling good the words show in grey, in quotes. Press them and the card opens again.',
+      robot: [['in', 'tod_note', 'slept badly'], ['act', 'tod.savenote']], real: 'Today › How do you feel?',
+      hint: 'The words are kept with your answer in your own iCloud, never in the plan. The app gives no advice about them.' },
+    { kind: 'look', head: 'The comment under the morning line', shot: 'tod-09-feel-note',
+      text: 'The real card after a face: the face you pressed stays outlined, then <b>Anything to add?</b>, the field with its grey words, a green <b>Save</b> and <b>Skip</b>. Once saved, your words stand under the morning line in grey, in quotes.',
+      hint: 'A press on those words opens the card again. The comment shows on the iPad and the Mac too.' },
     { kind: 'try', head: 'Open the key under This week', target: 'tod.keybtn', set: { tod_feel: 'good' },
       text: 'The card draws the week: a column a day, a block a session. Press <b>Key</b> to see what the blocks mean.',
       until: S => S.tod_key, ok: 'Solid = recorded, lighter = still to do, dotted = an extra outside the plan, a flat line = a rest day. The key lists Missed too. Pressing the card does the same.',

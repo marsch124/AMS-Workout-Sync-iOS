@@ -98,3 +98,36 @@ div.bod-mrow { cursor: default }
 .bod-night em { font-style: normal; font-size: 10px; color: var(--win-muted) }
 .bod-water i { width: 42%; background: var(--pc); border-radius: 4px; position: absolute; inset: 0 auto 0 0 }
 .bod-tag-run, .bod-tag-ride, .bod-tag-swim, .bod-tag-str { color: #1c1c1e }
+
+/* 2.10 (86): every Body card has its own colour (name, bars, marks, a pale ground). Figures stay in the text colour. Body Battery, the page heading, Training, Health, the range buttons and Share stay raspberry. */
+:root{--bc-sleep:#4F46E5;--bg-sleep:#E8E7FC;--bc-hrv:#0D9488;--bg-hrv:#E0F1F0;--bc-resting:#C026D3;--bg-resting:#F7E3F9;--bc-stress:#D97706;--bg-stress:#FAEDDF;--bc-steps:#65A30D;--bg-steps:#EBF3E0;--bc-intensity:#2563EB;--bg-intensity:#E3EBFC;--bc-load:#7C3AED;--bg-load:#EEE5FD;--bc-fitness:#0891B2;--bg-fitness:#DFF1F5;--bc-gym:#EA580C;--bg-gym:#FCE9DF;--bc-month:#DB2777;--bg-month:#FAE3ED;--bc-weight:#9333EA;--bg-weight:#F1E4FC;--bc-energy:#CA8A04;--bg-energy:#F8F0DE;--bc-water:#0EA5E9;--bg-water:#E0F3FC;}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {--bc-sleep:#A5B4FC;--bg-sleep:#282557;--bc-hrv:#5EEAD4;--bg-hrv:#143C3B;--bc-resting:#F0ABFC;--bg-resting:#4A1C52;--bc-stress:#FCD34D;--bg-stress:#513414;--bc-steps:#BEF264;--bg-steps:#2E4116;--bc-intensity:#93C5FD;--bg-intensity:#1B2E59;--bc-load:#C4B5FD;--bg-load:#352259;--bc-fitness:#67E8F9;--bg-fitness:#123C48;--bc-gym:#FDBA74;--bg-gym:#562A16;--bc-month:#F9A8D4;--bg-month:#521C36;--bc-weight:#D8B4FE;--bg-weight:#3C1F58;--bc-energy:#FDE047;--bg-energy:#4D3A13;--bc-water:#7DD3FC;--bg-water:#144258;} }
+:root[data-theme="dark"] {--bc-sleep:#A5B4FC;--bg-sleep:#282557;--bc-hrv:#5EEAD4;--bg-hrv:#143C3B;--bc-resting:#F0ABFC;--bg-resting:#4A1C52;--bc-stress:#FCD34D;--bg-stress:#513414;--bc-steps:#BEF264;--bg-steps:#2E4116;--bc-intensity:#93C5FD;--bg-intensity:#1B2E59;--bc-load:#C4B5FD;--bg-load:#352259;--bc-fitness:#67E8F9;--bg-fitness:#123C48;--bc-gym:#FDBA74;--bg-gym:#562A16;--bc-month:#F9A8D4;--bg-month:#521C36;--bc-weight:#D8B4FE;--bg-weight:#3C1F58;--bc-energy:#FDE047;--bg-energy:#4D3A13;--bc-water:#7DD3FC;--bg-water:#144258;}
+.bod-c-sleep { --pc: var(--bc-sleep); --cg: var(--bg-sleep) }
+.bod-c-hrv { --pc: var(--bc-hrv); --cg: var(--bg-hrv) }
+.bod-c-resting { --pc: var(--bc-resting); --cg: var(--bg-resting) }
+.bod-c-stress { --pc: var(--bc-stress); --cg: var(--bg-stress) }
+.bod-c-steps { --pc: var(--bc-steps); --cg: var(--bg-steps) }
+.bod-c-intensity { --pc: var(--bc-intensity); --cg: var(--bg-intensity) }
+.bod-c-load { --pc: var(--bc-load); --cg: var(--bg-load) }
+.bod-c-fitness { --pc: var(--bc-fitness); --cg: var(--bg-fitness) }
+.bod-c-gym { --pc: var(--bc-gym); --cg: var(--bg-gym) }
+.bod-c-month { --pc: var(--bc-month); --cg: var(--bg-month) }
+.bod-c-weight { --pc: var(--bc-weight); --cg: var(--bg-weight) }
+.bod-c-energy { --pc: var(--bc-energy); --cg: var(--bg-energy) }
+.bod-c-water { --pc: var(--bc-water); --cg: var(--bg-water) }
+.bod-card[class*="bod-c-"], .bod-tile[class*="bod-c-"] { background: var(--cg) }
+.bod-sh { display: contents }
+.k-sheet:has(.bod-sh.bod-c-sleep) { background: var(--bg-sleep) }
+.k-sheet:has(.bod-sh.bod-c-hrv) { background: var(--bg-hrv) }
+.k-sheet:has(.bod-sh.bod-c-resting) { background: var(--bg-resting) }
+.k-sheet:has(.bod-sh.bod-c-stress) { background: var(--bg-stress) }
+.k-sheet:has(.bod-sh.bod-c-steps) { background: var(--bg-steps) }
+.k-sheet:has(.bod-sh.bod-c-intensity) { background: var(--bg-intensity) }
+.k-sheet:has(.bod-sh.bod-c-load) { background: var(--bg-load) }
+.k-sheet:has(.bod-sh.bod-c-fitness) { background: var(--bg-fitness) }
+.k-sheet:has(.bod-sh.bod-c-gym) { background: var(--bg-gym) }
+.k-sheet:has(.bod-sh.bod-c-month) { background: var(--bg-month) }
+.k-sheet:has(.bod-sh.bod-c-weight) { background: var(--bg-weight) }
+.k-sheet:has(.bod-sh.bod-c-energy) { background: var(--bg-energy) }
+.k-sheet:has(.bod-sh.bod-c-water) { background: var(--bg-water) }

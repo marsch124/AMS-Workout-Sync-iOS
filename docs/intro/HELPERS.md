@@ -1,6 +1,6 @@
 # The Triathlon Training Course — how a chapter is written
 
-The course teaches Martin his own app, AMS Triathlon Training 2.9 (85): a chapter rail, a coach card (Look / Try it / Check), **real
+The course teaches Martin his own app, AMS Triathlon Training 2.12 (88): a chapter rail, a coach card (Look / Try it / Check), **real
 pictures of the app** and a **pretend iPhone** (for the Plan page a pretend iPad) that he presses. It is one web page,
 `docs/intro/index.html`, put together by `build.py` from `src/`, with the pictures in `shots/` beside it. Nothing in it touches the
 real app. **Update the course in the release that changes a taught screen.**
@@ -81,9 +81,9 @@ a sheet there is 520 wide. Long words must wrap, not run off: no fixed widths wi
 ## Facts — the course must be exactly true
 - Every label, button name, heading, message and number format comes from the app's code, word for word: `App/Sources/*.swift`,
   `Core/Sources/WorkoutCore/*.swift`, the guide `App/Sources/Guide.swift` (How this works, "Signs in this app", What's new),
-  `docs/SPECIFICATION.md` (the section "New in 2.9 (85)" and the ones before it), the screen tests in `UITests/`.
+  `docs/SPECIFICATION.md` (the section "New in 2.12 (88)" and the ones before it), the screen tests in `UITests/`.
   When the guide and the code differ, the code wins — and say so in your report.
-- Teach only what 2.9 (85) really does. The iPhone has five tabs (Today, Sessions, Body, Progress, Settings). The iPad and the Mac
+- Teach only what 2.12 (88) really does. The iPhone has five tabs (Today, Sessions, Body, Progress, Settings). The iPad and the Mac
   have a side list (Today, Plan, Sessions, Body, Progress, Settings). What belongs to the iPhone only (Dropbox, the Training
   calendar, Apple Health …) is in the specification, section W.1 — say so with `only`.
 - The sample is invented. Use the invented plan the pictures show (`UITests/Fixtures/plan.xlsx`, its "today" is Wednesday

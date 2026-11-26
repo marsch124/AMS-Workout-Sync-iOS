@@ -6,7 +6,7 @@ FINALE = {
   groups: [
     { title: 'A training day', note: 'The few presses that keep the plan true.',
       items: [
-        'In the morning, open <b>Today</b> and answer <b>How do you feel?</b> once.',
+        'In the morning, open <b>Today</b> and answer <b>How do you feel?</b> once, with a few words if you like.',
         'Read today’s session card: the <b>Why:</b> line, the length and the zone. Press the card to open the session’s page.',
         'If Today shows a suggestion, answer it: <b>Take it</b>, <b>Keep my plan</b> or <b>Other choice</b>.',
         'After training, press <b>Done</b> on the session’s page, or <b>Log details</b> to type what you really did.',
@@ -32,13 +32,14 @@ FINALE = {
       items: [
         '<b>Body</b> with your own Garmin numbers: today’s curve, yesterday’s thin line, and a press on a workout.',
         '<b>Body › Training and Health</b> with your own Garmin numbers: set the eight cards beside your Garmin Board — Training load, Fitness, Gym sessions, Workouts this month, Sleep debt, Weight, Energy and Water. The figures should agree; if one does not, tell Claude which.',
-        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the AMS Garmin folder</b> once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from AMS Workout Companion.',
+        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the folder</b> (AMS Workout Companion app to Garmin) once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from the Workout Companion app.',
         'On a <b>strength session’s page</b> on a day you trained in the gym: the small <b>GYM</b> block with that day’s place, length and best sets.',
         'A press on a workout in <b>Workouts this month</b> that is not in your plan: it should open its small plate, and change nothing.',
         'A done session with <b>From your watch</b>: the route, the pulse line and the laps.',
         'A reminder arriving on the iPhone, and the buttons on it.',
         'The weather line under an outdoor session, after you have allowed the app to know roughly where you are.',
         'A change made on the iPhone showing on the iPad and the Mac a moment later.',
+        'A comment with <b>How do you feel?</b> on the iPhone: type a few words and press Save. Then look at Today on the Mac; the words should stand under the morning line.',
         'Dragging to arrange: your favourites, the kit list, the fuel rows.',
         'On the iPad or the Mac: the <b>Keys</b> plate, and the keys it lists.',
         'Printing a week or a month on paper.',

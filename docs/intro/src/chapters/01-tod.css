@@ -58,3 +58,5 @@ button.tod-card { cursor: pointer }
 .tod-plate .k-card { gap: 1px }
 .tod-ex { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-rest, var(--win-muted)) }
 .tod-card[data-act] { cursor: pointer }
+.tod-noterow { display: flex; gap: 6px; justify-content: flex-end }
+.tod-comment { border: 0; background: none; font: inherit; font-size: 11.5px; color: var(--win-muted); text-align: left; padding: 0 2px; margin-top: -4px; cursor: pointer }

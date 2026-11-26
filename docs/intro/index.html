@@ -383,6 +383,8 @@ button.tod-card { cursor: pointer }
 .tod-plate .k-card { gap: 1px }
 .tod-ex { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-rest, var(--win-muted)) }
 .tod-card[data-act] { cursor: pointer }
+.tod-noterow { display: flex; gap: 6px; justify-content: flex-end }
+.tod-comment { border: 0; background: none; font: inherit; font-size: 11.5px; color: var(--win-muted); text-align: left; padding: 0 2px; margin-top: -4px; cursor: pointer }
 
 /* ===== 02-sug.css ===== */
 /* Every class a chapter invents starts with its id. Blue = the plan's own colour (it means "this changes the plan"). */
@@ -702,6 +704,39 @@ div.bod-mrow { cursor: default }
 .bod-night em { font-style: normal; font-size: 10px; color: var(--win-muted) }
 .bod-water i { width: 42%; background: var(--pc); border-radius: 4px; position: absolute; inset: 0 auto 0 0 }
 .bod-tag-run, .bod-tag-ride, .bod-tag-swim, .bod-tag-str { color: #1c1c1e }
+
+/* 2.10 (86): every Body card has its own colour (name, bars, marks, a pale ground). Figures stay in the text colour. Body Battery, the page heading, Training, Health, the range buttons and Share stay raspberry. */
+:root{--bc-sleep:#4F46E5;--bg-sleep:#E8E7FC;--bc-hrv:#0D9488;--bg-hrv:#E0F1F0;--bc-resting:#C026D3;--bg-resting:#F7E3F9;--bc-stress:#D97706;--bg-stress:#FAEDDF;--bc-steps:#65A30D;--bg-steps:#EBF3E0;--bc-intensity:#2563EB;--bg-intensity:#E3EBFC;--bc-load:#7C3AED;--bg-load:#EEE5FD;--bc-fitness:#0891B2;--bg-fitness:#DFF1F5;--bc-gym:#EA580C;--bg-gym:#FCE9DF;--bc-month:#DB2777;--bg-month:#FAE3ED;--bc-weight:#9333EA;--bg-weight:#F1E4FC;--bc-energy:#CA8A04;--bg-energy:#F8F0DE;--bc-water:#0EA5E9;--bg-water:#E0F3FC;}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {--bc-sleep:#A5B4FC;--bg-sleep:#282557;--bc-hrv:#5EEAD4;--bg-hrv:#143C3B;--bc-resting:#F0ABFC;--bg-resting:#4A1C52;--bc-stress:#FCD34D;--bg-stress:#513414;--bc-steps:#BEF264;--bg-steps:#2E4116;--bc-intensity:#93C5FD;--bg-intensity:#1B2E59;--bc-load:#C4B5FD;--bg-load:#352259;--bc-fitness:#67E8F9;--bg-fitness:#123C48;--bc-gym:#FDBA74;--bg-gym:#562A16;--bc-month:#F9A8D4;--bg-month:#521C36;--bc-weight:#D8B4FE;--bg-weight:#3C1F58;--bc-energy:#FDE047;--bg-energy:#4D3A13;--bc-water:#7DD3FC;--bg-water:#144258;} }
+:root[data-theme="dark"] {--bc-sleep:#A5B4FC;--bg-sleep:#282557;--bc-hrv:#5EEAD4;--bg-hrv:#143C3B;--bc-resting:#F0ABFC;--bg-resting:#4A1C52;--bc-stress:#FCD34D;--bg-stress:#513414;--bc-steps:#BEF264;--bg-steps:#2E4116;--bc-intensity:#93C5FD;--bg-intensity:#1B2E59;--bc-load:#C4B5FD;--bg-load:#352259;--bc-fitness:#67E8F9;--bg-fitness:#123C48;--bc-gym:#FDBA74;--bg-gym:#562A16;--bc-month:#F9A8D4;--bg-month:#521C36;--bc-weight:#D8B4FE;--bg-weight:#3C1F58;--bc-energy:#FDE047;--bg-energy:#4D3A13;--bc-water:#7DD3FC;--bg-water:#144258;}
+.bod-c-sleep { --pc: var(--bc-sleep); --cg: var(--bg-sleep) }
+.bod-c-hrv { --pc: var(--bc-hrv); --cg: var(--bg-hrv) }
+.bod-c-resting { --pc: var(--bc-resting); --cg: var(--bg-resting) }
+.bod-c-stress { --pc: var(--bc-stress); --cg: var(--bg-stress) }
+.bod-c-steps { --pc: var(--bc-steps); --cg: var(--bg-steps) }
+.bod-c-intensity { --pc: var(--bc-intensity); --cg: var(--bg-intensity) }
+.bod-c-load { --pc: var(--bc-load); --cg: var(--bg-load) }
+.bod-c-fitness { --pc: var(--bc-fitness); --cg: var(--bg-fitness) }
+.bod-c-gym { --pc: var(--bc-gym); --cg: var(--bg-gym) }
+.bod-c-month { --pc: var(--bc-month); --cg: var(--bg-month) }
+.bod-c-weight { --pc: var(--bc-weight); --cg: var(--bg-weight) }
+.bod-c-energy { --pc: var(--bc-energy); --cg: var(--bg-energy) }
+.bod-c-water { --pc: var(--bc-water); --cg: var(--bg-water) }
+.bod-card[class*="bod-c-"], .bod-tile[class*="bod-c-"] { background: var(--cg) }
+.bod-sh { display: contents }
+.k-sheet:has(.bod-sh.bod-c-sleep) { background: var(--bg-sleep) }
+.k-sheet:has(.bod-sh.bod-c-hrv) { background: var(--bg-hrv) }
+.k-sheet:has(.bod-sh.bod-c-resting) { background: var(--bg-resting) }
+.k-sheet:has(.bod-sh.bod-c-stress) { background: var(--bg-stress) }
+.k-sheet:has(.bod-sh.bod-c-steps) { background: var(--bg-steps) }
+.k-sheet:has(.bod-sh.bod-c-intensity) { background: var(--bg-intensity) }
+.k-sheet:has(.bod-sh.bod-c-load) { background: var(--bg-load) }
+.k-sheet:has(.bod-sh.bod-c-fitness) { background: var(--bg-fitness) }
+.k-sheet:has(.bod-sh.bod-c-gym) { background: var(--bg-gym) }
+.k-sheet:has(.bod-sh.bod-c-month) { background: var(--bg-month) }
+.k-sheet:has(.bod-sh.bod-c-weight) { background: var(--bg-weight) }
+.k-sheet:has(.bod-sh.bod-c-energy) { background: var(--bg-energy) }
+.k-sheet:has(.bod-sh.bod-c-water) { background: var(--bg-water) }
 
 /* ===== 08-pro.css ===== */
 /* Every class starts with pro-. Purple is Progress's own colour (var(--pt)). */
@@ -1288,7 +1323,7 @@ CHAPTER({
   gives: 'The whole day on one page: how you feel, the week so far, today’s session with its weather, what you missed, and tomorrow.',
   start: () => ({ device: 'phone', part: 'today', screen: 'tod.today', sheet: null,
     tod_feel: null, tod_changing: false, tod_from: null, tod_key: false, tod_extras: [], tod_garmin_line: false, tod_plateseen: false,
-    tod_what: '', tod_dur: '', tod_count: 'no', tod_tried: false, tod_sunday: true, tod_back: false }),
+    tod_note: '', tod_noting: false, tod_what: '', tod_dur: '', tod_count: 'no', tod_tried: false, tod_sunday: true, tod_back: false }),
   screens: {
     /* The top of Today, in the app's order: heading, morning line, the question, the week card, today's session and its weather,
        extras, the Garmin line, Week so far. */
@@ -1299,9 +1334,12 @@ CHAPTER({
       ${S.tod_from && S.tod_feel ? `<span class="tod-line" data-t="tod.line">Feeling <b>${todFeelWord(S.tod_feel)}</b> — from ${esc(S.tod_from)}</span>
         <span class="k-muted k-small" data-t="tod.fromnote">Answered in ${esc(S.tod_from)} — change it there.</span>`
         : answered ? `<button class="tod-line" data-act="tod.change" data-t="tod.line">Feeling <b>${todFeelWord(S.tod_feel)}</b></button>` : ''}
+      ${answered && !S.tod_noting && !S.tod_from && S.tod_note ? `<button class="tod-comment" data-act="tod.reopen" data-t="tod.comment">“${esc(S.tod_note)}”</button>` : ''}
       ${S.tod_garmin_line ? todGarmin : ''}
-      ${!S.tod_from && (!S.tod_feel || S.tod_changing) ? `<div class="k-card" data-t="tod.ask"><b class="k-small">How do you feel?</b>
-        <div class="tod-faces">${TOD_FEELS.map(([id, w]) => `<button class="tod-face ${S.tod_feel === id ? 'tod-on' : ''}" data-act="tod.feel" data-arg="${id}" data-t="tod.f:${id}">${icon('tod-' + id)}<span>${w}</span></button>`).join('')}</div></div>` : ''}
+      ${!S.tod_from && (!S.tod_feel || S.tod_changing || S.tod_noting) ? `<div class="k-card" data-t="tod.ask"><b class="k-small">How do you feel?</b>
+        <div class="tod-faces">${TOD_FEELS.map(([id, w]) => `<button class="tod-face ${S.tod_feel === id ? 'tod-on' : ''}" data-act="tod.feel" data-arg="${id}" data-t="tod.f:${id}">${icon('tod-' + id)}<span>${w}</span></button>`).join('')}</div>
+        ${S.tod_noting && S.tod_feel ? `<b class="k-small">Anything to add?</b>${K.input('tod_note', S, { ph: 'A few words, like slept badly or sore legs', t: 'tod.notefield' })}
+          <div class="tod-noterow">${K.btn('Skip', 'tod.skip', { t: 'tod.skip' })}${K.btn('Save', 'tod.savenote', { main: true, t: 'tod.savenote' })}</div>` : ''}</div>` : ''}
       ${todWeek(S)}
       ${todSession(S)}
       ${todWeather}
@@ -1350,7 +1388,11 @@ CHAPTER({
       <div class="k-foot">${K.btn('Done', 'tod.plateclose', { t: 'tod.platedone', main: true })}</div>`,
   },
   actions: {
-    'tod.feel'(arg, S) { S.tod_feel = arg; S.tod_changing = false; },
+    'tod.feel'(arg, S) { S.tod_feel = arg; S.tod_changing = false; S.tod_noting = true; },
+    'tod.savenote'(arg, S) { S.tod_note = String(S.tod_note).trim(); S.tod_noting = false; },
+    'tod.skip'(arg, S) { S.tod_noting = false; },
+    'tod.reopen'(arg, S) { S.tod_noting = true; },
+    'key'(key, S) { if (key === 'Escape' && S.tod_noting) S.tod_noting = false; },
     'tod.change'(arg, S) { S.tod_changing = true; },
     'tod.key'(arg, S, el) { S.tod_key = !S.tod_key; },
     'tod.open'(arg, S) { S.screen = 'tod.session'; S.tod_back = false; },
@@ -1376,12 +1418,20 @@ CHAPTER({
       hint: 'You never have to do anything here. Every card is there to read.' },
     { kind: 'try', head: 'Answer the morning question', target: 'tod.f:good',
       text: 'Under the heading a card asks <b>How do you feel?</b> Press <b>Good</b>.',
-      until: S => S.tod_feel === 'good', ok: 'The card is gone until tomorrow. The morning line now says Feeling good.', robot: [['act', 'tod.feel', 'good']],
+      until: S => S.tod_feel === 'good', ok: 'The face stays, outlined, and the card stays open with a new question, Anything to add? You can leave it for the next step.', robot: [['act', 'tod.feel', 'good']],
       real: 'Today, top', hint: 'Five faces: Bad, Tired, OK, Good, Great. Answered once a day. It is never written into the plan. With suggestions on, two poor mornings in a row (Bad or Tired) can bring a card; there is no score.' },
     { kind: 'try', head: 'Change your answer', set: { tod_feel: 'ok' }, target: S => S.tod_changing ? 'tod.f:great' : 'tod.line',
       text: 'Press the words <b>Feeling OK</b> under the heading. The question comes back with your answer outlined. Press <b>Great</b>.',
-      until: S => S.tod_feel === 'great' && !S.tod_changing, ok: 'The line says Feeling great. A later tap on a face replaces the earlier one: there is one answer a day.',
+      until: S => S.tod_feel === 'great' && !S.tod_changing, ok: 'Your answer is now Great. A later tap on a face replaces the earlier one: there is one answer a day.',
       robot: [['act', 'tod.change'], ['act', 'tod.feel', 'great']] },
+    { kind: 'try', head: 'Add a few words to your answer', set: { tod_feel: 'good', tod_noting: true }, target: S => S.tod_noting ? (S.tod_note ? 'tod.savenote' : 'tod.notefield') : 'tod.comment',
+      text: 'After a face, the card asks <b>Anything to add?</b> Type a few words, like “slept badly”, and press <b>Save</b>. <b>Skip</b> leaves it empty; on a Mac, Escape does the same.',
+      until: S => !S.tod_noting && S.tod_note === 'slept badly', ok: 'The card closes. Under the line Feeling good the words show in grey, in quotes. Press them and the card opens again.',
+      robot: [['in', 'tod_note', 'slept badly'], ['act', 'tod.savenote']], real: 'Today › How do you feel?',
+      hint: 'The words are kept with your answer in your own iCloud, never in the plan. The app gives no advice about them.' },
+    { kind: 'look', head: 'The comment under the morning line', shot: 'tod-09-feel-note',
+      text: 'The real card after a face: the face you pressed stays outlined, then <b>Anything to add?</b>, the field with its grey words, a green <b>Save</b> and <b>Skip</b>. Once saved, your words stand under the morning line in grey, in quotes.',
+      hint: 'A press on those words opens the card again. The comment shows on the iPad and the Mac too.' },
     { kind: 'try', head: 'Open the key under This week', target: 'tod.keybtn', set: { tod_feel: 'good' },
       text: 'The card draws the week: a column a day, a block a session. Press <b>Key</b> to see what the blocks mean.',
       until: S => S.tod_key, ok: 'Solid = recorded, lighter = still to do, dotted = an extra outside the plan, a flat line = a rest day. The key lists Missed too. Pressing the card does the same.',
@@ -2632,7 +2682,7 @@ function bodTiles(S) {
       `<button class="${S.bod_span === s ? 'bod-on' : ''}" data-act="bod.span" data-arg="${s}" data-t="bod.span:${s}">${bodSpanTitle(s)}</button>`).join('')}</div>
     ${S.bod_span !== '7' ? `<span class="k-muted bod-tiny">Each bar is one week's average, named by its Monday's date.</span>` : ''}</div>
     <div class="bod-tiles">${BOD_INST.map(i => { const t = bodTileText(i, S.bod_span); return `
-      <button class="bod-tile" data-act="bod.tile" data-arg="${i.id}" data-t="bod.tile:${i.id}">
+      <button class="bod-tile bod-c-${i.id}" data-act="bod.tile" data-arg="${i.id}" data-t="bod.tile:${i.id}">
         <span class="bod-tname">${i.name.toUpperCase()}</span>
         <span class="bod-fig"><b>${t.fig}</b>${t.unit ? `<span>${t.unit}</span>` : ''}</span>
         <span class="k-muted bod-note">${t.note}</span>${bodBars(i, S.bod_span)}</button>`; }).join('')}</div>`;
@@ -2662,13 +2712,13 @@ function bodTraining(S) {
   const g = BOD_GYM[S.bod_gym || 0], latest = !S.bod_gym;
   return `<h2 class="k-h2 bod-part">Training</h2>
     <div class="bod-two">
-      <button class="bod-tile" data-act="bod.load" data-t="bod.load"><span class="bod-tname">TRAINING LOAD</span>
+      <button class="bod-tile bod-c-load" data-act="bod.load" data-t="bod.load"><span class="bod-tname">TRAINING LOAD</span>
         <span class="bod-fig"><b>288</b><span>7 days</span></span><span class="k-muted bod-note">4-week average 252 · ratio 1.14</span>
         <b class="bod-word">Productive</b><span class="bod-scale"><i class="bod-steady"></i><u></u></span></button>
-      <div class="bod-tile" data-t="bod.fitness"><span class="bod-tname">FITNESS</span>
+      <div class="bod-tile bod-c-fitness" data-t="bod.fitness"><span class="bod-tname">FITNESS</span>
         <span class="bod-fig"><b>52</b><span>fitness age</span></span><span class="k-muted bod-note bod-wrap">Real age 58 · 6 years younger</span>
         <span class="k-muted bod-note bod-wrap">VO2 max: Garmin does not share it yet</span></div></div>
-    <div class="bod-card bod-gym" data-t="bod.gym"><span class="bod-cap">GYM SESSIONS</span>
+    <div class="bod-card bod-gym bod-c-gym" data-t="bod.gym"><span class="bod-cap">GYM SESSIONS</span>
       <span class="bod-fig"><b>${g.kg}</b><span>kg</span></span>
       <span class="k-muted k-small">${g.day} · City Gym · ${g.len}</span><span class="k-muted k-small">${g.counts}</span>
       ${g.vs ? `<span class="k-muted k-small">${g.vs}</span>` : ''}
@@ -2677,7 +2727,7 @@ function bodTraining(S) {
         <span><b>${r.day}</b> <span class="k-muted">City Gym · ${r.len}</span> <b>${r.kg} kg</b></span><i style="width:${r.w}%"></i></button>`).join('')}
       ${latest ? '' : `<button class="k-link bod-back" data-act="bod.gymback" data-t="bod.gymback">Back to the latest</button>`}
       <span class="k-muted bod-tiny">Tap a session to see it here.</span></div>
-    <div class="bod-card bod-month" data-t="bod.month"><span class="bod-cap">WORKOUTS · SEPTEMBER</span>
+    <div class="bod-card bod-month bod-c-month" data-t="bod.month"><span class="bod-cap">WORKOUTS · SEPTEMBER</span>
       <span class="bod-fig"><b>9</b><span>this month</span></span><span class="k-muted k-small">7h 57m · 84.5 km</span>
       ${BOD_MONTH.slice(0, 6).map((w, i) => bodMonthRow(w, i, true)).join('')}
       <button class="k-link" data-act="bod.all" data-t="bod.all">All 9 workouts</button>
@@ -2690,14 +2740,14 @@ const BOD_NIGHTS = [['Thu 10 Sep', 'T', 408, 480], ['Fri 11 Sep', 'F', 444, 480]
 const bodHM = m => `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
 function bodHealth(S) {
   return `<h2 class="k-h2 bod-part">Health</h2>
-    <button class="bod-card bod-btn" data-act="bod.sleepdebt" data-t="bod.sleepdebt"><span class="bod-cap">SLEEP DEBT</span>
+    <button class="bod-card bod-btn bod-c-sleep" data-act="bod.sleepdebt" data-t="bod.sleepdebt"><span class="bod-cap">SLEEP DEBT</span>
       <span class="bod-fig"><b>−4h 42m</b><span>7 nights</span></span>
       <span class="k-muted k-small">Need about 8h a night · 1 night without the watch. Tap for each night.</span>
       <span class="bod-nights">${BOD_NIGHTS.map((n, i) => `<span class="bod-night"><span class="bod-need">${n[2] == null ? '<u>–</u>' : `<b style="height:${Math.round(100 * Math.min(1, n[2] / n[3]))}%"></b>`}</span><em class="${i === 6 ? 'bod-today' : ''}">${n[1]}</em></span>`).join('')}</span></button>
-    <div class="bod-card" data-t="bod.weight"><span class="bod-cap">WEIGHT</span><span class="bod-fig"><b>72.2</b><span>kg</span></span>
+    <div class="bod-card bod-c-weight" data-t="bod.weight"><span class="bod-cap">WEIGHT</span><span class="bod-fig"><b>72.2</b><span>kg</span></span>
       <span class="k-muted k-small">Weighed Tue 15 Sep · +0.4 kg in 90 days · goal 78.0 kg. Tap for each weigh-in.</span></div>
-    <div class="bod-two"><div class="bod-tile"><span class="bod-tname">ENERGY</span><span class="bod-fig"><b>2,480</b><span>kcal</span></span><span class="k-muted bod-note bod-wrap">Active 520 · resting 1,960</span></div>
-      <div class="bod-tile"><span class="bod-tname">WATER</span><span class="bod-fig"><b>1,250</b><span>ml</span></span><span class="k-muted bod-note bod-wrap">Goal 3,000 ml · 42%</span>
+    <div class="bod-two"><div class="bod-tile bod-c-energy"><span class="bod-tname">ENERGY</span><span class="bod-fig"><b>2,480</b><span>kcal</span></span><span class="k-muted bod-note bod-wrap">Active 520 · resting 1,960</span></div>
+      <div class="bod-tile bod-c-water"><span class="bod-tname">WATER</span><span class="bod-fig"><b>1,250</b><span>ml</span></span><span class="k-muted bod-note bod-wrap">Goal 3,000 ml · 42%</span>
         <span class="bod-scale bod-water"><i></i></span></div></div>`;
 }
 
@@ -2706,7 +2756,7 @@ CHAPTER({
   title: 'Body',
   icon: 'body',
   needs: 'A Garmin key saved in Settings (the chapter Garmin and Health shows how), and a watch that has sent its numbers to Garmin.',
-  gives: 'One raspberry page for what your watch keeps about you: Body Battery through the day, six tiles with their days, and every workout one press from its page.',
+  gives: 'One page, raspberry at its top and a colour of its own on every card, for what your watch keeps about you: Body Battery through the day, six tiles with their days, and every workout one press from its page.',
   start: () => ({ part: 'body', screen: 'bod.page', bod_mode: 'full', bod_span: '7', bod_noy: false, bod_low: false, bod_pulled: false, bod_shared: false,
     bod_peek: null, bod_plate: false, bod_gym: 0, bod_from: '', bod_loadseen: false, bod_all: false, bod_mopen: false, bod_slept: false }),
   screens: {
@@ -2761,10 +2811,10 @@ CHAPTER({
         ? i.weeks.slice(12 - n).map((v, k) => [k === n - 1 ? 'This week' : 'From ' + BOD_MON[12 - n + k][1], bodPlain[i.id](v)]).reverse()
         : i.days.map((v, k) => [k === 6 ? (i.id === 'sleep' || i.id === 'hrv' ? 'Last night' : 'Today') : BOD_DAYS[k][0], v == null ? null : bodFmt[i.id](v)]).reverse();
       const note = [wk ? "Each row is one week's average of the days with a reading, named by its Monday." : '', i.id === 'intensity' ? 'A vigorous minute counts twice, as Garmin counts it.' : ''].filter(Boolean).join(' ');
-      return `<h3>${i.name}${wk ? ' · ' + bodSpanTitle(S.bod_span) : ' · last 7 days'}</h3>
+      return `<div class="bod-sh bod-c-${i.id}"><h3>${i.name}${wk ? ' · ' + bodSpanTitle(S.bod_span) : ' · last 7 days'}</h3>
         <div class="k-col">${rows.map(r => `<div class="bod-prow"><span class="k-muted">${r[0]}</span><b class="${r[1] == null ? 'bod-none' : ''}">${r[1] ?? 'no reading'}</b></div>`).join('')}</div>
         ${note ? `<span class="k-muted k-small">${note}</span>` : ''}
-        <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`;
+        <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div></div>`;
     },
     /* A workout the plan and the extras have no page for: its own facts. */
     'bod.plate': S => `<h3>Strength</h3>
@@ -2774,7 +2824,7 @@ CHAPTER({
       <span class="k-muted k-small">Not in your plan and not among your extras for this day.</span>
       <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
     /* 2.9 (85): the 12 weeks of load, the whole month's workouts. */
-    'bod.load': S => `<h3>Training load</h3>
+    'bod.load': S => `<div class="bod-sh bod-c-load"><h3>Training load</h3>
       <span class="bod-cap">WEEKLY LOAD · LAST 12 WEEKS</span>
       <div class="bod-wbars">${[62, 100, 90, 82, 78, 96, 80, 70, 62, 100, 48, 92].map((h, i) => `<span><b style="height:${h * .6}px" class="${i === 11 ? 'bod-now' : ''}"></b><em>${i === 11 ? 'now' : 11 - i}</em></span>`).join('')}</div>
       <span class="k-muted k-small">Each bar is 7 days of load; the numbers count the weeks back from now.</span>
@@ -2782,14 +2832,14 @@ CHAPTER({
       <span class="k-muted k-small">The ratio sets the last 7 days against your usual week of the past 4 weeks. Around 0.8 to 1.3 is a steady week.</span>
       <span class="k-muted k-small">This week is close to your usual.</span>
       <span class="k-muted k-small">The words are the Garmin Board’s own reading, not Garmin’s.</span>
-      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
-    'bod.month': S => `<h3>Workouts · September</h3>
+      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div></div>`,
+    'bod.month': S => `<div class="bod-sh bod-c-month"><h3>Workouts · September</h3>
       <div class="k-col bod-mlist">${BOD_MONTH.map((w, i) => bodMonthRow(w, i, false)).join('')}</div>
-      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
-    'bod.sleep': S => `<h3>Sleep debt · last 7 nights</h3>
+      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div></div>`,
+    'bod.sleep': S => `<div class="bod-sh bod-c-sleep"><h3>Sleep debt · last 7 nights</h3>
       <div class="k-col">${BOD_NIGHTS.slice().reverse().map(n => `<div class="bod-prow"><span class="k-muted">${n[0]}</span><b class="${n[2] == null ? 'bod-none' : ''}">${n[2] == null ? 'no reading' : bodHM(n[2]) + ' of ' + bodHM(n[3])}</b></div>`).join('')}</div>
       <span class="k-muted k-small">Sleep and naps against the need Garmin gives for each night (8h where it gives none). A night without the watch is left out.</span>
-      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div>`,
+      <div class="k-foot">${K.btn('Done', 'bod.done', { main: true, t: 'bod.done' })}</div></div>`,
     'bod.keyhelp': S => `<h3>Garmin has its own chapter</h3>
       <span>The key goes in once, on the page Settings › Garmin. The chapter Garmin and Health shows it step by step.</span>
       <div class="k-foot">${K.btn('Done', 'sheet.close', { main: true })}</div>`,
@@ -2834,7 +2884,7 @@ CHAPTER({
       text: 'A press opens the first page that fits: a session of that sport planned that day, then an extra of that kind, then a looser match (a walk or hike may be the run), and last this plate. Only the same day counts, and a rest day never matches.',
       hint: 'Pressing only opens a page. It logs nothing and changes no plan. “no cost from Garmin” stands where Garmin gave no Body Battery cost.' },
     { kind: 'look', head: 'Six tiles', shot: 'bod-02-tiles',
-      text: 'Under the range switch stand six tiles: Sleep, HRV, Resting pulse, Stress, Steps and Intensity minutes. Each has its name in raspberry, the figure with its unit, one grey line and seven slim bars. A small dash means no reading that day, never a zero.',
+      text: 'Under the range switch stand six tiles: Sleep, HRV, Resting pulse, Stress, Steps and Intensity minutes. Each has its own colour, on a pale ground of it: Sleep indigo, HRV teal, Resting pulse fuchsia, Stress amber, Steps lime, Intensity minutes blue. The figure keeps the text colour; then one grey line and seven slim bars. A small dash means no reading that day, never a zero.',
       hint: 'The grey box marked “normal” behind HRV and Resting pulse is your own normal. The bold green letter under the last bar is today. The week card above shows the last 7 days of Body Battery.' },
     { kind: 'try', head: 'Open a tile in numbers', set: { bod_low: true }, target: 'bod.tile:resting',
       text: 'Press the <b>Resting pulse</b> tile.',
@@ -2862,10 +2912,10 @@ CHAPTER({
     { kind: 'try', head: 'Look at an older gym session', set: { screen: 'bod.train' }, target: 'bod.grow:1',
       text: 'In the <b>Gym sessions</b> card, press the row <b>Fri 11 Sep</b>.',
       until: S => S.bod_gym === 1, ok: 'The card now shows that session: its kilograms, place, length and machines. The row is shaded. <b>Back to the latest</b> brings the newest one back.',
-      hint: 'The card shows the gym sessions you log in AMS Workout Companion. It has no page of its own; the six latest sit under it as rows, each with a slim bar for its kilograms.',
+      hint: 'The card shows the gym sessions you log in the Workout Companion app. It has no page of its own; the six latest sit under it as rows, each with a slim bar for its kilograms.',
       robot: [['act', 'bod.gym', '1']], real: 'Body › Gym sessions' },
     { kind: 'look', head: 'Before the gym folder is chosen', shot: 'bod-19-gym-nofolder',
-      text: 'Until you choose the folder, the Gym sessions card is small: a grey line says to choose the AMS Garmin folder once in Settings › Garmin, with a button <b>Choose folder</b> beside it. Workouts · September stands right under it.',
+      text: 'Until you choose the folder, the Gym sessions card is small: a grey line says: “Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once.” A button <b>Choose folder</b> sits beside it. Workouts · September stands right under it.',
       hint: 'The app only reads that folder and writes nothing in it. The choice stays on this device: the iPad and the Mac each need their own.', real: 'Body › Gym sessions' },
     { kind: 'look', head: 'The gym block on a strength session', set: { screen: 'bod.gymblock' }, target: 'bod.gymblk',
       text: 'Open a strength session on a day you trained in the gym and a small <b>GYM</b> block shows that day’s place, length, machines, sets, kilograms and each machine’s best set. Other kinds of session show nothing, and so does a strength day with no gym session.' },
@@ -2888,7 +2938,7 @@ CHAPTER({
     { kind: 'look', head: 'Weight: every weigh-in', shot: 'bod-18-weight-sheet',
       text: 'A press on the <b>Weight</b> card opens a page with each weigh-in of the last 90 days, newest first, each day beside its kilograms. The card itself gives the latest, its day, the change in 90 days and Garmin’s goal when it has one.',
       hint: 'It is never red and gives no advice.' },
-    { kind: 'check', head: 'What does the app do with the gym folder?', text: 'You choose the AMS Garmin folder once. What does the app do with what is in it?',
+    { kind: 'check', head: 'What does the app do with the gym folder?', text: 'You choose the folder AMS Workout Companion app to Garmin once. What does the app do with what is in it?',
       answers: ['It reads the gym sessions and writes nothing in it', 'It writes your plan into it', 'It sends the sessions to Garmin'], right: 0,
       ok: 'Right: it only reads, and the choice stays on this device.' },
     { kind: 'try', head: 'Share the page', set: { bod_low: true }, target: 'bod.share',
@@ -4141,10 +4191,10 @@ CHAPTER({
       text: 'Today’s Garmin line and the Body page get their numbers from your Garmin watch, through one personal key. Once the key is saved, Settings › Garmin says Connected, shows the key only as dots, and says when it was last read. Read again now asks Garmin at once. The numbers are only shown: they never change your plan.',
       hint: 'The key stays on the device where you pasted it. An iPad or a Mac that should show the numbers needs its own key. The app only asks Garmin for numbers; nothing of your plan, notes or answers is sent to it.', real: 'Settings › Garmin' },
     { kind: 'look', head: 'Gym sessions: choose a folder once', shot: 'gar-07-gym-choose',
-      text: 'With a key saved, the Garmin page has a second part, <b>Gym sessions</b>: “From AMS Workout Companion, as on your Garmin Board.” Press <b>Choose the AMS Garmin folder</b> once and pick that folder in your iCloud Drive. Body’s Gym sessions card then fills.',
+      text: 'With a key saved, the Garmin page has a second part, <b>Gym sessions</b>: “From the Workout Companion app, as on your Garmin Board.” and “In iCloud Drive: AMS Workout Companion app to Garmin”. Press <b>Choose the folder</b> once and pick that folder in your iCloud Drive. Body’s Gym sessions card then fills.',
       hint: 'The app only reads the folder and writes nothing in it. The choice stays on this device: the iPad and the Mac each choose their own. The Gym sessions card on Body offers the same choice.', real: 'Settings › Garmin › Gym sessions' },
     { kind: 'look', head: 'Once the folder is chosen', shot: 'gar-08-gym-chosen',
-      text: 'After the choice the part shows the folder’s name, <b>AMS Garmin</b>, and the day of the newest session: Newest session: Mon 14 Sep. A small <b>Change</b> button picks another folder.' },
+      text: 'After the choice the part shows the folder’s name, <b>AMS Workout Companion app to Garmin</b>, and the day of the newest session: Newest session: Mon 14 Sep. A small <b>Change</b> button picks another folder.' },
     { kind: 'look', head: 'The page before a key is set', shot: 'gar-02-page-nokey',
       text: 'Before a key is set, the page says what the key is for. You make it once in your Garmin Connect account at connect.garmin.com and paste it in the field. Cancel closes the page; Save keeps the key.' },
     { kind: 'try', head: 'Open the Garmin page', target: 'gar.row',
@@ -4257,7 +4307,7 @@ CHAPTER({
       <span class="k-muted k-small">${S.hom_cloud === 'same' ? 'Last met iCloud 07:12.' : 'Your plan is on its way between your devices.'}</span>
       <button class="k-btn k-main k-full" data-act="hom.sync" data-t="hom.sync"><span>Sync now</span></button>
       <span class="k-cap">Your devices</span>
-      <div class="k-card"><span class="k-small"><b>iPhone · this one</b> · last seen 07:12 · 2.9 (85)</span><span class="k-small"><b>iPad</b> · last seen 07:10 · 2.9 (85)</span></div>
+      <div class="k-card"><span class="k-small"><b>iPhone · this one</b> · last seen 07:12 · 2.12 (88)</span><span class="k-small"><b>iPad</b> · last seen 07:10 · 2.12 (88)</span></div>
       <span class="k-cap">What is shared</span>
       <span class="k-muted k-small">The plan, everything you log and change, and your morning and how-hard answers are the same on your iPhone, iPad and Mac. Apple Health numbers come from your iPhone. The Training calendar and Dropbox stay on your iPhone.</span>`,
     /* The page an iPad or a Mac shows before the plan has arrived (it stands in for Today). */
@@ -4449,6 +4499,14 @@ CHAPTER({
     'set.new': S => `
       ${K.back('Settings', 'set.back')}
       <b class="set-title">What’s new</b>
+      <div class="k-card"><b>2.12 (88)</b><span class="k-muted k-small">26 November 2026</span>
+        <b class="k-small">The gym folder has a new name, and the words around it say the Workout Companion app</b>
+        <span class="k-small">Body and Settings › Garmin · Changed: the card before the choice says: Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once. Settings › Garmin › Gym sessions says: From the Workout Companion app, as on your Garmin Board; In iCloud Drive: AMS Workout Companion app to Garmin; and the button Choose the folder. Once chosen, it shows that folder’s name.</span></div>
+      <div class="k-card"><b>2.10 (86)</b><span class="k-muted k-small">26 November 2026</span>
+        <b class="k-small">Colours on Body, a comment with How do you feel?, and clearer words for the gym folder</b>
+        <span class="k-small">Body · Changed: every card has its own colour. Now: its name, bars and marks take that colour, on a pale ground of the same colour; the figures stay in the text colour, and a card’s opened page takes its colour too. Body Battery, the heading and the range buttons stay raspberry.</span>
+        <span class="k-small">Today · New: a comment with How do you feel? Now: a press on a face keeps the face, and the card asks Anything to add? with a field, Save and Skip. The comment shows under the morning line in grey, in quotes; a press on it opens the card again. It is kept with your answer in your own iCloud, never in the plan, and it brings no advice.</span>
+        <span class="k-small">Body · Changed: before the gym folder is chosen, the card says where the gym sessions come from and what to press, once.</span></div>
       <div class="k-card"><b>2.9 (85)</b><span class="k-muted k-small">26 November 2026</span>
         <b class="k-small">Body gets the Garmin Board’s missing cards: training load, fitness, gym sessions, workouts this month, sleep debt, weight, energy and water</b>
         <span class="k-small">Body · New: a part Training under the tiles. Now: under the tiles a small heading Training with four cards, in the look of the tiles. Where: Body, under the tiles.</span>
@@ -4512,7 +4570,7 @@ CHAPTER({
     { kind: 'try', head: 'Garmin, Claude and the rest', text: 'Press the row <b>Claude</b>.', set: { screen: 'set.l2' }, target: 'set.row:claude', until: S => S.set_pick === 'claude',
       ok: 'Optional, and it needs your own key. Its own chapter teaches it. Garmin has one too, and Apple Health follows it.', robot: [['act', 'set.pick', 'claude']] },
     { kind: 'look', head: 'The foot of Settings', shot: 'set-06-foot',
-      text: 'Below Claude: <b>Your two neighbour apps</b>, <b>Reminders</b>, <b>Weather</b>, <b>Calendar</b> and <b>Dropbox</b> (the last two are on the iPhone only). Then <b>This app</b>, with <b>How this works</b> and <b>What’s new</b>; What’s new reads the version under its name, here AMS Triathlon Training 2.9 (85).',
+      text: 'Below Claude: <b>Your two neighbour apps</b>, <b>Reminders</b>, <b>Weather</b>, <b>Calendar</b> and <b>Dropbox</b> (the last two are on the iPhone only). Then <b>This app</b>, with <b>How this works</b> and <b>What’s new</b>; What’s new reads the version under its name, here AMS Triathlon Training 2.12 (88).',
       hint: 'On an iPad and a Mac the word Keys at the foot of the side list shows every key.', real: 'Settings, at the foot' },
     { kind: 'try', head: 'Open How this works', text: 'Press <b>How this works</b>.', set: { screen: 'set.l3' }, target: 'set.row:guide', until: S => S.screen === 'set.guide',
       ok: 'One long page. Each part has a green heading; the last part is Signs in this app.', robot: [['act', 'set.guide']] },
@@ -4522,7 +4580,7 @@ CHAPTER({
       robot: [['act', 'set.sign', 'tick'], ['act', 'set.sign', 'red'], ['act', 'set.sign', 'moon'], ['act', 'set.sign', 'dot'], ['act', 'set.sign', 'blue'], ['act', 'set.sign', 'main']],
       real: 'How this works › Signs in this app' },
     { kind: 'try', head: 'See what is new', text: 'Press <b>What’s new</b>. Every version stands there, newest first.', set: { screen: 'set.l3' }, target: 'set.row:new', until: S => S.screen === 'set.new',
-      ok: 'The entry 2.9 (85), 26 November 2026, says every new, changed and fixed thing, in plain words.', robot: [['act', 'set.new']] },
+      ok: 'The entry 2.12 (88), 26 November 2026, says every new, changed and fixed thing, in plain words.', robot: [['act', 'set.new']] },
     { kind: 'look', head: 'Your favourite sessions', shot: 'set-04-favourites',
       text: 'Settings \u203a Your plan \u203a Favourite sessions. A blue card counts them (here 3 favourites, kept for the New session page and on all your devices). Each row has three lines at the left, the session\u2019s mark, its name, length, zone and sport, and the small buttons <b>Rename</b> and <b>Remove</b>.',
       hint: 'Done is at the top left.', real: 'Settings \u203a Your plan \u203a Favourite sessions' },
@@ -4549,7 +4607,7 @@ function setList(S, id, withHead) {
     return K.nav(r[0], 'set.pick', { arg: key, sub: r[1], t: 'set.row:' + key });
   };
   const extra = id === 'set.l3' ? `<span class="k-cap">This app</span>${K.nav('How this works', 'set.guide', { sub: 'The week strip, logging, syncing and what keeps your plan safe', t: 'set.row:guide' })}
-      ${K.nav('What’s new', 'set.new', { sub: 'AMS Triathlon Training 2.9 (85)', t: 'set.row:new' })}` : '';
+      ${K.nav('What’s new', 'set.new', { sub: 'AMS Triathlon Training 2.12 (88)', t: 'set.row:new' })}` : '';
   return `${withHead ? '<h1 class="k-h1">Settings</h1>' : ''}
     ${picked ? `<div class="k-band k-ok" data-t="set.card">${icon('info')}<span class="k-small"><b>${esc(picked[0])}</b> — ${esc(picked[2])} ${picked[3] ? 'Taught in: ' + esc(picked[3]) + '.' : ''}</span></div>` : ''}
     ${SET_GROUPS[id].map(([g, keys]) => `<span class="k-cap">${esc(g)}</span>${keys.map(row).join('')}`).join('')}${extra}`;
@@ -4564,7 +4622,7 @@ FINALE = {
   groups: [
     { title: 'A training day', note: 'The few presses that keep the plan true.',
       items: [
-        'In the morning, open <b>Today</b> and answer <b>How do you feel?</b> once.',
+        'In the morning, open <b>Today</b> and answer <b>How do you feel?</b> once, with a few words if you like.',
         'Read today’s session card: the <b>Why:</b> line, the length and the zone. Press the card to open the session’s page.',
         'If Today shows a suggestion, answer it: <b>Take it</b>, <b>Keep my plan</b> or <b>Other choice</b>.',
         'After training, press <b>Done</b> on the session’s page, or <b>Log details</b> to type what you really did.',
@@ -4590,13 +4648,14 @@ FINALE = {
       items: [
         '<b>Body</b> with your own Garmin numbers: today’s curve, yesterday’s thin line, and a press on a workout.',
         '<b>Body › Training and Health</b> with your own Garmin numbers: set the eight cards beside your Garmin Board — Training load, Fitness, Gym sessions, Workouts this month, Sleep debt, Weight, Energy and Water. The figures should agree; if one does not, tell Claude which.',
-        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the AMS Garmin folder</b> once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from AMS Workout Companion.',
+        '<b>Settings › Garmin › Gym sessions</b>: press <b>Choose the folder</b> (AMS Workout Companion app to Garmin) once on the iPhone, and again on the iPad and the Mac (each device keeps its own choice). Then open Body: the Gym sessions card should show your latest session from the Workout Companion app.',
         'On a <b>strength session’s page</b> on a day you trained in the gym: the small <b>GYM</b> block with that day’s place, length and best sets.',
         'A press on a workout in <b>Workouts this month</b> that is not in your plan: it should open its small plate, and change nothing.',
         'A done session with <b>From your watch</b>: the route, the pulse line and the laps.',
         'A reminder arriving on the iPhone, and the buttons on it.',
         'The weather line under an outdoor session, after you have allowed the app to know roughly where you are.',
         'A change made on the iPhone showing on the iPad and the Mac a moment later.',
+        'A comment with <b>How do you feel?</b> on the iPhone: type a few words and press Save. Then look at Today on the Mac; the words should stand under the morning line.',
         'Dragging to arrange: your favourites, the kit list, the fuel rows.',
         'On the iPad or the Mac: the <b>Keys</b> plate, and the keys it lists.',
         'Printing a week or a month on paper.',

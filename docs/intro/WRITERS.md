@@ -1,6 +1,6 @@
 # Brief shared by every chapter writer (25 Nov 2026)
 
-You write chapters of the guided course for the app **AMS Triathlon Training 2.9 (85)** (iPhone, iPad, Mac). The repo is
+You write chapters of the guided course for the app **AMS Triathlon Training 2.12 (88)** (iPhone, iPad, Mac). The repo is
 this repository's folder (PUBLIC — invented figures only).
 
 1. Read completely, in this order: `docs/intro/HELPERS.md` (the contract), `docs/intro/src/chapters/00-wel.js` + `00-wel.css`
