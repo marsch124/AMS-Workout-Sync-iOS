@@ -240,7 +240,10 @@ final class GarminReader: ObservableObject {
         let vigorous: [Double] = [5, 0, 10, 5, 0, 10, 5], moderate: [Double] = [10, 0, 25, 20, 0, 15, 15]
         for k in 0..<7 {
             let d = GarminMorning.addDays(day, k - 6)
-            activity.steps[d] = stepDays[k]; activity.moderate[d] = moderate[k]; activity.vigorous[d] = vigorous[k]
+            activity.steps[d] = stepDays[k]
+            // Only this week (Monday to today) has minutes, so the tile's figure and its bars agree.
+            if d < BodyPage.weekStart(of: day) { continue }
+            activity.moderate[d] = moderate[k]; activity.vigorous[d] = vigorous[k]
             activity.intensity[d] = moderate[k] + 2 * vigorous[k]
         }
         activity.weeklyGoal = 150; activity.stepGoal = 8000
