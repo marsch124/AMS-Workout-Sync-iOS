@@ -143,9 +143,11 @@ final class TodayWeatherModel: NSObject, ObservableObject, CLLocationManagerDele
 
     /* The picture switch: Stockholm-ish, a cool breezy afternoon with rain coming. */
     private static func invented(day: String) -> WeatherSnapshot {
-        let hours = (0..<24).map { h in
-            WeatherHour(hour: h, tempC: 9 + Double(min(h, 24 - h)) / 6, feelsC: 5 + Double(min(h, 24 - h)) / 6,
-                        windMs: 5.2, rainPercent: (15...16).contains(h) ? 55 : 10)
+        // In small typed steps on purpose: GitHub's Xcode could not work this out as one expression (26 Nov 2026).
+        let hours: [WeatherHour] = (0..<24).map { (h: Int) -> WeatherHour in
+            let swing: Double = Double(min(h, 24 - h)) / 6.0
+            let rain: Double = (15...16).contains(h) ? 55.0 : 10.0
+            return WeatherHour(hour: h, tempC: 9.0 + swing, feelsC: 5.0 + swing, windMs: 5.2, rainPercent: rain)
         }
         return WeatherSnapshot(day: day, place: WeatherPlace(latitude: 59.3, longitude: 18.1), hours: hours, fetchedAt: Date())
     }
