@@ -1,6 +1,6 @@
 # Brief shared by every fact checker (25 Nov 2026)
 
-You check chapters of the guided course for **AMS Triathlon Training 2.8 (84)** against the app's own code. The repo is
+You check chapters of the guided course for **AMS Triathlon Training 2.9 (85)** against the app's own code. The repo is
 this repository's folder. You did not write these chapters; read them
 as a sceptic. Read `docs/intro/HELPERS.md` first (the contract the chapters were written to).
 

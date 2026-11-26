@@ -1,4 +1,4 @@
-/* Chapter 15 — Settings and the guide. Settings from top to bottom as 2.8 has it (spec D.16), How this works with "Signs in this app",
+/* Chapter 15 — Settings and the guide. Settings from top to bottom as 2.9 has it (spec D.16), How this works with "Signs in this app",
    What's new and the version, Favourites settings (arranging by drag), and what the system can do with the app (Siri, Spotlight; D.12).
    Every word is the app's own (SettingsView, Guide, FavouritesSettingsView, AppIntents, SystemWords). Figures are invented. */
 const SET_ROWS = {
@@ -83,6 +83,10 @@ CHAPTER({
     'set.new': S => `
       ${K.back('Settings', 'set.back')}
       <b class="set-title">What’s new</b>
+      <div class="k-card"><b>2.9 (85)</b><span class="k-muted k-small">26 November 2026</span>
+        <b class="k-small">Body gets the Garmin Board’s missing cards: training load, fitness, gym sessions, workouts this month, sleep debt, weight, energy and water</b>
+        <span class="k-small">Body · New: a part Training under the tiles. Now: under the tiles a small heading Training with four cards, in the look of the tiles. Where: Body, under the tiles.</span>
+        <span class="k-small">Body · New: Sleep debt. Now: the 7 nights against what you need, seven slim bars each with a thin grey outline behind it for that night’s need, and a page with each night. Shown only: sleep never leads to a suggestion, and it is never red.</span></div>
       <div class="k-card"><b>2.8 (84)</b><span class="k-muted k-small">25 November 2026</span>
         <b class="k-small">Forty-one things you picked: Body in more depth, reminders, away mode, a race page, notes beside a log, Garmin on a done session, and Claude on your week</b>
         <span class="k-small">Today and reminders · New: Week so far. A card above Tomorrow: for each sport of the plan this week, the time done of the time planned (1h 20m of 2h 30m) with a slim bar. Done is the sport’s full colour, the rest pale.</span>
@@ -142,7 +146,7 @@ CHAPTER({
     { kind: 'try', head: 'Garmin, Claude and the rest', text: 'Press the row <b>Claude</b>.', set: { screen: 'set.l2' }, target: 'set.row:claude', until: S => S.set_pick === 'claude',
       ok: 'Optional, and it needs your own key. Its own chapter teaches it. Garmin has one too, and Apple Health follows it.', robot: [['act', 'set.pick', 'claude']] },
     { kind: 'look', head: 'The foot of Settings', shot: 'set-06-foot',
-      text: 'Below Claude: <b>Your two neighbour apps</b>, <b>Reminders</b>, <b>Weather</b>, <b>Calendar</b> and <b>Dropbox</b> (the last two are on the iPhone only). Then <b>This app</b>, with <b>How this works</b> and <b>What’s new</b>; What’s new reads the version under its name, here AMS Triathlon Training 2.8 (84).',
+      text: 'Below Claude: <b>Your two neighbour apps</b>, <b>Reminders</b>, <b>Weather</b>, <b>Calendar</b> and <b>Dropbox</b> (the last two are on the iPhone only). Then <b>This app</b>, with <b>How this works</b> and <b>What’s new</b>; What’s new reads the version under its name, here AMS Triathlon Training 2.9 (85).',
       hint: 'On an iPad and a Mac the word Keys at the foot of the side list shows every key.', real: 'Settings, at the foot' },
     { kind: 'try', head: 'Open How this works', text: 'Press <b>How this works</b>.', set: { screen: 'set.l3' }, target: 'set.row:guide', until: S => S.screen === 'set.guide',
       ok: 'One long page. Each part has a green heading; the last part is Signs in this app.', robot: [['act', 'set.guide']] },
@@ -152,7 +156,7 @@ CHAPTER({
       robot: [['act', 'set.sign', 'tick'], ['act', 'set.sign', 'red'], ['act', 'set.sign', 'moon'], ['act', 'set.sign', 'dot'], ['act', 'set.sign', 'blue'], ['act', 'set.sign', 'main']],
       real: 'How this works › Signs in this app' },
     { kind: 'try', head: 'See what is new', text: 'Press <b>What’s new</b>. Every version stands there, newest first.', set: { screen: 'set.l3' }, target: 'set.row:new', until: S => S.screen === 'set.new',
-      ok: 'The entry 2.8 (84), 25 November 2026, says every new, changed and fixed thing, in plain words.', robot: [['act', 'set.new']] },
+      ok: 'The entry 2.9 (85), 26 November 2026, says every new, changed and fixed thing, in plain words.', robot: [['act', 'set.new']] },
     { kind: 'look', head: 'Your favourite sessions', shot: 'set-04-favourites',
       text: 'Settings \u203a Your plan \u203a Favourite sessions. A blue card counts them (here 3 favourites, kept for the New session page and on all your devices). Each row has three lines at the left, the session\u2019s mark, its name, length, zone and sport, and the small buttons <b>Rename</b> and <b>Remove</b>.',
       hint: 'Done is at the top left.', real: 'Settings \u203a Your plan \u203a Favourite sessions' },
@@ -179,7 +183,7 @@ function setList(S, id, withHead) {
     return K.nav(r[0], 'set.pick', { arg: key, sub: r[1], t: 'set.row:' + key });
   };
   const extra = id === 'set.l3' ? `<span class="k-cap">This app</span>${K.nav('How this works', 'set.guide', { sub: 'The week strip, logging, syncing and what keeps your plan safe', t: 'set.row:guide' })}
-      ${K.nav('What’s new', 'set.new', { sub: 'AMS Triathlon Training 2.8 (84)', t: 'set.row:new' })}` : '';
+      ${K.nav('What’s new', 'set.new', { sub: 'AMS Triathlon Training 2.9 (85)', t: 'set.row:new' })}` : '';
   return `${withHead ? '<h1 class="k-h1">Settings</h1>' : ''}
     ${picked ? `<div class="k-band k-ok" data-t="set.card">${icon('info')}<span class="k-small"><b>${esc(picked[0])}</b> — ${esc(picked[2])} ${picked[3] ? 'Taught in: ' + esc(picked[3]) + '.' : ''}</span></div>` : ''}
     ${SET_GROUPS[id].map(([g, keys]) => `<span class="k-cap">${esc(g)}</span>${keys.map(row).join('')}`).join('')}${extra}`;

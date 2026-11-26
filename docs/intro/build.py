@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Puts the course together: src/ (page, kit, engine, one file pair per chapter) -> index.html. The page shows the real pictures
 from shots/ beside it (published together with it). Run:  python3 docs/intro/build.py
-Based on AMS Triathlon Training 2.8 (84). Update the course in the release that changes a taught screen."""
+Based on AMS Triathlon Training 2.9 (85). Update the course in the release that changes a taught screen."""
 import pathlib
 
 root = pathlib.Path(__file__).resolve().parent
