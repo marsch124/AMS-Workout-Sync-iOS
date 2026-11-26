@@ -20,7 +20,16 @@ struct TodayView: View {
     @ObservedObject private var diary = Diary.shared
     @ObservedObject private var neighbours = Neighbours.shared
     /* He tapped "Feeling good" to change it: the question comes back for one tap. */
-    @State private var changingFeel = false
+    @State private var changingFeel = TodayView.feelNoteSwitch
+
+    /* DEBUG only: AMSWS_FEEL_NOTE=1 opens the card in its comment step (see Diary). */
+    private static var feelNoteSwitch: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["AMSWS_FEEL_NOTE"] != nil
+        #else
+        return false
+        #endif
+    }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -73,12 +82,29 @@ struct TodayView: View {
                         change: { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true } })
             // The morning question: once a day, one tap, and it is gone until
             // tomorrow. Nothing else on this screen reacts to the answer.
+            // A face saves at once; the card then stays for "Anything to add?".
             let askingFeel = (diary.feel.asks(on: today) && !neighbours.hasFeel(today: today)) || changingFeel
+            if !askingFeel, !neighbours.hasFeel(today: today), let note = diary.feelNote(on: today) {
+                Text("\u{201C}" + note + "\u{201D}")
+                    .font(.footnote).foregroundStyle(Theme.secondary)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 2).padding(.top, -9)
+                    .contentShape(Rectangle())
+                    .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true } }
+                    .accessibilityIdentifier("feel-note-line")
+            }
             if askingFeel {
-                FeelCard(current: diary.feel.answer(on: today)) { f in
-                    diary.setFeel(f, on: today)
-                    withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false }
-                }
+                FeelCard(current: diary.feel.answer(on: today), note: diary.feelNote(on: today) ?? "",
+                         pick: { f in
+                             diary.setFeel(f, on: today)
+                             withAnimation(.easeInOut(duration: 0.15)) { changingFeel = true }
+                         },
+                         saveNote: { text in
+                             diary.setFeelNote(text, on: today)
+                             withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false }
+                         },
+                         skip: { withAnimation(.easeInOut(duration: 0.15)) { changingFeel = false } })
             }
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()

@@ -14,6 +14,10 @@ import Foundation
  * "from Magic Morning" and leaves the answer to that app. It follows the
  * day's winning answer; an answer given in this app carries none. An older
  * app version passes the field over.
+ *
+ * Since 2.10 a morning answer may carry a few words (`notes`: day → comment,
+ * mark "note:<day>"), merged like the answer: the newest mark wins, the same
+ * mark with two texts keeps the larger. An older app version ignores it.
  */
 public struct DiaryDoc: Codable, Equatable, Sendable {
     public static let currentFormat = 1
@@ -26,13 +30,15 @@ public struct DiaryDoc: Codable, Equatable, Sendable {
     public var stamps: [String: Date]
     /* Day key → the app that gave the answer, when it was not this one. */
     public var feelFrom: [String: String]
+    /* Day key → the few words he added to that morning's answer. */
+    public var notes: [String: String]
 
     public init(feel: [String: Int] = [:], answers: [String: Double] = [:], stamps: [String: Date] = [:],
-                feelFrom: [String: String] = [:]) {
-        self.feel = feel; self.answers = answers; self.stamps = stamps; self.feelFrom = feelFrom
+                feelFrom: [String: String] = [:], notes: [String: String] = [:]) {
+        self.feel = feel; self.answers = answers; self.stamps = stamps; self.feelFrom = feelFrom; self.notes = notes
     }
 
-    enum CodingKeys: String, CodingKey { case format, feel, answers, stamps, feelFrom }
+    enum CodingKeys: String, CodingKey { case format, feel, answers, stamps, feelFrom, notes }
 
     /* Read forgivingly: a field that is missing is empty; fields this app does not know are passed over. */
     public init(from decoder: Decoder) throws {
@@ -42,6 +48,7 @@ public struct DiaryDoc: Codable, Equatable, Sendable {
         answers = try c.decodeIfPresent([String: Double].self, forKey: .answers) ?? [:]
         stamps = try c.decodeIfPresent([String: Date].self, forKey: .stamps) ?? [:]
         feelFrom = (try? c.decodeIfPresent([String: String].self, forKey: .feelFrom)) ?? [:]
+        notes = (try? c.decodeIfPresent([String: String].self, forKey: .notes)) ?? [:]
     }
 
     public var isFromNewerApp: Bool { format > DiaryDoc.currentFormat }
@@ -78,6 +85,12 @@ public struct DiaryDoc: Codable, Equatable, Sendable {
         stamps["feel:" + day] = next("feel:" + day, now: now)
     }
 
+    /* The few words with the day's answer; an empty text is "no comment" (and replaces an older one). */
+    public mutating func setNote(_ text: String, on day: String, now: Date = Date()) {
+        notes[day] = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        stamps["note:" + day] = next("note:" + day, now: now)
+    }
+
     public mutating func setAnswer(_ value: Double, for id: String, now: Date = Date()) {
         answers[id] = value
         stamps["answer:" + id] = next("answer:" + id, now: now)
@@ -112,6 +125,7 @@ public struct DiaryDoc: Codable, Equatable, Sendable {
         }
         out.feel = pick("feel:", a.feel, b.feel)
         out.answers = pick("answer:", a.answers, b.answers)
+        out.notes = pick("note:", a.notes, b.notes)
         // Where the day's answer came from goes with the answer that won; two equal answers keep a known source.
         for (day, value) in out.feel {
             let ta = a.stamps["feel:" + day] ?? .distantPast, tb = b.stamps["feel:" + day] ?? .distantPast
