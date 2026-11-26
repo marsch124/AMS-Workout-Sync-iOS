@@ -4,9 +4,9 @@ import WorkoutCore
 
 /*
  * 2.9 lane "gym": the Gym sessions card on the Body page. The machines, sets and weights are logged in
- * AMS Workout Companion, which writes them into AMS Workout Companion app to Garmin/Workout Companion sessions.json in iCloud
+ * AMS Workout Companion, which writes them into Documents/03 Home/02 IT/01 SW/AMS Triathlon Training/AMS Workout Companion app to Garmin/Workout Companion sessions.json in iCloud
  * Drive (the Garmin Board reads the same file). The app may not read another folder unless he picks it,
- * so he chooses the "AMS Workout Companion app to Garmin" folder once (renamed from "AMS Garmin" on 26 Nov 2026, his ask) (Settings › Garmin, or the card); the choice is kept on this
+ * so he chooses the "AMS Workout Companion app to Garmin" folder once (renamed from "AMS Garmin" and moved into his AMS Triathlon Training folder on 26 Nov 2026, his asks) (Settings › Garmin, or the card); the choice is kept on this
  * device as a security-scoped bookmark. The app only reads the file; it never writes it.
  */
 @MainActor
@@ -170,7 +170,7 @@ struct GymCard: View {
     @ViewBuilder private var empty: some View {
         Text(reader.state == .noFile
              ? "No gym sessions found in that folder yet. They appear once the Workout Companion app has saved one there."
-             : "Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin in iCloud Drive — once.")
+             : "Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin — it is in iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training. Once.")
             .font(.caption).foregroundStyle(Theme.secondary)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityIdentifier("body-gym-empty")
@@ -282,7 +282,7 @@ struct GymFolderSection: View {
                         .accessibilityIdentifier("garmin-gym-change")
                 }
             } else {
-                Text("In iCloud Drive: AMS Workout Companion app to Garmin")
+                Text("Where: iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training › AMS Workout Companion app to Garmin")
                     .font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)
                     .accessibilityIdentifier("garmin-gym-where")
                 Button { choosing = true } label: {
