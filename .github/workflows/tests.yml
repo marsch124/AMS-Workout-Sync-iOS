@@ -12,7 +12,7 @@ on:
 jobs:
   tests:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 70
 
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +73,9 @@ jobs:
 
       - name: UI tests
         # A runner whose simulator never starts used to hang until the job's 30 minutes ran out (25 Nov 2026).
-        timeout-minutes: 20
+        # 26 Nov 2026: 2.8 has 78 screen tests; with the build they need about 45 minutes on the runner. At 20 the step was
+        # stopped while every test so far had passed (30 of 78). No single test hangs: the longest took 54 seconds.
+        timeout-minutes: 55
         run: |
           xcodebuild test \
             -project AMSWorkoutSync.xcodeproj \
