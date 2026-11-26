@@ -417,6 +417,6 @@ final class WorkoutSyncUITests: XCTestCase {
         XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 5), "the zone sheet shows no rows")
         XCTAssertEqual(rows.count, 1, "a run at Z2 should show exactly the Z2 heart-rate row")
         let label = rows.firstMatch.label
-        XCTAssertTrue(label.contains("Z2") && label.contains("122–134"), "wrong row: \(label)")
+        XCTAssertTrue(label.contains("Z2") && label.contains("126–139"), "wrong row: \(label)")
     }
 }

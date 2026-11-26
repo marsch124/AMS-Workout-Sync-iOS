@@ -103,8 +103,9 @@ final class GarminActivityReader: ObservableObject {
     // MARK: invented, for pictures
 
     static var inventedZones: GarminZoneWeeks.Result {
-        GarminZoneWeeks.Result(thisWeek: [14 * 60, 190 * 60, 52 * 60, 18 * 60, 4 * 60],
-                               lastWeek: [20 * 60, 160 * 60, 61 * 60, 9 * 60, 0])
+        // Decimal points on purpose: GitHub's Xcode refuses whole numbers in a list of Doubles here (25 Nov 2026).
+        GarminZoneWeeks.Result(thisWeek: [14.0 * 60, 190.0 * 60, 52.0 * 60, 18.0 * 60, 4.0 * 60],
+                               lastWeek: [20.0 * 60, 160.0 * 60, 61.0 * 60, 9.0 * 60, 0.0])
     }
 
     #if DEBUG

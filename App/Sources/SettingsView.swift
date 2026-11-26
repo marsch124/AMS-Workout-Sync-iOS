@@ -373,7 +373,7 @@ struct SettingsView: View {
         return prefix + f.localizedString(for: at, relativeTo: Date())
     }
 
-    /* "LTHR 150 bpm · CSS 121 sec/100 m · Weight 80 kg" (invented) — the sheet's own labels, shortened. */
+    /* "LTHR 156 bpm · CSS 114 sec/100 m · Weight 74 kg" (invented) — the sheet's own labels, shortened. */
     private var zonesTitle: String {
         guard let z = store.zones else { return "No zones sheet in this workbook" }
         let known = z.current.filter { !$0.value.isEmpty }

@@ -34,9 +34,8 @@ DEBUG picture switches — never with the owner's real plan or health numbers. T
 - **The owner's plan lives in the app.** Every picture is taken with `AMSWS_HOME=app` (the script adds it by itself), or it shows
   things he never sees: a "Connect Dropbox" word on Today, "Waiting to sync" on a logged session, a session page without Change,
   Excel wording at the foot of Progress. Only the move-in page is taken without it (`AMSWS_HOME=excel` switches it off).
-- **Zone numbers.** Pictures that show the test and zone numbers (Settings › Your zones row, the Your zones page, the Tests card
-  on Progress) are taken with `AMSWS_FILE=<repo>/docs/intro/shots-raw/plan-course.xlsx`, made by `tools/course-plan.py`
-  (156 bpm · 114 sec/100 m · 74 kg), not with the fixture's own 150 / 121 / 80.
+- **Zone numbers.** Since 26 Nov 2026 the invented plans themselves carry 156 bpm · 114 sec/100 m · 74 kg (they had 150 / 121 / 80,
+  the owner's own numbers, until then). No special copy is needed any more.
 - **iPad:** an "iPad Pro 13-inch (M5)" held upright shows the wide look; an 11-inch upright does not, and a simulator cannot be turned.
 - Done sessions: `AMSWS_FILE=<repo>/UITests/Fixtures/plan-done.xlsx`, or `AMSWS_FAKE_DONE=1`. The Sunday card needs the day
   2026-09-13 and the Sunday switch; Claude's line on a card needs `defaults write com.schabbauer.AMSWorkoutSync claude-on -bool true`
