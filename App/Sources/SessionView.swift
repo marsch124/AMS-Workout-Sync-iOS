@@ -86,6 +86,7 @@ struct SessionView: View {
                     }
                     if w.discipline.id == "strength" {
                         NoGymEntry(workout: w, minutes: Int(((Plan.plannedSeconds(w, mapping) ?? 0) / 60).rounded()))
+                        GymDayBlock(day: w.dayKey, today: store.today)
                     }
 
                     ForEach(Array(w.sections.enumerated()), id: \.offset) { _, section in
