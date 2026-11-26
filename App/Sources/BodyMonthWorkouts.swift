@@ -98,6 +98,8 @@ final class MonthWorkoutsReader: ObservableObject {
 }
 
 struct MonthWorkoutsCard: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let day: String
     /* Opens a workout as a tap on the curve does: (the workout, all of that day's workouts, that day "yyyy-MM-dd"). */
     let open: (BodyDay.Workout, [BodyDay.Workout], String) -> Void
@@ -115,7 +117,7 @@ struct MonthWorkoutsCard: View {
         let all = reader.shown(day: day)
         VStack(alignment: .leading, spacing: 1) {
             Text("WORKOUTS · \(MonthWorkouts.monthName(day))")
-                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body).lineLimit(1)
+                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent).lineLimit(1)
             if all.isEmpty {
                 Text("No workouts from Garmin yet this month. They fill in once Garmin is connected and the watch has synced.")
                     .font(.caption).foregroundStyle(Theme.secondary)
@@ -137,7 +139,7 @@ struct MonthWorkoutsCard: View {
                 .padding(.top, 6)
                 if all.count > Self.rowsShown {
                     Button { showAll = true } label: {
-                        Text("All \(all.count) workouts").font(.footnote.weight(.semibold)).foregroundStyle(Theme.body)
+                        Text("All \(all.count) workouts").font(.footnote.weight(.semibold)).foregroundStyle(hue.accent)
                     }
                     .buttonStyle(.plain).padding(.top, 6)
                     .accessibilityIdentifier("body-month-all")
@@ -147,7 +149,7 @@ struct MonthWorkoutsCard: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 11).padding(.top, 9).padding(.bottom, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.bodyTile))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("body-month-card")
         .sheet(isPresented: $showAll) {
@@ -202,6 +204,8 @@ private struct MonthWorkoutRow: View {
 }
 
 private struct MonthWorkoutsSheet: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let all: [MonthWorkout]
     let month: String
     let pick: (MonthWorkout) -> Void
@@ -218,7 +222,7 @@ private struct MonthWorkoutsSheet: View {
                 }
                 .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 12)
             }
-            .background(Theme.bodyGround.ignoresSafeArea())
+            .background(hue.tile.ignoresSafeArea())
             .navigationTitle("Workouts · \(month.capitalized)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -230,7 +234,7 @@ private struct MonthWorkoutsSheet: View {
             }
         }
         .presentationDetents([.large])
-        .tint(Theme.body)
+        .tint(hue.accent)
         .accessibilityIdentifier("body-month-sheet")
     }
 }

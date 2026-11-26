@@ -138,6 +138,8 @@ private func machineParts(_ e: GymEntry) -> (String, String) {
 }
 
 struct GymCard: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let day: String
     @ObservedObject private var reader = GymReader.shared
     @State private var picked: String?
@@ -150,7 +152,7 @@ struct GymCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 1) {
             Text("GYM SESSIONS")
-                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body)
+                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
             if reader.state == .ready, let s = shown {
                 filled(s)
             } else {
@@ -159,7 +161,7 @@ struct GymCard: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 11).padding(.top, 9).padding(.bottom, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.bodyTile))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
         .gymFolderImporter($choosing, today: day)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("body-gym-card")
@@ -168,12 +170,12 @@ struct GymCard: View {
     @ViewBuilder private var empty: some View {
         Text(reader.state == .noFile
              ? "No gym sessions found in that folder yet. They appear once AMS Workout Companion has saved one to AMS Garmin."
-             : "Choose the AMS Garmin folder once in Settings › Garmin to see your gym sessions here.")
+             : "Your gym sessions come from AMS Workout Companion. Tap Choose folder and pick AMS Garmin in iCloud Drive — once.")
             .font(.caption).foregroundStyle(Theme.secondary)
             .fixedSize(horizontal: false, vertical: true)
             .accessibilityIdentifier("body-gym-empty")
         Button("Choose folder") { choosing = true }
-            .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.body)
+            .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(hue.accent)
             .padding(.top, 5)
             .accessibilityIdentifier("body-gym-choose")
     }
@@ -197,7 +199,7 @@ struct GymCard: View {
         }
         if !isLatest {
             Button("Back to the latest") { picked = nil }
-                .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(Theme.body)
+                .font(.caption.weight(.semibold)).buttonStyle(.bordered).controlSize(.mini).tint(hue.accent)
                 .padding(.top, 4)
                 .accessibilityIdentifier("body-gym-back")
         }
@@ -236,12 +238,12 @@ struct GymCard: View {
                             Spacer(minLength: 0)
                         }
                         GeometryReader { g in
-                            Capsule().fill(Theme.body.opacity(0.55))
+                            Capsule().fill(hue.accent.opacity(0.55))
                                 .frame(width: max(3, g.size.width * CGFloat((r.liftedKg ?? 0) / top)), height: 3)
                         }.frame(height: 3)
                     }
                     .padding(.horizontal, 6).padding(.vertical, 4)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(r.id == selected ? Theme.body.opacity(0.14) : Color.clear))
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(r.id == selected ? hue.accent.opacity(0.14) : Color.clear))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -301,6 +303,8 @@ struct GymFolderSection: View {
 
 /* On a strength session's page: that day's gym machines, sets and best weights (nothing when the file has no session that day). */
 struct GymDayBlock: View {
+    /* 2.10: on a session's page, outside the Body page: the gym card's own colour. */
+    private let hue = BodyHue.gym
     let day: String
     let today: String
     @ObservedObject private var reader = GymReader.shared
@@ -311,7 +315,7 @@ struct GymDayBlock: View {
             if !list.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(list) { s in
-                        Text("GYM").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body)
+                        Text("GYM").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
                         Text([GymSessions.headLine(s).components(separatedBy: " · ").dropFirst().joined(separator: " · "),
                               GymSessions.countsLine(s, today: nil),
                               (s.liftedKg ?? 0) > 0 ? BodyPage.grouped(s.liftedKg ?? 0) + " kg" : ""]
@@ -327,7 +331,7 @@ struct GymDayBlock: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(11)
-                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.bodyTile))
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("body-gym-session-block")
             }

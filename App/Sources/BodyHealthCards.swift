@@ -102,6 +102,8 @@ final class BodyHealthReader: ObservableObject {
 // MARK: Shared pieces
 
 private struct HealthSheet: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let title: String
     let rows: [(String, String)]
     let note: String
@@ -128,7 +130,7 @@ private struct HealthSheet: View {
                 }
                 .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 12)
             }
-            .background(Theme.bodyGround.ignoresSafeArea())
+            .background(hue.tile.ignoresSafeArea())
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -138,12 +140,14 @@ private struct HealthSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .tint(Theme.body)
+        .tint(hue.accent)
     }
 }
 
 /* The card's frame: Body's tile fill, name in small capitals, figure with its unit beside it, one grey line. */
 private struct HealthFace<Extra: View>: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let name: String
     let figure: String?
     let unit: String
@@ -154,7 +158,7 @@ private struct HealthFace<Extra: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(name.uppercased())
-                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body)
+                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
                 .lineLimit(1).minimumScaleFactor(0.8)
             if let figure {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -169,7 +173,7 @@ private struct HealthFace<Extra: View>: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 11).padding(.top, 9).padding(.bottom, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.bodyTile))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
         .contentShape(Rectangle())
     }
 }
@@ -186,6 +190,8 @@ private func debugSheet(_ name: String) -> Bool { false }
 
 /* Seven nights as slim round bars; each night's need stands behind its bar as a thin grey outline. A night without the watch has the small grey dash. */
 private struct NightBars: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let nights: [BodyHealth.Night]
     var height: CGFloat = 46
 
@@ -201,7 +207,7 @@ private struct NightBars: View {
                             .stroke(Theme.secondary.opacity(0.45), lineWidth: 1)
                             .frame(height: max(6, height * CGFloat(n.needMinutes / top)))
                         if let s = n.sleptMinutes {
-                            RoundedRectangle(cornerRadius: 3.5, style: .continuous).fill(Theme.body)
+                            RoundedRectangle(cornerRadius: 3.5, style: .continuous).fill(hue.accent)
                                 .frame(height: max(4, height * CGFloat(s / top)))
                         } else {
                             Text("\u{2013}").font(.caption2).foregroundStyle(Theme.secondary)
@@ -261,6 +267,8 @@ struct SleepDebtCard: View {
 // MARK: Weight
 
 private struct WeightLine: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let points: [BodyHealth.Weighing]
     var height: CGFloat = 46
 
@@ -278,9 +286,9 @@ private struct WeightLine: View {
                 Path { p in
                     for i in points.indices { i == 0 ? p.move(to: pos(i)) : p.addLine(to: pos(i)) }
                 }
-                .stroke(Theme.body, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                .stroke(hue.accent, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
                 if let last = points.indices.last {
-                    Circle().fill(Theme.body).frame(width: 7, height: 7).position(pos(last))
+                    Circle().fill(hue.accent).frame(width: 7, height: 7).position(pos(last))
                 }
             }
         }
@@ -341,6 +349,8 @@ struct EnergyCard: View {
 }
 
 struct WaterCard: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let day: String
     @ObservedObject private var reader = BodyHealthReader.shared
 
@@ -352,7 +362,7 @@ struct WaterCard: View {
                 GeometryReader { g in
                     ZStack(alignment: .leading) {
                         Capsule().fill(Theme.secondary.opacity(0.2))
-                        Capsule().fill(Theme.body).frame(width: max(6, g.size.width * CGFloat(f)))
+                        Capsule().fill(hue.accent).frame(width: max(6, g.size.width * CGFloat(f)))
                     }
                 }
                 .frame(height: 6)

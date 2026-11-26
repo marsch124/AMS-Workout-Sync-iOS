@@ -127,6 +127,7 @@
 		DD2B0F9A84D889B57B46F323 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30D69ECCF942E04293F875A /* AppIntents.swift */; };
 		DEB13984EBB05883FD5B3947 /* PlanToolsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94DA4FF692507EAC1699DD1 /* PlanToolsUITests.swift */; };
 		E06C0A02051EBAAF581D9FF2 /* SessionAdviceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C2E906C05F4CBDC1115AE9 /* SessionAdviceUITests.swift */; };
+		E0CB6F0DA37F5BDADF21CEE0 /* BodyHues.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3235F1734A34A12D38ACBF0 /* BodyHues.swift */; };
 		E29FD4D349EE2AEE2487DE88 /* SteadyWeeks.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD7B0B7A6AEC5F33268D43DC /* SteadyWeeks.swift */; };
 		E3CEEE308A9D47632AD0137B /* SuggestionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4ACA1DEDBF250EB3A08FBD /* SuggestionCard.swift */; };
 		E6616F2B0E7E09FCB8BE1B33 /* ShelfStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F4AA04CF2B243A1D05B6EFB /* ShelfStore.swift */; };
@@ -261,6 +262,7 @@
 		C4D1347269B601D5C3B5B64A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CD7B0B7A6AEC5F33268D43DC /* SteadyWeeks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SteadyWeeks.swift; sourceTree = "<group>"; };
 		D04CBC958D9BB764875C6207 /* SeasonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonView.swift; sourceTree = "<group>"; };
+		D3235F1734A34A12D38ACBF0 /* BodyHues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyHues.swift; sourceTree = "<group>"; };
 		D6E3DEEE01504BE66D135FE3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		D792EDD85C5F7F7301F60490 /* HealthMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMark.swift; sourceTree = "<group>"; };
 		D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanChangeUITests.swift; sourceTree = "<group>"; };
@@ -393,6 +395,7 @@
 				5D2BD8A70242934CFF875BDF /* AwayViews.swift */,
 				7135BAD6452E97AA2684719C /* BodyGymCard.swift */,
 				B41751A442A77D3274F466F4 /* BodyHealthCards.swift */,
+				D3235F1734A34A12D38ACBF0 /* BodyHues.swift */,
 				BB5107E621693DC31B150148 /* BodyLoadCards.swift */,
 				5C20C294BEA9F6076C092542 /* BodyMonthWorkouts.swift */,
 				308540CF5AE126FCBACE2562 /* BodyMoreCards.swift */,
@@ -618,6 +621,7 @@
 				74E4C6E06ACBF44CA1AFFB21 /* AwayViews.swift in Sources */,
 				3A8F87C53AD72EF415692796 /* BodyGymCard.swift in Sources */,
 				846D3354B32D4D0A7A82C42C /* BodyHealthCards.swift in Sources */,
+				E0CB6F0DA37F5BDADF21CEE0 /* BodyHues.swift in Sources */,
 				5D7D3177EF02D6DDC291A879 /* BodyLoadCards.swift in Sources */,
 				1974D6B21ABAA53421C402FC /* BodyMonthWorkouts.swift in Sources */,
 				D4C2E681FAD8F8E023070715 /* BodyMoreCards.swift in Sources */,

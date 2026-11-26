@@ -90,6 +90,8 @@ final class BodyLoadReader: ObservableObject {
 // MARK: Training load
 
 struct TrainingLoadCard: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let day: String
     @ObservedObject private var reader = BodyLoadReader.shared
     @State private var open = false
@@ -117,7 +119,7 @@ struct TrainingLoadCard: View {
 
     private func face(_ s: BodyLoad.Summary) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text("TRAINING LOAD").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body)
+            Text("TRAINING LOAD").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
                 .lineLimit(1).minimumScaleFactor(0.8)
             if reader.shown {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -141,23 +143,25 @@ struct TrainingLoadCard: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 11).padding(.top, 9).padding(.bottom, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.bodyTile))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
         .contentShape(Rectangle())
     }
 }
 
 /* A slim round bar on a scale 0 to 2 with the steady stretch (0.8 to 1.3) a little darker and a small marker. */
 struct LoadScale: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let ratio: Double
     var body: some View {
         GeometryReader { g in
             let w = g.size.width
             ZStack(alignment: .leading) {
-                Capsule().fill(Theme.body.opacity(0.16))
-                Capsule().fill(Theme.body.opacity(0.38))
+                Capsule().fill(hue.accent.opacity(0.16))
+                Capsule().fill(hue.accent.opacity(0.38))
                     .frame(width: w * CGFloat(BodyLoad.steady.upperBound - BodyLoad.steady.lowerBound))
                     .offset(x: w * CGFloat(BodyLoad.steady.lowerBound))
-                Circle().fill(Theme.body).overlay(Circle().stroke(Theme.bodyTile, lineWidth: 2))
+                Circle().fill(hue.accent).overlay(Circle().stroke(hue.tile, lineWidth: 2))
                     .frame(width: 12, height: 12)
                     .offset(x: min(max(w * CGFloat(BodyLoad.scalePosition(ratio)) - 6, 0), w - 12))
             }
@@ -169,6 +173,8 @@ struct LoadScale: View {
 }
 
 struct TrainingLoadSheet: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let summary: BodyLoad.Summary
     @Environment(\.dismiss) private var dismiss
 
@@ -176,12 +182,12 @@ struct TrainingLoadSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("WEEKLY LOAD · LAST 12 WEEKS").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body)
+                    Text("WEEKLY LOAD · LAST 12 WEEKS").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
                     let top = max(summary.weeks.max() ?? 1, 1)
                     HStack(alignment: .bottom, spacing: 4) {
                         ForEach(Array(summary.weeks.enumerated()), id: \.offset) { i, v in
                             VStack(spacing: 3) {
-                                Capsule().fill(Theme.body.opacity(i == summary.weeks.count - 1 ? 1 : 0.55))
+                                Capsule().fill(hue.accent.opacity(i == summary.weeks.count - 1 ? 1 : 0.55))
                                     .frame(height: max(4, 90 * CGFloat(v / top)))
                                 Text(i == summary.weeks.count - 1 ? "now" : String(11 - i)).font(.caption2).foregroundStyle(Theme.secondary)
                                     .lineLimit(1).minimumScaleFactor(0.6)
@@ -201,7 +207,7 @@ struct TrainingLoadSheet: View {
                 }
                 .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 12)
             }
-            .background(Theme.bodyGround.ignoresSafeArea())
+            .background(hue.tile.ignoresSafeArea())
             .navigationTitle("Training load")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -211,7 +217,7 @@ struct TrainingLoadSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .tint(Theme.body)
+        .tint(hue.accent)
         .accessibilityIdentifier("body-training-load-sheet")
     }
 }
@@ -219,6 +225,8 @@ struct TrainingLoadSheet: View {
 // MARK: Fitness
 
 struct FitnessCard: View {
+    /* 2.10: the card's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
     let day: String
     @ObservedObject private var reader = BodyLoadReader.shared
 
@@ -226,7 +234,7 @@ struct FitnessCard: View {
         let n = reader.file.fitness
         let vo2 = BodyLoad.latestVo2(reader.file.workouts)
         VStack(alignment: .leading, spacing: 1) {
-            Text("FITNESS").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body)
+            Text("FITNESS").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
                 .lineLimit(1).minimumScaleFactor(0.8)
             if GarminKey.isSaved, let n {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -252,7 +260,7 @@ struct FitnessCard: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, 11).padding(.top, 9).padding(.bottom, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.bodyTile))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(n.map { "Fitness age \(Int($0.fitnessAge.rounded())). \(BodyLoad.ageLine($0) ?? "")" } ?? "Fitness. No fitness age yet.")
         .accessibilityIdentifier("body-fitness")

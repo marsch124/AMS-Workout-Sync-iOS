@@ -49,7 +49,7 @@ final class Body29GymUITests: XCTestCase {
     func testWithoutAFolderTheCardSaysHowItFills() {
         let app = launch(noFolder: true)
         XCTAssertTrue(scrolled(app, to: "body-gym-card").exists, "no Gym sessions card")
-        XCTAssertTrue(any(app, "body-gym-empty").label.contains("Choose the AMS Garmin folder once in Settings"), "the line said \(any(app, "body-gym-empty").label)")
+        XCTAssertTrue(any(app, "body-gym-empty").label.contains("pick AMS Garmin in iCloud Drive"), "the line said \(any(app, "body-gym-empty").label)")
         XCTAssertTrue(any(app, "body-gym-choose").exists, "no Choose folder button")
     }
 }

@@ -19,11 +19,12 @@ struct BodyMoreCards: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             BodyPartTitle(text: "Training", id: "body-part-training")
-            side { TrainingLoadCard(day: day) } _: { FitnessCard(day: day) }
-            stack { GymCard(day: day) } _: { MonthWorkoutsCard(day: day, open: open) }
+            // 2.10: every card in a colour of its own (BodyHues.swift).
+            side { TrainingLoadCard(day: day).bodyHue(.load) } _: { FitnessCard(day: day).bodyHue(.fitness) }
+            stack { GymCard(day: day).bodyHue(.gym) } _: { MonthWorkoutsCard(day: day, open: open).bodyHue(.workouts) }
             BodyPartTitle(text: "Health", id: "body-part-health")
-            stack { SleepDebtCard(day: day) } _: { WeightCard(day: day) }
-            side { EnergyCard(day: day) } _: { WaterCard(day: day) }
+            stack { SleepDebtCard(day: day).bodyHue(.sleep) } _: { WeightCard(day: day).bodyHue(.weight) }
+            side { EnergyCard(day: day).bodyHue(.energy) } _: { WaterCard(day: day).bodyHue(.water) }
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("body-more")

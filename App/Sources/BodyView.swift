@@ -57,6 +57,7 @@ struct BodyView: View {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: wide ? 3 : 2), spacing: 8) {
                             ForEach(BodyPage.Instrument.allCases) { i in
                                 BodyTile(tile: BodyPage.tile(i, b, span: span, history: reader.history), span: span, tall: wide) { peek = i }
+                                    .bodyHue(.of(i))
                             }
                         }
                         // 2.9: the Board's cards the page lacked (Training and Health).
@@ -105,7 +106,7 @@ struct BodyView: View {
             if saved { Task { await reader.readBodyIfDue(today: store.today) } }
         }
         .sheet(item: $peek) { i in
-            if let b = reader.bodyShown { BodyPeek(instrument: i, day: b, span: span, history: reader.history) }
+            if let b = reader.bodyShown { BodyPeek(instrument: i, day: b, span: span, history: reader.history).bodyHue(.of(i)) }
         }
         .sheet(item: $picture) { p in ShareSheet(items: [p.image]) }
         .sheet(item: $openExtra) { x in ExtraDetailView(extra: x).environmentObject(store) }
@@ -480,11 +481,13 @@ struct BodyTileFace: View {
     let tile: BodyPage.Tile
     var span: BodyPage.Span = .week
     var tall = false
+    /* 2.10: the tile's own colour (BodyHues.swift). */
+    @Environment(\.bodyHue) private var hue
 
     var body: some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(tile.instrument.title.uppercased())
-                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(Theme.body)
+                .font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
                 .lineLimit(1).minimumScaleFactor(0.8)
             HStack(alignment: .firstTextBaseline, spacing: 5) {
                 Text(tile.figure).font(.title2.weight(.bold))
@@ -497,7 +500,7 @@ struct BodyTileFace: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 11).padding(.top, 9).padding(.bottom, 8)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.bodyTile))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
         .contentShape(Rectangle())
     }
 }
@@ -527,6 +530,8 @@ struct BodyTile: View {
 struct BodyBars: View {
     let days: [BodyDay.DayValue]
     var height: CGFloat = 42
+    /* 2.10: the bars take the colour of the card they stand in. */
+    @Environment(\.bodyHue) private var hue
     var band: ClosedRange<Double>? = nil
     var span: BodyPage.Span = .week
 
@@ -563,7 +568,7 @@ struct BodyBars: View {
                             Color.clear.frame(height: height)
                             if let f = heights[i] {
                                 RoundedRectangle(cornerRadius: 3.5, style: .continuous)
-                                    .fill(Theme.body)
+                                    .fill(hue.accent)
                                     .frame(height: max(4, height * CGFloat(f)))
                                     .frame(maxWidth: days.count <= 4 ? 26 : .infinity) // four weeks: slim bars, not blocks
                             } else {
@@ -720,8 +725,8 @@ struct BodyShareCard: View {
             Grid(horizontalSpacing: 8, verticalSpacing: 8) {
                 ForEach(0..<(tiles.count + 1) / 2, id: \.self) { r in
                     GridRow {
-                        BodyTileFace(tile: tiles[r * 2], span: span)
-                        if r * 2 + 1 < tiles.count { BodyTileFace(tile: tiles[r * 2 + 1], span: span) } else { Color.clear }
+                        BodyTileFace(tile: tiles[r * 2], span: span).bodyHue(.of(tiles[r * 2].instrument))
+                        if r * 2 + 1 < tiles.count { BodyTileFace(tile: tiles[r * 2 + 1], span: span).bodyHue(.of(tiles[r * 2 + 1].instrument)) } else { Color.clear }
                     }
                 }
             }
@@ -745,6 +750,8 @@ struct BodyPeek: View {
     var span: BodyPage.Span = .week
     var history = BodyHistory()
     @Environment(\.dismiss) private var dismiss
+    /* 2.10: the page takes the tile's colour. */
+    @Environment(\.bodyHue) private var hue
 
     private var firstWord: String {
         if span != .week { return "This week" }
@@ -781,7 +788,7 @@ struct BodyPeek: View {
             }
             .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 12)
             }
-            .background(Theme.bodyGround.ignoresSafeArea())
+            .background(hue.tile.ignoresSafeArea())
             .navigationTitle(instrument.title + (span == .week ? " · last 7 days" : " · \(span.title)"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -793,7 +800,7 @@ struct BodyPeek: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .tint(Theme.body)
+        .tint(hue.accent)
     }
 }
 
