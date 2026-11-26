@@ -112,9 +112,11 @@ final class GarminReader: ObservableObject {
     /* What the Body page shows: only while a key is saved. */
     var bodyShown: BodyDay? { keySaved ? body.flatMap { $0.isEmpty ? nil : $0 } : nil }
 
-    /* Called when the Body page appears: at most one read in 30 minutes. */
+    /* Called when the Body page appears (and since 2.9 at the start and at midnight): at most one read in 30 minutes,
+       unless the numbers held are from an earlier day — then at once. */
     func readBodyIfDue(today: String) async {
-        guard keySaved, !GarminKey.isFake, GarminMorning.mayRead(lastTried: bodyFile.lastTried, now: Date()) else { return }
+        guard keySaved, !GarminKey.isFake,
+              GarminMorning.bodyReadDue(lastTried: bodyFile.lastTried, heldDay: body?.day, now: Date()) else { return }
         await readBody(today: today)
     }
 
