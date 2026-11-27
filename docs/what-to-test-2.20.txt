@@ -1,0 +1,4 @@
+1. Open Progress: eight colour tiles under the title (two columns on iPhone, four in a wide Mac or iPad window). Tap Bests: the page scrolls there.
+2. Scroll down: a slim row of chips stays at the top, the part on screen filled. Tap a chip to jump; scroll to the top and the row goes.
+3. Time in zones · this week now shows up; Fitter at the same pulse says Garmin did not answer when it did not.
+4. A done session's score and a strength session's gym block now show without opening Progress or Body first.

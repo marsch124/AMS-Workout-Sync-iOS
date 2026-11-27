@@ -340,6 +340,9 @@ struct GymDayBlock: View {
                 .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(hue.tile))
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("body-gym-session-block")
+            } else {
+                // 2.20: a view all the same, or the read below never runs (the gym list only came once Body had been open); no room taken (rows are 16 apart).
+                Color.clear.frame(height: 0).padding(.top, -16).accessibilityHidden(true)
             }
         }
         .task { await reader.readIfDue(today: today) }

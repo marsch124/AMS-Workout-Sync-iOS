@@ -93,6 +93,7 @@
 		860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201A884ED7294E23A8047706 /* Components.swift */; };
 		8770BD1A52D870D446CD70BB /* CoachDrillCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F484F3C1B78321B17F6E474 /* CoachDrillCards.swift */; };
 		8843E045DF61B97E00EE86E1 /* AMSWorkoutSyncApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */; };
+		8870717742F5AE40F997FCDC /* ProgressNav220UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20FD9683856CE1A797CA6F3 /* ProgressNav220UITests.swift */; };
 		893F6F5D26884B326DCF7B16 /* PlanChangesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9322A1646D1ECEA8833A2D6C /* PlanChangesView.swift */; };
 		89CDC9463998F4995477427E /* LogFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFFF43913961BBC438C16AF /* LogFormView.swift */; };
 		8AC56DC57B04E7000D243214 /* ClaudeReviewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DADAAD1BA967E052E18FAFBF /* ClaudeReviewUITests.swift */; };
@@ -126,6 +127,7 @@
 		BE65B74716168B998B6AAD43 /* SafetyCopiesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB603BAFDFF677E317A068C /* SafetyCopiesUITests.swift */; };
 		BF0DA21B39C177C85EA57B2F /* ProgressRoundUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDEE598016F2D496AF6B268 /* ProgressRoundUITests.swift */; };
 		C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6525576D143C59A4723612 /* DropboxViews.swift */; };
+		C4D1F608D0A92E6CB0263B02 /* ProgressNavViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50971D1C06F4E668D8F301AD /* ProgressNavViews.swift */; };
 		C5877BC4EE1B04657140810B /* WaitingForPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD89521CE6E4403841FE2581 /* WaitingForPlanView.swift */; };
 		C8F5F83765BDF4A1FFEAF19F /* ProgressLook.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71A992D42543C308CF9B634 /* ProgressLook.swift */; };
 		C9F6B2BDF5048ECA082BCFC7 /* TestEntryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41F26771CF90A03C5E86FB7C /* TestEntryUITests.swift */; };
@@ -231,6 +233,7 @@
 		4CD39982CFB85EDA1755222A /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
 		4D0CBE37000D5FCA89C190E2 /* SyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
 		4D6D04E4108EDA362A543F0D /* Body29LoadUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29LoadUITests.swift; sourceTree = "<group>"; };
+		50971D1C06F4E668D8F301AD /* ProgressNavViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressNavViews.swift; sourceTree = "<group>"; };
 		535709AAEDB9EE8CFC8599DF /* MobilityStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobilityStrengthView.swift; sourceTree = "<group>"; };
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		55FB6D42E4F80D931071380B /* FuelNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuelNotes.swift; sourceTree = "<group>"; };
@@ -278,6 +281,7 @@
 		981A0439E2063A507ACB6E79 /* PlanPrint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPrint.swift; sourceTree = "<group>"; };
 		9B86E55B10FCCF54499FBECC /* AwayUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AwayUITests.swift; sourceTree = "<group>"; };
 		9DE74CF9DA40FD58546C066C /* HeadFills.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadFills.swift; sourceTree = "<group>"; };
+		A20FD9683856CE1A797CA6F3 /* ProgressNav220UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressNav220UITests.swift; sourceTree = "<group>"; };
 		A30D69ECCF942E04293F875A /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		A31BD686DB20769B48D01346 /* MoveInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveInView.swift; sourceTree = "<group>"; };
 		A458B9DC21B3DD4CEC99B536 /* Score30UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Score30UITests.swift; sourceTree = "<group>"; };
@@ -393,6 +397,7 @@
 				A8B9FBB415EA1C7819A2BA32 /* PlanHomeUITests.swift */,
 				FD73FBA0AD41800B980E3904 /* PlanMaker30UITests.swift */,
 				D94DA4FF692507EAC1699DD1 /* PlanToolsUITests.swift */,
+				A20FD9683856CE1A797CA6F3 /* ProgressNav220UITests.swift */,
 				DCDEE598016F2D496AF6B268 /* ProgressRoundUITests.swift */,
 				E4673C7D692452D69755906B /* RaceGearUITests.swift */,
 				1FEFA56BC080FC1CC4907564 /* Raceplan30UITests.swift */,
@@ -522,6 +527,7 @@
 				A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */,
 				C2F134FA8C0441903261DC2A /* PoolCard.swift */,
 				B71A992D42543C308CF9B634 /* ProgressLook.swift */,
+				50971D1C06F4E668D8F301AD /* ProgressNavViews.swift */,
 				8173903887939F8A3DB90D8D /* ProgressView.swift */,
 				4545506F79E4D9D433E6C2FB /* RaceEditViews.swift */,
 				FC9FE1BD710D6061C830192E /* RacePage.swift */,
@@ -764,6 +770,7 @@
 				F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */,
 				59F1F45FFE23F277C18D0890 /* PoolCard.swift in Sources */,
 				C8F5F83765BDF4A1FFEAF19F /* ProgressLook.swift in Sources */,
+				C4D1F608D0A92E6CB0263B02 /* ProgressNavViews.swift in Sources */,
 				37FA921238EAB765CEADB40C /* ProgressView.swift in Sources */,
 				1F7F89FB822726498823E6AE /* RaceEditViews.swift in Sources */,
 				4E6B34A71117045A8AB3848B /* RacePage.swift in Sources */,
@@ -841,6 +848,7 @@
 				69340F5D7DB031BC2C4C514E /* PlanHomeUITests.swift in Sources */,
 				33E9F11BC35EB1170274CFF4 /* PlanMaker30UITests.swift in Sources */,
 				DEB13984EBB05883FD5B3947 /* PlanToolsUITests.swift in Sources */,
+				8870717742F5AE40F997FCDC /* ProgressNav220UITests.swift in Sources */,
 				BF0DA21B39C177C85EA57B2F /* ProgressRoundUITests.swift in Sources */,
 				D6D2B8994D1D346CBC1D4227 /* RaceGearUITests.swift in Sources */,
 				5A31D1D0DB0FA37676009BB5 /* Raceplan30UITests.swift in Sources */,
@@ -906,7 +914,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 98;
+				CURRENT_PROJECT_VERSION = 99;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -920,7 +928,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.19.3;
+				MARKETING_VERSION = 2.20;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -966,7 +974,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 98;
+				CURRENT_PROJECT_VERSION = 99;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -986,7 +994,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.19.3;
+				MARKETING_VERSION = 2.20;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

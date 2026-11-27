@@ -117,6 +117,9 @@ struct SessionScoreBlock: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("session-score")
+            } else {
+                // 2.20: a view all the same, or the read below never runs (only this week's scores came, by Progress); no room taken (rows are 16 apart).
+                Color.clear.frame(height: 0).padding(.top, -16).accessibilityHidden(true)
             }
         }
         .task(id: workout.key) {
@@ -172,12 +175,15 @@ private enum FitterHue {
     static let ground = Color.dynamic(light: 0xFEF0FA, dark: 0x2A1228)
 }
 
-private struct FitterFile: Codable { var lastTried: Date?; var season: String?; var list: [SteadyWorkout] = [] }
+private struct FitterFile: Codable { var lastTried: Date?; var season: String?; var list: [SteadyWorkout] = []; var failed: Bool? }
 
 @MainActor
 final class SamePulseReader: ObservableObject {
     static let shared = SamePulseReader()
     @Published private(set) var list: [SteadyWorkout] = []
+    /* 2.20: the last read was not answered (the card says so, and tries again after two minutes). */
+    @Published private(set) var failed = false
+    @Published private(set) var reading = false
     private var file = FitterFile()
 
     private static var fileURL: URL {
@@ -187,10 +193,10 @@ final class SamePulseReader: ObservableObject {
     }
 
     init() {
-        if let data = try? Data(contentsOf: Self.fileURL), let f = try? JSONDecoder().decode(FitterFile.self, from: data) { file = f; list = f.list }
+        if let data = try? Data(contentsOf: Self.fileURL), let f = try? JSONDecoder().decode(FitterFile.self, from: data) { file = f; list = f.list; failed = f.failed ?? false }
     }
 
-    func forget() { file = FitterFile(); list = []; try? FileManager.default.removeItem(at: Self.fileURL) }
+    func forget() { file = FitterFile(); list = []; failed = false; try? FileManager.default.removeItem(at: Self.fileURL) }
 
     func shown(today: String) -> [SteadyWorkout] {
         #if DEBUG
@@ -199,15 +205,24 @@ final class SamePulseReader: ObservableObject {
         return GarminKey.isSaved ? list : []
     }
 
-    /* At most one read in 30 minutes, from 1 September. */
-    func readIfDue(today: String) async {
-        guard GarminKey.isSaved, !GarminKey.isFake, GarminMorning.mayRead(lastTried: file.lastTried, now: Date()), let first = SamePulse.months(today: today).first else { return }
+    /* At most one read in 30 minutes (2 minutes after one Garmin did not answer; at once on "Tap to try again"), from 1 September. */
+    func readIfDue(today: String, force: Bool = false) async {
+        guard GarminKey.isSaved, !GarminKey.isFake, !reading,
+              force || GarminMorning.mayRead(lastTried: file.lastTried, failed: file.failed ?? false, now: Date()),
+              let first = SamePulse.months(today: today).first else { return }
         file.lastTried = Date()
+        reading = true
         do {
             let fresh = try await GarminClient.shared.seasonSteadyWorkouts(from: first + "-01", to: today)
             // An empty answer never replaces a season already held.
             if !fresh.isEmpty || file.season != first { file.list = fresh; file.season = first; list = fresh }
-        } catch {}
+            file.failed = nil
+        } catch {
+            // 2.20: said on the card, instead of "Not enough steady runs or rides" (his Mac, 27 Nov 2026).
+            file.failed = true
+        }
+        failed = file.failed ?? false
+        reading = false
         if let data = try? JSONEncoder().encode(file) { try? data.write(to: Self.fileURL, options: .atomic) }
     }
 
@@ -302,7 +317,10 @@ struct FitterCard: View {
         Group {
             if GarminKey.isSaved {
                 let data = FitterData.make(list: reader.shown(today: store.today), zones: store.zones, today: store.today)
-                Button { open = true } label: { card(data) }
+                // 2.20: while Garmin's last answer is missing, a tap asks again instead of opening an empty page.
+                Button {
+                    if notAnswered { Task { await reader.readIfDue(today: store.today, force: true) } } else { open = true }
+                } label: { card(data) }
                     .buttonStyle(.plain)
                     .navigationDestination(isPresented: $open) { FitterPage(data: data) }
             }
@@ -312,6 +330,8 @@ struct FitterCard: View {
         .onAppear { if ProcessInfo.processInfo.environment["AMSWS_FITTER_PAGE"] != nil { open = true } }
         #endif
     }
+
+    private var notAnswered: Bool { reader.failed && reader.list.isEmpty && !GarminKey.isFake }
 
     private func card(_ data: FitterData?) -> some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -326,12 +346,20 @@ struct FitterCard: View {
                 MonthBars(months: data.run.contains { $0.enough } ? data.run : data.ride, sport: data.run.contains { $0.enough } ? "run" : "bike",
                           id: data.run.contains { $0.enough } ? "run" : "ride", ink: .white, track: .white.opacity(0.25), bar: .white)
                     .padding(.top, 4)
+            } else if reader.reading && reader.list.isEmpty && !GarminKey.isFake {
+                Text("Reading your runs and rides…").font(.subheadline).foregroundStyle(.white)
+                    .accessibilityIdentifier("fitter-reading")
+            } else if notAnswered {
+                Text("Garmin did not answer just now. Tap to try again.").font(.subheadline).foregroundStyle(.white)
+                    .accessibilityIdentifier("fitter-failed")
             } else {
                 Text(data == nil ? "Your pace at the same pulse shows once your zones are in the plan."
                                  : "Not enough steady runs or rides at your zone 2 pulse yet.")
                     .font(.subheadline).foregroundStyle(.white)
             }
-            Text("Tap for run and ride side by side").font(.caption).foregroundStyle(.white.opacity(0.85))
+            if !notAnswered {
+                Text("Tap for run and ride side by side").font(.caption).foregroundStyle(.white.opacity(0.85))
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)

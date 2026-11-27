@@ -227,11 +227,35 @@ struct ZonesWeekCard: View {
     @EnvironmentObject var store: Store
     @ObservedObject private var reader = GarminActivityReader.shared
 
+    /*
+     * 2.20: never hidden while a Garmin key is saved (he could not find it, 27 Nov 2026), and the page
+     * itself asks Garmin when Progress opens — the old `.task` here sat on an empty Group and never ran.
+     */
     var body: some View {
-        Group {
-            if let z = reader.zonesShown { card(z) }
+        if let z = reader.zonesShown { card(z) } else if GarminKey.isSaved { waiting }
+    }
+
+    private var waiting: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Time in zones · this week").font(.headline).foregroundStyle(Theme.text)
+            if reader.zonesFailed && !reader.zonesReading {
+                Button { Task { await reader.loadZones(today: store.today, force: true) } } label: {
+                    Text("Garmin did not answer just now. Tap to try again.").font(.subheadline).foregroundStyle(Theme.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("zones-failed")
+            } else {
+                Text(reader.zones == nil || reader.zonesReading ? "Reading your zones…" : "No time in zones yet this week.")
+                    .font(.subheadline).foregroundStyle(Theme.secondary)
+                    .accessibilityIdentifier("zones-waiting")
+            }
         }
-        .task { await reader.loadZones(today: store.today) }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("zones-card")
     }
 
     private func words(_ seconds: Double) -> String { formatDuration((seconds / 60).rounded() * 60) }

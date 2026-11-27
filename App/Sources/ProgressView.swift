@@ -22,18 +22,32 @@ struct ProgressView: View {
         #endif
     }
 
+    /* 2.20: the navigation at the top — which part is on screen, and whether the tiles have scrolled away. */
+    @State private var active: ProgressNav.Part?
+    @State private var chipsShown = false
+
     var body: some View {
         NavigationStack {
             ScrollViewReader { reader in
             GeometryReader { geo in
             // A wide window (iPad on its side, the Mac) lays the cards in two columns.
             let two = geo.size.width >= 860 || Self.forceTwo
+            ZStack(alignment: .top) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Progress").font(.largeTitle.weight(.bold)).foregroundStyle(Theme.text).padding(.top, 12)
                         .accessibilityIdentifier("progress-title")
                     if let p = store.progress, let mapping = store.mapping {
-                        if let road = p.road { RoadCard(road: road, today: store.today) }
+                        let nav = navItems(p, mapping)
+                        if !nav.isEmpty {
+                            ProgressTiles(items: nav, columns: two ? 4 : 2) { jump($0, reader) }
+                                .background {
+                                    GeometryReader { g in
+                                        Color.clear.preference(key: ProgressTilesBottom.self, value: g.frame(in: .named(ProgressNavSpace.name)).maxY)
+                                    }
+                                }
+                        }
+                        if let road = p.road { RoadCard(road: road, today: store.today).progressPart(.race) }
                         if !p.summary.any {
                             EmptyCard(title: "Nothing has happened yet",
                                       text: "Once sessions are behind you, this is where the patterns in them show up.")
@@ -62,10 +76,27 @@ struct ProgressView: View {
                 .padding(.horizontal, 16).padding(.bottom, 32)
                 .readableWidth(two ? 1280 : 820)
             }
+            .coordinateSpace(name: ProgressNavSpace.name)
+            .onPreferenceChange(ProgressPartTops.self) { tops in
+                // The reading line: a third of the way down the page (never above where a jump lands a card, 64).
+                let now = ProgressNav.active(tops: tops.mapValues { Double($0) }, line: max(72, Double(geo.size.height) / 3))
+                if now != active { active = now }
+            }
+            .onPreferenceChange(ProgressTilesBottom.self) { bottom in
+                let show = bottom < 4
+                if show != chipsShown { withAnimation(.easeOut(duration: 0.18)) { chipsShown = show } }
+            }
+            if chipsShown, let p = store.progress, let mapping = store.mapping {
+                ProgressChips(parts: navItems(p, mapping).map(\.part), active: active, width: two ? 1280 : 820) { jump($0, reader) }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+            }
             }
             .background(Theme.bg.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
             .task { await diary.readHealth(today: store.today) }
+            // 2.20: the zones are asked for by the page, not by their card (which only asked once it was showing).
+            .task { await GarminActivityReader.shared.loadZones(today: store.today) }
             #if DEBUG
             // AMSWS_SCROLL=load opens Progress at the Load card, for a picture.
             .task {
@@ -78,15 +109,61 @@ struct ProgressView: View {
         }
     }
 
+    private func jump(_ part: ProgressNav.Part, _ reader: ScrollViewProxy) {
+        withAnimation(.easeInOut(duration: 0.35)) { reader.scrollTo(part.anchor, anchor: .top) }
+    }
+
+    /* The tiles, in order, with their live figures: only the parts whose card is on the page. */
+    private func navItems(_ p: Store.Progress, _ mapping: Mapping) -> [(part: ProgressNav.Part, figure: String)] {
+        var out: [(part: ProgressNav.Part, figure: String)] = []
+        if let road = p.road { out.append((.race, ProgressNav.raceFigure(daysToGo: road.daysToGo, weeksToGo: road.weeksToGo))) }
+        guard p.summary.any else { return out }
+        if fitnessShown(p) {
+            out.append((.fitness, p.form.count >= 14 ? String(Int((p.form.last?.fitness ?? 0).rounded())) : "Not yet"))
+        }
+        if LoadBoard.make(store: store, diary: diary) != nil {
+            let monday = PlanView.weekStart(store.today)
+            let week = p.load.weeks.first { $0.start == monday }?.actual ?? 0
+            out.append((.load, hoursShort(week)))
+        }
+        if zonesShown {
+            let z2 = GarminActivityReader.shared.zonesShown.map { "Z2 " + hoursShort($0.thisWeek[1]) }
+            out.append((.zones, z2 ?? "—"))
+        }
+        let month = Routes31.monthKey(ofDay: store.today)
+        let routes = GarminKey.isSaved ? RoutesReader.shared.byMonth[month]?.count : nil
+        out.append((.routes, routes.map { "\($0) in \(ProgressNav.monthShort(month))" } ?? "Map"))
+        out.append((.kept, "\(p.summary.done) of \(p.summary.counted)"))
+        let plan = store.displayed
+        let bests = PersonalBests.all(plan, mapping, today: store.today).count
+        if bests > 0 { out.append((.bests, String(bests))) }
+        if let newest = MonthReview.months(plan, today: store.today).last { out.append((.month, ProgressNav.monthName(newest))) }
+        return out
+    }
+
+    private func fitnessShown(_ p: Store.Progress) -> Bool { !p.trends.isEmpty || p.form.count >= 14 }
+
+    private var zonesShown: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["AMSWS_ZONES_CARD"] != nil { return true }
+        #endif
+        return GarminKey.isSaved
+    }
+
     /* How the training is working: pace per heartbeat, fitness and freshness, load. */
     @ViewBuilder private func fitness(_ p: Store.Progress) -> some View {
-        TrendsCard(trends: p.trends)
-        FormCard(form: p.form, today: store.today)
+        if fitnessShown(p) {
+            VStack(alignment: .leading, spacing: 14) {
+                TrendsCard(trends: p.trends)
+                FormCard(form: p.form, today: store.today)
+            }
+            .progressPart(.fitness)
+        }
         // Beside the fitness card, never on Today: minutes
         // times how hard, for everything he did.
-        if let board = LoadBoard.make(store: store, diary: diary) { LoadCard(board: board).id("load") }
-        ZonesWeekCard()
-        RoutesCard().id("routes")
+        if let board = LoadBoard.make(store: store, diary: diary) { LoadCard(board: board).id("load").progressPart(.load) }
+        if zonesShown { ZonesWeekCard().progressPart(.zones) }
+        RoutesCard().id("routes").progressPart(.routes)
         ScoreProgressCards()
     }
 
@@ -98,7 +175,7 @@ struct ProgressView: View {
             Note(title: "Too early to read much into this.",
                  text: "\(p.summary.counted) session\(p.summary.counted == 1 ? " has" : "s have") gone by. The figures below are real, but a fortnight of training is a fortnight — the patterns need more road behind them.")
         }
-        SoFarCard(s: p.summary)
+        SoFarCard(s: p.summary).progressPart(.kept)
         ConsistencyCard(s: p.summary)
         SportCard(s: p.summary, mapping: mapping)
         MovesCard(s: p.summary)

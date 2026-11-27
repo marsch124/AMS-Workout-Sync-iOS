@@ -89,12 +89,12 @@ struct ProgressRound28: View {
             if wide {
                 HStack(alignment: .top, spacing: 14) {
                     MonthReviewCard(plan: plan, mapping: mapping, today: store.today, feel: diary.feel,
-                                    zones: store.zones, tests: store.tests)
+                                    zones: store.zones, tests: store.tests).progressPart(.month)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                     VStack(alignment: .leading, spacing: 14) {
                         SteadyWeeksCard(plan: plan, today: store.today)
-                        PersonalBestsCard(plan: plan, mapping: mapping, today: store.today)
+                        PersonalBestsCard(plan: plan, mapping: mapping, today: store.today).progressPart(.bests)
                         TestHistoryCard(tests: shownTests)
                     }
                     .fixedSize(horizontal: false, vertical: true)
@@ -102,9 +102,9 @@ struct ProgressRound28: View {
                 }
             } else {
                 MonthReviewCard(plan: plan, mapping: mapping, today: store.today, feel: diary.feel,
-                                zones: store.zones, tests: store.tests)
+                                zones: store.zones, tests: store.tests).progressPart(.month)
                 SteadyWeeksCard(plan: plan, today: store.today)
-                PersonalBestsCard(plan: plan, mapping: mapping, today: store.today)
+                PersonalBestsCard(plan: plan, mapping: mapping, today: store.today).progressPart(.bests)
                 TestHistoryCard(tests: shownTests)
             }
         }

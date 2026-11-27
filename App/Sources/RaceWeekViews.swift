@@ -738,6 +738,9 @@ struct RaceReportCard: View {
                 Text("Garmin holds no triathlon on \(Dates.short(target.day)) yet. The race report appears when it does.")
                     .font(.footnote).foregroundStyle(Theme.secondary)
                     .accessibilityIdentifier("race-report-none")
+            } else {
+                // 2.20: nothing yet, but a view all the same, or the read below never runs; no room taken (rows are 10 apart).
+                Color.clear.frame(height: 0).padding(.top, -10).accessibilityHidden(true)
             }
         }
         .task { await reader.read(day: target.day) }

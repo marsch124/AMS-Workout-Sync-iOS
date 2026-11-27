@@ -111,15 +111,19 @@ actor GarminClient {
         var comps = URLComponents(string: Self.base + path)
         if !query.isEmpty { comps?.queryItems = query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) } }
         guard let url = comps?.url else { throw GarminFailure.other }
-        for attempt in 0..<2 {
+        for attempt in 0..<3 {
             var request = URLRequest(url: url)
-            request.setValue("Bearer " + (try await validToken()), forHTTPHeaderField: "Authorization")
+            let used = try await validToken()
+            request.setValue("Bearer " + used, forHTTPHeaderField: "Authorization")
             request.setValue("application/json", forHTTPHeaderField: "Accept")
             let (data, status) = try await send(request)
             if status == 401 {
-                // The token may simply have run out: one fresh one, then give up.
-                token = nil
-                if attempt == 0 { continue }
+                // The pass may simply have run out, or a newer one replaced it: a fresh one, then give up.
+                // 2.20: only the pass THIS request used is dropped. Readings running at the same time each
+                // dropped the shared pass — also the new one another reading had just fetched — so they
+                // knocked each other out in a chain (the Fitter card on his Mac, 27 Nov 2026).
+                if token?.value == used { token = nil }
+                if attempt < 2 { continue }
                 throw GarminFailure.keyRefused
             }
             if status == 403 { throw GarminFailure.keyRefused }

@@ -17,8 +17,11 @@ final class GarminActivityReader: ObservableObject {
     /* By session key. */
     @Published private(set) var details: [String: GarminActivityDetail] = [:]
     @Published private(set) var zones: GarminZoneWeeks.Result?
+    /* 2.20: the week's zones are being read / Garmin did not answer the last read (the card says so). */
+    @Published private(set) var zonesReading = false
+    @Published private(set) var zonesFailed = false
 
-    private struct ZoneFile: Codable { var weekStart: String; var result: GarminZoneWeeks.Result; var lastTried: Date? }
+    private struct ZoneFile: Codable { var weekStart: String; var result: GarminZoneWeeks.Result; var lastTried: Date?; var failed: Bool? }
     private var zoneFile: ZoneFile?
 
     /* Shared with the Routes reader: one small file per Garmin activity, the same format. */
@@ -34,6 +37,7 @@ final class GarminActivityReader: ObservableObject {
     init() {
         if let data = try? Data(contentsOf: Self.zoneURL), let f = try? JSONDecoder().decode(ZoneFile.self, from: data) {
             zoneFile = f
+            zonesFailed = f.failed ?? false
         }
     }
 
@@ -52,6 +56,7 @@ final class GarminActivityReader: ObservableObject {
         RoutesReader.shared.forget()
         zones = nil
         zoneFile = nil
+        zonesFailed = false
         try? FileManager.default.removeItem(at: Self.folder)
     }
 
@@ -84,22 +89,32 @@ final class GarminActivityReader: ObservableObject {
 
     // MARK: the week's zones
 
-    /* Called when Progress appears: at most one read in 30 minutes. */
-    func loadZones(today: String) async {
+    /*
+     * Called when Progress appears (2.20: by the page itself — the card used to ask only once it was already
+     * showing, so it never showed): at most one read in 30 minutes, 2 minutes after one Garmin did not
+     * answer, at once on "Tap to try again". A new week starts from nothing.
+     */
+    func loadZones(today: String, force: Bool = false) async {
         let monday = PlanView.weekStart(today)
         if let f = zoneFile, f.weekStart == monday { zones = f.result }
         #if DEBUG
         if GarminKey.isFake { zones = Self.inventedZones; return }
         #endif
-        guard GarminKey.isSaved, GarminMorning.mayRead(lastTried: zoneFile?.lastTried, now: Date()) else { return }
+        let sameWeek = zoneFile?.weekStart == monday
+        guard GarminKey.isSaved, !zonesReading,
+              force || !sameWeek || GarminMorning.mayRead(lastTried: zoneFile?.lastTried, failed: zoneFile?.failed ?? false, now: Date()) else { return }
+        zonesReading = true
         do {
             let list = try await GarminClient.shared.activities(from: GarminMorning.addDays(monday, -7), to: today)
             let result = GarminZoneWeeks.build(list, weekStart: monday)
             zones = result
-            zoneFile = ZoneFile(weekStart: monday, result: result, lastTried: Date())
+            zoneFile = ZoneFile(weekStart: monday, result: result, lastTried: Date(), failed: nil)
         } catch {
-            zoneFile = ZoneFile(weekStart: monday, result: zoneFile?.result ?? GarminZoneWeeks.Result(thisWeek: [0, 0, 0, 0, 0], lastWeek: [0, 0, 0, 0, 0]), lastTried: Date())
+            let empty = GarminZoneWeeks.Result(thisWeek: [0, 0, 0, 0, 0], lastWeek: [0, 0, 0, 0, 0])
+            zoneFile = ZoneFile(weekStart: monday, result: sameWeek ? (zoneFile?.result ?? empty) : empty, lastTried: Date(), failed: true)
         }
+        zonesFailed = zoneFile?.failed ?? false
+        zonesReading = false
         if let data = try? JSONEncoder().encode(zoneFile) { try? data.write(to: Self.zoneURL, options: .atomic) }
     }
 

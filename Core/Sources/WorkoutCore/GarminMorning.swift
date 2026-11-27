@@ -321,4 +321,12 @@ public enum GarminMorning {
         guard let lastTried else { return true }
         return now.timeIntervalSince(lastTried) >= readEvery || now < lastTried
     }
+
+    /* 2.20: a read Garmin did not answer is tried again after two minutes, not half an hour. */
+    public static let retryAfterFailure: TimeInterval = 2 * 60
+
+    public static func mayRead(lastTried: Date?, failed: Bool, now: Date) -> Bool {
+        guard failed, let lastTried else { return mayRead(lastTried: lastTried, now: now) }
+        return now.timeIntervalSince(lastTried) >= retryAfterFailure || now < lastTried
+    }
 }
