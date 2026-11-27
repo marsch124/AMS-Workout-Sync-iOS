@@ -18,12 +18,21 @@ private enum RoutesLook {
     static let words = ["run": "Run", "bike": "Bike", "swim": "Swim", "hike": "Hike"]
 
     static func region(_ routes: [RouteItem]) -> MKCoordinateRegion {
-        guard let r = Routes31.region(of: routes.map(\.track)) else {
+        // 2.19.3: frame where most routes are; a far-away one is still drawn (Routes31.focus).
+        guard let r = Routes31.region(of: Routes31.focus(routes.map(\.track))) else {
             return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 47, longitude: 8), span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5))
         }
         return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: r.centreLat, longitude: r.centreLon),
                                   span: MKCoordinateSpan(latitudeDelta: max((r.maxLat - r.minLat) * 1.35, 0.01),
                                                          longitudeDelta: max((r.maxLon - r.minLon) * 1.35, 0.01)))
+    }
+
+    /* 2.19.3: what an empty card or page says — never "no sessions" while reading or after a failed read. */
+    @MainActor static func emptyLine(_ reader: RoutesReader, _ month: String) -> String {
+        if let p = reader.progress { return p }
+        if reader.isLoading(month) { return "Reading your routes\u{2026}" }
+        if reader.failed.contains(month) { return "Garmin did not answer just now. Tap to try again." }
+        return "No outdoor sessions this month yet."
     }
 
     /* "12 routes · 5 runs · 6 rides · 1 hike" */
@@ -73,7 +82,8 @@ struct RoutesCard: View {
             if GarminKey.isSaved { card } else { noKey }
         }
         .task { await reader.load(month: month) }
-        .fullScreenCover(isPresented: $open) { RoutesPage(month: month, today: store.today) }
+        // Closed through this binding, like the Pool card: the environment's dismiss did not close it on the Mac (2.19.2).
+        .fullScreenCover(isPresented: $open) { RoutesPage(month: month, today: store.today, close: { open = false }) }
     }
 
     private var noKey: some View {
@@ -100,7 +110,7 @@ struct RoutesCard: View {
                     Spacer(minLength: 0)
                 }
                 if routes.isEmpty {
-                    Text(reader.progress ?? "No outdoor sessions this month yet.").font(.subheadline).foregroundStyle(Theme.secondary)
+                    Text(RoutesLook.emptyLine(reader, month)).font(.subheadline).foregroundStyle(Theme.secondary)
                 } else {
                     Map(initialPosition: .region(RoutesLook.region(routes)), interactionModes: []) {
                         RouteLines(routes: routes, width: 2.5)
@@ -128,7 +138,6 @@ struct RoutesCard: View {
 // MARK: - the page
 
 struct RoutesPage: View {
-    @Environment(\.dismiss) private var dismiss
     @ObservedObject private var reader = RoutesReader.shared
     let today: String
     @State private var month: String
@@ -136,8 +145,11 @@ struct RoutesPage: View {
     @State private var selected: Int?
     @State private var position: MapCameraPosition = .automatic
 
-    init(month: String, today: String) {
+    let close: () -> Void
+
+    init(month: String, today: String, close: @escaping () -> Void) {
         self.today = today
+        self.close = close
         _month = State(initialValue: month)
     }
 
@@ -152,7 +164,7 @@ struct RoutesPage: View {
             if !GarminKey.isSaved {
                 note("Routes come from Garmin. Add your Garmin key in Settings › Garmin.")
             } else if all.isEmpty {
-                note(reader.progress ?? "No outdoor sessions this month yet.")
+                note(RoutesLook.emptyLine(reader, month))
             } else {
                 mapView
             }
@@ -171,7 +183,7 @@ struct RoutesPage: View {
             HStack {
                 Text("Routes").font(.headline).foregroundStyle(Theme.progress)
                 Spacer(minLength: 0)
-                Button("Done") { dismiss() }
+                Button("Done") { close() }
                     .settingsButton(tint: Theme.progress, filled: true)
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("routes-done")

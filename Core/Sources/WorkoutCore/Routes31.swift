@@ -33,6 +33,28 @@ public enum Routes31 {
         return (0..<limit).map { track[Int((Double($0) * Double(last) / Double(limit - 1)).rounded())] }
     }
 
+    /*
+     * 2.19.3: the tracks to frame first. A far-away day trip must not shrink the usual routes to a dot:
+     * keep the tracks whose middle lies within `km` of the median middle, when that is at least half of
+     * them; otherwise all. The others are still drawn on the map.
+     */
+    public static func focus(_ tracks: [[GarminCoordinate]], km: Double = 25) -> [[GarminCoordinate]] {
+        let middles: [(Double, Double)] = tracks.map { t in
+            guard !t.isEmpty else { return (0, 0) }
+            return (t.map(\.lat).reduce(0, +) / Double(t.count), t.map(\.lon).reduce(0, +) / Double(t.count))
+        }
+        let real = zip(tracks, middles).filter { !$0.0.isEmpty }
+        guard real.count >= 3 else { return tracks }
+        func median(_ v: [Double]) -> Double { let s = v.sorted(); return s[s.count / 2] }
+        let mLat = median(real.map { $0.1.0 }), mLon = median(real.map { $0.1.1 })
+        let near = real.filter { pair in
+            let dLat = (pair.1.0 - mLat) * 111.0
+            let dLon = (pair.1.1 - mLon) * 111.0 * cos(mLat * .pi / 180)
+            return (dLat * dLat + dLon * dLon).squareRoot() <= km
+        }.map(\.0)
+        return near.count * 2 >= real.count ? near : tracks
+    }
+
     // MARK: months, as "2026-11"
 
     public static func monthKey(ofDay day: String) -> String { String(day.prefix(7)) }

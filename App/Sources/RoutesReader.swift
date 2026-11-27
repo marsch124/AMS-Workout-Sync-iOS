@@ -29,7 +29,11 @@ final class RoutesReader: ObservableObject {
 
     @Published private(set) var byMonth: [String: [RouteItem]] = [:]
     @Published private(set) var progress: String?
-    private var loading: Set<String> = []
+    /* 2.19.3: months whose list read failed (the card then says so, never "no sessions"), and months being read. */
+    @Published private(set) var failed: Set<String> = []
+    @Published private(set) var loading: Set<String> = []
+
+    func isLoading(_ month: String) -> Bool { loading.contains(month) }
     private var loadedAt: [String: Date] = [:]
 
     func routes(_ month: String) -> [RouteItem] { GarminKey.isSaved ? (byMonth[month] ?? []) : [] }
@@ -43,7 +47,11 @@ final class RoutesReader: ObservableObject {
         loading.insert(month)
         defer { loading.remove(month); progress = nil }
         let list: [GarminActivitySummary]
-        do { list = try await GarminClient.shared.activities(from: Routes31.firstDay(month), to: Routes31.lastDay(month)) } catch { return }
+        do { list = try await GarminClient.shared.activities(from: Routes31.firstDay(month), to: Routes31.lastDay(month)) } catch {
+            failed.insert(month)
+            return
+        }
+        failed.remove(month)
         let outdoor = list.filter { Routes31.sport(ofGarmin: $0.typeKey) != nil }.sorted { $0.day < $1.day }
 
         var found: [RouteItem] = []

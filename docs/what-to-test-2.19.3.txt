@@ -1,0 +1,3 @@
+1. On the Mac, open Progress, tap the ROUTES card, then press Done; repeat and press Escape. Both close the page.
+2. Open Progress fresh: the Routes, Fitter and zones cards all fill in; Routes first says "Reading your routes…", never a wrong "No outdoor sessions".
+3. In a month with one far-away hike, the map first shows your usual area (card and page); zoom out to find the hike.

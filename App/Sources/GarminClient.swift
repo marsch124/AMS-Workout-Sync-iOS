@@ -34,6 +34,13 @@ actor GarminClient {
     private static let tokenPath = "/personalapitoken-service/personal-api/personal-api-key/token"
 
     private var token: (value: String, expires: Date)?
+    /*
+     * 2.19.3: one Garmin pass at a time. Several readings at once (Progress opens Routes, Fitter and the
+     * zones together) each minted their own pass; a newer pass made the older one invalid, so some of
+     * them failed and their cards stayed empty. Callers that arrive while a pass is being fetched wait
+     * for that same one.
+     */
+    private var minting: Task<(value: String, expires: Date), Error>?
     private let session: URLSession
 
     init() {
@@ -80,8 +87,12 @@ actor GarminClient {
 
     private func validToken() async throws -> String {
         if let token, token.expires.timeIntervalSinceNow > 5 * 60 { return token.value }
+        if let minting { return try await minting.value.value }
         guard let key = GarminKey.read() else { throw GarminFailure.noKey }
-        return try await mint(key: key).value
+        let task = Task { try await self.mint(key: key) }
+        minting = task
+        defer { minting = nil }
+        return try await task.value.value
     }
 
     private func send(_ request: URLRequest) async throws -> (Data, Int) {

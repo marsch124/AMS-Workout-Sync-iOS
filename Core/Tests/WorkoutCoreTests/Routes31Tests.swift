@@ -30,4 +30,16 @@ final class Routes31Tests: XCTestCase {
         XCTAssertEqual(r, Routes31.Region(minLat: 1, maxLat: 3, minLon: -1, maxLon: 2))
         XCTAssertNil(Routes31.region(of: []))
     }
+
+    /* 2.19.3: one far-away route does not decide the frame. Invented places only. */
+    func testTheFrameFollowsTheUsualArea() {
+        func loop(_ lat: Double, _ lon: Double) -> [GarminCoordinate] {
+            (0..<10).map { GarminCoordinate(lat: lat + 0.005 * sin(Double($0)), lon: lon + 0.005 * cos(Double($0))) }
+        }
+        let home = [loop(47.00, 8.00), loop(47.02, 8.03), loop(46.99, 7.98), loop(47.01, 8.01)]
+        let far = loop(47.45, 8.00)                       // about 50 km north
+        let framed = Routes31.focus(home + [far])
+        XCTAssertEqual(framed.count, 4, "the far route is left out of the frame")
+        XCTAssertEqual(Routes31.focus([loop(47, 8), far]).count, 2, "too few to tell: all")
+    }
 }
