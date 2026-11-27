@@ -1,0 +1,7 @@
+AMS Triathlon Training 2.19.1 (96) - what to test
+
+One look change. Say what you saw if anything looks wrong.
+
+1. Body > Gym sessions: each machine line, like "Leg press · best 90 kg × 10 · new best". The figure (90 kg × 10) and "new best" are bold orange; the machine name is dark and "best" is grey.
+2. A cardio machine: the figure "15 min · level 6" is bold orange too. "pain noted" stays grey.
+3. A strength session's page with a gym session that day: the orange GYM block shows the same bold orange figures.

@@ -197,6 +197,16 @@ public enum GymSessions {
         return e.name + " · " + (weighed ? "best " : "") + b
     }
 
+    /*
+     * 2.19.1 (his ask: "make them stand out"): a machine line in three parts — the name, the lead
+     * (" · best " for a weighed machine, " · " for cardio) and the figure ("90 kg × 10", "15 min · level 6"),
+     * so the screens can draw the figure bold in the card's colour. No best set: name only.
+     */
+    public static func machineParts(_ e: GymEntry) -> (name: String, lead: String, figure: String) {
+        guard let b = bestSet(e) else { return (e.name, "", "") }
+        return (e.name, b.contains(" kg") ? " · best " : " · ", b)
+    }
+
     /* The sessions on one day (a day can hold two), newest first. */
     public static func onDay(_ list: [GymSession], _ day: String) -> [GymSession] { list.filter { $0.date == day } }
 }

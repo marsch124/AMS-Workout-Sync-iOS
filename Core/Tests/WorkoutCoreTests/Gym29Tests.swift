@@ -42,6 +42,9 @@ final class Gym29Tests: XCTestCase {
         let e = GymSessions.parse(file)[1].entries
         XCTAssertEqual(GymSessions.machineLine(e[0]), "Leg curl · best 32.5 kg × 12")
         XCTAssertEqual(GymSessions.machineLine(e[1]), "Rower · 20 min · level 5")
+        // 2.19.1: the same line in three parts, so the figure can stand out.
+        XCTAssertTrue(GymSessions.machineParts(e[0]) == ("Leg curl", " · best ", "32.5 kg × 12"))
+        XCTAssertTrue(GymSessions.machineParts(e[1]) == ("Rower", " · ", "20 min · level 5"))
         XCTAssertEqual(GymSessions.bestSet(GymSessions.parse(file)[0].entries[0]), "50 kg × 12")
         XCTAssertEqual(GymSessions.bestSet(GymEntry(name: "Dips", sets: "BW × 12, BW × 10", setCount: 2)), "BW × 12, BW × 10")
     }

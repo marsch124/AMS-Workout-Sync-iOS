@@ -132,9 +132,18 @@ private extension View {
 }
 
 /* The machine's line split in its name and what follows it ("best 90 kg × 10"). */
-private func machineParts(_ e: GymEntry) -> (String, String) {
-    let line = GymSessions.machineLine(e)
-    return (e.name, String(line.dropFirst(e.name.count)))
+/*
+ * One machine line (2.19.1, his ask: the weights must stand out): the name dark, "best" grey,
+ * the figure bold in the card's own colour, "new best" bold in that colour too, "pain noted" grey.
+ */
+private func machineText(_ e: GymEntry, accent: Color, best: Bool) -> Text {
+    let p = GymSessions.machineParts(e)
+    var t = Text(p.name).font(.footnote.weight(.semibold)).foregroundColor(Theme.text)
+        + Text(p.lead).font(.footnote).foregroundColor(Theme.secondary)
+        + Text(p.figure).font(.footnote.weight(.bold)).foregroundColor(accent)
+    if best { t = t + Text(" \u{00B7} new best").font(.footnote.weight(.bold)).foregroundColor(accent) }
+    if e.pain { t = t + Text(" \u{00B7} pain noted").font(.footnote).foregroundColor(Theme.secondary) }
+    return t
 }
 
 struct GymCard: View {
@@ -206,10 +215,7 @@ struct GymCard: View {
                 Text("No machines saved for this session").font(.caption).foregroundStyle(Theme.secondary)
             }
             ForEach(Array(s.entries.enumerated()), id: \.offset) { i, e in
-                let p = machineParts(e)
-                (Text(p.0).font(.footnote.weight(.semibold)).foregroundColor(Theme.text)
-                 + Text(p.1 + (s.bests.contains(e.name) ? " · new best" : "") + (e.pain ? " · pain noted" : ""))
-                    .font(.footnote).foregroundColor(Theme.secondary))
+                machineText(e, accent: hue.accent, best: s.bests.contains(e.name))
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("body-gym-machine-\(i)")
             }
@@ -324,9 +330,7 @@ struct GymDayBlock: View {
                             .filter { !$0.isEmpty }.joined(separator: " · "))
                             .font(.caption).foregroundStyle(Theme.secondary)
                         ForEach(Array(s.entries.enumerated()), id: \.offset) { _, e in
-                            let p = machineParts(e)
-                            (Text(p.0).font(.footnote.weight(.semibold)).foregroundColor(Theme.text)
-                             + Text(p.1).font(.footnote).foregroundColor(Theme.secondary))
+                            machineText(e, accent: hue.accent, best: s.bests.contains(e.name))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
