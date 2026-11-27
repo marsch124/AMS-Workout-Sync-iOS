@@ -67,6 +67,7 @@ final class GarminReader: ObservableObject {
         keySaved = GarminKey.isSaved
         if !keySaved {
             GarminActivityReader.shared.forget()
+            SessionScoreReader.shared.forget(); SamePulseReader.shared.forget()
             numbers = nil
             problem = nil
             file = GarminMorningFile()

@@ -85,6 +85,8 @@ struct RacePage: View {
         return ScrollViewReader { proxy in ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 head(race)
+                RaceplanSection(race: race)
+                RaceExtras()
                 dayPlan(race, pacing)
                 fuelPlan(race, fuel, pacing).id("race-fuel-part")
                 kit(race, list).id("race-kit-part")
@@ -97,7 +99,7 @@ struct RacePage: View {
             // Pictures: AMSWS_RACE_SCROLL=fuel|kit scrolls down; AMSWS_RACE_OPEN=pacing|fuel|fuelrow|list opens an editing page.
             let env = ProcessInfo.processInfo.environment
             try? await Task.sleep(nanoseconds: 1_500_000_000)
-            if let w = env["AMSWS_RACE_SCROLL"] { proxy.scrollTo(w == "kit" ? "race-kit-part" : "race-fuel-part", anchor: .top) }
+            if let w = env["AMSWS_RACE_SCROLL"] { proxy.scrollTo(w == "gap" ? "race-gap-card" : w == "kit" ? "race-kit-part" : "race-fuel-part", anchor: w == "gap" ? .center : .top) }
             switch env["AMSWS_RACE_OPEN"] {
             case "pacing": editingPacing = true
             case "fuel": editingFuel = true

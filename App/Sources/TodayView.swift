@@ -108,6 +108,7 @@ struct TodayView: View {
             }
             // The rule book's one card of the day, right under the morning question.
             SuggestionArea()
+            RaceTodayCards()
             if view.plan.isEmpty {
                 // First run, no plan yet: no empty week drawing, one plain line saying where it comes from.
                 Text("No plan yet — Settings → Your plan brings it in.")
@@ -168,7 +169,9 @@ struct TodayView: View {
             }
             // Round 28: the new cards sit under today's session, so today stays near the top.
             SundayCardArea()
+            TuningTodayCards()
             ReturnLadderCard(onToday: true)
+            BlockIntroCard()
             ClaudeReviewCard()
             // No Tomorrow block (the plan's last day): the pill stands alone on the right.
             if store.canLog && tomorrow.isEmpty {

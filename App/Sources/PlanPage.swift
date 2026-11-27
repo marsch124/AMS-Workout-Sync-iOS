@@ -76,6 +76,7 @@ struct PlanPage: View {
                     })
                     head(view)
                     ClaudeAskButton()
+                    PlanMakerButton()
                     // The board says it itself, with "swipe sideways" beside it when not all days fit.
                     if store.canChangePlan && mode == .month {
                         Text("Drag a session to another day")

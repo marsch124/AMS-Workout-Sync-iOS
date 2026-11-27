@@ -13,6 +13,7 @@ struct ZonesView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                ZonesFromSessionsSection()
                 if store.canChangePlan {
                     SectionHeading(text: "Your tests")
                     Button { entering = true } label: {
@@ -178,6 +179,7 @@ struct ZoneSheet: View {
                             Text("For you, from " + z.latestTest).font(.footnote).foregroundStyle(Theme.secondary)
                         }
                         ForEach(tables, id: \.title) { table in ZoneTableCard(table: table) }
+                        RunPowerSheetRows(intensity: ask.intensity, sport: ask.sport)
                         if wantsRpe, let rpe = z.rpe {
                             Card {
                                 VStack(alignment: .leading, spacing: 6) {

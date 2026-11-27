@@ -132,6 +132,7 @@ struct SeasonView: View {
                 names(data)
                 key(data)
                     .padding(.top, 1)
+                Text("Tap a block name to read what it is for").font(.caption2).foregroundStyle(Theme.secondary)
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("season-view")
@@ -286,9 +287,9 @@ struct SeasonView: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(Theme.phase(phase.index, of: max(data.phases.count, 2)))
                     .lineLimit(1).fixedSize()
+                    .coachBlockTap(phase: phase.name)
             }
         }
-        .accessibilityHidden(true)
     }
 
     /* What the letters mean and what a tap does, said on the screen itself. */

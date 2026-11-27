@@ -1,0 +1,19 @@
+AMS Triathlon Training 2.18 (94) - what to test
+
+Fifteen new things for your half Ironman. Nothing in your plan changes unless you tap. Say what you saw if anything looks wrong.
+
+1. Plan maker (iPhone): Sessions > "Make a new plan". Race Jönköping, Half (70.3), 11 Jul 2027, hours a week, "Make the draft". Look at the weeks. Your own plan must be unchanged. Only if you want: "Switch to this plan", then "Undo the switch".
+2. My week shape (iPhone): Settings > Your plan > My week shape. Choose days, "Save". Then "Lay out my coming weeks this way", "Take it", and Undo.
+3. Next week, tuned (iPhone, on a Sunday evening): Today, card NEXT WEEK, TUNED. "Take it" then Undo, or "Keep my plan".
+4. Zones that keep up (iPhone): Today or Settings > Your zones, card ZONES FROM YOUR SESSIONS. "Use the new zones" then Undo, or "Keep mine". The gold RUN POWER ZONES card and the Power pill on a run need run power from your watch.
+5. Session score (iPhone): open a done run or ride. On target / A bit hard / Too hard and the minutes in zone. Compare with Garmin Connect. Progress: "Fitter at the same pulse".
+6. Race page (iPhone and iPad): Settings > Race. Look at the RACE-DAY FORECAST range, "Course pacing", and "Where you would gain most" (Change the age group).
+7. Tune-up race (iPhone): "Add a tune-up race" on a Saturday, "Save", then "Take it" and Undo. Check Thursday to Tuesday.
+8. Race week and race report (iPhone): cards appear 7 days before and 7 days after a race. Try "Change the start time" and "Share as PDF".
+9. Drill cards (iPhone): Settings > Your plan > Drill cards. Open a swim session: "Drill cards: ...".
+10. Swim video check (iPhone, a few cents): Drill cards > "Swim video check", "Choose a video", "Send to Claude". Three tips and drill links appear.
+11. Block intro (iPhone): Today, "New block", "Got it". Read again: a session's "This block" row.
+
+Stay as they are: done, missed and past sessions, tests and the race day never move. No Garmin or Claude key: those cards do not show. Sessions on the Garmin watch wait until March.
+
+Only your own devices can prove: real Garmin numbers, a real Claude answer, iCloud on the iPad and the Mac.

@@ -33,7 +33,7 @@ final class Load29Tests: XCTestCase {
         let w = BodyLoad.workouts(acts)
         XCTAssertEqual(w.count, 2)
         XCTAssertEqual(BodyLoad.latestVo2(w), 52)
-        XCTAssertEqual(BodyLoad.fitnessAge(["fitnessAge": 50.8, "chronologicalAge": 60])?.realAge, 60)
-        XCTAssertNil(BodyLoad.fitnessAge(["chronologicalAge": 60]))
+        XCTAssertEqual(BodyLoad.fitnessAge(["fitnessAge": 41.3, "chronologicalAge": 47])?.realAge, 47)
+        XCTAssertNil(BodyLoad.fitnessAge(["chronologicalAge": 47]))
     }
 }

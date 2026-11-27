@@ -24,6 +24,7 @@ struct SafetyCopiesView: View {
      * "other-plan-2026-11-25-091200-here" / "-icloud" the plan put aside when he chose one of two.
      */
     private func rowTitle(_ day: String) -> String {
+        if let words = PlanMakerCopy.title(day) { return words }
         if day.hasPrefix("before-merge-") || day.hasPrefix("other-plan-") {
             let moment = Store.copyMoment(day)          // yyyy-MM-dd-HHmmss
             let when = dayWords(String(moment.prefix(10)), long: true) + ", "

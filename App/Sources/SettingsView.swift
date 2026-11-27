@@ -287,6 +287,11 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("plan-mobility-strength")
         }
+        NavigationLink { DrillCardsPage() } label: {
+            SettingsRow(title: "Drill cards", sub: "\(DrillCards.all.count) swim, strength and mobility cards \u{2014} a drawing and three steps each", chevron: true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("settings-drill-cards")
         NavigationLink { FavouritesSettingsView() } label: {
             SettingsRow(title: "Favourite sessions", sub: "\(FavouritesShelf.list.count) kept \u{2014} fill the New session page in one tap", chevron: true)
         }
@@ -305,6 +310,7 @@ struct SettingsView: View {
             .accessibilityIdentifier("settings-suggestions")
         }
         AwaySettingsRow()
+        WeekShapeSettingsRow()
         if store.canGoBack, let until = store.canGoBackUntil {
             SettingsRow(title: "Go back to Excel",
                         sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now into the Excel file in Dropbox.",

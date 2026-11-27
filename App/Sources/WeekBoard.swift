@@ -327,6 +327,7 @@ struct DayColumn: View {
             Text(heading)
                 .font(.footnote.weight(day.isToday ? .heavy : .semibold))
                 .foregroundStyle(day.isToday ? Theme.today : Theme.secondary)
+            TuneUpDayMark(day: day.dayKey)
             ForEach(sessions) { w in
                 BoardCard(workout: w, mapping: mapping, movable: canChange)
             }

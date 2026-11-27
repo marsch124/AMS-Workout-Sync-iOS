@@ -50,6 +50,7 @@ struct SessionView: View {
                     }
                     SessionWhyLine(workout: w)
                     if w.discipline.id == "swim" { PoolCardButton(workout: w) }
+                    CoachSessionRows(workout: w)
 
                     SessionFavouriteRow(key: key)
 
@@ -70,10 +71,12 @@ struct SessionView: View {
                                 Pill(text: w.planned.intensity)
                             }
                         }
+                        RunPowerPill(workout: w)
                         if !w.phase.isEmpty { Pill(text: w.phase) }
                         AwayChip(workout: w)
                     }
 
+                    if w.state == .done { SessionScoreBlock(workout: w, mapping: mapping) }
                     // Strength done in Workouts: one line, and one button that logs it.
                     if let s = neighbours.strength(for: w, among: store.view?.forDay(w.dayKey) ?? []) {
                         NeighbourDoneLine(workout: w, state: s)

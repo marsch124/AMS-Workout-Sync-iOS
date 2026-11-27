@@ -61,6 +61,7 @@ struct PlanTab: View {
                     .accessibilityIdentifier("sessions-add")
             }
             ClaudeAskButton(inline: true)
+            PlanMakerButton(small: true)
             Spacer(minLength: 0)
         }
     }

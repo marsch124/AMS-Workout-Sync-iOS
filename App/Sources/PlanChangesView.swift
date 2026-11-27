@@ -25,6 +25,10 @@ struct PlanChangesView: View {
                             MobilityStrengthChangeRow(changes: changes.filter { MobilityStrength.batch(of: $0.why) == batch },
                                                       batch: batch, index: index)
                         }
+                    } else if let mark = PlanMakerBatch.of(change.why) {
+                        if changes.firstIndex(where: { PlanMakerBatch.of($0.why) == mark }) == index {
+                            PlanMakerChangeRow(changes: changes.filter { PlanMakerBatch.of($0.why) == mark }, index: index)
+                        }
                     } else if let batch = RepeatRule.batch(of: change.why) {
                         // One repeat = one entry, shown at its newest session.
                         if changes.firstIndex(where: { RepeatRule.batch(of: $0.why) == batch }) == index {

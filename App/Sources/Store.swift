@@ -1085,6 +1085,15 @@ final class Store: ObservableObject {
         return save(book)
     }
 
+    /* Round 30 (tuning): the test list replaced in one save — an entry from his sessions put in, or taken out by its Undo. */
+    @discardableResult
+    func replaceTests(_ tests: [TestResult]) -> Bool {
+        guard canChangePlan, var book else { return false }
+        book.tests = tests
+        book.zones = book.zones?.recalculated(from: tests)
+        return save(book)
+    }
+
     // MARK: putting a safety copy back
 
     /*
@@ -1515,9 +1524,34 @@ final class Store: ObservableObject {
         }
     }
 
+    /* Round 30 (raceweek): one batch of plan changes in one save, all of it or none; the body throws to stop. */
+    func writeBatch(_ body: (inout PlanBook) throws -> Int) -> Int? {
+        guard canChangePlan, var book else { return nil }
+        do {
+            let n = try body(&book)
+            guard n > 0 else { return 0 }
+            return save(book) ? n : nil
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
+    }
+
     func mobilityStrengthUndoable(_ changes: [PlanChange]) -> [PlanChange] {
         guard let book else { return [] }
         return MobilityStrength.undoable(changes, book: book)
+    }
+
+    /* Round 30 (plan maker, week shape): a whole batch a Core rule writes, and its one Undo, in one save — all of it or none. */
+    func applyPlanBatch<T>(_ write: (inout PlanBook) throws -> T) -> T? {
+        guard canChangePlan, var book else { return nil }
+        do {
+            let out = try write(&book)
+            return save(book) ? out : nil
+        } catch {
+            lastProblem = error.localizedDescription
+            return nil
+        }
     }
 
     /* Sessions can be changed, added and taken out only once the plan lives here. */
