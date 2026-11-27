@@ -2828,6 +2828,14 @@ On the race page, under the red head card: `RaceplanSection(race:)` (forecast, c
 * **Tests.** Data: `PlanMaker30Tests` (13), `Tuning30Tests` (20), `Score30Tests` (5), `Raceplan30Tests` (8), `Raceweek30Tests` (8), `Coach30Tests` (13). Screen tests were written and compile (`PlanMaker30UITests` 5, `Tuning30UITests` 5, `Score30UITests`, `Raceplan30UITests` 3, `Raceweek30UITests` 5, `Coach30UITests` 4); none was run by the lanes.
 * **Known risks and unproven.** Nothing was seen on a screen by the lanes; the looks, the line drawings and the sizes are unproven. Real Garmin answers are unproven for: `avgPower` on runs, pool lap shapes, treadmill power, `hrTimeInZone` for every sport, the multisport child list (the run child is assumed to be "running"), the age field. Real Claude image answers and the cost "about 3 cents" (frames at 768 px; the price was not checked). The forecast's sensible times on real data, and the bike sections. Plan maker: the switch's speed with a 500-session plan and about 40 shelf writes on a draft save; the rule book treats app-made bikes as the third-ride slot and has no week caps for new weeks, so suggestions on a switched plan are untested; the draft's tests are sessions only (no new test-result blocks). Zones: `BookMerge` joins test lists by name, so Undo on other devices relies on the shelf list `tuning/zones-undone`; the tuned card does not count toward the daily cards' 2-a-week. Race week: a test week is known only from the plan's weeks' test flag and sessions titled "test"; a tune-up has no pacing page of its own and no month-grid mark. Block intro: the plan's real phase names are assumed to start with Base, Build, Peak, Taper or Post; an easy-week intro shows only when a week is tagged easy and does not start a phase; the fixture has no phases.
 
+## New in 2.19.2 (97) — Routes card: a taller preview map on iPad and Mac (27 Nov 2026)
+
+Version shown: 2.19.2 (97), 27 November 2026. One look change. Nothing else changes.
+
+* **Before (2.19).** The preview map on the Progress › Routes card was 140 points tall on every device, a long thin strip on the wide iPad and Mac layout.
+* **Now.** The card's preview map frame is `Device.isPhone ? 140 : 240` points (`RoutesMapView.swift`, `RoutesCard`). iPhone stays 140; iPad and Mac are 240.
+* **Words.** What's new has "2.19.2 (97)". How this works changed in Progress (Routes): one sentence that the card's map is taller on iPad and Mac.
+
 ## New in 2.19.1 (96) — Gym machine lines: the figure in bold orange (27 Nov 2026)
 
 Version shown: 2.19.1 (96), 27 November 2026. One look change, from his ask after 2.19: "Keep weights but make them in another colour or other way to make them stand out". Nothing else changes: the big figure is still the session's time (2.19), no total kg.

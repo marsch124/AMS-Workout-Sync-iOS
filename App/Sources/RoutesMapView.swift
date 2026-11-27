@@ -107,7 +107,7 @@ struct RoutesCard: View {
                     }
                     .mapStyle(.standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .excludingAll))
                     .id(routes.map(\.id))
-                    .frame(height: 140)
+                    .frame(height: Device.isPhone ? 140 : 240)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .allowsHitTesting(false)
                     Text(RoutesLook.countLine(routes)).font(.footnote.weight(.semibold)).foregroundStyle(Theme.text)

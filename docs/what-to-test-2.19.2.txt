@@ -1,0 +1,2 @@
+1. On iPad or Mac, open Progress and look at the ROUTES card: the small map is clearly taller (240 points) and the routes are easy to see.
+2. On iPhone, open Progress: the ROUTES card map looks as before (140 points). Tap the card: the Routes page opens as before.
