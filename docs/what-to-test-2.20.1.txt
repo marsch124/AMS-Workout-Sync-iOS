@@ -1,0 +1,3 @@
+1. On the Mac, open Progress: the Load tile shows this week's hours, the same as Today's week card.
+2. Fitter at the same pulse fills in on the Mac (no "Garmin did not answer").
+3. Routes and Time in zones fill in on the first open of Progress.

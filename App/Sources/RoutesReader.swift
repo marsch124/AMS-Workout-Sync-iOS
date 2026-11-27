@@ -38,7 +38,17 @@ final class RoutesReader: ObservableObject {
 
     func routes(_ month: String) -> [RouteItem] { GarminKey.isSaved ? (byMonth[month] ?? []) : [] }
 
+    /*
+     * 2.20.1: the reading runs in a task of its own. On the Mac the Progress page lays its cards out twice
+     * when it opens (narrow first, then two columns), so the first card's `.task` was cancelled half-way:
+     * the reading ended as "Garmin did not answer" (Fitter at the same pulse on his Mac, 27 Nov 2026, three
+     * times; very likely also the empty Routes card on first open). A started reading now always finishes.
+     */
     func load(month: String) async {
+        await Task { await self.loadNow(month: month) }.value
+    }
+
+    private func loadNow(month: String) async {
         #if DEBUG
         if GarminKey.isFake { byMonth[month] = Self.invented(month: month); return }
         #endif

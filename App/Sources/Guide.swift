@@ -518,6 +518,11 @@ struct WhatsNewView: View {
     }
 
     static let releases: [Release] = [
+        Release(version: "2.20.1 (100)", date: "27 November 2026", headline: "Two fixes found on your Mac: the Load tile shows this week's hours, and Garmin readings on Progress always finish", items: [
+            "Progress · Fixed: the Load tile. Before: it read 0m on the Mac although Today said 4h 39m this week. Now: it shows the same this-week hours as Today's week card.",
+            "Progress · Fixed: Fitter at the same pulse said \"Garmin did not answer\" on the Mac every time. Before: the Mac lays Progress out twice when it opens (narrow first, then two columns), and the first card's Garmin reading was cut off half-way. Now: a reading that has started always finishes, for Fitter at the same pulse, Routes and Time in zones alike.",
+            "How this works changed in these parts: none.",
+        ]),
         Release(version: "2.20 (99)", date: "27 November 2026", headline: "Progress gets eight colour tiles and a pinned row to jump between its parts, and Garmin cards that were empty now fill in", items: [
             "Progress · New: eight colour tiles at the top. Before: Progress was one long page; to reach Routes or Your bests you scrolled past everything above. Now: right under the Progress title there are eight tiles, each in its own colour with a live figure: Race (weeks or days to go), Fitness (your fitness number from Fitness and freshness), Load (hours trained this week), Zones (zone 2 time this week, a dash until Garmin has answered), Routes (outdoor routes this month), Kept (sessions done of those due so far), Bests (how many personal bests) and Month (the month in review). Tap a tile and the page scrolls to that part. iPhone shows two columns of tiles; iPad on its side and the Mac show four.",
             "Progress · New: a pinned row of chips. Before: once you had scrolled down you had to scroll all the way back up to jump somewhere else. Now: when the tiles have scrolled out of sight, a slim row of the same colour chips stays at the top of the page. The part you are looking at lights up as a filled chip and the others stay pale. Tap a chip to jump to that part. Scroll back to the top and the row goes away, because the tiles are there again.",

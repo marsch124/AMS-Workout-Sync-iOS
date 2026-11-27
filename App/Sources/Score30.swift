@@ -175,7 +175,7 @@ private enum FitterHue {
     static let ground = Color.dynamic(light: 0xFEF0FA, dark: 0x2A1228)
 }
 
-private struct FitterFile: Codable { var lastTried: Date?; var season: String?; var list: [SteadyWorkout] = []; var failed: Bool? }
+private struct FitterFile: Codable { var lastTried: Date?; var season: String?; var list: [SteadyWorkout] = []; var failed: Bool?; var lastError: String? }
 
 @MainActor
 final class SamePulseReader: ObservableObject {
@@ -206,7 +206,17 @@ final class SamePulseReader: ObservableObject {
     }
 
     /* At most one read in 30 minutes (2 minutes after one Garmin did not answer; at once on "Tap to try again"), from 1 September. */
+    /*
+     * 2.20.1: the reading runs in a task of its own. On the Mac the Progress page lays its cards out twice
+     * when it opens (narrow first, then two columns), so the first card's `.task` was cancelled half-way:
+     * the reading ended as "Garmin did not answer" (Fitter at the same pulse on his Mac, 27 Nov 2026, three
+     * times; very likely also the empty Routes card on first open). A started reading now always finishes.
+     */
     func readIfDue(today: String, force: Bool = false) async {
+        await Task { await self.readNow(today: today, force: force) }.value
+    }
+
+    private func readNow(today: String, force: Bool) async {
         guard GarminKey.isSaved, !GarminKey.isFake, !reading,
               force || GarminMorning.mayRead(lastTried: file.lastTried, failed: file.failed ?? false, now: Date()),
               let first = SamePulse.months(today: today).first else { return }
@@ -217,7 +227,10 @@ final class SamePulseReader: ObservableObject {
             // An empty answer never replaces a season already held.
             if !fresh.isEmpty || file.season != first { file.list = fresh; file.season = first; list = fresh }
             file.failed = nil
+            file.lastError = nil
         } catch {
+            // 2.20.1: which failure, in words without the key, so the next look at his Mac knows why.
+            file.lastError = (error as? GarminFailure).map { "\($0)" } ?? "\(type(of: error))" + (Task.isCancelled ? " (cancelled)" : "")
             // 2.20: said on the card, instead of "Not enough steady runs or rides" (his Mac, 27 Nov 2026).
             file.failed = true
         }

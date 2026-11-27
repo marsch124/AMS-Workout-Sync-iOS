@@ -122,8 +122,12 @@ struct ProgressView: View {
             out.append((.fitness, p.form.count >= 14 ? String(Int((p.form.last?.fitness ?? 0).rounded())) : "Not yet"))
         }
         if LoadBoard.make(store: store, diary: diary) != nil {
-            let monday = PlanView.weekStart(store.today)
-            let week = p.load.weeks.first { $0.start == monday }?.actual ?? 0
+            // The same "this week" as Today's week card (the Load weeks only count finished weeks: it read 0m on his Mac).
+            var week = 0.0
+            if let view = store.view {
+                week = view.week(of: store.today, today: store.today).flatMap(\.training).filter { $0.state == .done }
+                    .reduce(0.0) { $0 + (Stats.actualSeconds($1, view.mapping) ?? Plan.plannedSeconds($1, view.mapping) ?? 0) }
+            }
             out.append((.load, hoursShort(week)))
         }
         if zonesShown {

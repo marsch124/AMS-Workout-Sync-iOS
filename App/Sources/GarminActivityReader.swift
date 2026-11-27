@@ -94,7 +94,17 @@ final class GarminActivityReader: ObservableObject {
      * showing, so it never showed): at most one read in 30 minutes, 2 minutes after one Garmin did not
      * answer, at once on "Tap to try again". A new week starts from nothing.
      */
+    /*
+     * 2.20.1: the reading runs in a task of its own. On the Mac the Progress page lays its cards out twice
+     * when it opens (narrow first, then two columns), so the first card's `.task` was cancelled half-way:
+     * the reading ended as "Garmin did not answer" (Fitter at the same pulse on his Mac, 27 Nov 2026, three
+     * times; very likely also the empty Routes card on first open). A started reading now always finishes.
+     */
     func loadZones(today: String, force: Bool = false) async {
+        await Task { await self.loadZonesNow(today: today, force: force) }.value
+    }
+
+    private func loadZonesNow(today: String, force: Bool) async {
         let monday = PlanView.weekStart(today)
         if let f = zoneFile, f.weekStart == monday { zones = f.result }
         #if DEBUG
