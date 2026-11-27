@@ -226,17 +226,21 @@ private struct NightBars: View {
 struct SleepDebtCard: View {
     let day: String
     @ObservedObject private var reader = BodyHealthReader.shared
+    /* 2.19: his own sleep need lives on the shelf; a change on another device redraws the card. */
+    @ObservedObject private var shelf = ShelfStore.shared
     @State private var open = debugSheet("sleep-debt")
 
     var body: some View {
-        let nights = reader.shown?.nights ?? []
+        let _ = shelf.revision
+        let own = SleepNeed.own
+        let nights = BodyHealth.withNeed(reader.shown?.nights ?? [], minutes: own)
         let balance = BodyHealth.balance(nights)
         Button { open = true } label: {
             if reader.shown == nil {
                 HealthFace(name: "Sleep debt", figure: nil, unit: "", line: noKeyLine) { EmptyView() }
             } else if let balance {
                 HealthFace(name: "Sleep debt", figure: BodyHealth.balanceFigure(balance), unit: "7 nights",
-                           line: BodyHealth.sleepLine(nights) + ". Tap for each night.", lines: 2) { NightBars(nights: nights) }
+                           line: BodyHealth.sleepLine(nights, ownNeed: own) + ". Tap for each night.", lines: 2) { NightBars(nights: nights) }
             } else {
                 HealthFace(name: "Sleep debt", figure: nil, unit: "",
                            line: "No nights recorded this week. The watch fills this once it has slept with you.") { EmptyView() }
@@ -245,22 +249,23 @@ struct SleepDebtCard: View {
         .buttonStyle(.plain)
         .disabled(balance == nil)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(label(balance, nights))
+        .accessibilityLabel(label(balance, nights, own))
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier("body-sleep-debt")
         .sheet(isPresented: $open) {
             HealthSheet(title: "Sleep debt \u{00B7} last 7 nights",
                         rows: nights.reversed().map { n in
-                            (Dates.short(n.day), n.sleptMinutes.map { "\(formatDuration($0 * 60)) of \(formatDuration(n.needMinutes * 60))" } ?? "no reading")
+                            (Dates.short(n.day), n.sleptMinutes.map { "\(formatDuration($0 * 60)) of \(BodyHealth.needText(n.needMinutes))" } ?? "no reading")
                         },
-                        note: "Sleep and naps against the need Garmin gives for each night (8h where it gives none). A night without the watch is left out.",
+                        note: own.map { "Sleep and naps against your own need of \(BodyHealth.needText($0)) a night (Settings \u{203A} Garmin \u{203A} Sleep need). A night without the watch is left out." }
+                            ?? "Sleep and naps against the need Garmin gives for each night (8h where it gives none). A night without the watch is left out.",
                         id: "body-sleep-debt-sheet")
         }
     }
 
-    private func label(_ b: Double?, _ nights: [BodyHealth.Night]) -> String {
+    private func label(_ b: Double?, _ nights: [BodyHealth.Night], _ own: Double?) -> String {
         guard let b else { return "Sleep debt. Nothing recorded this week." }
-        return "Sleep debt \(BodyHealth.balanceFigure(b)) over 7 nights. \(BodyHealth.sleepLine(nights)). Opens each night."
+        return "Sleep debt \(BodyHealth.balanceFigure(b)) over 7 nights. \(BodyHealth.sleepLine(nights, ownNeed: own)). Opens each night."
     }
 }
 

@@ -157,6 +157,7 @@ struct SettingsView: View {
 
                     SectionHeading(text: "Garmin")
                     GarminSettingsEntry()
+                    SleepNeedEntry()
 
                     SectionHeading(text: "Claude")
                     ClaudeSettingsEntry()
@@ -276,11 +277,8 @@ struct SettingsView: View {
                 .font(.caption).foregroundStyle(Theme.secondary).padding(.horizontal, 2)
         }
         if store.canChangePlan {
-            NavigationLink { ThursdayRidesView() } label: {
-                SettingsRow(title: "Thursday rides", sub: "One easy ride every Thursday, from next Monday to your race", chevron: true)
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("plan-rides")
+            // 2.19, his pick: the Thursday rides row and its page are gone — the 29 rides are in the plan,
+            // and their one Undo stays in Changes to the plan (Core's ThursdayRides keeps their fixed keys).
             NavigationLink { MobilityStrengthView() } label: {
                 SettingsRow(title: "Mobility and strength", sub: "Mobility Mon \u{00B7} Wed \u{00B7} Fri, strength Tue \u{00B7} Thu, 30 min each", chevron: true)
             }

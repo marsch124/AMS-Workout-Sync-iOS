@@ -21,12 +21,14 @@ final class GarminActivityReader: ObservableObject {
     private struct ZoneFile: Codable { var weekStart: String; var result: GarminZoneWeeks.Result; var lastTried: Date? }
     private var zoneFile: ZoneFile?
 
-    private static var folder: URL {
+    /* Shared with the Routes reader: one small file per Garmin activity, the same format. */
+    static var folder: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("garmin-activities", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }
+    static func cacheURL(activityId: Int) -> URL { folder.appendingPathComponent("\(activityId).json") }
     private static var zoneURL: URL { folder.appendingPathComponent("zones-week.json") }
 
     init() {
@@ -47,6 +49,7 @@ final class GarminActivityReader: ObservableObject {
     /* The key was changed or removed: nothing of the old account stays. */
     func forget() {
         details = [:]
+        RoutesReader.shared.forget()
         zones = nil
         zoneFile = nil
         try? FileManager.default.removeItem(at: Self.folder)

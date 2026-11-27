@@ -117,6 +117,17 @@ public enum GymSessions {
         [dayText(s.date), s.gym, s.minutes.map { formatDuration($0 * 60) }].compactMap { $0 }.joined(separator: " · ")
     }
 
+    /* 2.19 (his ask: time, not kg): the card's big figure, "1h 05m"; "–" when the file has no length. */
+    public static func timeFigure(_ s: GymSession) -> String {
+        guard let m = s.minutes, m > 0 else { return "\u{2013}" }
+        return formatDuration(m * 60)
+    }
+
+    /* 2.19: the line under the time, "Mon 9 Mar · City Gym" (the time is the big figure above it). */
+    public static func dayGymLine(_ s: GymSession) -> String {
+        [dayText(s.date), s.gym].compactMap { $0 }.joined(separator: " · ")
+    }
+
     /* "4 machines · 11 sets · felt good · 3 days ago" (the day only for the latest session). */
     public static func countsLine(_ s: GymSession, today: String?) -> String {
         var parts: [String] = []
@@ -132,13 +143,12 @@ public enum GymSessions {
         return (r < 0 ? "\u{2212}" : "+") + BodyPage.grouped(Double(abs(r))) + unit
     }
 
-    /* "vs the one before: +2 sets · −17 min · +640 kg" — a part is left out when either session lacks it; nil without a session before. */
+    /* "vs the one before: +2 sets · −17 min" — a part is left out when either session lacks it; nil without a session before. No kg since 2.19 (his ask). */
     public static func compareLine(_ latest: GymSession, _ before: GymSession?) -> String? {
         guard let before else { return nil }
         var parts: [String] = []
         if let a = latest.sets, let b = before.sets { parts.append(signed(Double(a - b), unit: " sets")) }
         if let a = latest.minutes, let b = before.minutes { parts.append(signed(a - b, unit: " min")) }
-        if let a = latest.liftedKg, let b = before.liftedKg { parts.append(signed(a - b, unit: " kg")) }
         return parts.isEmpty ? nil : "vs the one before: " + parts.joined(separator: " · ")
     }
 

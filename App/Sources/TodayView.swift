@@ -173,11 +173,6 @@ struct TodayView: View {
             ReturnLadderCard(onToday: true)
             BlockIntroCard()
             ClaudeReviewCard()
-            // No Tomorrow block (the plan's last day): the pill stands alone on the right.
-            if store.canLog && tomorrow.isEmpty {
-                HStack { Spacer(); extraButton }
-            }
-
             if !behind.isEmpty {
                 SectionHeading(text: "Behind you, not recorded")
                 ForEach(behind) { w in
@@ -198,16 +193,22 @@ struct TodayView: View {
                 }
             }
 
+            // 2.19, his ask: the Extra workout pill on its own line, right above WEEK SO FAR
+            // (before, it sat at the end of the TOMORROW line, or alone higher up when there was no tomorrow).
+            if store.canLog {
+                HStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    extraButton
+                }
+                .padding(.bottom, -6)
+            }
             if !view.plan.isEmpty { WeekSoFarStrip(view: view, today: today) }
             // Only tomorrow, as he asked: what to think about tonight, not the
             // week — and on its own pale blue ground, so the eye knows at once
             // that everything below the line is no longer today.
             if !tomorrow.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
-                    // TOMORROW on a blue tab; the extra-activity pill beside it on
-                    // the page's own ground — same line, not part of tomorrow
-                    // (his sketch, 2026-09-21: "make this white so that it is not
-                    // connected to TOMORROW").
+                    // TOMORROW on a blue tab (the Extra workout pill moved above WEEK SO FAR in 2.19).
                     HStack(alignment: .center, spacing: 8) {
                         Text("TOMORROW")
                             .font(.caption.weight(.bold)).tracking(0.8)
@@ -216,7 +217,6 @@ struct TodayView: View {
                             .background(UnevenRoundedRectangle(topLeadingRadius: 16, topTrailingRadius: 12, style: .continuous)
                                 .fill(Theme.tomorrow))
                         Spacer(minLength: 8)
-                        if store.canLog { extraButton.padding(.trailing, 12).offset(y: -3) }
                     }
                     VStack(alignment: .leading, spacing: 14) {
                         if tomorrow.allSatisfy({ $0.discipline.id == "rest" }) {

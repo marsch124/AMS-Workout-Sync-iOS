@@ -224,6 +224,8 @@ final class Neighbours: ObservableObject {
             }.map { (key: $0.key, day: $0.dayKey) }
         }
         let mobility = todo("mobility"), strength = todo("strength")
+        // 2.19: a Workout Companion session on a day with no strength in the plan becomes an Extra workout.
+        addCompanionExtras(store: store, sessions: sessions, day: day)
         guard !mobility.isEmpty || !strength.isEmpty else { return }
         let used = Set(loggedFrom.values)
         let ticks = NeighbourRules.mobilityTicks(todo: mobility, notes: notes, used: used, today: day)
@@ -243,6 +245,25 @@ final class Neighbours: ObservableObject {
             changed = true
         }
         if changed { UserDefaults.standard.set(loggedFrom, forKey: loggedKey) }
+    }
+
+    /*
+     * 2.19: each Workout Companion session on a day without planned strength, as an Extra workout.
+     * The note's id is kept with the others in `loggedFrom` (under "extra:<day>"), so it is added
+     * once only — an extra he deletes does not come back.
+     */
+    private func addCompanionExtras(store: Store, sessions: [Workout], day: String) {
+        let planned = Set(sessions.filter { $0.discipline.id == "strength" }.map(\.dayKey))
+        let extraDays = Set(store.allExtras.filter { $0.activity == "strength" }.map(\.dayKey))
+        let found = NeighbourRules.companionExtras(notes: notes, plannedStrengthDays: planned, strengthExtraDays: extraDays,
+                                                   used: Set(loggedFrom.values), today: day)
+        guard !found.isEmpty else { return }
+        for note in found {
+            guard let id = note.id, let d = note.day else { continue }
+            store.logExtra(NeighbourRules.companionExtra(note))
+            loggedFrom["extra:" + d + ":" + id] = id
+        }
+        UserDefaults.standard.set(loggedFrom, forKey: loggedKey)
     }
 
     /* "Stretching: 4 of the last 7 mornings"; nil when there is no stretch note at all. */

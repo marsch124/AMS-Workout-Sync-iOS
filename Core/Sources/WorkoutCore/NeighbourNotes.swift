@@ -300,6 +300,42 @@ public enum NeighbourRules {
         return out
     }
 
+    /*
+     * 2.19 (his pick, 27 Nov 2026: "Add it as Extra workout"): a Workout Companion strength session on a
+     * day that has NO strength session in the plan at all (a rest day, a mobility day) becomes an Extra
+     * workout by itself. Today and the 13 days before, never ahead; each note once (`used` holds the ids
+     * already turned into a tick or an extra); at most one per day, and none on a day that already has a
+     * Strength extra. A day with planned strength is left to `strengthTicks` (to do → ticked; done or
+     * missed → nothing), so a session is never counted twice.
+     */
+    public static func companionExtras(notes: NeighbourNotes?, plannedStrengthDays: Set<String>, strengthExtraDays: Set<String>,
+                                       used: Set<String>, today: String) -> [NeighbourDone] {
+        guard let notes, (notes.format ?? NeighbourNotes.knownFormat) <= NeighbourNotes.knownFormat else { return [] }
+        let oldest = addDays(today, -(keepDays - 1))
+        var days = strengthExtraDays
+        var out: [NeighbourDone] = []
+        let found = distinct(notes).filter { $0.kind == "strength" && $0.from != "morning" && !($0.id ?? "").isEmpty }
+        for note in found.sorted(by: { ($0.day ?? "", $0.at ?? "") < ($1.day ?? "", $1.at ?? "") }) {
+            guard let day = note.day, let id = note.id, day <= today, day >= oldest,
+                  !plannedStrengthDays.contains(day), !days.contains(day), !used.contains(id) else { continue }
+            out.append(note)
+            days.insert(day)
+        }
+        return out
+    }
+
+    /* The Extra workout a Workout Companion session becomes (2.19): Strength, its minutes and effort, training. */
+    public static func companionExtra(_ note: NeighbourDone) -> ExtraEntry {
+        var e = ExtraEntry(date: note.day ?? "", activity: "strength")
+        if let m = note.minutes, m > 0 { e.minutes = Double(m) }
+        if let f = note.effort, (1...10).contains(f) { e.effort = Double(f) }
+        e.isTraining = true
+        e.notes = companionNote
+        return e
+    }
+
+    public static let companionNote = "From Workout Companion"
+
     /* The note's `from` as it goes into the log (2.16): "morning" for Magic Morning, else "workouts". */
     public static func tickSource(_ note: NeighbourDone) -> String { note.from == "morning" ? "morning" : "workouts" }
 

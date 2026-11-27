@@ -58,8 +58,29 @@ public enum BodyHealth {
 
     public static func missingNights(_ nights: [Night]) -> Int { nights.filter { $0.sleptMinutes == nil }.count }
 
-    /* "Need about 8h a night · 3 nights without the watch". */
-    public static func sleepLine(_ nights: [Night]) -> String {
+    /*
+     * 2.19 (his ask: "Sleep need = 6h"): his own sleep need in place of Garmin's estimate for every
+     * night. nil or 0 = Garmin's estimate, as before.
+     */
+    public static func withNeed(_ nights: [Night], minutes: Double?) -> [Night] {
+        guard let m = minutes, m > 0 else { return nights }
+        return nights.map { var n = $0; n.needMinutes = m; n.garminNeed = false; return n }
+    }
+
+    /* "6h", "6h 30m": a sleep need in words. */
+    public static func needText(_ minutes: Double) -> String {
+        let q = Int((minutes / 15).rounded()) * 15
+        return q % 60 == 0 ? "\(q / 60)h" : formatDuration(Double(q) * 60)
+    }
+
+    /* "Need about 8h a night · 3 nights without the watch"; with his own need (2.19) "Need 6h a night (your setting)". */
+    public static func sleepLine(_ nights: [Night], ownNeed: Double? = nil) -> String {
+        if let own = ownNeed, own > 0 {
+            var s = "Need " + needText(own) + " a night (your setting)"
+            let m = missingNights(nights)
+            if m > 0 { s += " \u{00B7} \(m) night\(m == 1 ? "" : "s") without the watch" }
+            return s
+        }
         let needs = nights.map(\.needMinutes)
         let avg = needs.isEmpty ? fallbackNeedMinutes : needs.reduce(0, +) / Double(needs.count)
         // "about" means about: the need is rounded to a quarter of an hour, and a whole hour is written "8h".

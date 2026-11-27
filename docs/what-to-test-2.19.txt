@@ -1,0 +1,13 @@
+AMS Triathlon Training 2.19 (95) - what to test
+
+Six small changes. Nothing in your plan changes by itself. Say what you saw if anything looks wrong.
+
+1. Routes (iPhone, with your Garmin key): Progress > the ROUTES card. Look at the line "12 routes · 5 runs..." (your own numbers). Tap it: move and zoom the map, go back a month with the arrow, tap the chips Run / Bike / Swim / Hike (filled = shown, outlined = hidden), tap a route for its small plate. "Done" closes it.
+2. Routes without a key (iPad or Mac with no key): the card says "Add your Garmin key in Settings > Garmin."
+3. Sleep need: Settings > Garmin > "Sleep need" should say "6h a night - your setting". Open it, pick 7h, "Save". Body > Sleep debt should now say "Need 7h a night (your setting)". Try "Garmin's estimate" to get the old way back. Check the iPad shows the same.
+4. Gym sessions: Body > Gym sessions. The big figure is now the time (like 1h 05m), not kilograms. Check the list rows and "vs the one before". Best sets still say kg.
+5. Workout Companion on a free day: finish a gym session on a day with no strength planned. Open Triathlon: an Extra workout "Strength" with the note "From Workout Companion" appears on Today and under Sessions > Done. Delete it: it must not come back.
+6. Extra workout button: Today, the small "+ Extra workout" is now on its own line above "Week so far", at the right.
+7. Settings > Your plan: no "Thursday rides" row any more. Your Thursday rides are still in the plan; Settings > Changes to the plan still has their Undo.
+
+Only your own devices can prove: real Garmin routes, Workout Companion on the iPhone, iCloud on the iPad and the Mac.

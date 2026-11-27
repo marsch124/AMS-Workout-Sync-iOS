@@ -183,13 +183,11 @@ struct GymCard: View {
     @ViewBuilder private func filled(_ s: GymSession) -> some View {
         let latest = reader.sessions.first
         let isLatest = s.id == latest?.id
-        HStack(alignment: .firstTextBaseline, spacing: 5) {
-            Text(BodyPage.grouped(s.liftedKg ?? 0)).font(.title2.weight(.bold))
-            Text("kg").font(.footnote.weight(.semibold))
-        }
-        .foregroundStyle(Theme.text).lineLimit(1).minimumScaleFactor(0.7)
-        .accessibilityIdentifier("body-gym-kg")
-        Text(GymSessions.headLine(s)).font(.caption).foregroundStyle(Theme.secondary)
+        // 2.19, his ask: the session's time as the big figure, no kilos.
+        Text(GymSessions.timeFigure(s)).font(.title2.weight(.bold))
+            .foregroundStyle(Theme.text).lineLimit(1).minimumScaleFactor(0.7)
+            .accessibilityIdentifier("body-gym-time")
+        Text(GymSessions.dayGymLine(s)).font(.caption).foregroundStyle(Theme.secondary)
             .accessibilityIdentifier("body-gym-head")
         Text(GymSessions.countsLine(s, today: isLatest ? day : nil)).font(.caption).foregroundStyle(Theme.secondary)
             .accessibilityIdentifier("body-gym-counts")
@@ -223,23 +221,25 @@ struct GymCard: View {
 
     @ViewBuilder private func recent(selected: String) -> some View {
         let list = Array(reader.sessions.prefix(6))
-        let top = max(list.compactMap(\.liftedKg).max() ?? 1, 1)
+        let top = max(list.compactMap(\.minutes).max() ?? 1, 1)
         VStack(spacing: 2) {
             ForEach(list) { r in
                 Button { picked = (r.id == reader.sessions.first?.id) ? nil : r.id } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
                             Text(GymSessions.dayText(r.date)).font(.caption.weight(.semibold)).foregroundStyle(Theme.text)
-                            Text([r.gym, r.minutes.map { formatDuration($0 * 60) }].compactMap { $0 }.joined(separator: " · "))
-                                .font(.caption).foregroundStyle(Theme.secondary).lineLimit(1)
-                            if let kg = r.liftedKg, kg > 0 {
-                                Text(BodyPage.grouped(kg) + " kg").font(.caption.weight(.semibold)).foregroundStyle(Theme.text)
+                            if let gym = r.gym {
+                                Text(gym).font(.caption).foregroundStyle(Theme.secondary).lineLimit(1)
+                            }
+                            // 2.19: the time where the kilos were.
+                            if let m = r.minutes, m > 0 {
+                                Text(formatDuration(m * 60)).font(.caption.weight(.semibold)).foregroundStyle(Theme.text)
                             }
                             Spacer(minLength: 0)
                         }
                         GeometryReader { g in
                             Capsule().fill(hue.accent.opacity(0.55))
-                                .frame(width: max(3, g.size.width * CGFloat((r.liftedKg ?? 0) / top)), height: 3)
+                                .frame(width: max(3, g.size.width * CGFloat((r.minutes ?? 0) / top)), height: 3)
                         }.frame(height: 3)
                     }
                     .padding(.horizontal, 6).padding(.vertical, 4)
@@ -248,7 +248,7 @@ struct GymCard: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(GymSessions.headLine(r)), \(BodyPage.grouped(r.liftedKg ?? 0)) kilograms. Shows this session in the card.")
+                .accessibilityLabel("\(GymSessions.headLine(r)). Shows this session in the card.")
                 .accessibilityAddTraits(.isButton)
                 .accessibilityIdentifier("body-gym-row-\(r.id)")
             }
@@ -320,8 +320,7 @@ struct GymDayBlock: View {
                     ForEach(list) { s in
                         Text("GYM").font(.caption2.weight(.bold)).tracking(0.8).foregroundStyle(hue.accent)
                         Text([GymSessions.headLine(s).components(separatedBy: " · ").dropFirst().joined(separator: " · "),
-                              GymSessions.countsLine(s, today: nil),
-                              (s.liftedKg ?? 0) > 0 ? BodyPage.grouped(s.liftedKg ?? 0) + " kg" : ""]
+                              GymSessions.countsLine(s, today: nil)]
                             .filter { !$0.isEmpty }.joined(separator: " · "))
                             .font(.caption).foregroundStyle(Theme.secondary)
                         ForEach(Array(s.entries.enumerated()), id: \.offset) { _, e in

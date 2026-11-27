@@ -30,8 +30,12 @@ final class Gym29Tests: XCTestCase {
         let a = l[1]
         XCTAssertEqual(GymSessions.headLine(a), "Fri 20 Nov · Test Gym · 1h\u{00A0}10m")
         XCTAssertEqual(GymSessions.countsLine(a, today: "2026-11-22"), "2 machines · 6 sets · felt good · 2 days ago")
-        XCTAssertEqual(GymSessions.compareLine(l[0], a), "vs the one before: +0 sets · +12 min · \u{2212}640 kg")
+        XCTAssertEqual(GymSessions.compareLine(l[0], a), "vs the one before: +0 sets · +12 min")
         XCTAssertNil(GymSessions.compareLine(l[2], nil))
+        // 2.19: the card shows the time as its big figure, then day · gym.
+        XCTAssertEqual(GymSessions.timeFigure(a), "1h\u{00A0}10m")
+        XCTAssertEqual(GymSessions.dayGymLine(a), "Fri 20 Nov · Test Gym")
+        XCTAssertEqual(GymSessions.timeFigure(GymSession(id: "x", date: "2026-11-21")), "\u{2013}")
     }
 
     func testBestSetPerMachine() {

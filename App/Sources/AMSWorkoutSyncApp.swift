@@ -180,8 +180,8 @@ struct RootView: View {
             FavouritesDebugScreens()
             RaceWeekDebugScreens().environmentObject(store)
             PlanMakerDebugScreens()
-            if ProcessInfo.processInfo.environment["AMSWS_RIDES"] != nil {
-                NavigationStack { ThursdayRidesView() }
+            if ProcessInfo.processInfo.environment["AMSWS_SLEEP_NEED_PAGE"] != nil {
+                NavigationStack { SleepNeedView() }
             }
             if ProcessInfo.processInfo.environment["AMSWS_MOBILITY"] != nil {
                 NavigationStack { MobilityStrengthView() }
