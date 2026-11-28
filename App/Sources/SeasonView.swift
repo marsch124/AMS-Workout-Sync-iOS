@@ -109,8 +109,11 @@ struct SeasonData {
 struct SeasonView: View {
     @EnvironmentObject var store: Store
     @Binding var weekStart: String
-    /* The Mondays outlined as chosen: nil is the week shown; empty outlines nothing (the Year view). */
+    /* The Mondays outlined as chosen: nil is the week shown; empty outlines nothing. */
     var chosenWeeks: [String]? = nil
+    /* 2.21: the outline has no side at an end where the period shown goes on past the bars (the Year after the race). */
+    var openStart = false
+    var openEnd = false
     /* What a tap on a bar does; nil chooses that week. */
     var pick: ((String) -> Void)? = nil
 
@@ -196,10 +199,10 @@ struct SeasonView: View {
                 let w = data.weeks[i]
                 return barHeight(w, tallest: tallest) + (w.isEasy || w.isTest ? Self.markHeight : 0)
             }.max() ?? 4
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .strokeBorder(Theme.text, lineWidth: 2)
-                .frame(width: CGFloat(last - first + 1) * (barW + gap) - gap + 6, height: top + 6)
-                .offset(x: CGFloat(first) * (barW + gap) - 3, y: barArea - top - 3)
+            OutlineBox(openStart: openStart && first == 0, openEnd: openEnd && last == data.weeks.count - 1)
+                .stroke(Theme.text, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                .frame(width: CGFloat(last - first + 1) * (barW + gap) - gap + 4, height: top + 4)
+                .offset(x: CGFloat(first) * (barW + gap) - 2, y: barArea - top - 2)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
         }
@@ -224,11 +227,14 @@ struct SeasonView: View {
                 Rectangle().fill(Theme.today).frame(width: 1.5, height: max(0, seg.bottom - seg.top))
                     .offset(x: x - 0.75, y: seg.top)
             }
+            // 2.21: on the page's own ground, so an outline's top line (the Year's, round tall bars) stops at the word.
             Text("Today")
                 .font(.caption2.weight(.semibold)).foregroundStyle(Theme.today)
                 .fixedSize()
-                .frame(width: 44, alignment: wordLeft ? .trailing : .leading)
-                .offset(x: wordLeft ? x - 47 : x + 3, y: -1)
+                .padding(.horizontal, 2)
+                .background(Theme.bg)
+                .frame(width: 48, alignment: wordLeft ? .trailing : .leading)
+                .offset(x: wordLeft ? x - 49 : x + 1, y: -1)
         }
         .allowsHitTesting(false)
         .accessibilityElement(children: .ignore)
@@ -298,6 +304,44 @@ struct SeasonView: View {
                                            hasTest: data.weeks.contains(where: \.isTest), lettersShown: lettersShown))
             .font(.caption2).foregroundStyle(Theme.secondary)
             .accessibilityIdentifier("season-key")
+    }
+}
+
+/*
+ * The outline round the chosen bars: a rounded box, or — at an end where the
+ * period shown goes on past the bars — a box with that side left open.
+ */
+struct OutlineBox: Shape {
+    var openStart = false
+    var openEnd = false
+    private let r: CGFloat = 4
+
+    func path(in rect: CGRect) -> Path {
+        guard openStart || openEnd else {
+            return RoundedRectangle(cornerRadius: r, style: .continuous).path(in: rect)
+        }
+        var p = Path()
+        // Top edge, from the start side to the end side, then down the end side (unless open), bottom back.
+        let (minX, maxX, minY, maxY) = (rect.minX, rect.maxX, rect.minY, rect.maxY)
+        if openStart { p.move(to: CGPoint(x: minX, y: minY)) } else {
+            p.move(to: CGPoint(x: minX, y: maxY - r))
+            p.addLine(to: CGPoint(x: minX, y: minY + r))
+            p.addQuadCurve(to: CGPoint(x: minX + r, y: minY), control: CGPoint(x: minX, y: minY))
+        }
+        if openEnd {
+            p.addLine(to: CGPoint(x: maxX, y: minY))
+            p.move(to: CGPoint(x: maxX, y: maxY))
+        } else {
+            p.addLine(to: CGPoint(x: maxX - r, y: minY))
+            p.addQuadCurve(to: CGPoint(x: maxX, y: minY + r), control: CGPoint(x: maxX, y: minY))
+            p.addLine(to: CGPoint(x: maxX, y: maxY - r))
+            p.addQuadCurve(to: CGPoint(x: maxX - r, y: maxY), control: CGPoint(x: maxX, y: maxY))
+        }
+        if openStart { p.addLine(to: CGPoint(x: minX, y: maxY)) } else {
+            p.addLine(to: CGPoint(x: minX + r, y: maxY))
+            p.addQuadCurve(to: CGPoint(x: minX, y: maxY - r), control: CGPoint(x: minX, y: maxY))
+        }
+        return p
     }
 }
 

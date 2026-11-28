@@ -169,30 +169,28 @@ enum PlanMakerWords {
     }
 }
 
-// MARK: - the button on the Plan page
+// MARK: - the row in Settings
 
-/* "Make a new plan" — or, once there is a draft, "Your new plan (draft)". Full colour, the season's amber. */
-struct PlanMakerButton: View {
+/*
+ * "Make a new plan" — or, once there is a draft, "Your new plan (draft)".
+ * 2.21, his ask (28 Nov 2026): it lives in Settings › Your plan only, as a row
+ * under My week shape; before, it was a full-colour button on the Plan page and
+ * the Sessions tab.
+ */
+struct PlanMakerRow: View {
     @EnvironmentObject var store: Store
     @ObservedObject private var shelf = ShelfStore.shared
-    /* The phone's row of small word buttons. */
-    var small = false
 
     var body: some View {
-        let words = PlanDraftShelf.meta == nil ? "Make a new plan" : "Your new plan (draft)"
-        if small {
-            NavigationLink { PlanMakerHome() } label: { Text(words) }
-                .settingsButton(tint: DraftHue.fill, filled: true)
-                .accessibilityIdentifier("plan-maker-open")
-        } else {
-            NavigationLink { PlanMakerHome().readableWidth(760) } label: {
-                Text(words).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
-                    .padding(.horizontal, 14).padding(.vertical, 7)
-                    .background(Capsule().fill(DraftHue.fill))
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("plan-maker-open")
+        let hasDraft = PlanDraftShelf.meta != nil
+        NavigationLink { PlanMakerHome().readableWidth(760) } label: {
+            SettingsRow(title: hasDraft ? "Your new plan (draft)" : "Make a new plan",
+                        sub: hasDraft ? "Ready to look at \u{2014} your plan stays until you switch"
+                                      : "A draft of a new season beside your plan \u{2014} you switch when you choose",
+                        chevron: true)
         }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("plan-maker-open")
     }
 }
 

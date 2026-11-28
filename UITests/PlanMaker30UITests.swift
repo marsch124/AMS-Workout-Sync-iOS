@@ -25,14 +25,16 @@ final class PlanMaker30UITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
 
-    /* From the Sessions page: the plan maker's form, then a draft beside his plan, then one week of it. */
+    /* From Settings › Your plan (2.21, his ask): the plan maker's form, then a draft beside his plan, then one week of it. */
     func testMakingADraftFromThePlanPage() {
         let app = launch([:])
-        let tab = app.buttons["tab-plan"]
+        let tab = app.buttons["tab-settings"]
         XCTAssertTrue(tab.waitForExistence(timeout: 15))
         tab.tap()
         let open = any(app, "plan-maker-open")
-        XCTAssertTrue(open.waitForExistence(timeout: 5), "no Make a new plan button")
+        XCTAssertTrue(open.waitForExistence(timeout: 5), "no Make a new plan row in Settings")
+        var tries = 0
+        while !open.isHittable && tries < 8 { app.swipeUp(); tries += 1 }
         open.tap()
         XCTAssertTrue(any(app, "pm-form").waitForExistence(timeout: 5), "the plan maker did not open")
         XCTAssertTrue(any(app, "pm-race-name").exists)

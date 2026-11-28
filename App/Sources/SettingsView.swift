@@ -309,6 +309,7 @@ struct SettingsView: View {
         }
         AwaySettingsRow()
         WeekShapeSettingsRow()
+        PlanMakerRow()
         if store.canGoBack, let until = store.canGoBackUntil {
             SettingsRow(title: "Go back to Excel",
                         sub: "Possible until \(Self.dayMonthYear(until)). Writes the plan as it is now into the Excel file in Dropbox.",

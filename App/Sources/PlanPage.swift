@@ -70,13 +70,16 @@ struct PlanPage: View {
             let beside = width >= Self.besideFrom
             VStack(alignment: .leading, spacing: 10) {
                 VStack(alignment: .leading, spacing: 10) {
-                    SeasonView(weekStart: $weekStart, chosenWeeks: chosenWeeks, pick: { picked in
+                    let year = yearOutline(view)
+                    SeasonView(weekStart: $weekStart, chosenWeeks: mode == .year ? year.weeks : chosenWeeks,
+                               openStart: mode == .year && year.openStart, openEnd: mode == .year && year.openEnd,
+                               pick: { picked in
                         weekStart = picked
                         mode = .week
                     })
                     head(view)
                     ClaudeAskButton()
-                    PlanMakerButton()
+                    // 2.21, his ask: Make a new plan lives in Settings › Your plan only.
                     // The board says it itself, with "swipe sideways" beside it when not all days fit.
                     if store.canChangePlan && mode == .month {
                         Text("Drag a session to another day")
@@ -104,13 +107,20 @@ struct PlanPage: View {
 
     // MARK: what is chosen
 
-    /* The bars outlined above: the week shown, the weeks of the month shown, none for the year. */
+    /* The bars outlined above: the week shown, the weeks of the month shown (the year: see yearOutline). */
     private var chosenWeeks: [String] {
         switch mode {
         case .week: return [monday]
         case .month: return PlanOverview.grid(shownMonth).compactMap(\.first)
         case .year: return []
         }
+    }
+
+    /* 2.21, his ask: the Year outlines every bar too, open at the end when the plan goes on after race week. */
+    private func yearOutline(_ view: PlanView) -> (weeks: [String], openStart: Bool, openEnd: Bool) {
+        guard mode == .year, let data = SeasonData.make(store) else { return ([], false, false) }
+        let (from, to) = range(view)
+        return PlanOverview.outline(barMondays: data.weeks.map(\.monday), from: from, to: to)
     }
 
     /* The days the heading and the numbers count: the week, the month, or the plan from first to last. */

@@ -13,6 +13,18 @@ final class PlanOverviewTests: XCTestCase {
         XCTAssertTrue(rows.allSatisfy { $0.count == 7 })
     }
 
+    /* 2.21: the Year outlines every bar and stays open at the end when the plan goes on after race week. */
+    func testTheYearOutlineIsOpenWhereThePlanGoesOnPastTheBars() {
+        let bars = ["2026-09-07", "2026-09-14", "2026-09-21"]
+        let after = PlanOverview.outline(barMondays: bars, from: "2026-09-09", to: "2026-10-20")
+        XCTAssertEqual(after.weeks, bars)
+        XCTAssertFalse(after.openStart)
+        XCTAssertTrue(after.openEnd)
+        let atRace = PlanOverview.outline(barMondays: bars, from: "2026-09-09", to: "2026-09-27")
+        XCTAssertFalse(atRace.openEnd)
+        XCTAssertTrue(PlanOverview.outline(barMondays: bars, from: "2026-12-01", to: "2026-12-31").weeks.isEmpty)
+    }
+
     func testMonthsAcrossTheNewYear() {
         XCTAssertEqual(PlanOverview.months(from: "2026-11-25", to: "2027-02-03"),
                        ["2026-11", "2026-12", "2027-01", "2027-02"])

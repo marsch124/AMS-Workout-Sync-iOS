@@ -1,0 +1,3 @@
+Two changes to look at.
+1. Make a new plan has moved. It is gone from the Plan page and from the Sessions tab. Open Settings > Your plan: the row is right under My week shape. Tap it: the Plan maker opens as before. Try on iPhone, iPad and Mac.
+2. Plan page on iPad or Mac, Year view: every season bar now sits inside one outline. If your plan goes on after the race, the outline stays open on the right.

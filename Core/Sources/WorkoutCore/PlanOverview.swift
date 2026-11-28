@@ -35,6 +35,20 @@ public enum PlanOverview {
     /* "2026-11" for a day key. */
     public static func month(of day: String) -> String { String(day.prefix(7)) }
 
+    /*
+     * 2.21, his ask: the season bars outline the weeks a period covers, and the
+     * outline stays open at an end where the period goes on past the bars (the
+     * Year runs to the plan's last day, the bars stop at race week).
+     */
+    public static func outline(barMondays: [String], from: String, to: String)
+        -> (weeks: [String], openStart: Bool, openEnd: Bool) {
+        let weeks = barMondays.filter { $0 <= to && PlanView.addDays($0, 6) >= from }
+        guard let first = weeks.first, let last = weeks.last else { return ([], false, false) }
+        return (weeks,
+                first == barMondays.first && from < first,
+                last == barMondays.last && to > PlanView.addDays(last, 6))
+    }
+
     /* The first day of a month ("2026-11" → "2026-11-01"). */
     public static func firstDay(_ month: String) -> String { month + "-01" }
 
