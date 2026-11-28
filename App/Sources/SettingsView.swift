@@ -208,9 +208,10 @@ struct SettingsView: View {
 
                     SectionHeading(text: "This app")
                     NavigationLink { GuideView() } label: {
-                        SettingsRow(title: "How this works", sub: "The week strip, logging, syncing and what keeps your plan safe", chevron: true)
+                        SettingsRow(title: "How this works", sub: "Every part of the app in a picture and a few lines", chevron: true)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings-how-it-works")
                     NavigationLink { WhatsNewView() } label: {
                         SettingsRow(title: "What’s new", sub: "AMS Triathlon Training \(version)", chevron: true)
                     }

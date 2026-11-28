@@ -2828,6 +2828,1061 @@ On the race page, under the red head card: `RaceplanSection(race:)` (forecast, c
 * **Tests.** Data: `PlanMaker30Tests` (13), `Tuning30Tests` (20), `Score30Tests` (5), `Raceplan30Tests` (8), `Raceweek30Tests` (8), `Coach30Tests` (13). Screen tests were written and compile (`PlanMaker30UITests` 5, `Tuning30UITests` 5, `Score30UITests`, `Raceplan30UITests` 3, `Raceweek30UITests` 5, `Coach30UITests` 4); none was run by the lanes.
 * **Known risks and unproven.** Nothing was seen on a screen by the lanes; the looks, the line drawings and the sizes are unproven. Real Garmin answers are unproven for: `avgPower` on runs, pool lap shapes, treadmill power, `hrTimeInZone` for every sport, the multisport child list (the run child is assumed to be "running"), the age field. Real Claude image answers and the cost "about 3 cents" (frames at 768 px; the price was not checked). The forecast's sensible times on real data, and the bike sections. Plan maker: the switch's speed with a 500-session plan and about 40 shelf writes on a draft save; the rule book treats app-made bikes as the third-ride slot and has no week caps for new weeks, so suggestions on a switched plan are untested; the draft's tests are sessions only (no new test-result blocks). Zones: `BookMerge` joins test lists by name, so Undo on other devices relies on the shelf list `tuning/zones-undone`; the tuned card does not count toward the daily cards' 2-a-week. Race week: a test week is known only from the plan's weeks' test flag and sessions titled "test"; a tune-up has no pacing page of its own and no month-grid mark. Block intro: the plan's real phase names are assumed to start with Base, Build, Peak, Taper or Post; an easy-week intro shows only when a week is tagged easy and does not start a phase; the fixture has no phases.
 
+## New in 2.22 (102) — How this works as pictures and short lines (28 Nov 2026)
+
+- Before: 38 parts of long paragraphs (375 paragraphs). Now: 31 parts — 25 with one picture of the real screen and 6 with lines only (What this app is, Your two neighbour apps, Keys/Siri/calendar and sharing, Where your things are kept, What this app does not do, Signs in this app). Each part: a title, one picture, 3–7 lines of one sentence each. The parts, in order: What this app is · Today · Today, further down · Suggestions and away · Stop sign, I'm ill, Something hurts · A session's page · Logging the details · A done session · After a session: from your watch · The Sessions tab · Extra workouts · Plan on iPad and Mac: Week · Plan: Month · Plan: Year · Body · Progress · Your zones · Your race page · Shoes and bikes · Settings · Garmin · Claude · The same plan on all your devices · How your plan is kept safe · Plan maker · Reminders · Your two neighbour apps · Keys, Siri, calendar and sharing · Where your things are kept · What this app does not do · Signs in this app.
+- Pictures are the real screens with the invented plan (`UITests/Fixtures/plan.xlsx`, the day 2026-09-16) and the DEBUG picture switches, never real data. They come in day and night; the guide shows the one that matches the device's look.
+- Made by `tools/guide-pictures.py` on its own simulators (iPhone 17e, iPad Pro 13-inch (M5)), cut to the part, saved as `App/Resources/Guide/guide-<name>-day.jpg` and `-night.jpg` at 2 pixels a point. Run it again after a screen changes.
+- Busy pictures carry numbered circles (dark circle with a white ring by day, white circle with a dark ring by night); the lines start with the same number. Circles are placed in points of the picture (`GuideMark(n, x, y)` in `App/Sources/GuideContent.swift`; the pieces are in `App/Sources/GuideKit.swift`; `AMSWS_GUIDE=1` opens the page, `AMSWS_GUIDE=<part>` opens it with that part big).
+- Under each picture sits a small capsule "Tap to see it bigger". A tap on the picture or the capsule opens a sheet: the part's title, the picture as wide as the sheet allows (up to 1.5 × its real size), pinch or double-tap to zoom in, the circles stay on their places, the lines under it, and Done (Escape with a keyboard).
+- Signs in this app: before 30 groups sorted by version, now 12 groups sorted by part of the app (Fixed meanings · Pages · Colours of the sports · Buttons · Today · Suggestions · A session · Plan on iPad and Mac · The sync dot · Body · Progress · Race, plan maker and other cards), each line "sign: meaning". New sign: the numbered circle on a guide picture. Every mark and colour kept; signs that are only words on the screen (grey lines like "Waiting to sync", "Claude is resting…") are in the old text below.
+- Bigger view: on iPhone (compact width) a sheet at full height; on iPad and Mac (regular width) a full-screen cover, because a form sheet there is no bigger than the picture on the page. A phone picture leaves its lines beside it when the screen has 340 points to spare, and is then sized to the screen's height.
+- The "Tap to see it bigger" pill is the part's colour on a pale fill of the same colour (like the app's other small pills), never full colour, so it is not mistaken for a main button. Part headings take the colour of their part of the app (Today green, sessions and plan blue, Body raspberry, Progress and Signs purple, race red, plan maker amber, settings slate).
+- Plan pictures (Week, Month, Year) use an invented 30-week season that the picture tool makes on the fly (`make_season` in `tools/guide-pictures.py`: phases Base, Build, Peak, Taper, Race, Post-season; an easy week every fourth; race Sun 14 Mar 2027), because the fixture plan is two weeks long. Every picture is started fresh for each look (day, night) with a fresh iCloud stand-in folder: a page opened by day did not always redraw when the look changed (the iCloud page stayed light), and a second start on the same folder showed "Two different plans". Invented weather (`AMSWS_FAKE_WEATHER=1`) keeps the location question off the pictures; on a new simulator grant location before the first start.
+- Identifiers for tests: Settings row `settings-how-it-works`, the page `guide-page`, a picture `guidePicture-<name>`, the sheet `guideViewer`, its Done `guideViewerDone`.
+- Every paragraph of the old guide moved word for word into the section below, so nothing is lost.
+
+## How this works — every detail (the guide text up to 2.21 (101), moved here word for word in 2.22)
+
+### What this app is
+
+This app is called AMS Triathlon Training; under its icon on the home screen it reads Triathlon. It used to be called Workout Sync. It is the same app with the same data, and there is nothing to set up again.
+
+Your training plan lives in this app, on your iPhone, iPad and Mac. It used to live in an Excel workbook in Dropbox. Where the plan lives says how it moved in, and what is left of Excel.
+
+Five tabs along the bottom: Today, Sessions, Body, Progress, Settings (before 2.6 four, without Body). Each has its own colour and a fifth of the bar to itself: the one you are on is that whole fifth in its colour. Swipe between them or tap one. Tapping the tab you are already on comes back to that tab's first screen, whatever you had opened.
+
+That is the iPhone. On an iPad, and on a Mac, the bar along the bottom is a list down the left side instead: Today, Plan, Sessions, Body, Progress, Settings. The part On iPad and Mac, further down, says what is different there. The same plan shows on all three; The same plan on all your devices tells how.
+
+Every page under Settings (Garmin, Claude, The plan moves in and the others) has the same small centred title. On this page, each part's name is a real heading: larger, bold and green.
+
+### Where the plan lives
+
+Your plan lives in this app. Until 2.0 it lived in an Excel file in Dropbox. An iPhone that still reads that file shows Move the plan into this app in Settings → Your plan; the rest of this part is for that case.
+
+To move it: Settings → Your plan → Move the plan into this app → Start. Then tap Take the plan in and count. The app reads your Excel file afresh and counts the plan twice: as Excel has it, and as the app holds it.
+
+Excel and the app, side by side shows both counts for sessions, training, rest days, done, missed, still to come, extra workouts and minutes. Green same means they agree. Red differs means they do not. Month by month shows the same for each month.
+
+Looked odd in the file lists strange things, such as a pace that cannot be or a session on a rest day. They are taken in as written. Correct them later with the pen.
+
+When all is the same, the page says Everything matches. and shows the button Make this app the plan's home. Nothing is saved until you tap it. Entries still waiting for Dropbox must be sent first.
+
+After the switch, logging, Missed, Move, Swap, extra workouts and How hard was it? are saved in the app at once, also without internet. Nothing is written into your Excel file any more. It stays as it was, and whatever you change there, the app does not see.
+
+Settings → Your plan then says Lives in this app, with the day you moved it. On an iPad or a Mac with iCloud off it says Lives in this app — iCloud is off.
+
+Safety copies: the plan as it was at the start of each day the plan changed, kept for 30 days. Settings → Safety copies lists them and puts one back; see How your plan is kept safe.
+
+Spreadsheet copy: Save a copy now makes a spreadsheet of the plan as it is today, to keep or send. The app also makes one about once a week, in Files → On My iPhone → Triathlon, and keeps the newest eight. It checks each copy against the plan first. A copy does not change after it is made.
+
+Copy in Dropbox: while Dropbox is connected, your iPhone also saves the plan there as a spreadsheet named Triathlon plan from the app, beside your Excel file. It is written a little after each change and never read back. Only the iPhone writes it: an iPad or a Mac never does, so three devices cannot overwrite one another's copy. Settings → Your plan → Copy in Dropbox says when.
+
+Going back: for three weeks, the red button Go back to Excel writes the plan as it is now into your Excel file in Dropbox. Excel is then the plan's home again. If that file changed in the meantime, the app refuses and does nothing. Going back is offered only once iCloud has checked whether an iPad or a Mac uses the plan too; until then a grey line says so. If the plan changed while the spreadsheet was being prepared, nothing is written and the app says so; try again. After three weeks the button is gone; the spreadsheet copies stay.
+
+From 2.2 the plan can be on your iPad and your Mac too. The plan has to live in the app on your iPhone first: until you have moved it in, there is nothing to share. Once it has, it goes to your own iCloud by itself and your iPad and Mac fetch it. Going back to Excel stays possible for three weeks, but not once an iPad or a Mac is using the plan, and not until iCloud has checked whether one is; then the way out is a spreadsheet copy. See The same plan on all your devices.
+
+Once your iCloud holds a plan that was moved in on another device, the page The plan moves in, on an iPhone that is still on Excel, says so and shows the green button Use the plan from iCloud instead of a second import. It brings that plan here, so the iPhone shows the same plan as your other devices, and anything still waiting on the iPhone is written into it. Your Excel file is not changed.
+
+### The same plan on all your devices
+
+Your iPhone, your iPad and your Mac can show the same plan, everything you log and change, and your answers to How do you feel? and How hard was it? It goes through your own iCloud, in a folder that belongs to this app. Nothing is sent anywhere else, and nobody else can see it.
+
+An iPad or Mac that once opened the old Excel file (before the plan moved into the app) takes the plan from iCloud by itself as soon as it is there, and stops showing the old file (since 2.4.1). You do nothing for it. An iPhone that is still on Excel is asked first, on the page Move the plan into this app.
+
+Each device keeps its own full copy of the plan and works without internet. When a device has iCloud, it meets the copy there: it puts up what is new here and takes down what is new elsewhere. This happens when you open the app, a moment after you change something, and about every half minute while the app is open.
+
+When two devices changed things while they were apart, they are joined, and nothing you logged is lost. A session has two sides: the plan side (the day, the sport, the words, the length) and the log side (what you recorded). Each side comes from the device that changed it last, so a change of plan on the iPad and a log on the iPhone both stay. A session is taken out only when somebody took it out on purpose. Even then a session you logged comes back: when you logged it after it was taken out, or when you logged it on a device that had not yet heard that it was taken out. Changes to the plan then has a line that starts with Came back, and says which of the two it was: logged after it was taken out, or logged on another device before it was taken out. A file that is missing, or still on its way from iCloud, is never read as an empty plan.
+
+A device waits before it meets the others for the first time. It asks iCloud what is in the folder and waits for the answer, up to 20 seconds, because a plan that is on its way can look as if it were not there, and a device with an old plan of its own must not put that plan beside the real one by mistake. If no answer has come after 20 seconds, the dot says On its way and nothing is sent. The same happens when your other devices already use a plan that has not reached this device yet: Settings → iCloud says Your plan from your iPhone has not reached this iPad yet. Nothing is sent from here until it has.
+
+Before this device takes in anything from the others, it keeps a copy of its own plan as it was. These copies are listed in Settings → Safety copies, newest first, each with the day and the time and the words before your Mac's changes came in (or your iPad's, your iPhone's, or your other devices'). The newest 20 are kept. The copies made when a meeting took something out of this device's plan are counted apart, so a run of quiet meetings cannot push them out. If there is no room for the copy, nothing is taken in and the dot says so.
+
+When a meeting took something out of the plan on this device, the dot stays green but its words change from Same on all devices to what happened, like 2 things were taken out by your Mac — see Safety copies (1 thing was taken out by your iPhone when it is one). The words stay until you have looked: opening Settings → iCloud or Settings → Safety copies is enough. Then the dot goes back to Same on all devices.
+
+Your iPad or Mac opens the app for the first time: it has no Excel and no Dropbox, and nothing to choose. Today says in one line, beside a coloured dot, what it is waiting for, and when the plan has arrived it says Plan from your iPhone and a count of sessions (rest days are not counted, as on the Sessions tab), then opens by itself. An iPad or Mac that still shows the old Excel plan never logs into it; Today there says, in grey, The plan is on its way from iCloud, and the device takes iCloud's plan by itself. If the plan on your iPhone is still in Excel, it says so and tells you where to move it in. If you have not opened the app on your iPhone yet, it says that.
+
+Settings → iCloud is the first row under Your plan. It shows the dot with its words, when the devices last met, Sync now (not shown while iCloud is off), Your devices (each iPhone, iPad and Mac with when it was last seen and its version, in a box as wide as the cards around it), What is shared, and Copy from before iCloud. The same dot, with its words, sits at the foot of the side list on iPad and Mac.
+
+The dot always comes with its words, and the words say which: green, Same on all devices; amber, On its way; grey, iCloud is off (or this device is not signed in to iCloud); red, a problem, and the words say what. Nothing is ever changed on a device because of a problem.
+
+If your iCloud holds a plan from a second, separate move into the app, the app does not join them. Settings → iCloud shows both side by side, On this iPad and In iCloud, from your iPhone, each with its number of sessions (rest days not counted), what is done and the last change, and under each the button Use this one. Choosing the plan on this device keeps it, and the plan from iCloud is put aside. Choosing the plan from iCloud first asks Use that plan here? and says in words what each plan holds and that the plan on this device will be replaced. Cancel changes nothing; the red button Use that plan here takes it. Either way, the plan that is not kept is listed in Settings → Safety copies, where it can be put back. Putting one back makes iCloud ask again which plan to keep.
+
+If a device's clock is behind, the iCloud page says so in red. Set it to the right time, so that the newest change always wins.
+
+What stays on the iPhone: Dropbox and its copy of the plan, the Training calendar (it appears in Calendar on your iPad and Mac through iCloud). Apple Health starts on the iPhone: a Mac has none, and an iPad shows Connect in Settings → Apple Health as well. Health's numbers from your iPhone are shown on iPad and Mac with where they came from, in grey, like from iPhone, as of 07:12. Photographs, the Garmin key and the safety copies stay on the device they were made on. The spreadsheet copy in Dropbox is written by the iPhone only.
+
+Getting back: every device keeps the plan it had before it first met iCloud, for good. Settings → iCloud → Copy from before iCloud has a Share button for it. Safety copies, on each device, also list the copies kept around iCloud (see How your plan is kept safe), and spreadsheet copies still work as before.
+
+If a device runs an older Triathlon than the plan in iCloud, it says Update Triathlon on this device and changes nothing. Update the app in TestFlight, then open it again.
+
+From 2.3, what stays on each device and is not shared through iCloud: the notes about suggestions (the cards and your answers to them), the Claude key, its switch, its month count and its log, and the notes passed to and from Workout Companion and Magic Morning. A change you take from a suggestion is a change to the plan, and that is shared like any change. Stop sign and I'm ill are shared too, in a small note of their own beside the plan: a Stop sign tapped on your iPad pauses your iPhone as well, as soon as both have met iCloud.
+
+### Notes that travel beside the plan
+
+From 2.8 the app keeps a second small file, kept apart from the plan, for things that are not the plan: your favourite sessions, your away period, the notes beside a log, the gear you run and ride on, and your race page. Before, a thing like that would have stayed on one device.
+
+How it travels. This file lives in your own iCloud, beside the plan, the diary and the pause. Every device meets it whenever it meets the plan: when the app opens or comes to the front, every half minute, after a change and when it goes to the background. Where iCloud is off, it stays on that device. Each thing is its own entry, and when two devices change the same entry the newer one wins whole, so edit one thing on one device at a time. A thing you take away is taken away everywhere. An entry a newer version of the app wrote is kept as it was, never mended or thrown away.
+
+The plan comes first. It is met after the plan, so it can never hold the plan back, and nothing on it changes your plan.
+
+What follows you between devices: favourite sessions, away, the notes beside a log (brick times, Stomach OK?, niggles, open water), shoes and bikes, and the race page (your times, fuel plan, kit list). What stays on one device: the reminders and their times, the weather switch, your weeks with Claude and your last questions, the key and the cost count of Claude, and the lists of Spotlight. Each part below says which it is.
+
+If this file cannot be read on a device, it is put aside under a new name, the file starts empty and the app opens as usual. A file that merely cannot be read right now (for example on a locked device) is not put aside: nothing is written and the read is tried again. When a change cannot be kept, an alert says Not saved. It is not in the safety copies and not in Go back to Excel. Real iCloud meetings of two devices could not be tried before this release.
+
+### Today
+
+The week strip is one column a day, one bar a session. A solid block is recorded, a lighter block of the same colour is still to do (a little brighter at night, so the sports can be told apart; the sign is the same), hatched is marked missed, dotted is an extra outside the plan. The rest day is a flat line. Tap the card for the key. The small Key button on the card, and Settings → Colours and shapes, show the same key.
+
+A done session carries a small green tick in the corner of its bar. An extra carries the same tick in a paler green: it is something you did, and it is not part of the plan.
+
+The hours stand directly under the title This week, on the left (3h 00m of 4h 00m, or 4h 00m planned), and the bar keeps the right side. Beside the hours, a hairline: how much of the week's planned time is recorded, and a faint notch marking where the week stands once tonight is done.
+
+Under it, one block for every quarter hour of extra activity that counts as training, every fourth in amber: each amber block is one hour. Extras are never counted in the week's hours.
+
+From the top of Today: the morning line, How do you feel?, a suggestion card when there is one (see Suggestions by the rule book) or one grey line if suggestions are paused, the This week card, today's sessions, today's extras, anything behind you that was never recorded, tomorrow on its own pale blue ground, and last, centred, the small grey pill Not well? (it is not beside the morning question). The pill opens a small plate with Stop sign and I'm ill, each with one line saying what it does. Tap a session to open it. On a first run with no plan there is no week card and no session, only one grey line: No plan yet — Settings → Your plan brings it in.
+
+A rest day carries a small moon. The green tick means done and nothing else.
+
+Each morning, under the green heading, a small card asks How do you feel? Five faces, a word under each: Bad, Tired, OK, Good, Great. One tap, once a day. Your face is kept at once. Since 2.10 the card then stays for a moment with Anything to add?, a field (A few words, like slept badly or sore legs) and two buttons, Save in green and Skip (Escape on a Mac); once you tap either, the card is gone until tomorrow. The morning line shows Feeling good (or the word you chose), and your comment, if you wrote one, shows under it in grey, in quotes. A tap on the comment opens the card again to change it. The comment is kept in the diary and goes to your own iCloud with the answer, so your iPad and your Mac show it; it is never written into the plan or your Excel file, and it leads to no advice. An answer given in Magic Morning or Workouts has no comment here. Tap that word to change it, if you gave the answer here. The answer is never written into the plan. It is kept in the app's diary and goes to your own iCloud, so your other devices show it. If you already answered in Magic Morning or Workouts, the card is not shown and a line says Feeling good — from Magic Morning, with a grey line under it: Answered in Magic Morning — change it there. Since 2.4 your iPad and your Mac say the same, because the answer now carries where it came from (see Your two neighbour apps). That grey line has a line of its own: when Garmin's numbers show as well, they stand on the line below it, never under it or on top of it. With suggestions on, the rule book reads your answers: two poor mornings in a row (Bad or Tired) can bring a card. Nothing else on Today reacts to it: no score.
+
+With a Garmin key saved (Settings → Garmin), a second line sits under the morning line, with Garmin's numbers. See Morning numbers from Garmin. When the figures do not fit one line, the line breaks between two figures, never after a dot. On an iPad or a Mac, when the Health numbers are your iPhone's, a small grey line under the morning line says so, like from iPhone, as of 07:12.
+
+New in 2.8, from the top: when you are away, one grey line under the heading (see Away). Then the morning and the suggestion card as before, and then today's session cards. Directly under them, so that today's session stays near the top: on Sunday evening a blue card for next week (see Reminders); The way back, when a stair is shown (see below); and on Sunday evening and Monday your week with Claude (see Claude built in). Under an outdoor session of today, a grey line with the weather. Above Tomorrow, the Week so far strip.
+
+Weather and daylight. Under today's session, when it is outdoors, one grey line, like 11° · feels 7° · breezy 5 m/s · rain likely 15–16 · Light until 16:12 (invented). Before sunrise it says Light from 08:05; after sunset the daylight part goes. When the line does not fit on one row it breaks into two lines, with no dot left at the start of the second. Outdoors means run, bike, brick, race, an open-water swim, a hike or a walk; a pool swim, strength, mobility, rest and anything with indoor, turbo or treadmill in its words get no line. The hours it speaks of are the plan's start time when a column called Time, Start or Uhrzeit holds one (and the plan's length after it), otherwise the daylight hours. It is only a line: it changes nothing and suggests nothing.
+
+Where it comes from. The weather is asked from Open-Meteo, the same free service AMS Packing uses, with no key. The place is your phone's, rounded to a tenth of a degree, asked with the reduced accuracy of iOS and only while the app is open. The first time Today shows an outdoor session with the switch on, iOS asks Allow while using the app. Said no, or no network: the line is simply not there. The answer is kept for an hour. Settings → Weather → Weather and daylight on Today switches it off (it is on by default; the switch is kept on this device). Daylight is worked out for the phone's own time zone. Garmin is not used for this.
+
+Week so far. A card above Tomorrow: for each sport the plan has this week, its mark and name, and beside it the time done of the time planned, like 1h 20m of 2h 30m, with one slim bar. The done part is the sport's full colour, the rest pale. The figures are those of the Plan page; extras that count as training add to what is done, never to what is planned, and only for a sport the plan has that week.
+
+Extra workout pill (moved in 2.19). The small + Extra workout pill sits on a line of its own directly above the Week so far card, at the right. Before 2.19 it sat at the end of the Tomorrow line, so it was missing on a day with no Tomorrow line. Now it shows on every day. It is the same pill and opens the same page: Add one, then Extra workouts says more.
+
+The way back. After an illness the rule book already brings you back in steps. Now they are shown as a small staircase, The way back: Rest, Two easy days, Week 1 back (half, all easy), Week 2 back (three quarters) and Back on your plan; after a cold, easy and shorter first, then the weeks (only when you were out seven days or more). The step you are on is filled green, steps behind you carry a tick, steps ahead are pale. The words are the rule book's own sentences; the rule book gives no minutes, so none are shown. While you are still ill, the stairs ahead show their lengths, not dates. It shows on Today while the grey ladder line shows and in the week after, and on the I'm ill page. It only shows what the rule book does: it changes nothing.
+
+A line on every session. On a session's card for today and on its page, under the title, one grey line starting Why:, with the purpose of that kind of session in one sentence. See On a session's page.
+
+New in 2.18, Next week, tuned. From Sunday, once Sunday's sessions are logged or marked missed (or from 17:00), and through Monday until you answer, an indigo card sits directly under the Sunday card: NEXT WEEK, TUNED, 3 changes to next week, up to three lines (Tue run: 60 → 50 min, Wed run → easy, Sun bike: 100 → 110 min), a Why: line, and two equal blue outlined buttons, Take it and Keep my plan. Take it changes next week in one save; Changed — Undo stays for the rest of the day and one Undo takes everything back. Keep my plan puts the card away. When nothing needs changing, one grey line says Next week stays as planned. The rule looks at sessions that felt harder than planned, mornings you answered Bad or Tired, and Garmin's load of 7 days against 28 days. Sleep is never read. It cuts by 10 or 20 percent in 5 minute steps, or lets the long ride and long run grow by 10 percent when everything went as planned; it never touches tests, simulations, the race, anything done, missed or past, and never moves a day. No card in a pause, an illness step or race week.
+
+New in 2.18, Zones that keep up. Under that card a fuchsia card, ZONES FROM YOUR SESSIONS, offers new numbers between tests. The same card is at the top of Settings → Your zones. Your zones, below, tells how.
+
+New in 2.18, a new block. On the first three days of a block a green card, New block: Build 1, says WHAT IT IS FOR, WHAT WILL FEEL DIFFERENT and ONE THING TO WATCH, in a few words each, written into the app from the rule book. Got it puts it away for good. To read it again, tap the block's name under the season bars on the wide Plan page, or open This block on any session's page.
+
+New in 2.18, race cards. A red Tune-up race card (until you answer it, see Your race page), the card Race week · 5 days to go in the last 7 days before the main race or a tune-up, and the card Race report for 7 days after a race. Each opens its page. The Garmin numbers for the score and the fitter card are on a session's page and on Progress.
+
+### Reminders
+
+Settings → Reminders has three notices, all worked out on your phone from your plan, with no server and nothing sent anywhere. All three are off until you switch one on; iOS asks for permission the first time. Each has its own time. Nothing is sent while the Stop sign or I'm ill is on, and the notices are laid again whenever the plan or a pause changes and whenever the app comes to the front.
+
+Evening reminder (default 20:00). Says what tomorrow holds: Tomorrow: Run · 45 min easy, or Tomorrow: Swim 40 min · Strength 30 min, or Tomorrow: rest day. Seven evenings are laid ahead. A tap opens Today.
+
+Sunday card (default 18:00, its own switch). A notice, Next week: 7 sessions · 8h 40m (invented), and on Today, directly under today's session cards, from that time until Monday 08:00, a blue card, NEXT WEEK, with the count, the total, the phase's name and the letter E (easy week) or T (test week) where it applies, and a row for each session: weekday, sport badge, title and length. The small Close button puts it away until next Sunday. The card shows only while the Sunday switch is on.
+
+Missed session (default 08:00, its own switch). Asks Yesterday's Run was not logged, with three buttons: Skip it (marks it missed), Move to today (left out when the app cannot change the plan here or the rule book has a grey remark on it) and It is done (opens that session with its log form). Up to three sessions are asked each morning, one notice each. Only yesterday is asked about.
+
+The three buttons open the app first, so that the plan is loaded; if the plan is not there within about eight seconds, or the session was logged or marked in between, the app opens on that session instead and changes nothing.
+
+The page has a Send a test now button (full green), a short line for what each notice sends, and, when iOS has refused, a calm line with Open iOS settings. Cancel and Save, Escape is Cancel.
+
+On this device only. The switches, the times and the closed Sunday card are kept on each device by itself, so the iPad can stay quiet while the iPhone speaks. Not tried on a real phone before this release: a real notice, its three buttons, and opening a session from a cold start. A tap on a notice opens a session on the iPhone layout; on an iPad or a Mac it only opens the app (Skip it and Move to today still work).
+
+### Logging a session
+
+The green Done button carries the planned length — Done · 1h 05m — and writes that length and the done mark, nothing else, for a session that went as planned. It sits in one row with Log details, Missed and Move, all the same size; Done is full green and the three beside it are outlined (before 2.5 all four looked equally light).
+
+On a session you marked done with one tap, a small Fill from Garmin stays until your watch's numbers are in. It fills them from Apple Health, where Garmin puts them.
+
+Once a session is done, the place where the Done button was holds a row of numbers, 1 to 10: How hard was it? 1 is very easy, 7 is hard, 10 is all out. One tap saves it into the plan's Effort box. That is the same box as Effort in Log details, so there is no new box and, in Excel, no new column. If you do not answer, it simply waits on that session: no reminder, no badge.
+
+Log details opens the form: duration, distance, pace or speed, heart rate, effort, notes. A bare number in Duration means minutes; 1:15, 1h20 and 90min work too. A decimal comma is fine. The average heart rate box shows a grey example, like the other boxes.
+
+On a session already recorded, a small round pen opens the form filled in — on the session itself, beside the figures, and on its row in the Sessions list, so a typo is mended without opening anything. Only the boxes you change are written — the button counts them. A session you have already recorded keeps its own record: Change (see Changing the plan) alters what was planned, the pen alters what you did. Missed and Move are gone by then; they no longer apply. What you wrote in Notes is shown under the session's figures, above the photographs.
+
+From Apple Health: every workout Health holds for that day is offered at the top of the form, the one matching the session's sport first — whatever Garmin filed it as, it is there to use. Use (an outlined button, so that Save stays the one full-colour button) fills the time, the distance and the heart rate; the pace is yours to type from Garmin Connect, because Garmin does not pass it to Health. Nothing is saved until you press Save.
+
+Settings → Apple Health says what Health is handing over today and yesterday. Both lists empty while your watch has something means the app is not being given it: open Health → your picture → Apps → Triathlon and switch the rows on. Stop switches the whole thing off.
+
+Apple Health is read for two things: to fill the log form, and, on Progress, to find workouts that are in neither the plan nor your extras (a hike, the gym). It is only read. Nothing is ever written to Health.
+
+### Notes beside a log
+
+Four small extras can sit beside a session's log. They are notes: the plan, the log's own boxes and the way a session is saved are untouched. They are kept in that extra file, so they follow you between devices. They are written when you press Save on the log form, before the log itself, and taken away again if you clear them. If a note cannot be kept, nothing is logged and the app says Not saved. A second tap on Save does nothing, and notes alone never log the session.
+
+Brick log. On a brick session the log form has three boxes under Notes beside the log: Bike time, Change-over and Run time. Bike and run take minutes or 1:10 for an hour and ten; Change-over takes minutes:seconds. When all three are filled and their sum differs from the length box, an outlined button offers to use the sum as the length. A done brick shows the three as tiles.
+
+Stomach OK? On a session of 90 minutes or longer (planned, or as logged) three words, Fine, So-so and Upset, tap one again to take it away, and a line, What did you eat and drink?. The small button Fuel notes opens every answer, newest first, under a head card such as 12 long sessions · 9 fine · 2 so-so · 1 upset (invented). It only lists; nothing is advised.
+
+Niggle?. On the log form and on a done session's page: where (Neck, Shoulder, Back, Hip, Thigh, Knee, Shin, Calf, Achilles, Foot, Other), which side (left, right, both, where a side makes sense) and one line in your own words, with Cancel and Save, and Remove when one exists. The page says: a note for yourself, not advice or a diagnosis. Progress counts them (see Progress). If something hurts, the Stop sign page is under Not well?.
+
+Open water. On a swim the switch Open water, then Wetsuit Yes or No, Water temperature in degrees and one line, Sighting and conditions.
+
+On a done session's page the notes stand together under Your notes on this session, with a small Change notes button (and Niggle? or Change niggle). A chosen word is a full blue button; unchosen words are plain. Blue is the plan's colour; here it only shows which word you chose.
+
+### On a session's page
+
+A session of more than 90 minutes that is still to do carries one grey line under its figures: Over 90 minutes: eat and drink as you go — about 30–60 g of carbohydrate an hour. A strength session, to do or done, carries one grey line: After strength: a meal or snack with 20–30 g of protein within an hour or two. They are general habits of sport, written for everyone alike, and not medical advice. They are only text: they change nothing, ask nothing and are never counted.
+
+A run or ride made of repeats, like 3 × 8 min at Z3, carries the Garmin card while it is still to do. Swims, strength, finished sessions and texts the app cannot read into steps have none.
+
+Folded, the card is one line, Build it like this in Garmin Connect, with a small green button Show the steps (Hide the steps when it is open). The steps: open Garmin Connect, then More → Training & Planning → Workouts → Create a Workout; choose the sport; add a warm-up, a repeat with its effort and its recovery, and a cool-down; give it a name and save it. Copy the steps copies them as text, to paste into a note or a message.
+
+Saved there, it stays in your Workouts list: copy it for next week and send it to your watch. The app itself sends nothing to the watch.
+
+The lines and the card show whether the plan is in Excel or in the app.
+
+New in 2.3 on a session's page: once a session is logged, Something hurts? may be asked once under How hard was it? (Calf, Achilles, Knee, Other, Nothing hurts). A strength session may carry the grey line Ticked from Workout Companion (from 2.16; the small green Log it and the line Done in Workout Companion at 07:40 · 35 min only show when the tick cannot happen by itself), and the small button Open Workout Companion. At the foot, the small pill Not well?. While you are paused or resting after an illness, the session says Paused or Rest — not until 48 h symptom-free. See Suggestions by the rule book, Stop sign, I'm ill and Something hurts, and Your two neighbour apps.
+
+New in 2.8, on a session's page: under the title, on every session except a rest day, a grey footnote Why: with what the session is for, in one sentence (it comes from the kind of session, its sport, its length against the sport's usual, the phase and an easy-week tag; a kind the app does not know gets no line). Then, beside it, the word buttons Save as favourite and, on a swim, Pool card; on a strength session No-gym version; Repeat…; and, once done, the cards of From your watch on a done session and your notes. The parts below tell each.
+
+Space is Done as planned on an iPad or Mac keyboard; see Search and print and Keys, Spotlight and Siri.
+
+New in 2.18, the score. On a done run, ride or swim, with a Garmin key, one of three words in plan blue under the session's pills: On target, A bit hard or Too hard, and a grey line like 38 of 45 min in zone 2 (invented). It is the share of the session's time above the planned zone: up to 15 percent is On target, up to 35 percent A bit hard, more is Too hard. Time below the zone never counts against it. Less than 5 minutes in zones, a zone range (Z4–Z5), an effort-only session, a brick, strength, mobility and rest days get no score. It describes the session, not you, and changes nothing.
+
+New in 2.18, run power. A run session shows a pill beside its zone pill, like Power 203–220 W, once a run power threshold is known (see Your zones). The zone sheet gets run power rows.
+
+New in 2.18, drill cards. A row, Drill cards: Catch-up, Fist, under the session's words opens the matching cards on a sheet (Done or Escape closes). A swim that only says drill gets Drill cards: swim drills. Strength and mobility sessions find strength and mobility cards. The whole set is under Settings → Your plan → Drill cards.
+
+New in 2.18, Swim video check. On a swim session and on the Drill cards page: choose a video, the app takes six still pictures, and, when you tap Send to Claude · about 3 cents, Claude writes three short tips, each with a link to a drill card. It needs your own Claude key (Claude built in). The video never leaves your device; only six stills go to Anthropic; the stills and the video copy are not kept. Earlier checks are listed by day, tips only.
+
+New in 2.18, This block. A row, This block: Build 1 — what it is for, opens the block intro again (see Today).
+
+### The Sessions tab
+
+Four lists — Upcoming, Done, Missed, All — each with the number of things in it, and under them one bar for the whole plan: solid recorded, hatched missed, light still to come. The words and the bar stay at the top while the list scrolls under them, so choosing another list never means scrolling back.
+
+Sessions and extra workouts are listed together under Done and All, each on the day it happened.
+
+No number here counts rest days (since 2.4; before, Upcoming and All counted them). A rest day is not a session to do. The lists still show rest days, without an empty pill. All is Done plus Missed plus Upcoming, and the bar above shows the same three.
+
+### The pool card
+
+On a swim session's page, the button Pool card opens your set in large type for reading at the pool side. At the top, Whole set 1,500 m (invented); under it one row for each step, like 4 × 100 m · rest 20 s · Z3, with the section's heading (Warm-up, Main set, Cool-down, Technique) above. The row you are on is filled in swim blue. Large Back and Next buttons move along, Done closes it, and the screen is kept awake while it is open and freed again when you leave.
+
+The app reads the usual ways a set is written: 4x100, 4 × 100m, 200 easy, rest 20s, Z3, steps joined by +, then, commas or new lines. What it cannot read stays as a row of its own, unchanged, so nothing is lost; a distance written like 1.5 km also stays as an unread row. The steps come from the session's sections, and from its title when the sections hold no distance. The card only reads; it changes nothing. Nothing is stored.
+
+### From your watch on a done session
+
+With a Garmin key saved, a done session's page may show three more cards, between what you did (and your notes) and the photographs. All three are read from Garmin and only shown; nothing is written to your plan or to Garmin.
+
+From your watch. The route as a line in the sport's colour (not for a pool, an indoor session or one without a track) and the pulse curve with Average 138 · Highest 156 beats (invented).
+
+Laps. A table: Lap, Distance, Time, Pulse, and km/h (Garmin's own average speed) and Watts only when Garmin gave them. No pace is worked out here. The first twelve laps show, then a button, Show all 27 laps.
+
+Last time. A card, Last time · Wed 16 Sep, setting this session beside the last time you did the same kind: Length, Distance, Average pulse and How hard, each as now ← last time. The same kind means the same sport and the same title, ignoring capitals, punctuation and spacing. This card needs no Garmin key: it uses your plan only. The arrow ← means last time, and the card says so.
+
+Garmin's answers are kept on this device only, under the app's files, and forgotten when you change the key. The three Garmin answers (the list of activities, the recorded file, and the lap list) are guessed in shape from Garmin's own service and could not be tried against Garmin before this release; a missing piece simply does not show.
+
+### Favourite sessions and repeating
+
+Favourites. On a session's page, under its title, the word button Save as favourite keeps its sport, title, purpose, length and zone, with no day and nothing logged. Once kept, the place reads In your favourites. The list holds 40; when it is full a red line says so and asks you to remove one in Settings first.
+
+On the New session page, at the top, a block Your favourites with one tile each (sport mark, title, length). A tap fills sport, title, length, zone and purpose; the day and Key session stay as they were, and everything can still be changed.
+
+Settings → Your plan → Favourite sessions lists them with a handle of three lines at the left of each: put your finger or pointer on it and drag to arrange (there are no arrows). Rename opens a small Cancel/Save box; Remove asks Remove this favourite?; on an iPhone the question shows the red Remove only, and a tap beside it keeps things as they are. Done closes the page (Escape on a Mac). VoiceOver has Move up and Move down. Favourites follow you between devices.
+
+Repeat a session. On the New session page the row Repeat reads Does not repeat or Every week until, with a date (eight weeks by default, never past the plan's last day). Under it the page lists every day it will add, like 7 sessions: Thu 3 Dec, …, and what it leaves out in grey words: a day that already holds a session of that sport and title, race week, or a day outside the plan. The rule book's grey remark appears if there is one; it never blocks. Save adds the session and its repeats in one go. On an existing session, Repeat… opens a small page with Add N sessions.
+
+In Changes to the plan the repeats of one go are one entry, N sessions: title, with one Undo that takes each of them out again. Sessions you have logged, marked missed or that wait to be written since then stay, and the question says so. A second tap on Save adds nothing twice. Thursday rides are untouched.
+
+Not tried with a real finger or pointer before this release: the drag in Favourites.
+
+### On iPad and Mac
+
+On an iPad, and on a Mac (where the app is installed from TestFlight and runs as the iPad app), the tabs are a list down the left side: Today, Plan, Sessions, Body, Progress, Settings (before 2.6 without Body), each word in its own colour. The app opens on Today. Tap a row to go there; tap the row you are already on to come back to its first screen. On a Mac, Command and 1 to 6 choose a row, and Escape is Cancel on every page that has Cancel, the Move page too (before 2.5 not there). At the foot of the list the sync dot says, in words, whether the plan is the same on all devices.
+
+Today, Sessions, Body, Progress and Settings are the pages you know from the iPhone, in a comfortable width; on a wide window Progress puts its cards in two columns. Plan is new, and only on iPad and Mac. There is no separate Week page and no separate Season page: the week and the season are both on Plan.
+
+Plan is one page with four parts. At the top, always, the season: one bar for every week of the plan up to the race. Under it, on one line, a switch with three words, Week, Month and Year, and at the right the buttons to move along. On a line of its own under them, always in the same place, what is shown (like Week 12 · Build · Easy week, or November 2026, or Season 2026–27) and its time, like 9h 30m planned · 4h 00m done; and three small green buttons to move along: Previous week, This week, Next week, or Previous month, This month, Next month (Year has none). Under that, the view you chose. And your numbers in a column: on the right of the view when the window is wide enough, and under the view when it is narrower.
+
+The season bars: a taller bar is more planned time. The colour is the phase, cool early in the season and warm near the race, as on Progress, and each phase's name stands under its weeks in its colour. Every bar has its phase's full colour. An easy week carries a small letter E above its bar and a test week a small letter T; where the bars are wide enough, in a wide window, the whole words Easy and Test stand there instead. A clear outline stands round what you are looking at, its letter too: the week, or the weeks of the month, or on Year every bar of the season. When your plan goes on after the race, the outline on Year has no right side: it stays open, because the year goes on past the bars. A thin green line with the word Today stands where today is; it stops short of the week's letter E or T and goes on under it, so it never runs through the letter. The race's flag, with its name and date, stands at the right; the badge of a race day shows the same flag (before 2.4 it showed the general other mark), so the flag means the race everywhere. Tap a bar to open that week: the page switches to Week and shows it. The small line under the bars says so. With letters it reads E = easy week · T = test week · Tap a bar to see its week (it names only the letters that occur in your plan); with the whole words it reads just Tap a bar to see its week.
+
+Week: the whole week in seven columns, Monday to Sunday, today's column a little different in colour. When the page is too narrow for seven readable columns, fewer show, the line above says swipe sideways for the other days, and the board starts where today can be seen. On an iPad held upright, where four columns fit but not seven, the week stands in two rows instead, Mon–Thu over Fri–Sun, so all seven days are in view with no sideways swipe. Each day's heading is on its own line, and Monday and the 1st of a month carry the month: Mon 22 Mar; the days between say Tue 23. A range like 95–105 rpm never breaks in the middle. Each session is a card: its sport's colour down the left edge, its name, its length, the green tick when it is done, the red word Missed when you marked it so. Tap a card to open the session. An extra you did sits under a thin line in its column, dotted, with the paler tick; tap it to open it.
+
+Drag a session to another day, on Week and on Month: once the plan lives in the app, a session still to do can be picked up and dropped on another day. A rest day, a done session and a missed one stay where they are. While a session is over a day, that day gets a blue frame. The line Drag a session to another day says it is possible. For eight seconds the page then says what happened, like Long ride moved to Fri 27 Nov, with the button Undo. It is the same change as Change on the session's page with only the day new, so it is in Settings → Changes to the plan, where it can also be undone later. Nothing is dropped by accident: there are no arrow buttons, only the drag.
+
++ Add at the foot of each day on Week makes a new session on that day (the page New session, with the day already chosen). It needs the plan in the app, like + Session.
+
+Month: the month as a calendar, one row for every week. At the left of a row: Week 12, Easy week or Test week where that is so, the planned time and, once something is done, the time done. Then seven day cells, Monday to Sunday. Today's cell says its number and Today in green; days of the months before and after are paler. Each session is a small chip like a week card: its sport's colour at the left, a short name, its length, the green tick, or the red word Missed. In a narrow cell, or when the weeks with full titles would not fit the height of the window, the chip says only the sport (Run, Swim); then the month opens with today's week in view. An extra's name has the chip's whole width and is not cut. A cell shows at most three chips; with more, the last line says +2 more, and a tap on it opens that day's week. Extras are dotted, with the paler tick.
+
+Year: every month of the plan, first to last, as a small block with the month's name, its planned time and the time done, and a little calendar in which every day is a square in the colour of the day's main sport. Solid: recorded. Pale: still to do. Hatched: missed. An empty outline: a rest day. Race red: race day. A green outline: today, the same green as today everywhere else (before 2.4 it was a dark outline). The key under the blocks says so in words, with the green outline beside Today. Every month block has its hours on the line under its name, and all blocks are the same height, so they line up. At night the pale squares are brighter, so the sports can be told apart; pale still means still to do. Tap a month to open it in Month. Under the key, Phases lists each phase in two columns: its colour and name, and under the name its first and last day, how many weeks and how many hours.
+
+Your numbers: four small cards that follow what you are looking at (this week, the month, or the whole season). By sport: the time for each sport, a pale bar for what is planned and a solid part for what is done, like 3h 00m done of 4h 00m, or 4h 00m planned while nothing is done. Load · last 12 weeks, up to today: always the twelve weeks up to today, whatever week or month you chose; twelve small purple bars, one for each week, this week the strongest, with This week so far and usual week beside them and the line Load = minutes × how hard (1–10). It is the same load, in the same words and numbers (1,671), as on Progress. Plan followed: how many of the sessions that were due by today you have done, like 12 of 15 sessions due so far · 80 % (a session is due once its day is over, or today once it is recorded), or Nothing due yet. A session recorded before its day is not due yet: a grey line names it, like 1 more done ahead of its day. It counts in the hours done, not here. To the race: the weeks left and the date. They are shown, never judged.
+
+Plan only shows and moves. It changes a session's day when you drag it, and nothing else, and it suggests nothing.
+
+Suggestions on iPad and Mac. From 2.3 only your iPhone makes suggestion cards, so your iPad and Mac show none. Stop sign and I'm ill are there and count everywhere: what you tap on the iPad or Mac goes through your iCloud to your iPhone, and the iPhone stops suggesting too. When you drag a session to another day on the week board or in the month, the same calm grey line as on the Move page may appear under the words that say it moved; the move is made all the same. Claude and the neighbour apps are only used by the iPhone for now.
+
+### Search and print
+
+Search. On the Sessions page (the Sessions tab on the iPhone, the Sessions row on an iPad or Mac) the field Search sessions stands under the heading, with Clear when something is typed. It finds sessions and extras by every word you type, anywhere in the title, the notes, the sport, the date (a weekday, month, year, day or 2026-11-25) and the free text of what you logged, ignoring capitals and accents. The results are grouped To come and Done (and Missed only when a missed session matches), newest first, each with a grey line saying where the word was found, like Notes: …calf… or Found in the title and date. Nothing found says Nothing found for xyz. While you search, the four filters are hidden. On an iPad or a Mac, Command and F puts the cursor in the field.
+
+Print. On the Sessions page the heading stands alone, and under it is one row of small word buttons: Print, + Session and Ask about your plan. Print is also in the button row of the wide Plan page. The sheet Print the plan offers This week, Next week or This month, shows an A4 preview, and has Cancel (Escape), Save as PDF (the share sheet) and Print (the main button, the system print panel). A week is landscape, one column for each day; a month is portrait, a calendar grid; black on white, each session with a small bar in its sport's colour and the sport's word in capitals, its length and zone words, and the week's or month's total and each sport's total. It prints sessions only: no extras and no done marks. Not tried on a real printer or PDF before this release.
+
+### Keys, Spotlight and Siri
+
+Keys on an iPad with a keyboard and on a Mac. At the foot of the side list stands the word Keys (also ? and Command and /): a page with one row for each key. Command 1 to 6 choose a page; Command N makes a new session on the day shown, or today (only where the plan can change); the arrows go to the week or month before and after on Plan (not while you are typing, and not with a session or a sheet open); Command T jumps to today; Space, on an open session, is Done as planned, the same as tapping the button (that button asks nothing, so neither does the key); it works only while no box, question or sheet of the page is open, so a space typed in a note never logs a session; Command F puts the cursor in the search field; Escape closes, and is Cancel on every page that has Cancel. Holding Command shows the list on an iPad.
+
+Spotlight. The sessions of the next 14 days that are still to do and of the last 14 days that are done are put in Spotlight, each as, for example, Tue 1 Dec · Swim · 40 min, findable by sport, weekday or a word of the title. A tap opens that session. The list is rebuilt a moment after any change to the plan, and emptied when there is no plan. The links look like amsworkoutsync://session/… and open the same session from anywhere.
+
+Open Triathlon from other apps (2.11). Every page has a link: amsworkoutsync://today, amsworkoutsync://plan, amsworkoutsync://sessions, amsworkoutsync://body, amsworkoutsync://progress and amsworkoutsync://settings. On an iPad and a Mac the page is chosen in the side list. On an iPhone the tab opens; Sessions opens the Plan tab there, because the iPhone has no Sessions tab. The links work from Shortcuts, Raycast, PARAGON and Safari. AMS Deck Mate (Mac 0.24) uses them in its page group Triathlon, shown whenever Triathlon is in front on your Mac: Training today, Today, Plan, Body, Progress, Body Battery, Sleep, Resting pulse, Stress, Steps, the Ironman plan, Workouts, Workouts 7 days, Settings and a key back to AMS Deck. Nothing on the screens changed.
+
+Siri and Shortcuts. Three phrases: What is my session today (or tomorrow) in Triathlon; Log today's run as done in Triathlon (any sport); How is my week in Triathlon. Logging does what the green Done button does for a session as planned. The phone must be unlocked for any of the three phrases. It refuses, and changes nothing, when there is no session, two sessions, the session is already done or missed, it has no length, or this device may not change the plan. When the plan is not loaded yet it opens the app.
+
+Not proven before this release, because they need a signed build on real devices: the Siri phrases and how Siri speaks them, how Spotlight shows and opens its results, and the hardware keys (Space and the arrows without a modifier must not fire while you type; the list shown by holding Command; Command F focusing the field).
+
+### Missed, Move, Swap
+
+Missed writes the missed mark and an optional note. You can still log the session later if you did it after all.
+
+Move changes only the day. +1 day, beside the heading, puts it on tomorrow in one tap (before 2.4 the button said only +1). In Excel the plan totals by week number and sport, never by date, so a moved session keeps its place in every figure; in the app it keeps its place, its photographs and its move history.
+
+Swap exchanges two sessions' days. Only sessions still to do are offered, nearest first — a done session is never swapped by accident.
+
+### Changing the plan
+
+You can change the plan only once it lives in this app. Until then, change it in Excel.
+
+To change a session: open it and tap Change. The page Change session has Day, Sport, What you do, Length in minutes, Zone or effort, Purpose and Key session, with Cancel and Save. The session keeps its photographs, its place in the Training calendar and its move history.
+
+To make a new one: Sessions tab → + Session. It opens the page New session.
+
+To take one out: Change → the red button Take out of the plan.
+
+Settings → Changes to the plan lists every change, newest first, with Before and Now. Tap Undo to undo one; it asks first. What you logged since stays. A change that is undone stays in the list, marked Undone. Only the newest change to a session can be undone; an older one says Changed again since.
+
+Thursday rides (the row is gone in 2.19). Until 2.18 Settings → Your plan had a row Thursday rides, one easy ride every Thursday from the next Monday to your race. In 2.19 the row is removed, because it had done its work: its 29 rides (Thursday 3 December to Thursday 1 July, 30 to 60 minutes, easy) are in your plan and stay there. Each is an ordinary session now: change it, move it or take it out like any other. Their one Undo is still in Settings → Changes to the plan, an entry named for the rides, N sessions. Why the rides exist: on 24 November you said yes to one easy ride a week, because the bike is the longest part of a 70.3 and the plan had little easy bike time. How long: 45 minutes in Base 2; growing from 50 to 60 minutes through Base 3; 60 in Build; 45 in Peak. In an easy week, a test week and the taper it is a 30-minute easy spin. There is none in the race-practice weeks and none in race week. Each ride has one fixed name for its week, the same on every device, so two devices never made two rides on one Thursday.
+
+Mobility and strength: Settings → Mobility and strength, now the first row in the list of rows that change the plan (the Thursday rides row above it is gone since 2.19), puts 30 minutes of easy mobility on every Monday, Wednesday and Friday and 30 minutes of strength on every Tuesday and Thursday, from tomorrow to the race. Mobility is called Mobility: hips, hamstrings, calves, upper back. The plan's own strength sessions move from Monday to Tuesday and from Wednesday to Thursday, keep their exercises and are set to 30 minutes; a week with only one strength session gets a second one on Thursday, copied from an earlier week. Friday stays a rest day. Race week keeps mobility only; weeks without strength and the time after the race get none. A day you logged or marked missed is never touched, and a day that already holds mobility gets no second one. The page lists every week, for example Week 13 · Mon 30 Nov, with Mobility Mon · Wed · Fri, Strength Mon → Tue · Wed → Thu and the minutes before → after. Nothing changes until you tap Change N weeks; Cancel closes the page. Afterwards a green line says how many mobility sessions were added and how many strength sessions were moved or added, and the top button says Done. In Changes to the plan the whole change is one entry, Mobility and strength days, with one Undo: mobility and added strength sessions are taken out, moved strength sessions go back to their days, and what you logged since stays. From 2.15 a mobility session also ticks itself on a day you stretched in Magic Morning (see Your two neighbour apps). Opening the page again says These days are already in your plan. It reaches your other devices through iCloud like any change. The page can only be opened once the plan lives in this app.
+
+On iPad and Mac, dragging a session to another day on Plan (in Week or Month) is a change too, with Undo for eight seconds and a line in Changes to the plan.
+
+The app changes the plan only when you tell it to.
+
+New in 2.18, Plan maker. Make a new plan (a row in Settings → Your plan, right under My week shape, on iPhone, iPad and Mac) makes a draft of a whole season beside your plan. The page Plan maker asks for the race (name, date, Sprint, Olympic, Half (70.3) or Full), the first day (a Monday; it starts at the Monday after your plan's last session), the hours a week (Lowest and Highest in half hours) and shows My week shape. Cancel closes, Save keeps the settings and Make the draft builds it. The fewest weeks are 6 for a sprint, 8 for an Olympic, 12 for a half and 16 for a full, at most 52.
+
+The draft. Nothing in it is in your plan: Today, Sessions and Progress go on showing your own plan. The Draft page has the season bar, the tiles Weeks, Sessions and Longest week, and the list The weeks; tap a week for its days. The draft is kept in your extra file and follows you between devices; Delete draft asks first. How it is built: Base about 55 percent and Build about 45 percent of the weeks left after Peak (1 to 3 weeks), Taper (1 week) and Race week, and the post-season (2 to 4 weeks); hours climb evenly from your lowest to your highest; every 3rd or 4th Base or Build week is an easy week at two thirds of the week before; a test week is the easy week nearest 8 weeks after the last (never fewer than 6): swim 40 minutes, bike 60, run 50; the long ride and long run never grow more than 10 percent above the longest before; strength 30 and 20 minutes in Base and Build, a light one in easy weeks, Peak and the post-season, none in race week; mobility on your week shape's mobility days.
+
+Ask Claude to look it over. Optional and with your key: up to two tweaks picked from the rules' menu (the long ride or long run on another weekday, Base, Build or Peak ten percent more or less; never two for one aim) and three short lines. Use these changes remakes the draft through the rules; Keep the draft as it is leaves it. No names are sent. Without Claude one grey line says so.
+
+Switch to this plan. You choose a Monday (after today and after every done, missed, test or race session). The page says how many sessions are added, how many of your current plan's sessions from that day are taken out (none of them done) and how many of the draft's sessions before that day are left out. Switch from … makes a safety copy first (without a copy there is no switch), then changes it all in one save. Done, Undo the switch undoes it; sessions you logged since stay. The switch is one NEW PLAN entry in Changes to the plan and your safety copy is named your plan just before you switched to a new plan. Your rule book's suggestions on a switched plan are not yet tried on real weeks.
+
+My week shape. Settings → Your plan → My week shape: a grid of Monday to Sunday with Swim, Bike, Run, Strength and Mobility (filled word = chosen, outlined = not; the rest day allows only mobility), the long ride day, the long run day and the rest day, with Cancel and Save. Before you save one, the shape is learned from your plan. Lay out my coming weeks this way (after saving) opens Lay out my weeks: how many sessions move in how many weeks, the first two weeks spelled out, and Take it or Keep my plan. Take it moves each session to the nearest day that fits in the same week, in one save with one Undo, and one Laid out to my week shape entry in Changes to the plan. Never moved: done, missed or waiting sessions, past days, tests, races, simulations, easy, test and race weeks, your away days.
+
+Tune-up race. Added on the race page (see Your race page). When you save one, a card offers to make room: two and three days before shorter (60 percent, 5 minute steps, at least 15 minutes) and easy, the day before taken out (mobility stays), the day after and the day after that easy and at most 60 minutes. Take it makes them in one save with one Undo; Keep my plan changes nothing. Never touched: done, logged, missed or waiting sessions, tests, races, days gone.
+
+### Away
+
+Away is for a trip: say what you will have there, and the rule book will tell you which sessions cannot be done as planned. Settings → Your plan → Away (the row reads Off - for a trip: say what you will have there, or Until Wed 6 Jan - sessions you cannot do there are marked). A small word button, Away, also stands at the top of Settings → Suggestions.
+
+The page. A slate card (AWAY, Away until Wed 6 Jan or Not away, no pool, no gym), the switch I am away, From, Until (the last day away) and, under WHAT I HAVE THERE, four switches: Pool, Bike (or turbo), Gym, Open water. They are switches, not ticks, because the tick already means done. Cancel and Save (Escape is Cancel). Switch off and Save takes it away. It follows you between devices.
+
+What it shows. A grey chip on a session still to do inside the period that needs what you lack: No pool while away, No bike while away, No gym while away, and No open water while away on a swim whose words say open water. The chip stands on the session's card everywhere and on its page. On Today, one grey line under the heading, Away until Wed 6 Jan · no pool, no gym; a tap opens the page; it shows only while today is inside the period.
+
+What the rule book does: trigger AW. Away: the session cannot be done as planned. It looks at the first open session of today and the next two days that is inside the period, is not protected and is not strength, and needs something you lack (a swim: no pool and no open water; a bike or brick: no bike). It offers, in this order, only the rule book's own kinds of change: first, a swap with a later easy session of the same plan week, not on a Friday and not a key session, that you can do there, no longer and no harder than the planned one (the planned session then takes the easy session's day if you can do it there or are back, otherwise it is dropped in the same choice); second, a move to the first day after you are back, in the same plan week and never a Friday; third, rest, never for a key session. Nothing is added and nothing is made longer or harder. Every limit of the rule book judges each choice, so in an easy week the chip shows but no card comes; the weekly caps, missed sessions are not made up and the calm rules (one card a day, two a week, none while one is open) all apply. A session that has been answered is not asked about again.
+
+The card reads like Mon swim: no pool while away → easy run 40 min (swim moves to Thu), with the reason Why: you are away until 16 Jan without a pool; an easy run keeps the day aerobic. You tap Take it or Keep my plan, as with any card. The chip reads the title and the description of a session, the rule book only the title: a swim called open water only in its description can have a chip and no card.
+
+Strength without a gym never gets a card. It gets the chip, and the button No-gym version on its page: a sheet that shows a circuit of body weight, N rounds of 8 moves (6 when planned time is 25 minutes or less), each with its reps or seconds, a warm-up line, 60 seconds rest between rounds and a cool-down line, in about the planned time. It is text only and changes nothing. While you are away without a gym it is the first choice, filled, with the words First choice while away without a gym. The button is there all the time, away or not.
+
+A note on older versions. An away card in the suggestions' notes is written under its own key, with its place in the list, so a 2.7 or older build skips it and still reads the rest; this build puts every card back in its place. Claude's menu words for this trigger use the generic text and were not tried with the real service.
+
+### Suggestions by the rule book
+
+From 2.3 the app can suggest a change to your plan. It does it by a fixed rule book, written from your own training guide and the same every time. It is not a coach and not a doctor, and a suggestion is never medical advice. Every card says so at its foot: Training suggestion — not medical advice. (In a reason, your guide means your own training guide, not this page.)
+
+The app suggests, you decide. Nothing in your plan changes until you tap Take it. Not even a small change is made by itself. A card you leave alone closes at the end of the day of the first session it would change, and counts as Keep my plan.
+
+What a card looks like. On Today, under the morning question: one line with the change, such as Thu run: 40 → 30 min, easy (invented numbers); one grey line with the reason, starting Why:; and two buttons of the same size with the same blue outline, Take it and Keep my plan. Neither is filled and neither is bigger. Keep my plan weighs exactly as much as Take it: it is an answer, it is written down, and the rule book remembers it.
+
+After Keep my plan the app leaves that subject alone for a while: four days after a tired-signs card, fourteen after a long-ride or long-run card (for that sport). A big-week card does not come again for fourteen days, whatever you answered. Nothing is held against you.
+
+Other choice, a small blue word under the buttons, shows at most two more ways to answer the same thing. Each passed the same checks, and each has its own Take it.
+
+After Take it, the card's place says Changed — Undo until the end of the day. The change goes into your plan like any other change. It is listed in Settings → Changes to the plan with the reason, starting Suggestion:, and can be undone there. A session the card takes out becomes rest (your choice): it counts as followed, never as missed. If you change the plan another way while a card is open, the card no longer fits and is put away, with one grey line: The plan has changed since this suggestion, so it was put away. A suggestion is never worked out from a plan that is out of date: when a change from another device arrives, the card is worked out again from the new plan, and Take it cannot overwrite that change.
+
+When a card may come. Only once the plan lives in the app, and only on your iPhone. Today, after you answer How do you feel? (or from 07:00 if you do not), and after you log a session. One card a day at most, two in any seven days, never two open at once, none in race week, and a session a card changed is left alone for a week. Most days there is no card. That is normal.
+
+What a card is about. Tired signs: two poor mornings in a row (Bad or Tired), or two sessions in a week that felt much harder than planned. Then, one step at a time, an extra rest day or an easier session; then the next three days easy; then your next easy week brought forward. A key session missed in a gap of two or three days: it takes the place of a later easy one in the same week. Back after four days or more without training: two easy days, or a week at half. A long ride or run planned too far beyond your longest of the last three weeks: shorter. A big week last week, hikes included, about a third more than planned: this Monday's sessions shorter. Something hurts (see the next part). A session carried over from a week that is over, in the week after the plan was taken in: rest. And only if you switch it on, the run quality moved to Thursday so hard bike and hard run are not on two days in a row.
+
+What a card can change, and nothing else: take a session out, swap it with the next easy one in the same week, make it shorter, make it easier (zones 1 and 2, or a row or an easy spin instead of a run), move it to another day in the same week, bring an easy week forward, or make a whole day rest.
+
+What it will never do: add a session; make anything longer or harder; make up what you missed; put training on a Friday, your rest day; make two hard days in a row that were not already there; take a week over its planned time; touch a test, a race simulation, the race or race week; take a session out of an easy week or the last weeks before the race (they may only get easier); or use words like healthy, fit, safe or your heart.
+
+What it reads. Your answers to How do you feel?, how hard sessions felt against the plan, the minutes planned and done, the days without training, and hikes and walks of 30 minutes or more from your watch, which count as training. It never reads your sleep, your resting pulse, Body Battery, stress or HRV: no suggestion is ever driven by them. A rule for HRV exists in the code, but nothing hands it a number, so it cannot act.
+
+Settings → Suggestions. The row says On — the app suggests, you decide, or Off. On the page: the switch Suggest changes to my plan (it is on unless you turn it off, also for you after this update); four answers as switches (Keep hard bike and hard run on days in a row, Ask Something hurts? after a session, An easy week brought forward leaves the later one easy too, Long rides and runs grow a step at a time); then What was suggested, every card newest first with its day, change, reason and your answer in words: Taken, Other choice: …, Kept my plan, No answer, Put away — the plan had changed, Put away — you paused, Taken, then undone. Cancel leaves everything as it was; Save keeps it.
+
+If the app's own notes about suggestions cannot be read, it says so, shows no card and writes nothing, and your plan is untouched. Start the notes afresh (it asks first) puts the unreadable notes aside, never deletes them, and begins new ones.
+
+Honest about devices. The suggestion notes and your answers to cards are kept on the device where you tapped them. A change you take is a change to the plan, and that goes to your other devices like any change. Your iPad and Mac make no cards.
+
+Stop sign and I'm ill on all your devices. They go through your own iCloud, in a small note of their own beside the plan, so a pause tapped on your iPad or Mac pauses your iPhone too, once both have met iCloud (usually within a minute while the app is open). If two devices say different things, the newest tap counts, with one exception: a pause is never ended by an older all clear, nor by one from a device that had not yet heard of that pause. Only A doctor has seen me, Opened by mistake or I tapped this by mistake, for that very pause, ends it. With iCloud off, each device keeps its own pause, as before.
+
+A new plan taken into the app starts a fresh list of cards. Your answers and your taps stay.
+
+New in 2.8: a new trigger, AW, for Away. It is described under Away. The Settings → Suggestions page has a small Away button at the top.
+
+### Stop sign, I'm ill and Something hurts
+
+Stop sign and I'm ill live behind one small grey pill, Not well?, at the very foot of Today (once the plan lives in the app) and at the foot of a session's page. The pill opens a small plate with two rows, each with one line under its words: Stop sign (chest pain, unusual breathlessness, dizziness, a racing or uneven heartbeat) and I'm ill (a cold, fever or stomach bug). Done closes the plate.
+
+Stop sign opens a page with fixed words: Stop training now. in red, then the signs (chest pain or pressure, unusual breathlessness, dizziness or fainting, a racing or uneven heartbeat), then that these need a doctor before you train again, and that if it is strong or does not pass you should call 112. The app writes nothing of its own there. Opening the page pauses all suggestions at once, as its words say, and puts away a card that was open. The page then shows Paused and the green button A doctor has seen me. Only that button ends the pause. No watch number and no waiting can end it. Opened by mistake takes it back, but only on the same day.
+
+While you are paused, or resting after an illness with fever, there is no card at all, and Today carries one grey line: Suggestions are paused — Stop sign, or Resting after illness: day 2 — until 48 hours symptom-free (invented day).
+
+I'm ill opens only the illness questions, so a cold never has to read Stop training now. The question is Fever, or chest / body aches? with Yes and No, a cold above the neck. Yes: rest, until you have been symptom-free for 48 hours (the app counts whole days, so it is a little longer, never shorter); then two extra easy days; then, if you were out a week or more, a week at about half and all easy, a week at about three quarters, and then your plan as written. A cold above the neck: easy only and shorter while it lasts. Out three weeks or more: the plan shifts instead, as your guide says.
+
+When it has passed, choose the day in Symptom-free since and tap Save. In the week at half, Still not right adds three more easy days. I tapped this by mistake takes the illness back, but only on the day you told it. Each step after the rest comes as a card you answer like any other, with Take it and Keep my plan.
+
+Something hurts? is asked once under How hard was it?, for a session logged today or yesterday: Calf, Achilles, Knee, Other, Nothing hurts. Calf, Achilles or Knee may bring a card for the next easy run within a week: make it a row, an easy spin, or rest. Other and Nothing hurts are only remembered. The app does not say what is wrong and does not guess. You can switch the question off in Settings → Suggestions.
+
+A grey line under your own change. When you move a session (Move) or change it (Change), and the change breaks one of the rule book's limits, one calm grey line says so under it: Friday is your rest day. / That makes two hard days in a row. / That week goes over its planned time. / It is in your easy week; it is meant to stay. / This one is protected in your plan. / Missed sessions are gone — no catching up needed. It never blocks you, is never red and never asks a question. On an iPad or Mac it also appears when you drag a session to another day on the week board or in the month, under the words that say it moved, and the move is made all the same.
+
+### Extra workouts
+
+Walks, yoga, rowing, breathing, a run the plan did not ask for: these go on their own list (in Excel, the Extras sheet), never into the plan, so the plan's own count of what you did stays honest. Counts as training is yours to set — a swim, bike, run, strength or rowing counts unless you say otherwise; a walk or a meditation does not unless you say it does. An extra that counts carries the small mark with the words Counts as training (before 2.4 the mark stood alone).
+
+Add one with the small Extra workout pill on Today, on its own line directly above the Week so far card, at the right (before 2.19 it sat at the end of the Tomorrow line). Each kind carries its own hand-drawn mark in its own colour. They show on Today and in the week strip, dotted, on the Sessions tab under Done and All, and all of them together under Settings → Extra workouts. The form's green button reads Save (before 2.5, Save it).
+
+The round pen on its card opens it for changing — in the Sessions list or on its own screen. Only the boxes you alter are changed, so correcting the length leaves everything else exactly as it was, and emptying a box empties it. While the plan is in Excel, it reads as waiting to sync until it reaches Dropbox, like anything else you log. Once the plan lives in the app, it is saved at once.
+
+An extra workout gets the same row, How hard was it? 1 to 10, on its own page. It counts in Load on Progress whether or not it counts as training — only breathing and meditation are left out.
+
+Photographs follow an extra when you change it, even when you change the day, the activity or the length it is known by.
+
+### How your plan is kept safe
+
+Your plan lives in the app: everything is saved on the phone the moment you tap. There is no sending and no waiting. An entry that could not be written stays on the phone with its reason, in Settings.
+
+Only while an iPhone still uses Excel: everything you log is saved on the phone first and sent to Dropbox straight away. Until Dropbox has confirmed, it shows as waiting: Waiting to sync on the session's card, a chip like 3 waiting at the top of Today, and the list Waiting to sync in Settings. Before 2.4 these words were green; green now means done and nothing else. If logging has waited more than a day, a card with a red frame at the top of Today says so and has the button Send it now. Since 2.4 that button is green, because it is the step that puts things right; red stays for the frame and for things that take something away.
+
+Each send starts from the copy that is in Dropbox right now, writes into it, reads the result back to check it, and sends it back only if nobody changed the file in the meantime. If the file changed in between — Excel on the laptop, or anything else that saved it — Dropbox refuses, and the app starts again from the newer copy. Nothing is ever overwritten, and nothing you logged is lost.
+
+A row is checked before it is written into. If the session was changed in Excel into something else, the log is kept waiting with the reason rather than written into the wrong place. An entry made in the Excel days is written only into the session it was made for, matched by its sport and its day or its wording, never into another session that now carries the same row name; if that session is gone, the entry waits with its reason.
+
+The app keeps the plan as it was at the start of each day the plan changed, for 30 days, and makes a spreadsheet copy about once a week. The spreadsheet copies are described in Where the plan lives. The iPhone's own backup covers the plan as well. On an iPad and a Mac the plan is also in your iCloud, and each device keeps its own safety copies, made on that device. The copy each device kept before it first met iCloud is under Settings → iCloud → Copy from before iCloud; see The same plan on all your devices. If the plan file will not open, the app takes the newest safety copy, by the time it was made: a copy made later in the day is preferred to the one from the start of that day (before 2.5 the start-of-day copy was taken).
+
+Settings → Safety copies is one row, and it opens a page that lists the days, newest first. A copy is made at the start of each day the plan changes, not every day. Each row gives the day, then what its copy holds, like 310 sessions · 64 done · 4 changes so far (rest days are not counted in the sessions, the same number as on the Sessions tab and in Settings → Your plan), and under it the red button Put this copy back. It asks first. If you go on, the plan goes back to how it was at the start of that day, and everything logged or changed from that day on is taken out. The plan as it is now is kept aside first, so even that step can be put right. Afterwards a green line says The plan is back as it was at the start of Mon 23 Nov. A copy that will not open says Cannot be opened, in grey, and has no button. If putting a copy back fails, a red line says so and nothing is changed. With none yet the page says: No safety copies yet. The first one is made the next time the plan changes. The page can only be opened once the plan lives in this app.
+
+Safety copies also lists the copies kept around iCloud. Before a meeting changes this device's plan, the plan as it was here is kept: the day and the time, then before your Mac's changes came in. When you choose one of two different plans, the one you did not keep is listed too: the other plan from iCloud, put aside when you kept this one, or the plan this iPad had before it took the other one. Each can be put back like any copy. Putting back one of two different plans makes iCloud ask again which one to keep.
+
+When the plan is shared with another device, Put this copy back works on the plan itself, on all your devices: it goes back to how it was in the copy, with its days, words and lengths and which sessions are in it. What you logged since the copy stays, and so does a session you logged that the copy does not have. The question before you go on says so. The plan as it is now is kept aside first. On a plan that is not shared, everything since the copy is taken out, as before.
+
+### Photographs
+
+A session or an extra can carry photographs. They live on this phone beside the plan, never inside it — not in the workbook, and not in the spreadsheet copies — and the iPhone's own backup covers the pictures. Settings → Photos: Save all puts every picture in one file in Files; Bring in a zip takes such a file back (it also takes the web app's export); Delete all asks first. Photographs are not sent through iCloud: they stay on the device where they were taken. Settings → Photos says On this phone only on an iPhone and On this device only on an iPad or Mac.
+
+Adding one happens behind the pen: open the form and press Add photo, which asks whether to take one now or pick from your photos. A picture is kept the moment you add it — there is nothing to save, and the Save button only ever writes the boxes you changed. In the Sessions list, the first three of a session's pictures sit in the corner of its row, beside the pen.
+
+A photograph is shown against the session it was taken against. While the plan is in Excel, that is the row of the sheet, or failing that the same day and the same sport, so that a line inserted in Excel — which shifts every row below it — does not hide your pictures. A session that lives in the app keeps its own name for good, so changing or moving it never loses its pictures. The sport always has to agree; a row that has become another kind of session is a different session. Nothing is ever dropped: every picture is counted and exported whether or not it can be placed.
+
+### Before you train
+
+Today opens with what the night left behind: how long you slept, your resting heart rate and your HRV — on one row, each with how far it sits from your own normal in brackets: green the good way, red the other, grey when it is as usual. A resting heart rate means nothing against anybody else's, and one morning means little against one other morning. Your normal is the average of up to fourteen days before the morning shown, one reading a day, and there is none until four days are there to make it — until then the brackets say when it will come. Settings → Apple Health → What Health hands over shows your normal and how many days it stands on. It is all read again every time you open the app. Garmin passes sleep to Apple Health but apparently not HRV, so that one may never appear.
+
+No score is made out of them. They are there to be read before you train, which is the one question the rest of this app can only answer afterwards. They appear when Apple Health has them; it asks once for permission. On an iPad or a Mac there is no Health: your iPhone puts the numbers in iCloud and they are shown there in the same row, with a small grey line under it, from iPhone, as of 07:12 (or yesterday 07:12 once they are more than 18 hours old, and then paler).
+
+### Morning numbers from Garmin
+
+Your Garmin watch knows what Apple Health does not hand over: overnight HRV, sleep, Body Battery and stress. Settings → Garmin says Garmin · not connected or Garmin · connected. Open it: make a personal key once in your Garmin account at connect.garmin.com, paste it into the field Paste your Garmin key, and tap Save, a full green button (Cancel closes the page). The page has the same small centred title as the other Settings pages. While it asks Garmin, the button says Checking…. A key Garmin does not accept says so in red, and nothing is saved.
+
+The key is kept in this device's password store and nowhere else: not in the plan, not in iCloud, not in a copy, and it is never shown again, only as dots. It stays on this device only, so an iPad or a Mac that should show the numbers needs the key pasted there too. Once saved, the page says Connected and when the numbers were last read, with two buttons: Read again now, and Remove the key (it asks first, Remove the key or Keep it; Today and Body then stop showing Garmin numbers, and you can paste a key again at any time).
+
+Today then has a second line under the morning line: HRV 64 (+3) · Sleep 7h 20m · Resting 47 (−2) · Body Battery 71 (invented numbers). HRV and Resting carry how far they sit from your own normal in brackets, as the Health line does: green the good way, red the other, grey when it is as usual, and until your normal exists the brackets say when it will, like normal in 3 days. Your normal is the average of up to fourteen earlier days, and there is none until four days are there. Sleep and Body Battery carry no bracket.
+
+Under the line a small dot says where the numbers are from, with words: green, Garmin · this morning, read 07:12; grey, Garmin · older numbers from the day they belong to. When Garmin has not yet received the night from your watch, the older numbers stay and the dot is grey. Between midnight and four in the morning the night that last ended counts as last night.
+
+Tap the line for the plate, Garmin, this morning: HRV overnight in ms (with Garmin's own balanced range when it gives one), Sleep last night, Resting heart rate in bpm, Body Battery on waking and Stress yesterday, each with your normal and how many days it stands on, or none yet and Garmin has not given this one yet. It also says when your watch last sent its numbers to Garmin. Done, at the top right, closes it (Escape on a Mac).
+
+The same key feeds two places since 2.6: the second line on Today, and the Body page. Pasting it once here is enough for both on this device. The part Body says what that page shows.
+
+The app reads Garmin when Today opens, at most once in half an hour, and Read again now asks at once. It only reads: a few small requests for your own numbers, nothing is written to Garmin. From 2.17 the key is used for one more thing: your strength activities, which can tick a planned strength session (see Strength ticked from Garmin). When Garmin gives a number the Health line also had (sleep, HRV, resting), the Garmin one is shown and the Health one is left out, so one thing is never two numbers side by side.
+
+These numbers are shown only. They never change your plan, and nothing in the app reacts to them: no advice, no score. The one thing Garmin can do to your plan since 2.17 is tick a planned strength session when your watch recorded a strength activity (see Strength ticked from Garmin); the numbers above never do.
+
+### Body
+
+Body is the page for the numbers your Garmin watch keeps about you. On an iPhone it is the middle tab of five, between Sessions and Progress. On an iPad and a Mac it is its own row in the list at the left, between Sessions and Progress. Its mark is a heart with a pulse line. Its colour is raspberry, a deep pink: its heading, its top card and its tab. No other part of the app uses it. Tapping the Body tab again does nothing special.
+
+A colour for every card (2.10). Raspberry is still Body's own colour: the heading, the top card, the Body Battery curves, the headings Training and Health, the range buttons and Share. Every other card has a colour of its own, so you can tell them apart at a glance: Sleep and Sleep debt indigo, HRV teal, Resting pulse fuchsia, Stress amber, Steps lime, Intensity minutes blue, Training load violet, Fitness cyan, Gym sessions orange, Workouts this month pink, Weight purple, Energy gold and Water sky blue. The card's name, the marks and bars of its figures and its pale ground wear it, and so does the page a card opens. The colour tells the cards apart and means nothing else.
+
+Body Battery. The top card is filled with raspberry and its words are white. It shows the number now, with the word now, like 40 (an invented number). Beside it: Highest today 82, and, when there were workouts, 2 workouts took 23, which is how many points the day's workouts cost (only workouts whose cost Garmin gives are counted). Under it stands the curve of the day from midnight until now, with an hour scale, 00 · 06 · 12 · 18 · 24. The curve ends at a white dot, which is now; the rest of the day stays empty. Since 2.7 yesterday's Body Battery is drawn too, as a thin line across the whole 24 hours, behind today's curve, with no fill under it. Today's curve is unchanged: the thick white line with a soft fill. Each of today's workouts is a short solid white bar above the curve, as long as the workout lasted, with its words above it and a thin white line down from each end: its name and what it cost, like Run −18 or Swim −9. When Garmin does not say what a workout cost, the words show its name only.
+
+Yesterday's line. At the top right of the card stands a short piece of the same line and the word yesterday, so you can tell the two lines apart. It is there for comparison only: is today going better or worse than yesterday at the same hour?
+
+The look of yesterday's line: a thin dark line, a deep plum, darker than the card.
+
+Why it is not pale and not dotted: in this app pale already means still to do, and dotted already means an extra outside the plan. Yesterday's line is neither, so it cannot be mistaken for either. A day without yesterday's readings (the watch was not worn, or it is your first day) simply shows no second line and no word yesterday.
+
+Six tiles stand under the card (until 2.7 four): Sleep, HRV, Resting pulse, Stress and, new in 2.8, Steps and Intensity minutes. Each has its name in small capitals, the figure right beside its unit, one grey line, and seven slim bars for the last seven days with the weekday letters under them. All seven bars are the same full raspberry. Today's bar is the last one, and its weekday letter is bold and green. A day without a reading shows a small grey dash – where its bar would be, never a zero.
+
+Sleep: last night's time, written like everywhere else in the app, like 6h 10m, and the grey line 7-night average 5h 50m. HRV: last night's value, like 48 ms, and the grey line your normal 42–55. Garmin needs about three weeks of nights to learn your normal range. Until then the line reads still learning your normal. Resting pulse: today's, like 52 beats, and the grey line your normal 51. Stress: today's average, like 31 average, and the grey line highest today 74. All the numbers here are invented.
+
+Sleep is shown only. It never leads to a suggestion, anywhere in the app. That is your own decision.
+
+Tap a tile for a small page with that instrument's seven days in numbers, newest first. Its title is like Sleep · last 7 days. The first row reads Today (for Sleep and HRV, Last night). A day without a reading says no reading. Done closes it, and on a Mac Escape closes it too.
+
+Tap a workout. Until 2.6 the workouts on the curve only showed, and a tap did nothing. Now tap a workout (its words, its bar, or anywhere in the column under them; the tap area is at least 44 points wide) and a page opens. Which page, in this order. One: your plan has a session of that sport on that day, and that session's page opens, right there on the Body page; the back arrow at the top left leads back to Body. With two workouts of one sport and two sessions of that sport on the day, the first workout opens the first session and the second workout the second. Two: no such session, but you have an extra of that kind on that day (a Walk extra for a walk from the watch, say), and that extra's page opens, the same page as when you tap an extra on Today. Three: a looser match. A walk or hike opens that day's run session; a swim, ride or run opens that day's Brick or Race session. Four: nothing matches, and a small plate opens with the workout's own facts from Garmin.
+
+The facts plate. Its title is the workout's name, like Morning run. Under it: Started 06:45 · Lasted 1h 00m · Body Battery −17 (or no cost from Garmin when Garmin gives none). Then one grey line: Not in your plan and not among your extras for this day. Done, at the top right, closes it (Escape on a Mac). All numbers here are invented.
+
+Good to know. Only the same calendar day counts, and a rest day never matches. The sport comes from Garmin's own sport name: swim, bike, run, strength, rowing, mobility (yoga, pilates, stretching) or walk (walk or hike); anything else goes straight to the facts plate. A tap only opens a page: it logs nothing, writes nothing and changes no plan.
+
+The foot of the page says that taps exist: Tap a workout or a tile for more.
+
+Where the numbers come from. Straight from Garmin, with the personal key you saved in Settings → Garmin, the same key the morning numbers on Today use. The page reads Garmin when it opens, at most once in 30 minutes. Pull down to read now. The top line says the day and when the numbers were read, like Wed 25 Nov · read 17:31. The last reading is kept on the device, so the page shows at once, before the new reading arrives. Since 2.7 there is one more small read from Garmin, yesterday's curve. Yesterday cannot change any more, so it is read once a day and then kept on the device. The rule is the same as before: at most one read in half an hour, and pulling down reads now. Nothing leaves the device except the question to Garmin, and nothing is written to Garmin.
+
+Shown only. The Body page changes no plan and makes no suggestion. The foot of the page says so: From your Garmin watch · shown only, it changes no plan.
+
+Without a key, the page says Connect your Garmin key to see your body's numbers here, with a full-colour button, Open Garmin settings, that opens the Garmin settings page right there on the Body page. It is the same page as Settings → Garmin. With a key but no numbers yet it says No numbers from Garmin yet. Wear the watch, sync it in Garmin Connect, then pull down here.
+
+Between midnight and about four in the morning the curve can be empty, because the day has only begun. Sleep and HRV then still show the night before.
+
+The Mac's AMS Garmin Board keeps running. This page does not replace it: it shows four of its instruments, in this app's own look.
+
+New in 2.8, Body Battery · last 7 days. Under the top card a card with seven small curves, one for each day, oldest at the left and today at the right. Under each curve its weekday letter (today's bold and green), then the day's highest figure, then its lowest. The dot on today's curve is now, as on the top card. A day without readings shows a small grey dash. The card is there when at least one day has readings.
+
+Night's charge. The top card now says, beside the number, Charged +44 overnight (invented): how far the Body Battery rose from the night's lowest reading (taken from 18:00 the evening before, or from midnight when that evening is not there) to the highest reading before 11:00 after that low. When it cannot be worked out, or there was no rise, nothing shows.
+
+One calm line. At the top of the page, a small grey line like 3 of 3 in your normal range. It counts where three numbers stand against your own normal: HRV against Garmin's range, resting pulse and the Body Battery on waking against your normal of the last two weeks (inside means less than 4 percent, and at least 1, away). Only those that have a normal are counted; with none, no line. What is outside is named in words, like · HRV below it. No colour, no advice, no good and no bad, and it never leads to a suggestion.
+
+Your normal behind the bars. On the HRV and Resting pulse tiles the bars now stand in front of a grey outlined box with the word normal at its left: the HRV tile's box is Garmin's range, the pulse tile's box is 4 percent either side of your normal. The bars are scaled to take it in. Sleep and Stress have none.
+
+Longer views. Under the Body Battery card a switch of three words, 7 days · 4 weeks · 12 weeks, the chosen one filled raspberry. With 4 weeks or 12 weeks every tile's bars become weekly averages, one bar for each week, the last being this week; a week with no reading shows a dash, never a zero. A weekly bar is named by its Monday's day of the month, and the line under the switch says so: Each bar is one week's average, named by its Monday's date. Today's figure on a tile stays today's; its grey line then gives the average of the span. A tile's page of numbers lists one row for each week, with the same explanation. A longer view asks Garmin for its days only when you pick it, at most once in half an hour for each view; the days are kept on this device, one value for each day, and nothing older than the span is kept. If a day has no reading in any of the four older instruments it is asked again.
+
+More tiles. Two tiles join Sleep, HRV, Resting pulse and Stress: Steps (today's steps, with 7-day average 8,400, invented) and Intensity minutes (this week's total, of the weekly goal when Garmin gives one, with the moderate and vigorous minutes under it; the slim bars show the last seven days, so before Sunday they add up to more than the week's figure; a vigorous minute counts twice, as Garmin counts it). Breathing rate and blood oxygen are not in this release. Both tiles have seven bars and a page of numbers like the others.
+
+Share. The raspberry button Share, near the foot, with the line The picture shows your Garmin numbers of today., makes the page into one picture in the look you see now (day or night) and gives it to the share sheet. It leaves the app only if you choose a place there.
+
+Garmin's answers for the week, the steps and the intensity minutes are guessed in shape from Garmin's own service (the same fields the Mac's Garmin Board reads) and could not be tried against Garmin before this release. Still shown only: nothing here changes a plan or leads to a suggestion, and sleep never does.
+
+New in 2.9, eight more cards under the tiles. They are the cards of the Garmin Board on the Mac that this page lacked, and only those; none repeats a tile above. They stand in two parts with a small heading each, Training and Health, in the look of the tiles: the card's name in small capitals in raspberry, the figure right beside its unit, one grey line, slim bars. On an iPhone two small cards share a row and a wide card stands alone; on an iPad and a Mac pairs share a row. Every card is shown only: nothing here changes a plan or leads to a suggestion. When Garmin or the gym file has nothing, the card keeps its name and says in one grey line what is missing and how it fills; it never shows a zero as if it were a number. Without a Garmin key each Garmin card says Add your Garmin key in Settings to fill this. All numbers in this part are invented.
+
+Training load. A small card. The figure is the last 7 days' load, like 412 beside 7 days, with the grey line 4-week average 365 · ratio 1.13. Under it a word and a slim raspberry scale from 0 to 2 with a darker stretch (0.8 to 1.3, the steady range) and a round marker where you stand. The word is the Garmin Board's own reading of the ratio, not Garmin's: under 0.8 Recovery, up to 1.0 Maintaining, up to 1.3 Productive, above that Overreaching. Only Overreaching shows in red, with the words Overreaching · well above your usual; the rest are calm. The load is the sum of each workout's training load (7 days; 28 days divided by 4). Without a load the card says No load yet and Fills from Garmin once workouts have a load. Tap for 12 weeks.
+
+The Training load page. A tap on the card opens Training load with 12 slim weekly bars (the last is this week, in full colour), the word and the ratio, and three calm sentences that say what the range means. Done closes it (Escape on a Mac). It gives no advice.
+
+Fitness. A small card, beside Training load. The figure is Garmin's fitness age, like 52 beside fitness age, with the grey line Real age 58 · 6 years younger (or older, or the same). Under it, VO2 max like 51 only when one of your workouts holds it; otherwise VO2 max: Garmin does not share it yet. It has no page, because Garmin keeps no history of it here. Without a figure: No fitness age yet and Fills from Garmin when it has worked one out.
+
+Gym sessions. A wide card. It shows a session you logged in AMS Workout Companion: since 2.19 the big figure is the session's time, like 1h 05m (before 2.19 it was the kilograms lifted, like 3,250 kg). Under it a line like Mon 9 Mar · City Gym, the day and the gym only, because the time is not said twice. Then a line like 4 machines · 11 sets · felt good · 3 days ago, and, for the latest session, vs the one before: +4 sets · −5 min (there is no kilogram part any more). Each machine still has its best set, like Leg press · best 90 kg × 10, with the figure in bold orange (since 2.19.1; before it was small grey text), like Leg press · best 90 kg × 10, where the word best stays grey and 90 kg × 10 is bold orange (for a cardio machine, 15 min · level 6). A record is marked with a bold orange new best, and the grey words pain noted show when they apply: kilograms stay there, because a best set is a weight. Under it the six latest sessions as rows (day, place, the time where the kilograms used to stand, a slim bar), and the foot Tap a session to see it here. A tap on a row shows that session in the card itself, and Back to the latest returns. There is no separate page. A best set is the heaviest weight, with the most repeats. On a strength session's page the gym block now ends with the time, not the kilograms.
+
+Choosing the gym folder, once. This app cannot reach AMS Workout Companion directly, so it reads the file Workout Companion sessions.json in the folder AMS Workout Companion app to Garmin, inside your AMS Triathlon Training folder (iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training). Settings → Garmin has a section Gym sessions (From AMS Workout Companion, as on your Garmin Board) with a full-colour button, Choose the folder. Once chosen it shows the folder's name, Newest session: Mon 9 Mar and a small Change. The same choice is offered on the card itself, which says Your gym sessions come from the Workout Companion app. Tap Choose folder and pick AMS Workout Companion app to Garmin — it is in iCloud Drive › Documents › 03 Home › 02 IT › 01 SW › AMS Triathlon Training. Once. Its button, Choose folder, opens the folder choice directly. A chosen folder without the file says that no sessions were found yet. The app only reads the folder, never writes to it; the choice is kept on this device only, and the file is fetched from iCloud when needed. The page reads it when it appears (at most once in 5 minutes) and when you pull down.
+
+The gym block on a strength session. On the page of a strength session in your plan, when the gym file has a session on the same day, a small raspberry block GYM shows that day's place, length, number of machines and sets, kilograms, and the machines with their best sets, the figures in the same bold orange (since 2.19.1). Another kind of session, or a day without a gym session, shows nothing.
+
+Workouts this month. A wide card named like WORKOUTS · NOVEMBER (the month of today). The figure is the number of workouts beside this month, like 17 this month, with the grey line 18h 20m · 142.5 km (the km left out when no workout has a distance). It shows every Garmin workout of the month, also those that are not in your plan, the newest 6 as rows: a tag with the sport (in the sport's colour from the plan; walk, hike, breathing and yoga have a grey tag), the day and time like Wed 25 · 07:45, the name, its length, and the distance and heart rate when there are. Foot: Tap a workout to open it. With more than 6, a button All 17 workouts opens the sheet Workouts · November with the whole month, newest first; Done closes it (Escape on a Mac). A tap on a workout opens it as a tap on the Body Battery curve does: your plan's session of that sport on that day, else your extra of that kind, else the facts plate; from the sheet it closes first and opens a moment later. It changes nothing. Without workouts: No workouts from Garmin yet this month. They fill in once Garmin is connected and the watch has synced. Only the first 99 workouts of the month are counted.
+
+Sleep debt. A wide card in Health. The figure is the 7 nights against what you need, like −6h 40m (or +1h 05m) beside 7 nights, with the grey line Need 6h a night (your setting) · 1 night without the watch. Since 2.19 the need is the one you chose in Settings → Garmin → Sleep need (see below); before 2.19 every night was counted against Garmin's own sleep-need estimate, often about 8h, and the line said Need about 8h a night. Tap for each night. Seven slim bars, one for each night, each with a thin grey outline behind it that is that night's need; a night without the watch shows a grey dash, and today's weekday letter is green. Naps count, as on the Board; with Garmin's estimate chosen and no need from Garmin, 8 hours is used. Without nights: No nights recorded this week. The watch fills this once it has slept with you. Tap for a page, Sleep debt · last 7 nights, with a row for each night like 6h 48m of 6h. Sleep is shown only: no red, no advice, no suggestion.
+
+Sleep need (new in 2.19). Settings → Garmin has a row Sleep need right under the Garmin row. Its grey line says 6h a night — your setting, or Garmin's estimate. Open it: a page with the choices Garmin's estimate, 5h, 5h 30m, 6h, 6h 30m, 7h, 7h 30m, 8h, 8h 30m and 9h, a tick beside the chosen one, and Cancel and Save (Save is green, full colour; on the Mac Escape is Cancel). It starts at 6h, as you asked. The choice is the same on iPhone, iPad and Mac, because it is kept in your iCloud with the app's other shared settings. With 6h set, every night counts against 6h, and the Sleep debt sheet says Need 6h a night (your setting). Choose Garmin's estimate and the old way comes back, each night against Garmin's own figure. Only the Sleep debt card uses it. Sleep never changes your plan.
+
+Weight. A wide card. The latest weight beside kg, with the grey line Weighed Mon 2 Mar · +0.6 kg in 90 days (and goal 78.0 kg when Garmin has one; the change is the first weigh-in of the 90 days against the last). A thin line over the 90 days with a dot on the latest. Tap for a page, Weight · last 90 days, with a row for each weigh-in. Without weigh-ins: No weigh-ins in 90 days. Weigh in with a Garmin scale or log it in Garmin Connect.
+
+Energy. A small card: today's calories beside kcal, with the grey line Active 640 · resting 1,850. Garmin counts them up through the day, so the figure grows until midnight. Before the watch has sent them: No calories yet today. The watch sends them when it syncs. It has no page.
+
+Water. A small card: the water logged in Garmin Connect today, like 1,200 ml, with a slim bar and the line Goal 2,500 ml · 48%. This app does not log water; with nothing logged the card says No water logged today. Log it in Garmin Connect. It has no page.
+
+Where the new cards read from. The same key as the rest of the page (Settings → Garmin). Training load, Fitness, the month's workouts, Sleep debt, Weight, Energy and Water each read when the page opens, at most once in 30 minutes, and again when you pull down; the last reading is kept on this device, so the page shows at once, and an empty answer never wipes what is held. Gym sessions come from the folder, not from Garmin. Nothing is written to Garmin, your plan, Dropbox or iCloud.
+
+Two small fixes that matter to the neighbour apps. One: the today note that AMS Tria Menu, AMS Deck Mate and PARAGON read is now rewritten at midnight, and again by a check every five minutes when the day has turned, even while the app stays open; before, after midnight they saw no note until you brought the app to the front. Two: the Body numbers are now read when the app starts (on a Mac also when it is started in the background), at midnight and on that same check, and the first try of a new day skips the half-hour rule once; before, the menu bar kept yesterday's Body Battery.
+
+### Claude built in
+
+Claude is optional, and it is off until you switch it on and type your own key. Settings → Claude. Without a key the app works exactly as the last part describes. The page has the same small centred title as every Settings page, and Save is full colour.
+
+What Claude does: it picks one of the choices the rule book already made, and words the reason in one short sentence. That is all for the card; since 2.8 Claude also writes your week and answers your questions, described at the end of this part. The rule book alone decides whether a card appears and what is on its menu. Claude cannot add a choice, cannot change your plan and cannot tap for you. You still tap Take it or Keep my plan.
+
+The card never waits for Claude. It appears at once with the rule book's own pick. If a good answer comes back while the card is still open and unchanged, Claude's pick takes the first place and its reason replaces the rule book's, and a small grey line says Picked by Claude from the rule book's choices. Claude has one try of at most 20 seconds, with no second try. An answer that comes later, or after you have opened Other choice or touched the card, is not used, so the words never change under your finger. If Claude says keep the plan, or sends nothing usable, or is slow, the card stays as the rule book made it. If Claude names the rule book's own pick, only the reason is Claude's.
+
+The app checks every answer. The number must be one on the menu. The reason must be one short line (at most 160 letters), start with Why:, and not mention a doctor, injury, medicine, sleep, pulse or HRV. Anything else is thrown away. The card is also checked again against your plan before it changes. The reason must also pass the same word check as the rule book's own words, so healthy, fit, safe and your heart are not allowed either. The footer, not medical advice, stays on the card either way.
+
+What is sent to Anthropic, for one card: the choices on the menu with the rule book's reason; today's date; for each of the last 14 days that had anything in it, the minutes planned and done, the hardest How hard was it? answer as a number out of 10, your morning answer as a number from 1 to 5, and extras like hike 90 min; and, for each of the next 7 days of the plan, the sports, minutes and zone words. Fixed instructions go with it.
+
+What is not sent: your name, photographs, notes, session names, tests, zones and weight, Garmin and Health numbers, sleep, the race, your Dropbox or iCloud, and anything about your other devices. Nothing is sent until a card is made, and only the iPhone makes cards. When you type a key, one tiny test message (Reply OK) checks it, with nothing of yours in it.
+
+It goes straight from your iPhone to Anthropic, and nowhere else. What Anthropic does with it is covered by your own account with Anthropic, not by this app.
+
+The key. You type it once, in a field that hides it. It is kept in the iPhone's password store on this device only, never in iCloud, the plan, a copy, a log or inside the app itself. The page shows Key saved and a row of dots, never the key. A key Anthropic refuses is not kept: Anthropic did not accept this key. Remove the key (it asks: Remove the key? with Remove the key and Keep it) takes it away and switches Claude off.
+
+When Claude cannot choose (new in 2.4). Before, when Anthropic refused (the key had ended, or there was no credit), the app quietly used the rule book's pick and only a line in the log under Settings → Claude said so. Now it tells you, in one line, while the trouble lasts. Settings → Claude shows it under Key saved, and the suggestion card on Today shows one grey line under the reason. Three cases. The key is no longer accepted: Anthropic no longer accepts this key. It may have ended or been removed. Until you type a new one, the rule book chooses alone. (card: Claude could not choose: Anthropic no longer accepts your key. Settings → Claude.) No credit: Your Anthropic account has no credit left. Until you add credit at Anthropic, the rule book chooses alone. (card: Claude could not choose: your Anthropic account has no credit left. Settings → Claude.) The month's cap is reached: This month's 5 US dollars are used. Claude chooses again next month. Until then the rule book chooses alone. (card: Claude could not choose: this month's 5 US dollars are used.)
+
+The row Settings → Claude then reads On, but not choosing · key no longer accepted, or no credit left at Anthropic, or this month's 5 US dollars are used. The line clears by itself at the next answer that works, or when you type a new key. It stays when you close the app. A short hiccup, like no network or Anthropic being busy, shows nothing on the card; it is still one line in the log, as before. The suggestion itself always appears and works: only who picks changes. Nothing is ever bought by the app: Anthropic takes credit from your own account, and you add it there.
+
+The switch Let Claude choose among the suggestions needs a key first. It is off until you turn it on, and it is kept on this device.
+
+The monthly cap. The app counts what each answer costs, in US dollars, from the amount of text used and Anthropic's published prices, and shows it: This month: 0.12 US dollars of 5.00 · 6 answers (invented numbers). It stops asking when the month reaches 5 US dollars, and starts again next month. The page says it costs about a dollar a month. The cap cannot be changed. It is checked before each question, so the last answer can go a little over. The count is the app's own estimate, kept on this device; your Anthropic account has the real bill. An answer that cannot be used is still paid for, so it is counted.
+
+What Claude answered. A list, newest first, of what came back: the time, Kept your plan, Chose: with the change, or No usable answer, the rule book's own pick stood, then the reason and the cost. It shows the last 30 and keeps 200, on this device only. It never holds the key or your plan.
+
+Export for Claude. The button Share the plan as text gives your season as plain text: the phases, your tests and zones (with weight), the last 8 weeks (minutes done of planned per sport, extras, missed and not logged), and the next 4 weeks (sport, minutes, zone words, name and whether done or missed). It opens the usual Send menu (Messages, Mail, AirDrop…). You paste it into the Claude app yourself to talk it over. The app sends nothing by itself, and it works with no key. Once you share it, it is in whatever app you chose.
+
+The suggestion card's Claude pick is made on the iPhone only. A key typed on an iPad or a Mac does nothing for that card. The newer uses below (the look at a draft plan, next week's pick and the swim video check) ask from the device where the key is saved.
+
+New in 2.8, two more uses of Claude. Both are optional, need your key and the Claude switch, count toward the same 5 US dollars a month, and use the same model as before. Unlike the card, they are not a choice among the rule book's: Claude writes words, and the app checks them. Neither changes your plan. Both are shown only on the iPhone, and what they keep stays on this device.
+
+Your week with Claude. From Sunday 17:00 until the end of Monday, a card on Today, under the suggestion area, with a green head, YOUR WEEK WITH CLAUDE. Before: Five short lines about the week, and one question to think about., what is sent, and the full-colour button Write my week. After: the question in the head, five lines under it, and Written by Claude from this week's numbers. Kept under Settings → Claude. One for each week; the last twelve are kept on this device and listed in Settings → Claude under the log as Your weeks with Claude. There is no write again.
+
+What is sent for a week: the week's dates, Monday to Sunday; the minutes done and planned for each sport and in all; your five morning words for each day (or no answer); how hard each done session was (1 to 10) beside the plan's own effort text; how many sessions were missed (with the day, the sport and the minutes), moved, changed or dropped; the extras (activity and minutes); how many suggestions were taken, kept or otherwise answered, with the headlines of those taken; and next week's plan day by day (sport, minutes, effort text). What is not sent: your name, notes, session titles, photographs, tests, zones, weight, and any Health or Garmin number.
+
+What Claude is told to do: a calm look back at one week, using only the week's numbers, as five lines of one plain sentence each (at most 120 letters) and one question (at most 140 letters), no praise and no blame, no medical talk, never sleep, only numbers that appear in what was sent, and the question is not advice.
+
+The check. The answer is shown only if it has exactly five lines (each at most 140 letters) and a question that ends with ? (at most 160), no blocked words (doctor, sleep, heart, pain and the like), no praise words, no links or marks, none of the rule book's forbidden words (healthy, fit, safe, your heart), no number that was not in what was sent, and the answer ended in the ordinary way. An answer that fails says Claude's answer did not pass the app's check — nothing shown.; it was still paid for, so it is counted and logged. No answer at all says No answer came back. Nothing was changed. When Anthropic refuses (key, credit, the cap) a calm line, Claude is resting, takes the button's place. The card appears only when the plan lives in the app.
+
+Ask about your plan. A small button, Ask about your plan, in the row of small word buttons under the Sessions heading (Print, + Session, Ask about your plan), on the wide Plan page and as a row in Settings → Claude, opens a page with a blue head card, what is sent, a field (a hint like Why is Thursday's ride only 45 minutes?), three example questions to tap, the full-colour button Ask, and your last five questions with their answers as tiles, YOU ASKED. Clear (red) takes them away. Done closes it (Escape).
+
+What is sent for a question: your question (at most 300 letters); today's date; the phase and the week's number and tag; the rule book's limits in words (twelve lines, with the numbers of your own settings); the names of the zones, without figures; and this week and the next two, day by day: sport, minutes, effort text, and (done) or (missed). What is not sent: titles, notes, tests, weight, and any Health or Garmin number.
+
+What Claude is told to do: explain the plan and the rule book in plain British English in at most 120 words, only from what it was given; never change the plan, but point to Move, Change or the suggestion card; give no medical advice; promise no race time; say Zone 2, never heart rate, pulse or HRV; never mention sleep. The answer is checked (at most 900 letters, the same word check, no links or marks). If your question is about being ill or in pain (words like ill, sick, fever, pain, hurt, injury, ache, chest), the app answers itself, That is a question for a doctor. The app's Stop sign page is under Not well? at the foot of Today., sends nothing, costs nothing and is not in the log.
+
+The log under Settings → Claude now says what each answer was for: Wrote the week review, Answered a question (with the question). The key, the cost count and the log stay on this device as before. The real service was not called before this release, so how often Claude's lines pass the number check is not known; if too many are refused, that check is the first rule to relax.
+
+New in 2.18, more uses. Same key, same monthly amount, same rule that the app checks every answer and the plan only changes when you tap. (1) A look at a draft plan: up to two tweaks from the rules' menu and three lines, no names sent. (2) Next week, tuned: Claude may pick among the rule's own choices and word the Why: line, marked Picked by Claude from the rule book's choices. (3) Swim video check: six still pictures from a video go to Anthropic with a short request; the answer must be exactly three tips of at most 140 letters, with no words about your body, weight, health or age. The page says about 3 cents; the cost is counted as the other uses are, and the log says Looked at six pictures of a swim length. The video stays on your device and nothing is kept of the pictures. When Claude cannot be asked (no key, no credit, the amount reached, no network), one grey line says so, and the rule's own result stands.
+
+### Your two neighbour apps
+
+From 2.3 this app can pass small notes to AMS Workout Companion and AMS Magic Morning Routine (called Magic Morning), on the same iPhone. It works only once the matching versions of those two apps are installed. Until then none of it shows, and nothing is broken.
+
+How: through one small note kept in the iPhone's password store, which the three apps share. It stays on this iPhone: not in iCloud, not on the internet. It holds this morning's answer and what was done in the other apps in the last 14 days. A note that cannot be read, or is from a newer version, is left exactly as it is, and the app behaves as if there were none. This app only asks whether the other two are installed. It reads nothing else of them.
+
+The morning answer, taken over. If you answered How do you feel? in Magic Morning or Workout Companion, this app takes that answer and does not ask again. Today then shows a line of its own, Feeling good — from Magic Morning (or from Workout Companion), and under it a grey line: Answered in Magic Morning — change it there. You change that answer in the app that gave it; if it changes there the same day, this app follows. This holds on every device (new in 2.4): before, only the iPhone that took the answer over showed Feeling good — from Magic Morning and kept it unchangeable, and an iPad or Mac that got the answer through iCloud showed it as its own and let you change it. Now the answer carries where it came from, so your iPad and Mac show the same line and Answered in Magic Morning — change it there. An answer you give in this app removes that note of origin, and an older version of the app simply ignores it. An answer taken over keeps the time it was given in the other app, so an answer you give later in this app, on another device, is not replaced by it (before 2.5 it was stamped with the moment it was taken over). The five words are the same: Bad, Tired, OK, Good, Great. It is answered once and never twice: the first answer of the day wins. If you answer here first, your answer is put in the note so the other apps can take it. This app never writes over an answer another app gave today, and an answer you gave here is never replaced by another app.
+
+An answer taken over counts as your morning answer here, in every way: it is in the Mornings bars, it goes to your other devices through iCloud, the rule book reads it like any other (two tired mornings in a row can bring a card), and, if Claude is on, it is one of the numbers Claude is told.
+
+Strength ticked from Workout Companion (new in 2.16). Ticks come from two places for strength: Workout Companion (this passage) and, from 2.17, your Garmin watch (see Strength ticked from Garmin; Workout Companion comes first). When Workout Companion noted a finished workout on a day (a finished Sets & reps workout or a gym visit), this app ticks a planned strength session of that day for you. It happens when the app opens on your iPhone and whenever Today appears: a strength session still to do, on such a day, is logged as done, with the workout's minutes as its time (the planned length if the note has no minutes) and its effort from 1 to 10 when Workout Companion noted one. Nothing to tap. Only today and earlier days are ticked (up to 14 days back, as long as the notes are kept), never a day ahead. A session already logged, marked missed or waiting to be sent is left alone (and, since 2.19, a day with no strength session at all gets an extra instead; see the next passage). Each note ticks one session once, so on a day with two strength sessions only the first one still to do is ticked; a second note that day ticks the next one. The session shows a grey line, Ticked from Workout Companion, on Today and on its page. Before 2.16 this took a tap on Log it. Log it now stays only as a fallback, when the tick cannot happen by itself (the note has no minutes and the session has no planned length): then the grey line Done in Workout Companion at 07:40 · 35 min (invented) and the small green button Log it show as before, and nothing is logged without your tap. To undo a tick, open the session and change or clear the log, as with any logged session.
+
+A gym session on a day without planned strength (new in 2.19). Before 2.19 a finished Workout Companion session only ticked a strength session that was in the plan for the same day and still to do; on a rest day or a mobility-only day it went nowhere in this app (it showed only on Body › Gym sessions). Now, when that day has no strength session in the plan at all, the session is added by itself as an Extra workout: Strength, its minutes, its effort from 1 to 10 if Workout Companion has one, counted as training, with the note From Workout Companion. It shows wherever extras show (Today, the week strip, Sessions under Done and All, and Settings → Extra workouts) and adds its time to the Strength row of Week so far, but only when the plan has strength that week. The rules: today and the 13 days before; each Workout Companion session once only, so an extra you delete does not come back; not when that day already has a Strength extra; a day whose planned strength session is still to do is ticked as before; a day whose planned strength is already done or marked missed gets nothing. It happens on the iPhone, where Workout Companion's notes arrive. Garmin strength activities (see below) still only tick planned sessions and never add an extra.
+
+Strength ticked from Garmin (new in 2.17). When your Garmin watch recorded a strength activity, this app ticks a planned strength session for you. It works on any device where your Garmin key is saved: iPhone, iPad or Mac (the key is saved on each device on its own, in Settings → Garmin). When the app opens, and whenever Today appears, it asks Garmin for your activities of the last 14 days. It asks at most once every 10 minutes, and only when a strength session is still to do in those 14 days. A Garmin strength activity (Strength, recorded on your watch) of 10 minutes or more ticks a planned strength session still to do on the same day: the session is logged as done, with the activity's minutes as its time. No effort goes in, because Garmin does not hold your 1 to 10, so How hard was it? can still be asked. Only today and the 13 days before are ticked, never a day ahead, and on a day with two strength sessions only the first one still to do. A session marked missed or waiting to be sent is left alone. A session that already had a log, even one you cleared, is never ticked from Garmin, so when you clear a Garmin tick it stays cleared, on every device. Each Garmin activity ticks one session once, on every device. Workout Companion comes first: on your iPhone a Workout Companion note ticks the session before Garmin is asked, and Garmin then finds it done and leaves it. The session shows a grey line, Ticked from Garmin, on Today and on its page, on iPhone, iPad and Mac. Nothing is written to Garmin, and your Excel copy is unchanged. Without a Garmin key nothing changes. To undo a tick, open the session and change or clear the log, as with any logged session.
+
+Open Workout Companion, a small grey button on a strength session's page, opens Workout Companion. It shows only when Workout Companion is installed. In the other direction, the two apps can bring you straight to Today here.
+
+Stretching. On Progress, in the Load card, one grey line: Stretching: 4 of the last 7 mornings (invented). It comes from Magic Morning's notes, shows only when there are any, and is a count, never a judgement. Nothing reacts to it, and no suggestion uses it.
+
+Mobility count (new in 2.16). On Progress, in the Load card, right under the Stretching line, one grey line: Mobility: 3 from Magic Morning · 1 by hand (invented). It counts every mobility session of your plan that is logged: those ticked from Magic Morning, and those logged any other way (by hand). Missed sessions are not counted. It shows once at least one mobility session is logged, on iPhone, iPad and Mac, and is a count, never a judgement. Nothing reacts to it. Mobility is unchanged in 2.17: it is still ticked from Magic Morning only, and the count is as it was.
+
+Strength count (new in 2.17). On Progress, in the Load card, right under the Mobility line, one more grey line: Strength: 3 of 4 this month (invented numbers). It counts the strength sessions of your plan in this calendar month, from the 1st up to and including today: how many are done, out of how many were planned. A missed session counts as not done. Sessions later this month are not counted yet. It shows once this month has at least one planned strength session up to today (so on the 1st of a month with no strength that day it stays hidden), on iPhone, iPad and Mac. It is a count, never a judgement. Nothing reacts to it.
+
+Mobility ticked from Magic Morning (new in 2.15). When Magic Morning noted that the stretching steps of your morning routine took a minute or more, this app ticks a planned mobility session of that day for you. It happens when the app opens on your iPhone and whenever Today appears: a mobility session still to do, on a day you stretched, is logged as done, with the stretching minutes as its time (the planned length if the note has no minutes). Nothing to tap. Only today and earlier days are ticked (up to 14 days back, as long as the notes are kept), never a day ahead. A session already logged, marked missed or waiting to be sent is left alone. Each stretch note ticks one session once, so a day with two mobility sessions gets only the first ticked, and a morning without stretching ticks nothing. The session shows a grey line, Ticked from Magic Morning, on Today and on its page. The ticking happens on the iPhone, where the notes live, but from 2.16 the grey line shows on your iPad and Mac too (before, only on the iPhone). To undo it, open the session and change or clear the log as with any logged session. Strength is ticked the same way from 2.16: see Strength ticked from Workout Companion, and from 2.17 also from Garmin: see Strength ticked from Garmin.
+
+Today's session shared with Deck Mate and PARAGON (new in 2.8). Settings → Your two neighbour apps → Today's session is shared. This app writes a small today note and nothing else: today's sessions with sport, title, length and whether each is to do, done, missed or a rest day; tomorrow's first session; and the week's time done of planned. No health numbers. The note is kept on this device only: in the iPhone's password store, in the same shared place as the other neighbour note (not in iCloud and not on the internet), and on a Mac also as a small file in the app's own folder. It is rewritten when the app opens or comes to the front and a moment after any change to the plan or a log; it is not written while the app is closed, so a reader shows Open Triathlon when the note is not from today. One link is accepted: it logs today's session as planned, exactly as the Done button does, but only for a session of today that is still to do, has a length, when logging is allowed on that device and the plan is loaded. In every other case it only opens the session and changes nothing. Deck Mate's key and PARAGON's line are not in this version yet: this is only the side of this app that they will read.
+
+None of this changes your plan. The only things that enter this app from the neighbours are your morning answer, a strength session you log yourself with Log it, from 2.15 a mobility session ticked from Magic Morning, from 2.19 an Extra workout for a Workout Companion gym session on a day without planned strength (you can delete it), and, from 2.8, the one link that logs today's session as planned.
+
+### Progress
+
+The button The race, with the flag, beside the weeks to go (before 2.4 only the flag) holds what the race is — distances, where, and the day — and under it the phases of the season: each one's colour, its name, how many weeks it lasts and how many sessions it holds. Each block of the bar carries that number too, where it is wide enough to hold it. Under the bar, how many of the phase you are in are behind you.
+
+Every figure is worked out from your sessions each time the screen opens; none of it is stored. Once the plan lives in the app, the line at the foot of the page, the Missed or moved card and Your zones no longer speak of the workbook. Lengths of time are written one way: 1h 10m, 45m, 66h 08m.
+
+Fitness and freshness: each session is turned into what it cost — an hour at your threshold heart rate is 100, an easy hour far less, because hours alone cannot tell an easy week from a hard one. Six weeks of those costs is fitness, the last week is fatigue, and the difference is how fresh you are: under zero is carrying work, over zero is rested. It uses your heart rate where you recorded it, your effort where you did not, and the zone the plan asked for failing both.
+
+The road: weeks to the race, the phases as one bar with today marked on it by a thin green line — each phase in its own colour, cool early in the season and warm near the race, today's at full strength and the weeks ahead faint — sessions done (the card says done so far, of 84 in the plan, with invented numbers), hours banked against hours due. Is it working: distance per heartbeat, the first half of your logged easy sessions against the last, one sport at a time — it says nothing until eight sessions of a sport carry a distance, a time and a heart rate. Twelve weeks: the hours you did against the line the plan asked for, counting only weeks that are over — a week still being lived would show the sessions left in it as hours missed. Then what was kept: done, missed, unanswered (So far reads, with invented numbers, Of the 84 sessions due up to yesterday, 82 were done); how many in a row now and the most in a row; which sport runs behind, and where the hours went, each figure right beside its name; missed against moved.
+
+Load sits directly under Fitness and freshness. Three figures: this week so far, last week, and your usual week, which is the average of the four finished weeks before this one. Under them, eight weekly bars. Load is minutes times how hard it was (1 to 10): a 60-minute run at 5 counts 300.
+
+A solid purple bar is what you did in the plan. A dotted purple bar is outside the plan — dotted means outside the plan here as on Today: your extra workouts, and workouts in Apple Health that are in neither the plan nor your extras, such as a hike or the gym, if they are at least 10 minutes long. Breathing and meditation are left out. Counts as training does not decide this: a hike is load either way.
+
+Where you gave no number, the app uses the plan's zone: Z1 counts 2, Z2 counts 3, Z3 counts 5, Z4 counts 7, Z5 counts 9. Where there is no zone either, it counts 3, which is easy. The card says how many were guessed. Health workouts of the last 14 days without a number are listed there with a How hard? button; your answer is kept in the app's diary and reaches your other devices through your own iCloud.
+
+Mornings: a row of fourteen small bars showing how you felt each morning. Taller means better. A gap means you did not answer.
+
+Progress only shows. It suggests nothing and changes nothing in the plan. It counts the same whether the plan is in Excel or in the app. Sleep is shown and never leads to advice.
+
+New in 2.8: new cards on Progress, under the cards that were there before. The first four stand in this order: Month in review, Steady weeks, Your bests, Tests (on a wide window side by side, in two columns). The tiles are lightly tinted purple, as the tab is, and the tiles of a card stand in equal rows.
+
+Month in review. A purple head card, MONTH IN REVIEW, November 2026 (invented). Tiles: Hours (done of 16h 40m planned), Sessions (done of 8 planned), Plan followed (the same figure as the Plan page, like 7 of 8 sessions, as on the Plan page) and Longest session; Hours per sport (each with its bar, like 2h 30m of 3h 00m); How you felt (your morning words counted: Bad 0 Tired 1 OK 0 Good 2 Great 0, or No morning answers this month); and a closing line like 7 of 8 sessions done, 14h 20m of 16h 40m planned. Longest: Bike, Wed 9 Sep, 2h 30m. It shows the month before today, so from the 1st on. Earlier months lists every finished month back to the plan's first; a tap shows it. Extras are not counted in the hours, as on the Plan page.
+
+Your bests. Longest ride, Longest run and Longest swim (the time, the distance beside it when you logged one, the date; a grey line Farthest: … only when another session went farther), Biggest week (hours done, Week of …) and Longest row of weeks (Ending the week of …). The three session tiles open that session. Only logged sessions of the plan count, never missed ones and never extras.
+
+Tests. A tile each for Threshold pulse (bpm), Bike power (FTP) (W) and Swim pace (per 100 m): the newest value large beside the name, a grey line (Steady since Test 1, Was 200 at Test 1, or First value, Test 1), and a small chart with a large purple dot for each test, a faint line between them and the test's first day under each dot (14 Sep). Equal values stand at the same height. On the swim chart higher means more seconds, so slower; nothing is judged. A tile is there whenever at least one test has a number for it; with no numbers at all the card is not shown.
+
+Steady weeks. The tile WEEKS IN A ROW WITH THE PLAN FOLLOWED: the number large with weeks, then twelve small squares, the oldest first, a full purple square for a week with the plan followed and an outlined one for a week not followed, with now under this week, and a short key under the squares: a full square is followed, an outlined square is not followed. A week counts as followed when the Plan page's figure for it is 90 percent or more (one number in the app, tested). This week adds one when it is followed, but never breaks the row; a week with nothing due counts as not followed. It is calm: no prize.
+
+Time in zones. Under Fitness, Time in zones · this week: Z1 to Z5, the minutes beside each name, a slim purple bar each, and a line in words for last week (· last week …). A grey line of what the plan asked for appears only when this week's sessions name zones. The minutes are the pulse zones as Garmin counted them over this week's recorded sessions (read from Garmin's list of activities), shown only. The shape of Garmin's answer is guessed and was not tried before this release.
+
+Niggles. A card with a purple head, NIGGLES, 4 noted on 2 places, each place (left and right counted apart) with how often and since when (Left calf · 3 times since Mon 2 Nov), then every note by date, the most recent first, and the grey line If something hurts, the Stop sign page is under Not well?. A notebook, not a diagnosis.
+
+Report as PDF. A full-colour purple button, Report as PDF, with a share mark, on the month card. It opens a page that lists exactly what the PDF holds, with Make the PDF (purple) and Cancel (Escape). The PDF is A4: page 1 has the month's facts, hours per sport, a table week by week (done of planned for each sport), tests and zones; page 2 (and more only beyond 40 sessions) has your morning words for each day and the list of sessions (day, sport, title, planned, done or Missed, how hard). It goes to the share sheet to send to a coach or a doctor; on a Mac it is saved through it. The paper is always light. The PDF was never opened on a real device before this release.
+
+New in 2.18, fitter at the same pulse. A filled rose card under Time in zones, FITTER AT THE SAME PULSE: lines like Run: 5:58 /km in Sep → 5:41 /km in Nov at the same pulse and one for the ride in km/h, a slim bar for each month with the figure beside the month, and Tap for run and ride side by side. The page shows the run (pace, and power when there is enough), the ride (speed) and How it is worked out. It uses runs and rides of 20 minutes or more whose average pulse is in your zone 2 band (from your zones, else your threshold pulse times 81 to 89 percent), the middle value of each month, from September to now. A month with fewer than 2 such sessions shows a dash and says too few. Run power needs 2 sessions with power. A slower month is said plainly. It reads Garmin at most once in 30 minutes.
+
+New in 2.18, the week's scores. In Time in zones, a line like On target: 9 of 11 sessions this week (invented): the sessions of the week that have a score (see On a session's page).
+
+New in 2.19, Routes. A card ROUTES on Progress: this month's outdoor routes from Garmin on a small map, each sport in its own colour, and a line like 12 routes · 5 runs · 6 rides · 1 hike (invented numbers). The card's map is taller on iPad and Mac than on iPhone. Tap it for the Routes page: a full map you can move and zoom. At the top the month with ‹ and › to go back and forward. Chips Run, Bike, Swim and Hike in their colours: filled means shown, outlined means hidden. Tap a route for a small plate with the day, Garmin's name for it, the distance in km and the time. Done closes the page, on every device, and Escape does on the Mac (fixed in 2.19.3). Outdoor means runs, rides, open-water swims, hikes and walks with a GPS track; a treadmill run, an indoor ride, a pool swim and the gym are not. Routes come from Garmin, so the device needs your Garmin key; without it the card says Routes come from Garmin. Add your Garmin key in Settings › Garmin. Up to 20 new routes are read each time you visit (Reading 4 of 12 routes…); each is kept on that device, so a route is read only once. Unchanged: the route on a done outdoor session's own page (since 2.8). New in 2.19.3: while the routes are being fetched the card says Reading your routes…; when Garmin did not answer it says Garmin did not answer just now. Tap to try again. (a tap opens the map page, which tries again); and No outdoor sessions this month yet. only when Garmin answered and the month really has none. The Routes page says the same. The map first frames the area where most routes are (routes whose middle is within 25 km of the middle of the month's routes, when that is at least half of them); a far-away hike is still drawn, move or zoom the map to see it. Several parts of the app asking Garmin at the same moment now share one Garmin pass, fetched once, so none of them stays empty. Routes only show; they change nothing in the plan.
+
+New in 2.20, the top of Progress. Right under the title, eight colour tiles: Race, Fitness, Load, Zones, Routes, Kept, Bests and Month, each with its own colour and a figure (Race: 14 weeks to go; Fitness: 52; Load: 6h 10m this week; Zones: 1h 40m in zone 2, or a dash until Garmin has answered; Routes: 9 this month; Kept: 7 of 8 done so far; Bests: 5; Month: November). All invented. iPhone shows two columns of tiles; iPad on its side and the Mac show four. Tap a tile and the page scrolls to that part.
+
+New in 2.20, the pinned row. Once the tiles have scrolled out of sight, a slim row of the same coloured chips stays at the top. The chip of the part you are looking at is filled; the others are pale. Tap a chip to jump to its part. Scroll back to the top and the row goes away, because the tiles are there again.
+
+New in 2.20, where a part starts. The first card of each part has a strip of the part's colour along its top edge.
+
+### Your zones
+
+A session's Z2 or Z4–Z5 is a pill on its screen. Tap it and the app says what that is for you this season — heart rate always, bike power on a ride once an FTP is entered, the swim paces on a swim — from your latest test. Between tests the app can offer new zones when your sessions show you got stronger (see Zones that keep up below), but it never changes them itself: you tap Use the new zones or Keep mine. While the plan is in Excel, the zones are read from the Test Results & Zones sheet of your workbook. Once the plan lives in the app, the zones start from the numbers the workbook held on the day it moved, and follow the newest test you enter in the app. The sheet that opens from a zone is as tall as what it says, each figure right beside its name.
+
+Entering a test: Settings → Your zones has a section, Your tests. The green button Enter a test result comes first. Under it are the tests that have numbers, newest first. Then one card, Still to come, lists the tests the plan has but that have no numbers yet.
+
+The page has one row for each box: Threshold pulse, Bike power (FTP), Swim pace per 100 m (minutes and seconds, like 1:50), Weight, First day, Last day and Notes. Leave a box empty for not tested this time, but give at least one number. The last day cannot be before the first. The ranges are a pulse of 80 to 220, FTP of 50 to 500 W, a swim pace of 1:00 to 4:00 and a weight of 35 to 150 kg. The boxes stand in one column, starting at the same place whatever the length of the name.
+
+Same as the last test fills the four numbers and leaves the days and the notes alone. Cancel closes the page; Save keeps the test. Save never greys out: if something is missing, a red line above it says what. A grey line says which test the entry becomes. It fills the next test the plan has waiting for numbers, like Saves as Test 3. If none is waiting, it becomes a new test.
+
+The zones follow the newest numbers at once. The app stores what you enter and does not judge it. Before the plan lives in the app, a test is entered in Excel as before.
+
+The whole sheet, the current numbers and the words it uses, is under Settings → Your zones.
+
+The numbers come from your latest test row. While the plan is in Excel, the zone tables are your sheet's own sums, which Excel works out. If another program saves the file without those answers, the tables show a dash until you open the plan in Excel once and save it. A spreadsheet copy made by the app keeps the zones sheet as it was.
+
+New in 2.18, zones that keep up. Between tests, a fuchsia card ZONES FROM YOUR SESSIONS (on Today and at the top of this page) shows what your recent sessions point to: tiles like THRESHOLD PULSE 160 → 164 bpm, RUN POWER none yet → 258 W and SWIM PACE 1:52 → 1:49 per 100 m (invented), the sessions it comes from, and two equal outlined buttons: Use the new zones and Keep mine. Use the new zones enters a test result named Your sessions, with the note From your sessions · run power 258 W, placed after your last test with numbers so that the plan's own coming tests still fill in; the zones follow at once; Changed — Undo lasts for the rest of the day and removes the entry on every device. Keep mine hides that offer until your sessions show clearly more again, or for 6 weeks.
+
+How the offer is worked out. From the last 42 days of sessions: in each, the best steady stretch of laps lasting 20 to 30 minutes (lap pulse within 15 beats of each other, power within 25 percent) gives a pulse estimate of 95 percent of that stretch's pulse; run power counts only from a stretch at 96 percent of your threshold pulse or higher, at 95 percent of its power; in the pool the fastest lap of 400 m or more plus 3 seconds per 100 m. The offer shows when at least two sessions are 3 beats, 2 percent of power or 2 percent of pace better, using the second best. It never offers lower numbers. A real test still comes first and replaces the offer.
+
+Run power zones. A gold card, RUN POWER ZONES, once a run power is known: Z1 up to 80, Z2 81–88, Z3 89–95, Z4 96–105, Z5 106 percent and above of run threshold power, in watts. A run session carries a pill like Power 203–220 W beside its zone pill. Bike power (FTP) is not estimated from sessions, only from a test.
+
+### Your race page
+
+Where. Settings → Race and kit → Race; on Progress, The race, open, Open your race page ›; on the Plan numbers card, To the race, Race page ›; and the race's flag in the wide season bar. Over another page it is a sheet with Done. There is no race flag on Today.
+
+Red is used on the race page for the head card, the headings and the names on the tiles only; every action button is the plan's blue, and only Remove and Untick all use the red of taking away. On an iPad the five leg tiles stand in one row. The head card is race red: RACE, the race's name and date from your plan, and a big countdown, like 228 days with 32 weeks and 4 days under it (in race week 5 days; on the day Today; afterwards Done · Sun 11 Jul).
+
+Your plan for the day. Planned finish 5h 57m (invented), the sum of the times you typed, and, if not all are typed, So far … · 3 of 5 times typed. Five tiles, Swim, T1, Bike, T2 and Run, each with your time, the distance in words only when the race's name says half, 70.3, sprint, olympic or full, and your own line, like pulse Z2. Type your times opens a page (Cancel/Save): legs as h:mm, changeovers as m:ss, with a note for each. The times you type stay yours; the app's own forecast and pacing are separate cards below (new in 2.18).
+
+Fuel plan. Tiles for Before, Bike and Run in grams; for the bike and run also a figure in grams an hour, worked from the leg time you type. Under them your own rows. Add a row adds one; Arrange or change lets you drag by the handle of three lines, tap a row to change it, or Remove, with Cancel and Save. A row's grams are the grams for that row over the whole part; the screen says so.
+
+Kit checklist. packed 7 of 22 (invented), in groups Before, Swim, Bike, Run and After, starting with 21 items. A green circle with a tick means packed; tap to pack or unpack. Untick all asks Untick all N packed items? (red action only on an iPhone; a tap beside it keeps the ticks). Change the list renames, removes, adds to a group and drags within a group, with Cancel and Save.
+
+Kept in the extra file, one entry for each of pacing, fuel and checklist, under the race's day; so it follows you between devices. The checklist is one entry holding the items and the ticks: when you tick on one device and change the list on another while both are offline, the later one wins whole. Dragging was not tried with a real finger or pointer before this release.
+
+New in 2.18: the page has more under the red head card. Their colours only tell the cards apart (indigo, orange, and the section colours below); red stays the race. In order: the race-day forecast, Course pacing, where you would gain most, tune-up races, race week and the race report.
+
+Race-day forecast. An indigo card, RACE-DAY FORECAST: a range for your finish (like 5h 30m – 5h 55m, invented) with the words Your likely finish time, from your fitness, the course and July weather; a tile each for Swim, T1, Bike, T2 and Run, each a range with likely; small bars THE MIDDLE, WEEK BY WEEK; and the grey line Narrows as the race gets closer · worked out Mon 30 Nov. A part it cannot work out says Not enough yet and what is missing. How: swim = your swim pace plus 4 seconds per 100 m over 1900 m. Bike = the middle speed of your steady rides, longer for the course's climbing (0.3 percent per metre climbed per km) and for each degree above 20 (0.4 percent). Run = the middle speed of steady runs, 4 percent fade, the course's hills (0.4 percent per metre per km) and each degree above 15 (0.5 percent). Steady means a pulse of 81 to 95 percent of your threshold pulse, a ride of 60 minutes or more and not indoors, a run of 30 minutes or more; there is no run test, so the run comes from those runs. T1 and T2 come from the course (7m 30s and 5m, estimates). The range is wide far out (about 12 percent of a part with 300 days to go) and narrows to about 2.5 percent; swim is 0.6 and run 1.1 times that, 3 percent more with fewer than 3 steady sessions, and T1 and T2 are always 20 percent either way. It is a forecast, never a target or a promise. The times you type under Your plan for the day stay yours.
+
+Course pacing. The full-colour button Course pacing opens the bike and the run in sections: kilometres from–to, the kind (Flat blue, Rolling indigo, Climb orange, Downhill purple, Turns amber, always beside its word), a note, a pulse range and a power range, and a slim bar as long as the section. Bike pulse is a share of your threshold pulse (flat 85–90, rolling 84–89, turns 83–88, climb 81–87, downhill under 85), bike power a share of your FTP (flat 75–82, rolling 74–80, turns 70–78, climb 72–78, downhill up to 60). Run pulse: first lap 82–88, middle 85–90, last 87–93, climb 3 points lower; run power is the same shape as a share of your steady runs' foot pod power. The Jönköping course is built in (1.9 km swim, a 90 km bike with about 820 m of climbing split at the aid stations at 21, 39, 58 and 79 km, a 21.1 km run in two laps with about 150 m, a July high of 22 degrees). Any other race gets a flat 70.3 course. Sections are approximate.
+
+Where you would gain most. An orange card: for each part a line like Bike: 14 min behind the middle of your age group — the biggest gain (invented), a slim bar, and a grey line with the minutes from the fastest quarter. Changeovers have a row but are never named the biggest gain. The row Age group 45–49 · from Garmin has Change: a page with Cancel and Save for another group or From Garmin (the group comes from the age Garmin holds, as a five-year group in the race year; the age itself is never kept). The comparison is with the men's results of this race in 2019, 2022 and 2023: the middle and the 25th percentile (the fastest quarter). It says what is and never judges.
+
+Tune-up races. Under the countdown: a red tile for each (TUNE-UP RACE, name, date, start, distance, place) and the button Add a tune-up race. The page asks for Name, Date, Distance (Sprint, Olympic or Other with km), Place and Start time, with Cancel and Save, and a saved one can be taken out. After Save, the card Make room for the tune-up lists every change with Take it and Keep my plan; see Changing the plan. The card shows on Today until you answer, and on its day in the week board a small red chip, Tune-up race. A tune-up less than 21 days from the main race, a test in the tune-up days or a day already past changes nothing, and a grey line says so.
+
+Race week. From 7 days before a race, the card Race week · 5 days to go (here and on Today) opens a page with a card for each day, each its own colour, with things to tick (the tick means done), a RACE MORNING timeline worked back from the start (wake up 3 hours before, breakfast 2h 45m, leave 2 hours, changeover set-up 1h 45m, wetsuit 25 minutes, start), Change the start time (the race's own start is assumed to be 08:00 until you type one) and Open your kit list. A sprint, an Olympic and any other race get a list with 7 items fewer. The ticks follow you between devices.
+
+Race report. For a past race (and on Today for 7 days after it) a card Race report opens: your total, a tile for each leg (like Bike 3h 02m · planned 3h 00m) with a slim bar and a dark mark for the plan, distance, Garmin's own speed (swim per 100 m, bike km/h, run per km) and pulse, then What to keep (the steadiest leg, the leg that drifted most, the changeovers, no judging) and the full-colour button Share as PDF (A4). A tune-up has one too; its plan shows only if you typed one. It is read from Garmin's multisport recording once for each race day and kept. The leg split was only checked on an old race's swim, transition and bike parts.
+
+### Shoes and bikes
+
+Settings → Race and kit → Shoes and bikes counts kilometres. A slate card tells how many are in use, and each shoe or bike is a tile: its name and kilometres (Blue runners · 412 km, invented), its kind, In use since Wed 16 Sep, how many runs it has (14 runs, 3 without a distance), and a bar to a limit you set, 412 of 700 km. The bar's coloured part is what is done and the outlined track is what is still ahead of the limit; past the limit one grey line says Past the 700 km you set, with no red.
+
+The kilometres are the starting kilometres you typed plus the logged distance of the done run sessions (for shoes) or bike sessions (for a bike) on the days it was in use. A kind Other counts only its starting kilometres. Extras outside the plan and brick sessions are not counted, and the tile says how many sessions were left out for want of a distance.
+
+On a tile: Use from today and Put aside (switching sets a date; the other of the same kind is put aside that day) and Change. An item that is put aside reads Not in use now. Add shoes or a bike opens a page with Cancel and Save; Retire and Remove both ask first (the question shows the red action only; a tap beside it keeps things as they are). A retired one keeps its final figure in the list under it. Each pair of shoes or bike is its own entry in the extra file, so two devices can edit two pairs and both win. They follow you between devices.
+
+### In your calendar
+
+Settings → Calendar → Put them in writes every session from today to the end of the plan into a calendar called Training: at six in the morning (or the hour you set), each as long as it is planned, one after the other on a day with two. Each is headed by the sport and its length and nothing else — Run 35, Swim 40, Bike 2h30min — with the session's own words in the notes. A rest day is an all-day event. The events float, so six stays six wherever the phone is.
+
+Or choose All day, and every session becomes an all-day event on its own day instead, still headed by the sport and its length.
+
+The app keeps them right: a moved session moves its event, a changed session rewrites it, a session that disappears or is taken out of the plan takes its event with it, and a new session made in the app gets one. Days already behind are left as they were. The Training calendar is the app's own — from today onwards it holds the plan and nothing else — and Take them out removes it. The Training calendar is written by your iPhone only. On an iPad or a Mac, Settings → Calendar says Kept by your iPhone, and the calendar appears in Calendar there through iCloud.
+
+### Sending a session
+
+The button Send at the top of a session (before 2.4 only a share mark) offers the whole session — the brief, for a training partner — and, once it is done, what you did: one sentence for the person at home, with the time and the distance. Photos on the session go along. Heart rate and effort never do. A photograph's share mark says Send too.
+
+### Speaking instead of typing
+
+Any box takes dictation: the microphone on the keyboard.
+
+### What this app does not do
+
+It never changes your plan by itself. Everything in the plan is written because you tapped something, with one exception: since 2.15 and 2.16 a mobility or strength session ticks itself when Magic Morning, Workout Companion or (2.17) your Garmin watch noted the workout. That is only the done tick, and you can change or clear it. Since 2.19 a Workout Companion gym session on a day without planned strength is also added as an Extra workout; it is an extra, not a change to the plan, and you can delete it.
+
+It does not follow your Excel file once the plan lives in the app. The file stays as it was; the app's spreadsheet copies are the way to have a workbook again.
+
+It is not a coach. How you feel, how hard it was, your sleep and your load are shown to you. The only advice is in the cards you may take or keep (the suggestion card, Next week, tuned, the zones offer, the tune-up room and a new plan), and none of them uses your sleep. Words like On target and Too hard describe a session, never you. The grey lines about eating, drinking and protein are common habits of sport, the same for everyone.
+
+It does not put workouts on your watch yet. The Garmin Connect card only lists the steps, so that you can build the workout there yourself. Sessions on the watch itself wait until March, as you decided.
+
+It sends nothing anywhere but your own iCloud (the plan, your answers, and the iPhone's Health numbers) and, only when you have saved a key, it reads your own numbers from Garmin. While Dropbox is connected, your iPhone also saves a spreadsheet copy of the plan in your own Dropbox. Only when you have typed your own Anthropic key and switched Claude on does it send the choices, the days, the week's numbers and the questions listed in Claude built in to Anthropic, straight from your iPhone. Export for Claude sends nothing by itself. While the weather line on Today is on, your place, rounded to a tenth of a degree, goes to Open-Meteo, a free weather service, and nothing else of yours does. Notices, Spotlight and Siri are made on your devices. Nothing goes to your watch. The notes to Workouts and Magic Morning stay on this iPhone.
+
+Garmin's numbers (on Today and on the Body page), the Plan page and the sync dot show things. None of them changes your plan or says what you should do (the one exception, since 2.17: a Garmin strength activity can tick a planned strength session, see Strength ticked from Garmin). A suggestion changes your plan only when you tap Take it. On a suggestion card Claude picks only among the rule book's choices; Your week with Claude and Ask about your plan only write words, and change nothing.
+
+It is not a doctor. A suggestion, Stop sign and I'm ill are training rules, not medical advice. For anything about your health, ask one.
+
+### Signs in this app
+
+Links from other apps (2.11)
+• Nothing on the screens is new. A link such as amsworkoutsync://body only opens that page; it changes nothing and adds no mark or colour. The colours on Deck Mate's Triathlon keys are Triathlon's own page colours: Today green, Plan blue, Body pink, Progress purple, Settings slate.
+
+Fixed meanings, everywhere
+• Green tick: done, and nothing else.
+• Red: missed, taken away, or a warning.
+• Moon: a rest day.
+
+The five tabs
+• Each tab has its own colour: Today green, Sessions blue, Body raspberry, Progress purple, Settings grey. The tab you are on fills its whole fifth of the bar.
+• The little swim, bike, run and strength marks on the tabs are decoration only. They do not mean swim, bike, run or strength there.
+
+Colours of the sports, everywhere
+• Blue is swim. Yellow is bike (and brick). Light green is run. Orange is strength. Teal is rowing. Violet is mobility and yoga. Red is race. Grey-blue is rest, and also meditation, breathing, walks, hikes and skiing. On the week card's key, Rest / not a plan sport has a row of its own. Light blue-green is anything else.
+• A round badge in a sport's colour, with its own hand-drawn mark, says which sport a session is.
+
+Today, the week card
+• Solid block: recorded.
+• Lighter block of the same colour: still to do. It is a little brighter at night; it is the same sign as by day.
+• Hatched block (diagonal lines): marked missed.
+• Dotted block: an extra you did outside the plan.
+• Small green tick on a block: that session is recorded. A paler tick: that extra is done.
+• Moon in a day's column: a rest day.
+• Green disc behind a day letter: today.
+• Thin line under the hours: how much of the week's planned time is recorded.
+• Little notch on that line: where the week should be by the end of today.
+• Row of small green blocks under it: extra time that counts as training, one block a quarter of an hour.
+• Amber block in that row: one full hour of it.
+
+Today, the morning
+• Five faces, Bad, Tired, OK, Good, Great: tap one to say how you feel. Once a day.
+• Feeling good (or the word you chose) on the morning line: your answer. Tap it to change it.
+• Grey words in quotes under the morning line, like "slept badly": your own comment for the day. Tap it to change it. It is only your words and leads to no advice.
+• Feeling good — from Magic Morning (or from Workout Companion), grey, on a line of its own: the answer came from that app. It is changed there, not here.
+• Grey line Answered in Magic Morning — change it there.: under that answer, it says where to change it.
+• Green bracket after a figure: better than your own normal of the last two weeks. Red bracket: worse. Grey bracket: about as usual, or not enough days yet to know your normal.
+
+Today, the cards
+• Green circle with a white tick and a green frame: the session is recorded.
+• Red frame and the red word Missed: you marked it missed.
+• No frame: still to come.
+• Grey words Waiting to sync (and the grey waiting headline on a session's page): logged on this phone, not yet written into your plan in Dropbox. They are grey, not green, because green means done only. You only see them while the plan is in Excel; once it lives in the app, nothing waits.
+• Pale blue ground under Tomorrow: everything on it is tomorrow's.
+• Moon on a grey badge: a rest day, with nothing to do.
+
+Today, top and warnings
+• Orange TEST COPY: the app is working on a test copy of the plan, not the real one.
+• Sending… or a number waiting, in a grey outline: logging is on its way to Dropbox. (Only while the plan is in Excel.)
+• Card with a red frame and a green button Send it now: logging has waited more than a day. The frame is the warning; the button is the way to put it right, so it is green. (Only while the plan is in Excel.)
+• Grey words The plan is on its way from iCloud, at the right of the heading on an iPad or Mac: the plan has not reached this device yet. Nothing to do.
+• Grey line No plan yet — Settings → Your plan brings it in. on a first run: there is no plan here yet.
+
+A session's screen
+• Solid green button with a tick and the time: done, exactly as planned.
+• Row of numbers 1 to 10 (How hard was it?): 1 very easy, 7 hard, 10 all out. One tap saves it.
+• Green outlined buttons: log details, or log it after all.
+• Small heart on Log details or Fill from Garmin: Apple Health holds numbers from your watch for this session. The heart means that and nothing else.
+• Grey pill with a camera and a number (on the Move page and in the list of extras): how many photos it has.
+• Pill with a › at the end: tap it to see what that zone means.
+• Red outlined button: Missed.
+• Blue: changing the plan — Move (with +1 day to put it on tomorrow), Change, + Session.
+• Small mark with the words Counts as training, on an extra: it counts as training time.
+• Grey line under the figures: a general habit about eating, drinking or protein. Only text; it asks nothing.
+• Show the steps / Hide the steps: opens and closes the Garmin steps on the session's own page. Nothing goes to the watch.
+• Share mark with the word Send, top right: send this session, or what you did, to somebody. Photographs have the same Send.
+• Round grey pen: correct the figures you logged — what you did.
+• Button Change: alter what is planned — the day, the sport, the length. It is there only while the plan lives in the app (not on an Excel plan, and not while you are going back to Excel).
+• Red button Take out of the plan, at the bottom of Change session: it takes the session out. You can undo it.
+• Green edge round a box in a form: you changed that box (also on Change session).
+
+Sessions tab
+• Four numbers, Upcoming, Done, Missed and All: the one you chose is in a blue box. All is Done plus Missed plus Upcoming; rest days are not counted.
+• Bar under them: solid blue is recorded, hatched blue is missed, light blue is still to come.
+• + Session: make a new session in the plan. Only once the plan lives in the app.
+
+Moving the plan in, and where it lives
+• Green word same: the two figures agree.
+• Red word differs: the two figures are not the same. The plan does not move while anything differs.
+• Everything matches.: every figure and every session is the same on both sides.
+• Looked odd in the file: a value that looks strange. It is shown, not mended.
+• Lives in this app, in Settings → Your plan: the plan is kept in the app and Excel no longer follows it.
+• Red button Go back to Excel: writes the plan as it is now into your Excel file and makes Excel the plan's home again. For three weeks only.
+• Grey Undone in Changes to the plan: that change was undone. It stays in the list.
+• Before and Now in that list: the plan as it was, and as it is now.
+• Red button Put this copy back, in Safety copies: the plan goes back to the start of that day. The plan as it is now is kept aside first.
+• Red line above Save on the test page, or at the top of Safety copies (before 2.19 also Thursday rides): what is missing or what went wrong.
+• Grey line above Save on the test page: which test the entry becomes.
+• Green line after Put this copy back or Add rides: it is done.
+• Before → after in Thursday rides: a week's time now, and with the rides added.
+
+Progress tab
+• Big purple number and the button The race, with the flag: time to the race. Tap it to see what the race is. The flag means the race everywhere.
+• Coloured blocks in the road: the phases of your build, cool early and warm near the race. The strongest block is where you are now, the ones behind you a little lighter, the ones ahead fainter.
+• Thin green line across the road bar: today. Green is today everywhere.
+• Green arrow up, red arrow down, grey arrow across: you travel further per heartbeat, less, or the same.
+• Purple line with pale fill: your fitness. Red dashed line: your fatigue.
+• Solid purple bar in Load: load from sessions in the plan.
+• Dotted purple bar in Load: load outside the plan.
+• How hard? button: a Health workout with no number yet. Tap it to give one.
+• Small Mornings bars: how you felt each morning. Taller is better. A gap is no answer.
+• Purple bars in the hours chart: hours done each week. The line over them: hours the plan asked for.
+• Red words like plan 30% +5: your hours have drifted five points or more from the plan's mix.
+• Red sentence about sessions never recorded: they are behind you and you did not say done or missed.
+
+The sync dot (Settings → iCloud, the foot of the side list on iPad and Mac, and the page an iPad or Mac shows before the plan has arrived)
+• It always comes with its words; the dot alone means nothing.
+• Green dot, Same on all devices: the plan here is the same as on your other devices. It is a dot, not a tick: the green tick still means done and nothing else.
+• Green dot with other words, like 2 things were taken out by your Mac — see Safety copies: the plan is the same on all devices, and a meeting took something out of this device's plan. A copy of it was kept. The words go once you have looked.
+• Amber dot, On its way: the plan is travelling between your devices, or this device is still waiting for iCloud to say what is there. It is a dot; the amber block under the week card still means an hour of extra time.
+• Grey dot, iCloud is off: this device is not signed in to iCloud, so its plan is not shared.
+• Red dot: a problem, and the words say which. Nothing was changed on this device because of it.
+• Plan from your iPhone · 214 sessions, beside a green dot: the plan has arrived here and opens in a moment (invented numbers).
+
+On iPad and Mac, the Plan page
+• Side list: Today green, Plan blue, Sessions blue, Body raspberry, Progress purple, Settings grey. The row you are on has a pale box. Plan and Sessions share their blue because both are about the plan. Blue is the plan's colour on this page too: the chosen word of the switch Week · Month · Year, + Add, Undo, and the frame round a day while you drag.
+• Small green outlined buttons, Previous, This and Next: move along. They change nothing in the plan.
+• Season bars: a taller bar is more planned time. The colour is the phase, cool early and warm near the race. Small letter E above a bar: an easy week. Small letter T: a test week. On wide bars the whole words Easy and Test stand there instead. The key under the bars says it (E = easy week · T = test week). Pale never means an easy week: in the Year squares and in By sport, as on the week card on Today, pale means still to do, and only that.
+• Clear outline (dark by day, light at night) round a bar or a run of bars: the week or the month you are looking at, and on Year every bar of the season.
+• Outline with no right side, on Year: the plan goes on past the race, so the year goes on past the bars.
+• Thin green line with the word Today: where today is in the season. Flag at the right: the race, with its name and date. The flag means the race everywhere, also on the badge of a race day.
+• Green day name on the week board, green Today in a month cell, and a pale green column: today. In the Year squares a green outline is today, as everywhere else; the key under the months shows it beside Today.
+• Green month name on Year: the month you are in.
+• Blue frame round a column or a cell while you drag: where the session will land.
+• Hatched edge, red frame and the red word Missed on a card or chip: you marked it missed. Green circle with a white tick: done.
+• Dotted card under a thin line in a day: an extra you did, with the paler tick, as on Today.
+• Year squares: solid, recorded. Pale, still to do. Hatched, missed. Grey empty outline, a rest day. Red, race day. Green outline, today. The colour is the day's main sport. At night the pale squares are brighter so the sports can be told apart; it is the same sign as by day.
+• Green +2 more at the foot of a month cell: more sessions than fit; tap it to open that day's week.
+• Purple bars in Load · last 12 weeks, up to today: the load of each week, this week the strongest. In By sport, a solid bar is done and the pale part is still planned.
+• Undo, beside the line that says a session moved: it lasts eight seconds.
+• Calm grey line under it, such as Friday is your rest day.: your move breaks a rule of the rule book. The move is made all the same.
+
+Body
+• Raspberry (a deep pink): the Body page, and only that. Its heading, its top card and its tab.
+• Heart with a pulse line: the Body page. It is not the small plain heart on Log details, which means Apple Health holds numbers from your watch.
+• White bar over the Body Battery curve, with its words above it, like Run −17, and a thin white line down from each end: a workout of today, as long as it lasted, and the points it cost. Tap it to open its session, its extra, or its facts from Garmin; the tap only opens a page and changes nothing. Lighter and pale never mean a workout; they keep their one meaning, still to do.
+• Thin line across the whole 24 hours behind today's curve, with the word yesterday at the top right of the card: yesterday's Body Battery, for comparison only. It is neither pale nor dotted, because pale already means still to do and dotted already means an extra outside the plan. It is not a workout and not a goal.
+• White dot at the end of the curve: now. The rest of the day stays empty.
+• Small grey dash – in a tile's row of bars: no reading that day. It is never a zero.
+• Bold green weekday letter under a tile's last bar: today. Green is today everywhere.
+• Grey line under a figure, like your normal 42–55: your own normal from Garmin. It is not a promise or a score.
+• Grey outlined box with the word normal behind the bars of HRV or Resting pulse: your own normal. It is not a goal.
+• Word filled raspberry in the switch 7 days · 4 weeks · 12 weeks: the span you chose.
+• A bar named by a date in 4 weeks or 12 weeks: one week, named by its Monday. The last one has a bold green name: this week, which holds today.
+• Seven small curves in Body Battery · last 7 days: one day each, with a white dot on today's: now.
+• Grey line like 3 of 3 in your normal range: where three numbers sit against your own normal. No colour, no advice.
+• Slim raspberry bar in Training load, with a darker stretch (0.8 to 1.3, the steady range) and a round marker: where this week's load stands against your 4-week average. The darker stretch is a range, not a goal.
+• Red words, only for Overreaching in Training load: the load is well above your usual. Red keeps its one meaning, worse than normal; no other word on these cards is red, and sleep debt and weight never are.
+• Thin grey outline behind a sleep bar in Sleep debt: that night's need. It is the same kind of grey outlined box as normal behind HRV, and it is not a goal.
+• Thin line with a dot in Weight: your weigh-ins over 90 days, the dot being the latest.
+• Tag in front of a workout in Workouts this month: the sport, in the sport's colour from the plan. A grey tag is a sport that has no plan colour (walk, hike, breathing, yoga). A tag is not done, planned or missed.
+• Small headings Training and Health over the new cards: headings only.
+• Grey line like No weigh-ins in 90 days: nothing there to show; never a zero.
+• Pale background in the card's own colour on a gym session row: the session shown in the card.
+• Bold orange figure on a machine line (Gym sessions), like 90 kg × 10: your heaviest set on that machine in that session.
+• new best in bold orange: a record for that machine.
+• On the Body page each card has its own colour. The colour only tells the cards apart and means nothing else. Raspberry is still Body. No card uses the green of today and done, or the red of a warning.
+
+Morning numbers from Garmin
+• The Garmin line under the morning line: HRV, Sleep, Resting, Body Battery. Brackets as on the Health line: green the good way, red the other, grey when it is as usual or when your normal is not there yet.
+• Green dot, Garmin · this morning, read 07:12: the numbers are from this morning. Grey dot, Garmin · older numbers from a day: they are older. The words are always beside the dot.
+• Grey line, from iPhone, as of 07:12: these are your iPhone's Health numbers, shown on an iPad or a Mac, and when the iPhone read them. Paler once they are more than 18 hours old.
+• Green word Connected and a row of dots in Settings → Garmin: a key is saved on this device (it feeds the line on Today and the Body page). The dots are not the key.
+• Red words under the field or the buttons: Garmin did not accept the key, or could not be reached.
+
+Suggestions (Today, under the morning question)
+• Card with a bold line and a grey Why: line: a suggestion from the rule book. It changes nothing until you tap.
+• Two buttons with the same blue outline, Take it and Keep my plan: your answer. Neither is filled and neither is the main one. Blue here is the plan's own colour; Keep my plan changes nothing, and weighs as much as Take it.
+• Small blue word Other choice: shows up to two more ways to answer. Each has its own blue Take it.
+• Small grey line Picked by Claude from the rule book's choices: Claude chose the wording and the pick. Only when Claude is on.
+• Grey line Claude could not choose: … under the reason on a card: Claude is on but Anthropic refused (key, credit or the month's 5 US dollars). The rule book picked alone and the card works as ever. See Claude built in.
+• Training suggestion — not medical advice, tiny grey words at the foot of a card: always there.
+• Changed — Undo, where the card was: you took it. Undo is open until the end of the day.
+• Grey line Suggestions are paused — Stop sign, or Resting after illness: day 2 — until 48 hours symptom-free: no card will come until it is over.
+• Small grey pill Not well?, at the very foot of Today and at the foot of a session: a button with its words, kept quiet on purpose. It opens a plate with Stop sign and I'm ill, which open the pages with the same names. What you tap there counts on all your devices.
+• Red words Stop training now. at the top of the Stop sign page: the only red heading there. Paused with a full green button, A doctor has seen me: suggestions are paused until you tap it.
+• Green outlined buttons Calf, Achilles, Knee, Other, Nothing hurts: your answer to Something hurts?. They are answers, not changes to the plan.
+• One calm grey line under Move or Change, such as Friday is your rest day.: your own change breaks a rule of the rule book. You can still go on.
+• In What was suggested, bold words under a card (Taken, Kept my plan, No answer, Put away): what became of it.
+
+Claude (Settings → Claude)
+• Green words Key saved with a row of dots: a key is kept on this device. The dots are not the key.
+• Green switch Let Claude choose among the suggestions: on or off. It is off until you turn it on.
+• Red words under the key field (for example Anthropic did not accept this key.): the key was refused or could not be checked.
+• Grey line under Key saved, such as This month's 5 US dollars are used. Claude chooses again next month. Until then the rule book chooses alone., and the row On, but not choosing · …: Claude is on, but Anthropic refused (key no longer accepted, no credit, or the month's cap). It clears by itself at the next answer that works, or with a new key.
+• Red outlined button Remove the key: it takes the key away and switches Claude off.
+• Line This month: 0.12 US dollars of 5.00 · 6 answers (invented numbers): what Claude has cost this month by the app's own count, and the cap.
+• Green outlined button Share the plan as text: it gives your season as text to paste elsewhere. It sends nothing by itself.
+
+Routes and Sleep need, new in 2.19
+• Route line in a sport's colour: the route of a session of that sport, in the same colours as everywhere (blue swim, yellow bike, light green run).
+• Chip filled on the Routes page: that sport's routes are shown. Chip outlined: they are hidden.
+• Tick beside a choice on the Sleep need page: the chosen sleep need. It is not done and not a result.
+• The + Extra workout pill, now above Week so far: unchanged meaning, a new place.
+
+Progress, new in 2.20
+• Colour tile at the top of Progress (Race purple, Fitness pink, Load brown, Zones red, Routes indigo, Kept magenta, Bests gold, Month slate): one part of Progress. The figure on it is that part's own number. Tap it and the page scrolls to that part.
+• Pinned row of small chips at the top, once the tiles have scrolled away: the same parts, in the same colours. Filled chip: the part on screen now. Pale chips: the other parts. Tap a chip to jump there.
+• Dash on the Zones tile: Garmin has not answered yet. It is not a zero.
+• A colour strip along the top edge of a card: where that part starts. The colours only tell the parts apart; they mean no sport and no result.
+
+Your neighbour apps
+• Grey line Feeling good — from Magic Morning (see Today, the morning): the answer came from that app, and it is changed there. The same on iPhone, iPad and Mac.
+• Grey line Ticked from Workout Companion on a strength session: you finished a workout in Workout Companion, so this app logged the session as done for you. It is the done tick, nothing else; change or clear the log to undo it. The same on iPhone, iPad and Mac.
+• Grey line Ticked from Magic Morning on a mobility session: you stretched in Magic Morning, so this app logged the session as done for you. Same meaning, same undo.
+• Grey line Ticked from Garmin on a strength session: your Garmin watch noted a strength activity, so this app logged the session as done for you. It is the done tick, nothing else; change or clear the log to undo it. The same on iPhone, iPad and Mac.
+• Grey line Done in Workout Companion at 07:40 · 35 min beside a small full green button Log it: only when the tick could not happen by itself. Tap Log it to record the session; nothing is recorded without your tap.
+• Small grey button Open Workout Companion: it opens Workout Companion. Shown only when Workout Companion is installed.
+• Grey line Stretching: 4 of the last 7 mornings in the Load card: a count from Magic Morning, never a judgement.
+• Grey line Mobility: 3 from Magic Morning · 1 by hand in the Load card: a count of logged mobility sessions, never a judgement.
+• Grey line Strength: 3 of 4 this month in the Load card: how many of this month's planned strength sessions up to today are done, a count, never a judgement.
+
+Today, new in 2.8
+• Grey line under an outdoor session, like 11° · feels 7° · breezy 5 m/s · rain likely 15–16 · Light until 16:12: the weather and the daylight. Words only; it never changes anything.
+• Grey line Away until Wed 6 Jan · no pool, no gym, under the heading: you are away; tap it to open the page. Grey chip No pool while away (also on the session's page): this session needs what you will not have there.
+• Week so far: a slim bar for each sport. The full colour of the sport is what is done; pale is still to do, as everywhere.
+• The way back (stairs): the step filled green is the one you are on now; a tick is a step behind you; pale steps are ahead. The tick is still done and nothing else; the filled green step means now, here only.
+• Blue card NEXT WEEK, with an E or a T: next week's sessions (blue is the plan; E and T are the letters of the season bars). Small Close puts it away.
+• Green card YOUR WEEK WITH CLAUDE: Today's own green; the five lines were written by Claude.
+• Grey footnote Why: under a session's title: what that session is for. Words only.
+
+Reminders (Settings → Reminders)
+• Three switches, each with a time: evening, Sunday and missed-session notices. Slate head card: Settings' own colour.
+• Grey line with Open iOS settings: iOS has refused notices.
+
+After a session, new in 2.8
+• Line in the sport's colour, with a pulse curve: the route and the pulse from Garmin. Z1 to Z5 and purple bars: minutes in each pulse zone this week.
+• ← in Last time · Wed 16 Sep: now ← last time. The arrow means the figure of the last time.
+• Chosen word as a full blue button (Fine, So-so, Upset; Wetsuit Yes or No): your answer. Unchosen words are plain. Blue is the plan's colour; here it only marks the chosen word, with no tick.
+• Three short lines at the left of a row (favourites, fuel rows, kit items): the handle; drag it to arrange.
+• Blue words In your favourites: this session is saved.
+
+Progress, new in 2.8
+• Purple tiles and the purple head cards (Month in review, Niggles): Progress' own colour.
+• Full purple square in Steady weeks: that week followed the plan. Outlined purple square: that week did not. The card has a key under the squares that says so in words. The word now under a square: this week. Pale is not used here.
+• Large purple dot in Tests: one test. Equal values stand level; higher on the swim chart is slower, and nothing is judged.
+• Purple button Report as PDF with a share mark: a PDF of the month.
+
+Away and your race
+• Switches in Away (Pool, Bike, Gym, Open water): what you have there. They are switches, not ticks, because the tick means done.
+• Race red head card, headings and tile names on the race page: the race, here and on every flag. The buttons there are the plan's blue. Red is also missed, a warning and taking away; Remove and Untick all keep that red.
+• Green circle with a white tick in the kit list: packed. The tick is still done: here, packed is done.
+• Outlined track beside a coloured part, in Shoes and bikes: the kilometres still ahead of the limit you set. Past the limit one grey line, no red.
+• Slate card: Settings' own colour (Away, Shoes and bikes, Reminders, Keys).
+
+Buttons everywhere
+• Full green button: the main step on that screen (the same deeper green by day and at night).
+• Green outlined button: an ordinary action.
+• Red outlined button: it takes something away (disconnect, discard, stop, delete, take out of the plan, go back to Excel, put a safety copy back).
+• Grey outlined button: a quiet one, usually a correction.
+• Red words under a button: something went wrong.
+• › at the end of a row: opens another screen.
+
+Plan maker and My week shape, new in 2.18
+• Amber: the plan maker and its draft pages. The head card Draft — your plan is not changed says it is not your plan. Each block (Base, Build, Peak, Taper, Race week, Post-season) is its own amber shade on the season bar and the week bars, always with its word; the bar length is the week's hours.
+• Word chips on the week shape page: filled in the card's colour = chosen, outlined = not chosen. There is no tick, because the tick means done. A greyed chip on the rest day = not allowed there; the card says so.
+• Easy week and Test week are words, not marks.
+
+Today and Progress, new in 2.18
+• Indigo card Next week, tuned, and fuchsia card Zones from your sessions: colours that only tell the cards apart. Gold: the run power zones card. Rose, filled: Fitter at the same pulse. The buttons on the first two are blue or fuchsia outlines, equal; neither is the main one.
+• On target, A bit hard, Too hard in plan blue under a done session: the words are the sign. They never use green (done) or red (danger), and they describe the session's minutes above the planned zone, never you.
+• Changed — Undo after taking a card: the changes are made and one Undo takes them all back.
+• Green card New block: a new block began. Amber is the season and block colour on its sheet.
+
+Race page, new in 2.18
+• Section colours on Course pacing, always beside their word: Flat blue, Rolling indigo, Climb orange, Downhill purple, Turns amber. They mean the kind of section only, nowhere else.
+• Indigo card Race-day forecast, orange card Where you would gain most, indigo and purple head cards on Race week and Race report: card colours only. Red stays the race.
+• Red chip Tune-up race, and the red tile: red means a race. The chip stands on the tune-up's day in the week board.
+• Race week: a tick means done, as everywhere. Narrows as the race gets closer: the forecast's range gets narrower, it is not a target.
+
+Drill cards and swim video check, new in 2.18
+• Numbered circles 1, 2, 3: the order of the steps on a drill card, the three tips of a swim video check and the first frames. The number says the order, nothing else.
+• Tiles in many colours on Drill cards: each tile its own colour to tell them apart. No colour means a sport there.
+• Grey line Claude is resting…: the video check could not ask Claude; nothing changed.
+
+
 ## New in 2.21 (101) — Make a new plan moved to Settings; the Year view outlines every season bar (28 Nov 2026)
 
 Version shown: 2.21 (101), 28 November 2026. The base is 2.20.1 (100). All numbers invented.

@@ -203,6 +203,10 @@ struct RootView: View {
             if ProcessInfo.processInfo.environment["AMSWS_GARMIN_PAGE"] != nil {
                 NavigationStack { GarminSettingsView() }.environmentObject(store)
             }
+            // 2.22: How this works (=1), or it with one part's bigger view open (=today, =week, …).
+            if let part = ProcessInfo.processInfo.environment["AMSWS_GUIDE"] {
+                NavigationStack { GuideView(openFirst: part == "1" ? nil : part) }.environmentObject(store)
+            }
             if ProcessInfo.processInfo.environment["AMSWS_CLAUDE_PAGE"] != nil {
                 NavigationStack { ClaudeSettingsView() }.environmentObject(store)
             }

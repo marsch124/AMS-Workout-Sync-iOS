@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0346AE9A85D1D4E071D72D6E /* guide-icloud-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 88428C8A8004D38697F55697 /* guide-icloud-night.jpg */; };
+		03B2295206446CAAF8612BEA /* guide-reminders-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3708D66082BCB6EEAAD2F8BC /* guide-reminders-day.jpg */; };
 		0472DFF26CE85F3ADE7D8932 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A14825F875D7AF6B7EE715C /* Store.swift */; };
+		048CF4ED9569AC41C018B85C /* guide-claude-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2FE2F92AF9CB77759C5AB6D2 /* guide-claude-day.jpg */; };
 		068842FBE891613A61743D7E /* MorningNumbersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33984951D7E218F08026A8F1 /* MorningNumbersView.swift */; };
 		0728E2D176D07D3C4A98A7AB /* PlanMakerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 846054E3CD0AC937ADBEC198 /* PlanMakerView.swift */; };
 		080DD764DF4938C6AE0E6476 /* RemindersSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A87A14F80DE0C328853F7C2 /* RemindersSettingsView.swift */; };
@@ -16,15 +19,21 @@
 		11EB1E3C3078AD01F74A83AC /* AwayUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86E55B10FCCF54499FBECC /* AwayUITests.swift */; };
 		1401AE90F5F3B1855F06CD32 /* ClaudeKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE5703FD6208A73C4D662DA /* ClaudeKey.swift */; };
 		14C90BEE92683DC71A86C7CB /* SessionPurposeLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47216E26B6949D16961FB9A4 /* SessionPurposeLine.swift */; };
+		15185E633AEF10FE294C8B5F /* guide-week-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 990066DFCED4A069C777C3A0 /* guide-week-night.jpg */; };
 		163E5A3AD7A1CA3083484F37 /* Diary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C8793044EA9500B757D610 /* Diary.swift */; };
 		172F6086D04FC27566DBB5B0 /* ClaudeReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE612C3DFD66333CAE79A92C /* ClaudeReviewView.swift */; };
+		187A647600C9E302589010D4 /* guide-watch-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D745693883F9851373252007 /* guide-watch-night.jpg */; };
 		1897199A25178865546743B3 /* Reminders.swift in Sources */ = {isa = PBXBuildFile; fileRef = E538584C50859DE2E1568D9E /* Reminders.swift */; };
 		1974D6B21ABAA53421C402FC /* BodyMonthWorkouts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C20C294BEA9F6076C092542 /* BodyMonthWorkouts.swift */; };
+		1B8394E50C3E04AFC523FC55 /* GuideContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43EBE6E3BC28C233AF5FAD67 /* GuideContent.swift */; };
 		1BFDD9390DD0A34EE706BEC0 /* RoutesMap31UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 452F69E882F4E6117D91D09F /* RoutesMap31UITests.swift */; };
 		1DAF8A7B8F008223FA81CAC4 /* GarminMorningUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CD21785F71109598A32492D /* GarminMorningUITests.swift */; };
+		1F046EF93E5D2C2A2195C34A /* guide-settings-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 42CF11158626BDF05799C40B /* guide-settings-night.jpg */; };
 		1F2EC85C637F8D5AB50FBC25 /* Raceweek30UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B97CB39D70DB8F777BD606C /* Raceweek30UITests.swift */; };
 		1F7F89FB822726498823E6AE /* RaceEditViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4545506F79E4D9D433E6C2FB /* RaceEditViews.swift */; };
+		1FD1622C4A0E122E70C2C277 /* guide-month-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 501FB5948A228ADFA46EB398 /* guide-month-day.jpg */; };
 		208A724EC312F4125C46AAA1 /* SeasonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04CBC958D9BB764875C6207 /* SeasonView.swift */; };
+		242D27D16902BFBA44DD1674 /* guide-session-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = EC45CFB259F22DDFCE067940 /* guide-session-day.jpg */; };
 		24B17177DC92C39F31BBDEEF /* TodayNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD80208B1FE18E2D0BA25612 /* TodayNote.swift */; };
 		24C73D27839B03C65C5F9E82 /* SuggestionsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E7C3F09C67D051238AC768 /* SuggestionsSettingsView.swift */; };
 		24DD67DD79E07FEC82557AFF /* MoveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */; };
@@ -32,7 +41,9 @@
 		25E1857AA872FE0A7361A134 /* LogExtrasDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2581257A8D8AE79F9B5FCD08 /* LogExtrasDebug.swift */; };
 		262052E7C125765E04FCCC17 /* GarminTick217UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E029A020B794AB3CDB66BA9 /* GarminTick217UITests.swift */; };
 		2637CE330B0A7644AD7FF6FE /* TestEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3467383EBFE6908BAAB805F7 /* TestEntryView.swift */; };
+		2771984D5BEB875FC6C71C6A /* guide-logform-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = C3679CF89F9F4E485B598D34 /* guide-logform-day.jpg */; };
 		2A89E41D5CDB880B6E0ECCF7 /* PlanNumbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 732B30DD98E3680CB2EE7B37 /* PlanNumbers.swift */; };
+		2AFA78DD39285843964B9ABC /* GuideKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D184AC5B5C261D9D9F2CE1 /* GuideKit.swift */; };
 		2C53F81FAA4B04B0F30075BB /* MonthReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB465B75555C1C3005BC6FA /* MonthReport.swift */; };
 		2D300B276F9CD592D072EEFB /* ClaudeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94330FB5692E564AA2B91591 /* ClaudeUITests.swift */; };
 		33E9F11BC35EB1170274CFF4 /* PlanMaker30UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD73FBA0AD41800B980E3904 /* PlanMaker30UITests.swift */; };
@@ -46,21 +57,30 @@
 		397F613B7445E14D20C9656C /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2CB3C689413A3D9CB97FA7 /* Photos.swift */; };
 		3A8F87C53AD72EF415692796 /* BodyGymCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7135BAD6452E97AA2684719C /* BodyGymCard.swift */; };
 		3B18EC3B9D29DE2C27133D11 /* WorkoutCore in Frameworks */ = {isa = PBXBuildFile; productRef = D690C9E09EB79AAE0C30F1A6 /* WorkoutCore */; };
+		3BB8F961867ADC0B0AEEF892 /* guide-suggest-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = EA8998533053C0ECF4F9F28F /* guide-suggest-night.jpg */; };
 		3C2714F6269EFFC4071F2934 /* TodayRound28UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06267858A9B21CACC9D413D3 /* TodayRound28UITests.swift */; };
 		3C47B4FB4567292271EB90F5 /* Neighbours.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30A622530862215769C87FA /* Neighbours.swift */; };
 		3E199BE0CA28370E4C4B6F3A /* FavouritesSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D8F612FBAF810C14222F4FE /* FavouritesSettingsView.swift */; };
+		3F5FAA94C68722A4C67F5D30 /* guide-today-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A28C5E55F21779A874F48376 /* guide-today-night.jpg */; };
 		424184B6CE260A6F46486184 /* HeadFills.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE74CF9DA40FD58546C066C /* HeadFills.swift */; };
+		450CAA1BB09CAA3C018352A9 /* Guide222UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A7412BD80B074631F0636C /* Guide222UITests.swift */; };
 		458F12A0700DC79E048C420E /* ReturnLadderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDFDBF5AAF5A1A45839BE16 /* ReturnLadderCard.swift */; };
+		471B36691DF8E3320B3E1BEB /* guide-claude-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D94CB5D58D4C895E1F4C8087 /* guide-claude-night.jpg */; };
+		477B162DD7A4C7E81617AD35 /* guide-watch-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 81AFE7EAB659ADB47BFAE53A /* guide-watch-day.jpg */; };
 		4B419EE7551F66E569CDFFF0 /* Score30.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0875AEB98723630DC2BF41FC /* Score30.swift */; };
 		4C92AF2407F8B9021267FA3C /* PhotoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */; };
 		4E5CBBAC4B5317C185B6AB23 /* Tuning30UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7FBF4B4C4866732BE4242B /* Tuning30UITests.swift */; };
+		4E65C3B0C1CB45072461D8D5 /* guide-gear-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = B81FB8F49AACE5DF3A717FFE /* guide-gear-day.jpg */; };
 		4E6B34A71117045A8AB3848B /* RacePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC9FE1BD710D6061C830192E /* RacePage.swift */; };
 		4FEC94AC696B1C83143E08E5 /* BodyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */; };
+		5145E4A7CB68652785A74A44 /* guide-planmaker-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 00468025DB04BFE3076B63B1 /* guide-planmaker-day.jpg */; };
 		54AE55B92F2529F788232282 /* TestHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500418BE406E5EED0261B44 /* TestHistory.swift */; };
+		55E9F36584ED124CC05ACE94 /* guide-stop-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A8F962DA71B97BA14D2E2CF6 /* guide-stop-night.jpg */; };
 		56849CD6E19D0F6E102E58A3 /* FeelNote210UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62546944BDC0F336DFE992B6 /* FeelNote210UITests.swift */; };
 		57C9D429EE28AAC34434A4E6 /* AMSIcons in Frameworks */ = {isa = PBXBuildFile; productRef = E5919F8033E8B81CB5A802AE /* AMSIcons */; };
 		593D2A6E21A792BDD409D767 /* SleepNeed219UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F82737EB09C31978F68C91 /* SleepNeed219UITests.swift */; };
 		594E2CBFA352E29375F20DD7 /* RoutesReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4FF6B704045371BDE654BD /* RoutesReader.swift */; };
+		5980C13504791364B7674062 /* guide-extra-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 368A7DFD7E52FBC42C49FD0A /* guide-extra-night.jpg */; };
 		59F1F45FFE23F277C18D0890 /* PoolCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F134FA8C0441903261DC2A /* PoolCard.swift */; };
 		5A31D1D0DB0FA37676009BB5 /* Raceplan30UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FEFA56BC080FC1CC4907564 /* Raceplan30UITests.swift */; };
 		5C344D8AF3B4D4BD5C52F7BD /* BodyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3844D13CF50F6EC65408A10 /* BodyView.swift */; };
@@ -70,24 +90,33 @@
 		60397047CF301F1DF40A0239 /* KeyCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6090A62F8CCF0EC2AA253E3F /* KeyCommands.swift */; };
 		626D40FACA01AA7EC4D55970 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E3DEEE01504BE66D135FE3 /* Theme.swift */; };
 		66D43D228DD0E678D8D24C97 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338EA2CFBED1B8532ED07B0A /* Device.swift */; };
+		672F33870D794A985608A0C4 /* guide-garmin-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D17F8BB5959EBB5190F1E565 /* guide-garmin-night.jpg */; };
 		69340F5D7DB031BC2C4C514E /* PlanHomeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8B9FBB415EA1C7819A2BA32 /* PlanHomeUITests.swift */; };
 		6951774C8A2ED04539AE4CAC /* plan.xlsx in Resources */ = {isa = PBXBuildFile; fileRef = 727F13AC6FACE0F75894E10A /* plan.xlsx */; };
 		69A73EA86C0D305CA6B13922 /* KeysUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF5556F94335C0EF4AA3EF2 /* KeysUITests.swift */; };
 		6B030A4A4F0DA9F15B94423B /* LogExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DF131A1DDD962D0D72A5038 /* LogExtras.swift */; };
 		6D2A31B2638080C9D69FBFE6 /* ClaudeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 698543645804785D12272ACB /* ClaudeSettingsView.swift */; };
 		6D2D8136CF05C0724679989D /* GarminStrengthTick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 027895096FE128DA39ABE57A /* GarminStrengthTick.swift */; };
+		6E37BB24282C77D5B743C4F0 /* guide-settings-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 037DA916893707D89FEEF870 /* guide-settings-day.jpg */; };
 		6FBB6AE874DF51D5DCB6B6F1 /* HealthMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D792EDD85C5F7F7301F60490 /* HealthMark.swift */; };
 		717A0F0465D68AD24581020E /* Suggestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF26FBCCEB1477B7A9B00260 /* Suggestions.swift */; };
 		74E4C6E06ACBF44CA1AFFB21 /* AwayViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2BD8A70242934CFF875BDF /* AwayViews.swift */; };
 		75EFADD6147E36500D85C13A /* LoadViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F207F8087FE96E561398E475 /* LoadViews.swift */; };
+		75F5CFC5F41B6C17FB4F7DAB /* guide-zones-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 044536F3F63032A1790ED6B0 /* guide-zones-night.jpg */; };
 		76F5DE06B07EC381A7F6420E /* WideLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DA25EDF09C4F7F82CEA2D4 /* WideLayout.swift */; };
+		784B6E81279BB6F8B0B64AAB /* guide-zones-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = B2745EF299285D71F85819ED /* guide-zones-day.jpg */; };
 		7869DBA45D80277ABDD9DB33 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70231C046226474A30263864 /* SettingsView.swift */; };
+		788C44BA3089F8705D63952E /* guide-todaydown-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 13246093438A66D83FB8ED51 /* guide-todaydown-night.jpg */; };
 		78F2F2930B84DC5A0966A1CA /* RaceWeekViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3D2BEC866F5EF7B7EF4EB3 /* RaceWeekViews.swift */; };
+		79551467FAAC41972035E07E /* guide-year-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 1EACB3A2A679B2C639D87E78 /* guide-year-night.jpg */; };
 		7A1B933F0920090EB9B0EBBD /* SuggestionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0760C47168862B5BDA6F9875 /* SuggestionUITests.swift */; };
 		7CBCB311CBA44A94E4435586 /* TodayWeather.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9EECF821F9A0C789D085EC /* TodayWeather.swift */; };
 		7CE79844A22D9933CC901F19 /* SleepNeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1E3D391049FAECE1C2B053 /* SleepNeedView.swift */; };
 		7F51C7606E2B8EEFFBD4ECDE /* MonthGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD18E54C3FEFA618202370C3 /* MonthGrid.swift */; };
 		7FDA9BA72A06CFA860945528 /* FuelNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55FB6D42E4F80D931071380B /* FuelNotes.swift */; };
+		80DE4E0202B6F4D6B63927AB /* guide-logform-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CAB6EAECDBCF377243372A10 /* guide-logform-night.jpg */; };
+		817887E8086B9567E7963E8D /* guide-sessions-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 040AF69A87C90BB3DE36FE34 /* guide-sessions-day.jpg */; };
+		845F39B2E83888BBCCA6A8E3 /* guide-suggest-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6143393D185C1C34B10BB9F0 /* guide-suggest-day.jpg */; };
 		846D3354B32D4D0A7A82C42C /* BodyHealthCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = B41751A442A77D3274F466F4 /* BodyHealthCards.swift */; };
 		84D79550D19088FAF9EC39B9 /* WideLayoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731CA5B8E9F2D95B379D98E8 /* WideLayoutUITests.swift */; };
 		860AE2B7365EA8CED5AF8EB8 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201A884ED7294E23A8047706 /* Components.swift */; };
@@ -100,12 +129,18 @@
 		8B0ED65FD50BB6E9B35BD7BA /* RepeatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B679E6C0FC66A92C771B3285 /* RepeatSession.swift */; };
 		8C66BAC44DE84DD3BED771DB /* WeekSoFarStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 288F229B5D5DF7783E02FC03 /* WeekSoFarStrip.swift */; };
 		8C708378DBFA51487F8EB039 /* Dropbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */; };
+		8D9450681E2C632AD96D4DF1 /* guide-todaydown-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 36E70C0095364A3431DF5BBC /* guide-todaydown-day.jpg */; };
 		8E4D8D3B2B649981B2C06B5B /* NigglesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F830082B6724012E7CAB6628 /* NigglesCard.swift */; };
+		913C5D3E61E1AD4114BE6A9F /* guide-extra-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 86D1EDAA88021FDAC0D4D029 /* guide-extra-day.jpg */; };
 		91C1FADA2BAC3DCB8681900D /* SpotlightIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4050A7154CFB8357CC22F817 /* SpotlightIndex.swift */; };
+		929E29944EDB996C9A11F6F2 /* guide-garmin-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F0A4B71DAF686B2BC02614B1 /* guide-garmin-day.jpg */; };
 		9340669904E7DB477DE5D179 /* NeighbourUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E63B9B271B07D3FEA0FDBE0 /* NeighbourUITests.swift */; };
+		9477C521B688676A93433C2C /* guide-safety-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 49BF21BFAF88B656393256F0 /* guide-safety-day.jpg */; };
 		9855C0E3B4F55BA89C69C035 /* DebugScrollOffset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79713C5C62FCD109E55E95E /* DebugScrollOffset.swift */; };
 		9B5D2417943ED124065919BD /* TrainingCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */; };
 		9BB7DB341CF6567250BFDCE1 /* WeekBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D65F7293009826029A454FA /* WeekBoard.swift */; };
+		9CF92676163337455CB62F40 /* guide-safety-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 73667321F6E4DC2356679FB8 /* guide-safety-night.jpg */; };
+		9E1AB35A41CB3311FA06A599 /* guide-year-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A9DE8247DD2277E657D86713 /* guide-year-day.jpg */; };
 		A0D62DC2AF3F5DF276E92881 /* PlanCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38E390EC5399EDD0A3C0D74 /* PlanCloud.swift */; };
 		A2A2929855FB3B40F6912C55 /* Coach30UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B836A1606BBA0196D2883A56 /* Coach30UITests.swift */; };
 		A724A259915B71F128F57123 /* SyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D0CBE37000D5FCA89C190E2 /* SyncStatus.swift */; };
@@ -127,12 +162,14 @@
 		BE65B74716168B998B6AAD43 /* SafetyCopiesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB603BAFDFF677E317A068C /* SafetyCopiesUITests.swift */; };
 		BF0DA21B39C177C85EA57B2F /* ProgressRoundUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCDEE598016F2D496AF6B268 /* ProgressRoundUITests.swift */; };
 		C0893EA876A578734E4D8DA0 /* DropboxViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E6525576D143C59A4723612 /* DropboxViews.swift */; };
+		C37B1FFE4E67C10BBF736969 /* guide-progress-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2532CA17391D16690AEEC717 /* guide-progress-night.jpg */; };
 		C4D1F608D0A92E6CB0263B02 /* ProgressNavViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50971D1C06F4E668D8F301AD /* ProgressNavViews.swift */; };
 		C5877BC4EE1B04657140810B /* WaitingForPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD89521CE6E4403841FE2581 /* WaitingForPlanView.swift */; };
 		C8F5F83765BDF4A1FFEAF19F /* ProgressLook.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71A992D42543C308CF9B634 /* ProgressLook.swift */; };
 		C9F6B2BDF5048ECA082BCFC7 /* TestEntryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41F26771CF90A03C5E86FB7C /* TestEntryUITests.swift */; };
 		CB080B263FD367CDE72DE2D1 /* ICloudPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85023E759390F5DB87FEF135 /* ICloudPage.swift */; };
 		CCD143B8CF5B477AAD12838F /* NoGymViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2868B313DCDCED271A6F56 /* NoGymViews.swift */; };
+		CD567B03CF254D1AED194478 /* guide-done-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 40B37299EB7134DDE9381246 /* guide-done-day.jpg */; };
 		CDC48ABE7B6292F9266DFCFD /* ClaudeAskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5873A7FB121A853AF07ECEE1 /* ClaudeAskView.swift */; };
 		CDD21ADA5CF5698A08BF5372 /* Body29WorkoutsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDDA160CDB65F23569E3E9B /* Body29WorkoutsUITests.swift */; };
 		CF2044C1DC2BB66227A6EB49 /* PlanChangeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */; };
@@ -140,18 +177,25 @@
 		D104A1252A37F1ACC775AE76 /* RaceplanViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D629C2F6684AC76678CB07EF /* RaceplanViews.swift */; };
 		D1B3CF6C1C812D872B5308CF /* ICloudUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95682B3A73FFB74EA927FA9E /* ICloudUITests.swift */; };
 		D1E894971B80D8FDD28D6814 /* SessionEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E761F4FA612AABC7C820139 /* SessionEditView.swift */; };
+		D2C4A24A82E2FC951C07096E /* guide-week-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 14A16D0D565230EABC53E6FB /* guide-week-day.jpg */; };
+		D2EB98DBBC0B05F4CDF583B2 /* guide-done-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C244CC8C48DCBB680FE9D92 /* guide-done-night.jpg */; };
 		D4C2E681FAD8F8E023070715 /* BodyMoreCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 308540CF5AE126FCBACE2562 /* BodyMoreCards.swift */; };
 		D5A5F6E52EDFFB03D272B9FA /* GarminClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F037AACECD68FCF5D26B2793 /* GarminClient.swift */; };
+		D673194B988CBA7EDD1A92A8 /* guide-gear-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 9CE01D95D475D745C9C34133 /* guide-gear-night.jpg */; };
 		D6D0DE725107E5B86F10D0FB /* Body29GymUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 636C2EEA9C94AE6D5D8AAC84 /* Body29GymUITests.swift */; };
 		D6D2B8994D1D346CBC1D4227 /* RaceGearUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4673C7D692452D69755906B /* RaceGearUITests.swift */; };
+		D7F30A54777467B408700591 /* guide-race-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 1D3CC34F667C36A7082D55B3 /* guide-race-day.jpg */; };
+		D8E78C237CC8338569912FC8 /* guide-icloud-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E09CD5CEAF7E6D6C4C86DA47 /* guide-icloud-day.jpg */; };
 		DCC835DDA9162C399CA0D420 /* ExtraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B0778365FA2EAD6A05938A /* ExtraViews.swift */; };
 		DCC98486393429484165CBE3 /* MonthReview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9895C58C6C9022C875A2DAC /* MonthReview.swift */; };
 		DCD53434D606A43A79FE06AE /* Favourites.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568AC3CF2DBB08F666AE1F48 /* Favourites.swift */; };
 		DD2B0F9A84D889B57B46F323 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A30D69ECCF942E04293F875A /* AppIntents.swift */; };
 		DEB13984EBB05883FD5B3947 /* PlanToolsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94DA4FF692507EAC1699DD1 /* PlanToolsUITests.swift */; };
+		DF5A09A58333CEBF72BE918D /* guide-race-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = B6F3020417AA0AFF4B33DE5D /* guide-race-night.jpg */; };
 		DFA2AF5C58C687988D69503C /* CoachBlockIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DEEE9E768387EEA318EF5AD /* CoachBlockIntro.swift */; };
 		E06C0A02051EBAAF581D9FF2 /* SessionAdviceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C2E906C05F4CBDC1115AE9 /* SessionAdviceUITests.swift */; };
 		E0CB6F0DA37F5BDADF21CEE0 /* BodyHues.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3235F1734A34A12D38ACBF0 /* BodyHues.swift */; };
+		E0D4B3D3582793AD60751F99 /* guide-body-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = DF6A6D8735B0A80BC6064ECA /* guide-body-night.jpg */; };
 		E29FD4D349EE2AEE2487DE88 /* SteadyWeeks.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD7B0B7A6AEC5F33268D43DC /* SteadyWeeks.swift */; };
 		E3CEEE308A9D47632AD0137B /* SuggestionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4ACA1DEDBF250EB3A08FBD /* SuggestionCard.swift */; };
 		E6616F2B0E7E09FCB8BE1B33 /* ShelfStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F4AA04CF2B243A1D05B6EFB /* ShelfStore.swift */; };
@@ -159,15 +203,24 @@
 		ED9703E609284BEC66E8FF0F /* FeelViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B976AF5AD0AB85D2218A6C22 /* FeelViews.swift */; };
 		EF61CB6BA4C490E9364A24AE /* SessionSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88E3B5CD5E5F62C5458235B /* SessionSearch.swift */; };
 		EF8316DBAF2759355B4C2501 /* GarminActivityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */; };
+		F04B60C52FAECB816E48D4CC /* guide-session-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 0920CCAABA5E0D13CB673908 /* guide-session-night.jpg */; };
 		F152713F3C49201271BBD36B /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A03855A2195F5FD77B7F7C /* SessionView.swift */; };
+		F163EF97D62099AFA235769D /* guide-month-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 24D49FECF08A2FA2592F5E66 /* guide-month-night.jpg */; };
 		F24EAC946FCC7008DE37AEA6 /* PersonalBests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7F1BC3EF9EE50E5E5164540 /* PersonalBests.swift */; };
 		F266123DFBBE5B796F2E7668 /* NextWeekTunedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5561429E3E4C7C2C76C73CA /* NextWeekTunedCard.swift */; };
 		F2F2BDCD888BD5FA0D0A875A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4D1347269B601D5C3B5B64A /* Assets.xcassets */; };
 		F415760CB9D7E38283AC5CBD /* RoutesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570A4A965BFD130E5258C35D /* RoutesMapView.swift */; };
+		F4802E963854830D3F413B9C /* guide-body-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 5BC18B5906D72D7DC74C5920 /* guide-body-day.jpg */; };
 		F51DD7D362F1882EC8E1AE8E /* PlanTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */; };
 		F5AC4099D1CD846E646F673A /* GarminKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34C3E12F5415EEF3C0EB341 /* GarminKey.swift */; };
+		F6279A7B170ACA61A3663A2D /* guide-reminders-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E9003DB44305249DAB43F9B3 /* guide-reminders-night.jpg */; };
+		F64D63B8727923A34E7A894E /* guide-stop-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 58F1B7EDAF4DBAC108D975EB /* guide-stop-day.jpg */; };
+		F65F86CB27B83DFBF0F38179 /* guide-today-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6A2A30761B5F5E5003EF96FC /* guide-today-day.jpg */; };
+		F69EE5E43E5821B28FB4FE72 /* guide-planmaker-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 97E66454E5A2161163B17F76 /* guide-planmaker-night.jpg */; };
 		F6E0CA542CE7F12328E9D44F /* ZonesFromSessions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21ED90BBE75FBEA1FD5F8DF7 /* ZonesFromSessions.swift */; };
 		FA70C6429518AC7BAE1E4FC6 /* GearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C072FF4A1F6A436264BA5F42 /* GearView.swift */; };
+		FC8F40FC78C4EA11EC9AC674 /* guide-progress-day.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 0C9C31B2E7FB0FEB19700B65 /* guide-progress-day.jpg */; };
+		FD54FBE82643EDFEBEEBE9B7 /* guide-sessions-night.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 97ADC7B21613C425B282F23B /* guide-sessions-night.jpg */; };
 		FE420DBD6E1E58C7F86B3C0B /* YearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145AD2CD57182DB43079FC8C /* YearView.swift */; };
 		FEEE5E4C357281EF52EEF8FF /* MobilityStrengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 535709AAEDB9EE8CFC8599DF /* MobilityStrengthView.swift */; };
 /* End PBXBuildFile section */
@@ -183,24 +236,36 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		00468025DB04BFE3076B63B1 /* guide-planmaker-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-planmaker-day.jpg"; sourceTree = "<group>"; };
 		027895096FE128DA39ABE57A /* GarminStrengthTick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminStrengthTick.swift; sourceTree = "<group>"; };
+		037DA916893707D89FEEF870 /* guide-settings-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-settings-day.jpg"; sourceTree = "<group>"; };
+		040AF69A87C90BB3DE36FE34 /* guide-sessions-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-sessions-day.jpg"; sourceTree = "<group>"; };
+		044536F3F63032A1790ED6B0 /* guide-zones-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-zones-night.jpg"; sourceTree = "<group>"; };
 		06267858A9B21CACC9D413D3 /* TodayRound28UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayRound28UITests.swift; sourceTree = "<group>"; };
 		0760C47168862B5BDA6F9875 /* SuggestionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestionUITests.swift; sourceTree = "<group>"; };
 		0875AEB98723630DC2BF41FC /* Score30.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Score30.swift; sourceTree = "<group>"; };
 		08CF0A3A8F1A6CC4EFF1DB10 /* StopSignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopSignView.swift; sourceTree = "<group>"; };
+		0920CCAABA5E0D13CB673908 /* guide-session-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-session-night.jpg"; sourceTree = "<group>"; };
 		0A14825F875D7AF6B7EE715C /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		0AF5556F94335C0EF4AA3EF2 /* KeysUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysUITests.swift; sourceTree = "<group>"; };
 		0C2CB3C689413A3D9CB97FA7 /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
+		0C9C31B2E7FB0FEB19700B65 /* guide-progress-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-progress-day.jpg"; sourceTree = "<group>"; };
 		0DF131A1DDD962D0D72A5038 /* LogExtras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExtras.swift; sourceTree = "<group>"; };
 		0F4FF6B704045371BDE654BD /* RoutesReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutesReader.swift; sourceTree = "<group>"; };
 		10B7D72488BA4C064C6365BB /* PlanPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPage.swift; sourceTree = "<group>"; };
+		13246093438A66D83FB8ED51 /* guide-todaydown-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-todaydown-night.jpg"; sourceTree = "<group>"; };
 		145AD2CD57182DB43079FC8C /* YearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearView.swift; sourceTree = "<group>"; };
+		14A16D0D565230EABC53E6FB /* guide-week-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-week-day.jpg"; sourceTree = "<group>"; };
 		18B269BF86B5EE7C8461BD45 /* PhotoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViews.swift; sourceTree = "<group>"; };
 		1B97CB39D70DB8F777BD606C /* Raceweek30UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Raceweek30UITests.swift; sourceTree = "<group>"; };
 		1C6110D9A0DF97B6C5DD76DD /* RemindersUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersUITests.swift; sourceTree = "<group>"; };
+		1D3CC34F667C36A7082D55B3 /* guide-race-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-race-day.jpg"; sourceTree = "<group>"; };
+		1EACB3A2A679B2C639D87E78 /* guide-year-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-year-night.jpg"; sourceTree = "<group>"; };
 		1FEFA56BC080FC1CC4907564 /* Raceplan30UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Raceplan30UITests.swift; sourceTree = "<group>"; };
 		201A884ED7294E23A8047706 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		21ED90BBE75FBEA1FD5F8DF7 /* ZonesFromSessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesFromSessions.swift; sourceTree = "<group>"; };
+		24D49FECF08A2FA2592F5E66 /* guide-month-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-month-night.jpg"; sourceTree = "<group>"; };
+		2532CA17391D16690AEEC717 /* guide-progress-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-progress-night.jpg"; sourceTree = "<group>"; };
 		2581257A8D8AE79F9B5FCD08 /* LogExtrasDebug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExtrasDebug.swift; sourceTree = "<group>"; };
 		25D11D67C4D17E33FF48EC18 /* BodyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyUITests.swift; sourceTree = "<group>"; };
 		288F229B5D5DF7783E02FC03 /* WeekSoFarStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekSoFarStrip.swift; sourceTree = "<group>"; };
@@ -209,11 +274,15 @@
 		2D1E3D391049FAECE1C2B053 /* SleepNeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepNeedView.swift; sourceTree = "<group>"; };
 		2D65F7293009826029A454FA /* WeekBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBoard.swift; sourceTree = "<group>"; };
 		2E6525576D143C59A4723612 /* DropboxViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropboxViews.swift; sourceTree = "<group>"; };
+		2FE2F92AF9CB77759C5AB6D2 /* guide-claude-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-claude-day.jpg"; sourceTree = "<group>"; };
 		308540CF5AE126FCBACE2562 /* BodyMoreCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyMoreCards.swift; sourceTree = "<group>"; };
 		319F0549C540A2EDDBB69590 /* MobilityStrengthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobilityStrengthUITests.swift; sourceTree = "<group>"; };
 		338EA2CFBED1B8532ED07B0A /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		33984951D7E218F08026A8F1 /* MorningNumbersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorningNumbersView.swift; sourceTree = "<group>"; };
 		3467383EBFE6908BAAB805F7 /* TestEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEntryView.swift; sourceTree = "<group>"; };
+		368A7DFD7E52FBC42C49FD0A /* guide-extra-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-extra-night.jpg"; sourceTree = "<group>"; };
+		36E70C0095364A3431DF5BBC /* guide-todaydown-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-todaydown-day.jpg"; sourceTree = "<group>"; };
+		3708D66082BCB6EEAAD2F8BC /* guide-reminders-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-reminders-day.jpg"; sourceTree = "<group>"; };
 		39AC38687DEEFFC0C4A10C92 /* WeekShapeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekShapeView.swift; sourceTree = "<group>"; };
 		3A190B1AB035CA6BDF46BF1F /* FavouritesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouritesUITests.swift; sourceTree = "<group>"; };
 		3A6DE788768DC0B5B5E635B8 /* GarminReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminReader.swift; sourceTree = "<group>"; };
@@ -223,16 +292,23 @@
 		3DD2BBE3B6BF41FAE08429C0 /* plan-done.xlsx */ = {isa = PBXFileReference; path = "plan-done.xlsx"; sourceTree = "<group>"; };
 		3E761F4FA612AABC7C820139 /* SessionEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEditView.swift; sourceTree = "<group>"; };
 		4050A7154CFB8357CC22F817 /* SpotlightIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightIndex.swift; sourceTree = "<group>"; };
+		40B37299EB7134DDE9381246 /* guide-done-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-done-day.jpg"; sourceTree = "<group>"; };
 		41F26771CF90A03C5E86FB7C /* TestEntryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEntryUITests.swift; sourceTree = "<group>"; };
+		42CF11158626BDF05799C40B /* guide-settings-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-settings-night.jpg"; sourceTree = "<group>"; };
+		43EBE6E3BC28C233AF5FAD67 /* GuideContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideContent.swift; sourceTree = "<group>"; };
 		452F69E882F4E6117D91D09F /* RoutesMap31UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutesMap31UITests.swift; sourceTree = "<group>"; };
 		4545506F79E4D9D433E6C2FB /* RaceEditViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaceEditViews.swift; sourceTree = "<group>"; };
 		45B07C8CAA3448D16A80CF30 /* Body29HealthUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29HealthUITests.swift; sourceTree = "<group>"; };
+		46A7412BD80B074631F0636C /* Guide222UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Guide222UITests.swift; sourceTree = "<group>"; };
 		47216E26B6949D16961FB9A4 /* SessionPurposeLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPurposeLine.swift; sourceTree = "<group>"; };
+		49BF21BFAF88B656393256F0 /* guide-safety-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-safety-day.jpg"; sourceTree = "<group>"; };
 		4ACD6E6525EB6220C8644394 /* TrainingCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingCalendar.swift; sourceTree = "<group>"; };
 		4BB465B75555C1C3005BC6FA /* MonthReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthReport.swift; sourceTree = "<group>"; };
+		4C244CC8C48DCBB680FE9D92 /* guide-done-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-done-night.jpg"; sourceTree = "<group>"; };
 		4CD39982CFB85EDA1755222A /* ShareText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareText.swift; sourceTree = "<group>"; };
 		4D0CBE37000D5FCA89C190E2 /* SyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
 		4D6D04E4108EDA362A543F0D /* Body29LoadUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29LoadUITests.swift; sourceTree = "<group>"; };
+		501FB5948A228ADFA46EB398 /* guide-month-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-month-day.jpg"; sourceTree = "<group>"; };
 		50971D1C06F4E668D8F301AD /* ProgressNavViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressNavViews.swift; sourceTree = "<group>"; };
 		535709AAEDB9EE8CFC8599DF /* MobilityStrengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobilityStrengthView.swift; sourceTree = "<group>"; };
 		5419017E5E37523852FF0B4F /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
@@ -240,16 +316,20 @@
 		568AC3CF2DBB08F666AE1F48 /* Favourites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Favourites.swift; sourceTree = "<group>"; };
 		570A4A965BFD130E5258C35D /* RoutesMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutesMapView.swift; sourceTree = "<group>"; };
 		5873A7FB121A853AF07ECEE1 /* ClaudeAskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAskView.swift; sourceTree = "<group>"; };
+		58F1B7EDAF4DBAC108D975EB /* guide-stop-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-stop-day.jpg"; sourceTree = "<group>"; };
+		5BC18B5906D72D7DC74C5920 /* guide-body-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-body-day.jpg"; sourceTree = "<group>"; };
 		5C20C294BEA9F6076C092542 /* BodyMonthWorkouts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyMonthWorkouts.swift; sourceTree = "<group>"; };
 		5D2BD8A70242934CFF875BDF /* AwayViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AwayViews.swift; sourceTree = "<group>"; };
 		5E029A020B794AB3CDB66BA9 /* GarminTick217UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminTick217UITests.swift; sourceTree = "<group>"; };
 		5F484F3C1B78321B17F6E474 /* CoachDrillCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachDrillCards.swift; sourceTree = "<group>"; };
 		6090A62F8CCF0EC2AA253E3F /* KeyCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCommands.swift; sourceTree = "<group>"; };
+		6143393D185C1C34B10BB9F0 /* guide-suggest-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-suggest-day.jpg"; sourceTree = "<group>"; };
 		61EE91A2E0FEDE026D96EAD4 /* LogExtrasUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExtrasUITests.swift; sourceTree = "<group>"; };
 		6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminActivityUITests.swift; sourceTree = "<group>"; };
 		62546944BDC0F336DFE992B6 /* FeelNote210UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelNote210UITests.swift; sourceTree = "<group>"; };
 		636C2EEA9C94AE6D5D8AAC84 /* Body29GymUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Body29GymUITests.swift; sourceTree = "<group>"; };
 		698543645804785D12272ACB /* ClaudeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSettingsView.swift; sourceTree = "<group>"; };
+		6A2A30761B5F5E5003EF96FC /* guide-today-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-today-day.jpg"; sourceTree = "<group>"; };
 		6D4B7A403EF7D24F842CE496 /* ZonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZonesView.swift; sourceTree = "<group>"; };
 		6E9EECF821F9A0C789D085EC /* TodayWeather.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWeather.swift; sourceTree = "<group>"; };
 		6F4AA04CF2B243A1D05B6EFB /* ShelfStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfStore.swift; sourceTree = "<group>"; };
@@ -258,17 +338,21 @@
 		727F13AC6FACE0F75894E10A /* plan.xlsx */ = {isa = PBXFileReference; path = plan.xlsx; sourceTree = "<group>"; };
 		731CA5B8E9F2D95B379D98E8 /* WideLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WideLayoutUITests.swift; sourceTree = "<group>"; };
 		732B30DD98E3680CB2EE7B37 /* PlanNumbers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanNumbers.swift; sourceTree = "<group>"; };
+		73667321F6E4DC2356679FB8 /* guide-safety-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-safety-night.jpg"; sourceTree = "<group>"; };
 		7D2AA09C75F9CB54FF9E026F /* AMSWorkoutSyncApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMSWorkoutSyncApp.swift; sourceTree = "<group>"; };
 		7D8F612FBAF810C14222F4FE /* FavouritesSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouritesSettingsView.swift; sourceTree = "<group>"; };
 		7DEEE9E768387EEA318EF5AD /* CoachBlockIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachBlockIntro.swift; sourceTree = "<group>"; };
 		8173903887939F8A3DB90D8D /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
+		81AFE7EAB659ADB47BFAE53A /* guide-watch-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-watch-day.jpg"; sourceTree = "<group>"; };
 		81F82737EB09C31978F68C91 /* SleepNeed219UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepNeed219UITests.swift; sourceTree = "<group>"; };
 		846054E3CD0AC937ADBEC198 /* PlanMakerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanMakerView.swift; sourceTree = "<group>"; };
 		84DA25EDF09C4F7F82CEA2D4 /* WideLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WideLayout.swift; sourceTree = "<group>"; };
 		85023E759390F5DB87FEF135 /* ICloudPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudPage.swift; sourceTree = "<group>"; };
 		868D688CF593B1074DAB4C08 /* SafetyCopiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetyCopiesView.swift; sourceTree = "<group>"; };
+		86D1EDAA88021FDAC0D4D029 /* guide-extra-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-extra-day.jpg"; sourceTree = "<group>"; };
 		874D363C030B897E786F6F58 /* Guide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Guide.swift; sourceTree = "<group>"; };
 		8818CC51AEF0EDFF1D1E9A41 /* Dropbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dropbox.swift; sourceTree = "<group>"; };
+		88428C8A8004D38697F55697 /* guide-icloud-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-icloud-night.jpg"; sourceTree = "<group>"; };
 		8B3D2BEC866F5EF7B7EF4EB3 /* RaceWeekViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaceWeekViews.swift; sourceTree = "<group>"; };
 		8CDFC67F6D3D022CEEC7F7CC /* Health.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Health.swift; sourceTree = "<group>"; };
 		8E63B9B271B07D3FEA0FDBE0 /* NeighbourUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeighbourUITests.swift; sourceTree = "<group>"; };
@@ -278,10 +362,15 @@
 		9322A1646D1ECEA8833A2D6C /* PlanChangesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanChangesView.swift; sourceTree = "<group>"; };
 		94330FB5692E564AA2B91591 /* ClaudeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeUITests.swift; sourceTree = "<group>"; };
 		95682B3A73FFB74EA927FA9E /* ICloudUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudUITests.swift; sourceTree = "<group>"; };
+		97ADC7B21613C425B282F23B /* guide-sessions-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-sessions-night.jpg"; sourceTree = "<group>"; };
+		97E66454E5A2161163B17F76 /* guide-planmaker-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-planmaker-night.jpg"; sourceTree = "<group>"; };
 		981A0439E2063A507ACB6E79 /* PlanPrint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPrint.swift; sourceTree = "<group>"; };
+		990066DFCED4A069C777C3A0 /* guide-week-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-week-night.jpg"; sourceTree = "<group>"; };
 		9B86E55B10FCCF54499FBECC /* AwayUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AwayUITests.swift; sourceTree = "<group>"; };
+		9CE01D95D475D745C9C34133 /* guide-gear-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-gear-night.jpg"; sourceTree = "<group>"; };
 		9DE74CF9DA40FD58546C066C /* HeadFills.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadFills.swift; sourceTree = "<group>"; };
 		A20FD9683856CE1A797CA6F3 /* ProgressNav220UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressNav220UITests.swift; sourceTree = "<group>"; };
+		A28C5E55F21779A874F48376 /* guide-today-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-today-night.jpg"; sourceTree = "<group>"; };
 		A30D69ECCF942E04293F875A /* AppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		A31BD686DB20769B48D01346 /* MoveInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveInView.swift; sourceTree = "<group>"; };
 		A458B9DC21B3DD4CEC99B536 /* Score30UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Score30UITests.swift; sourceTree = "<group>"; };
@@ -291,18 +380,23 @@
 		A6C2E906C05F4CBDC1115AE9 /* SessionAdviceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionAdviceUITests.swift; sourceTree = "<group>"; };
 		A79713C5C62FCD109E55E95E /* DebugScrollOffset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugScrollOffset.swift; sourceTree = "<group>"; };
 		A8B9FBB415EA1C7819A2BA32 /* PlanHomeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanHomeUITests.swift; sourceTree = "<group>"; };
+		A8F962DA71B97BA14D2E2CF6 /* guide-stop-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-stop-night.jpg"; sourceTree = "<group>"; };
 		A9895C58C6C9022C875A2DAC /* MonthReview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthReview.swift; sourceTree = "<group>"; };
+		A9DE8247DD2277E657D86713 /* guide-year-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-year-day.jpg"; sourceTree = "<group>"; };
 		A9E0BD55A27CE01BB742FCD6 /* PlanTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanTab.swift; sourceTree = "<group>"; };
 		AA1F16D5080FB2389E905D5B /* WideRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WideRoot.swift; sourceTree = "<group>"; };
 		AD18E54C3FEFA618202370C3 /* MonthGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthGrid.swift; sourceTree = "<group>"; };
 		ADB40EE4205D1E5B3E2587DE /* AMSWorkoutSync.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AMSWorkoutSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE612C3DFD66333CAE79A92C /* ClaudeReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeReviewView.swift; sourceTree = "<group>"; };
+		B2745EF299285D71F85819ED /* guide-zones-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-zones-day.jpg"; sourceTree = "<group>"; };
 		B34C3E12F5415EEF3C0EB341 /* GarminKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminKey.swift; sourceTree = "<group>"; };
 		B3C2BBB856FF30E206B55975 /* DoneSessionGarmin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneSessionGarmin.swift; sourceTree = "<group>"; };
 		B41751A442A77D3274F466F4 /* BodyHealthCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyHealthCards.swift; sourceTree = "<group>"; };
 		B529EE232AF8825876FC5F82 /* ClaudeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeClient.swift; sourceTree = "<group>"; };
 		B679E6C0FC66A92C771B3285 /* RepeatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepeatSession.swift; sourceTree = "<group>"; };
+		B6F3020417AA0AFF4B33DE5D /* guide-race-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-race-night.jpg"; sourceTree = "<group>"; };
 		B71A992D42543C308CF9B634 /* ProgressLook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressLook.swift; sourceTree = "<group>"; };
+		B81FB8F49AACE5DF3A717FFE /* guide-gear-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-gear-day.jpg"; sourceTree = "<group>"; };
 		B836A1606BBA0196D2883A56 /* Coach30UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coach30UITests.swift; sourceTree = "<group>"; };
 		B976AF5AD0AB85D2218A6C22 /* FeelViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeelViews.swift; sourceTree = "<group>"; };
 		BB5107E621693DC31B150148 /* BodyLoadCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyLoadCards.swift; sourceTree = "<group>"; };
@@ -311,15 +405,21 @@
 		BFB603BAFDFF677E317A068C /* SafetyCopiesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetyCopiesUITests.swift; sourceTree = "<group>"; };
 		C072FF4A1F6A436264BA5F42 /* GearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GearView.swift; sourceTree = "<group>"; };
 		C2F134FA8C0441903261DC2A /* PoolCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoolCard.swift; sourceTree = "<group>"; };
+		C3679CF89F9F4E485B598D34 /* guide-logform-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-logform-day.jpg"; sourceTree = "<group>"; };
 		C4D1347269B601D5C3B5B64A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C5561429E3E4C7C2C76C73CA /* NextWeekTunedCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextWeekTunedCard.swift; sourceTree = "<group>"; };
+		CAB6EAECDBCF377243372A10 /* guide-logform-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-logform-night.jpg"; sourceTree = "<group>"; };
 		CD7B0B7A6AEC5F33268D43DC /* SteadyWeeks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SteadyWeeks.swift; sourceTree = "<group>"; };
 		D04CBC958D9BB764875C6207 /* SeasonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeasonView.swift; sourceTree = "<group>"; };
+		D17F8BB5959EBB5190F1E565 /* guide-garmin-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-garmin-night.jpg"; sourceTree = "<group>"; };
+		D2D184AC5B5C261D9D9F2CE1 /* GuideKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideKit.swift; sourceTree = "<group>"; };
 		D3235F1734A34A12D38ACBF0 /* BodyHues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyHues.swift; sourceTree = "<group>"; };
 		D629C2F6684AC76678CB07EF /* RaceplanViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaceplanViews.swift; sourceTree = "<group>"; };
 		D6E3DEEE01504BE66D135FE3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		D745693883F9851373252007 /* guide-watch-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-watch-night.jpg"; sourceTree = "<group>"; };
 		D792EDD85C5F7F7301F60490 /* HealthMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMark.swift; sourceTree = "<group>"; };
 		D8489D52D209D180EBB3BED9 /* PlanChangeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanChangeUITests.swift; sourceTree = "<group>"; };
+		D94CB5D58D4C895E1F4C8087 /* guide-claude-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-claude-night.jpg"; sourceTree = "<group>"; };
 		D94DA4FF692507EAC1699DD1 /* PlanToolsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanToolsUITests.swift; sourceTree = "<group>"; };
 		DADAAD1BA967E052E18FAFBF /* ClaudeReviewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeReviewUITests.swift; sourceTree = "<group>"; };
 		DBE5703FD6208A73C4D662DA /* ClaudeKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeKey.swift; sourceTree = "<group>"; };
@@ -328,6 +428,8 @@
 		DD89521CE6E4403841FE2581 /* WaitingForPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForPlanView.swift; sourceTree = "<group>"; };
 		DDDFDBF5AAF5A1A45839BE16 /* ReturnLadderCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnLadderCard.swift; sourceTree = "<group>"; };
 		DE2868B313DCDCED271A6F56 /* NoGymViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoGymViews.swift; sourceTree = "<group>"; };
+		DF6A6D8735B0A80BC6064ECA /* guide-body-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-body-night.jpg"; sourceTree = "<group>"; };
+		E09CD5CEAF7E6D6C4C86DA47 /* guide-icloud-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-icloud-day.jpg"; sourceTree = "<group>"; };
 		E30A622530862215769C87FA /* Neighbours.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Neighbours.swift; sourceTree = "<group>"; };
 		E3FFCF1DC05E464FB2ED3970 /* GarminSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminSettingsView.swift; sourceTree = "<group>"; };
 		E4673C7D692452D69755906B /* RaceGearUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaceGearUITests.swift; sourceTree = "<group>"; };
@@ -337,8 +439,12 @@
 		E88E3B5CD5E5F62C5458235B /* SessionSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSearch.swift; sourceTree = "<group>"; };
 		E8B0778365FA2EAD6A05938A /* ExtraViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraViews.swift; sourceTree = "<group>"; };
 		E8D55D00ADD1C1FAA803F3E2 /* MoveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveView.swift; sourceTree = "<group>"; };
+		E9003DB44305249DAB43F9B3 /* guide-reminders-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-reminders-night.jpg"; sourceTree = "<group>"; };
 		EA7FBF4B4C4866732BE4242B /* Tuning30UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tuning30UITests.swift; sourceTree = "<group>"; };
+		EA8998533053C0ECF4F9F28F /* guide-suggest-night.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-suggest-night.jpg"; sourceTree = "<group>"; };
+		EC45CFB259F22DDFCE067940 /* guide-session-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-session-day.jpg"; sourceTree = "<group>"; };
 		F037AACECD68FCF5D26B2793 /* GarminClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminClient.swift; sourceTree = "<group>"; };
+		F0A4B71DAF686B2BC02614B1 /* guide-garmin-day.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "guide-garmin-day.jpg"; sourceTree = "<group>"; };
 		F207F8087FE96E561398E475 /* LoadViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadViews.swift; sourceTree = "<group>"; };
 		F3844D13CF50F6EC65408A10 /* BodyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyView.swift; sourceTree = "<group>"; };
 		F38E390EC5399EDD0A3C0D74 /* PlanCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanCloud.swift; sourceTree = "<group>"; };
@@ -388,6 +494,7 @@
 				6250E17146FDA8B1E88FC553 /* GarminActivityUITests.swift */,
 				3CD21785F71109598A32492D /* GarminMorningUITests.swift */,
 				5E029A020B794AB3CDB66BA9 /* GarminTick217UITests.swift */,
+				46A7412BD80B074631F0636C /* Guide222UITests.swift */,
 				95682B3A73FFB74EA927FA9E /* ICloudUITests.swift */,
 				0AF5556F94335C0EF4AA3EF2 /* KeysUITests.swift */,
 				61EE91A2E0FEDE026D96EAD4 /* LogExtrasUITests.swift */,
@@ -433,8 +540,66 @@
 			isa = PBXGroup;
 			children = (
 				C4D1347269B601D5C3B5B64A /* Assets.xcassets */,
+				AD61CBDF24A80FBE8BADB94E /* Guide */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		AD61CBDF24A80FBE8BADB94E /* Guide */ = {
+			isa = PBXGroup;
+			children = (
+				5BC18B5906D72D7DC74C5920 /* guide-body-day.jpg */,
+				DF6A6D8735B0A80BC6064ECA /* guide-body-night.jpg */,
+				2FE2F92AF9CB77759C5AB6D2 /* guide-claude-day.jpg */,
+				D94CB5D58D4C895E1F4C8087 /* guide-claude-night.jpg */,
+				40B37299EB7134DDE9381246 /* guide-done-day.jpg */,
+				4C244CC8C48DCBB680FE9D92 /* guide-done-night.jpg */,
+				86D1EDAA88021FDAC0D4D029 /* guide-extra-day.jpg */,
+				368A7DFD7E52FBC42C49FD0A /* guide-extra-night.jpg */,
+				F0A4B71DAF686B2BC02614B1 /* guide-garmin-day.jpg */,
+				D17F8BB5959EBB5190F1E565 /* guide-garmin-night.jpg */,
+				B81FB8F49AACE5DF3A717FFE /* guide-gear-day.jpg */,
+				9CE01D95D475D745C9C34133 /* guide-gear-night.jpg */,
+				E09CD5CEAF7E6D6C4C86DA47 /* guide-icloud-day.jpg */,
+				88428C8A8004D38697F55697 /* guide-icloud-night.jpg */,
+				C3679CF89F9F4E485B598D34 /* guide-logform-day.jpg */,
+				CAB6EAECDBCF377243372A10 /* guide-logform-night.jpg */,
+				501FB5948A228ADFA46EB398 /* guide-month-day.jpg */,
+				24D49FECF08A2FA2592F5E66 /* guide-month-night.jpg */,
+				00468025DB04BFE3076B63B1 /* guide-planmaker-day.jpg */,
+				97E66454E5A2161163B17F76 /* guide-planmaker-night.jpg */,
+				0C9C31B2E7FB0FEB19700B65 /* guide-progress-day.jpg */,
+				2532CA17391D16690AEEC717 /* guide-progress-night.jpg */,
+				1D3CC34F667C36A7082D55B3 /* guide-race-day.jpg */,
+				B6F3020417AA0AFF4B33DE5D /* guide-race-night.jpg */,
+				3708D66082BCB6EEAAD2F8BC /* guide-reminders-day.jpg */,
+				E9003DB44305249DAB43F9B3 /* guide-reminders-night.jpg */,
+				49BF21BFAF88B656393256F0 /* guide-safety-day.jpg */,
+				73667321F6E4DC2356679FB8 /* guide-safety-night.jpg */,
+				EC45CFB259F22DDFCE067940 /* guide-session-day.jpg */,
+				0920CCAABA5E0D13CB673908 /* guide-session-night.jpg */,
+				040AF69A87C90BB3DE36FE34 /* guide-sessions-day.jpg */,
+				97ADC7B21613C425B282F23B /* guide-sessions-night.jpg */,
+				037DA916893707D89FEEF870 /* guide-settings-day.jpg */,
+				42CF11158626BDF05799C40B /* guide-settings-night.jpg */,
+				58F1B7EDAF4DBAC108D975EB /* guide-stop-day.jpg */,
+				A8F962DA71B97BA14D2E2CF6 /* guide-stop-night.jpg */,
+				6143393D185C1C34B10BB9F0 /* guide-suggest-day.jpg */,
+				EA8998533053C0ECF4F9F28F /* guide-suggest-night.jpg */,
+				6A2A30761B5F5E5003EF96FC /* guide-today-day.jpg */,
+				A28C5E55F21779A874F48376 /* guide-today-night.jpg */,
+				36E70C0095364A3431DF5BBC /* guide-todaydown-day.jpg */,
+				13246093438A66D83FB8ED51 /* guide-todaydown-night.jpg */,
+				81AFE7EAB659ADB47BFAE53A /* guide-watch-day.jpg */,
+				D745693883F9851373252007 /* guide-watch-night.jpg */,
+				14A16D0D565230EABC53E6FB /* guide-week-day.jpg */,
+				990066DFCED4A069C777C3A0 /* guide-week-night.jpg */,
+				A9DE8247DD2277E657D86713 /* guide-year-day.jpg */,
+				1EACB3A2A679B2C639D87E78 /* guide-year-night.jpg */,
+				B2745EF299285D71F85819ED /* guide-zones-day.jpg */,
+				044536F3F63032A1790ED6B0 /* guide-zones-night.jpg */,
+			);
+			path = Guide;
 			sourceTree = "<group>";
 		};
 		BA3E6BB86778EB5325FA327F /* Products */ = {
@@ -495,6 +660,8 @@
 				027895096FE128DA39ABE57A /* GarminStrengthTick.swift */,
 				C072FF4A1F6A436264BA5F42 /* GearView.swift */,
 				874D363C030B897E786F6F58 /* Guide.swift */,
+				43EBE6E3BC28C233AF5FAD67 /* GuideContent.swift */,
+				D2D184AC5B5C261D9D9F2CE1 /* GuideKit.swift */,
 				9DE74CF9DA40FD58546C066C /* HeadFills.swift */,
 				8CDFC67F6D3D022CEEC7F7CC /* Health.swift */,
 				D792EDD85C5F7F7301F60490 /* HealthMark.swift */,
@@ -681,6 +848,56 @@
 			buildActionMask = 2147483647;
 			files = (
 				F2F2BDCD888BD5FA0D0A875A /* Assets.xcassets in Resources */,
+				F4802E963854830D3F413B9C /* guide-body-day.jpg in Resources */,
+				E0D4B3D3582793AD60751F99 /* guide-body-night.jpg in Resources */,
+				048CF4ED9569AC41C018B85C /* guide-claude-day.jpg in Resources */,
+				471B36691DF8E3320B3E1BEB /* guide-claude-night.jpg in Resources */,
+				CD567B03CF254D1AED194478 /* guide-done-day.jpg in Resources */,
+				D2EB98DBBC0B05F4CDF583B2 /* guide-done-night.jpg in Resources */,
+				913C5D3E61E1AD4114BE6A9F /* guide-extra-day.jpg in Resources */,
+				5980C13504791364B7674062 /* guide-extra-night.jpg in Resources */,
+				929E29944EDB996C9A11F6F2 /* guide-garmin-day.jpg in Resources */,
+				672F33870D794A985608A0C4 /* guide-garmin-night.jpg in Resources */,
+				4E65C3B0C1CB45072461D8D5 /* guide-gear-day.jpg in Resources */,
+				D673194B988CBA7EDD1A92A8 /* guide-gear-night.jpg in Resources */,
+				D8E78C237CC8338569912FC8 /* guide-icloud-day.jpg in Resources */,
+				0346AE9A85D1D4E071D72D6E /* guide-icloud-night.jpg in Resources */,
+				2771984D5BEB875FC6C71C6A /* guide-logform-day.jpg in Resources */,
+				80DE4E0202B6F4D6B63927AB /* guide-logform-night.jpg in Resources */,
+				1FD1622C4A0E122E70C2C277 /* guide-month-day.jpg in Resources */,
+				F163EF97D62099AFA235769D /* guide-month-night.jpg in Resources */,
+				5145E4A7CB68652785A74A44 /* guide-planmaker-day.jpg in Resources */,
+				F69EE5E43E5821B28FB4FE72 /* guide-planmaker-night.jpg in Resources */,
+				FC8F40FC78C4EA11EC9AC674 /* guide-progress-day.jpg in Resources */,
+				C37B1FFE4E67C10BBF736969 /* guide-progress-night.jpg in Resources */,
+				D7F30A54777467B408700591 /* guide-race-day.jpg in Resources */,
+				DF5A09A58333CEBF72BE918D /* guide-race-night.jpg in Resources */,
+				03B2295206446CAAF8612BEA /* guide-reminders-day.jpg in Resources */,
+				F6279A7B170ACA61A3663A2D /* guide-reminders-night.jpg in Resources */,
+				9477C521B688676A93433C2C /* guide-safety-day.jpg in Resources */,
+				9CF92676163337455CB62F40 /* guide-safety-night.jpg in Resources */,
+				242D27D16902BFBA44DD1674 /* guide-session-day.jpg in Resources */,
+				F04B60C52FAECB816E48D4CC /* guide-session-night.jpg in Resources */,
+				817887E8086B9567E7963E8D /* guide-sessions-day.jpg in Resources */,
+				FD54FBE82643EDFEBEEBE9B7 /* guide-sessions-night.jpg in Resources */,
+				6E37BB24282C77D5B743C4F0 /* guide-settings-day.jpg in Resources */,
+				1F046EF93E5D2C2A2195C34A /* guide-settings-night.jpg in Resources */,
+				F64D63B8727923A34E7A894E /* guide-stop-day.jpg in Resources */,
+				55E9F36584ED124CC05ACE94 /* guide-stop-night.jpg in Resources */,
+				845F39B2E83888BBCCA6A8E3 /* guide-suggest-day.jpg in Resources */,
+				3BB8F961867ADC0B0AEEF892 /* guide-suggest-night.jpg in Resources */,
+				F65F86CB27B83DFBF0F38179 /* guide-today-day.jpg in Resources */,
+				3F5FAA94C68722A4C67F5D30 /* guide-today-night.jpg in Resources */,
+				8D9450681E2C632AD96D4DF1 /* guide-todaydown-day.jpg in Resources */,
+				788C44BA3089F8705D63952E /* guide-todaydown-night.jpg in Resources */,
+				477B162DD7A4C7E81617AD35 /* guide-watch-day.jpg in Resources */,
+				187A647600C9E302589010D4 /* guide-watch-night.jpg in Resources */,
+				D2C4A24A82E2FC951C07096E /* guide-week-day.jpg in Resources */,
+				15185E633AEF10FE294C8B5F /* guide-week-night.jpg in Resources */,
+				9E1AB35A41CB3311FA06A599 /* guide-year-day.jpg in Resources */,
+				79551467FAAC41972035E07E /* guide-year-night.jpg in Resources */,
+				784B6E81279BB6F8B0B64AAB /* guide-zones-day.jpg in Resources */,
+				75F5CFC5F41B6C17FB4F7DAB /* guide-zones-night.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -738,6 +955,8 @@
 				6D2D8136CF05C0724679989D /* GarminStrengthTick.swift in Sources */,
 				FA70C6429518AC7BAE1E4FC6 /* GearView.swift in Sources */,
 				A8D54A1892111BFD679F82AF /* Guide.swift in Sources */,
+				1B8394E50C3E04AFC523FC55 /* GuideContent.swift in Sources */,
+				2AFA78DD39285843964B9ABC /* GuideKit.swift in Sources */,
 				424184B6CE260A6F46486184 /* HeadFills.swift in Sources */,
 				5CCB2FFB5FB33334D047E2F2 /* Health.swift in Sources */,
 				6FBB6AE874DF51D5DCB6B6F1 /* HealthMark.swift in Sources */,
@@ -839,6 +1058,7 @@
 				EF8316DBAF2759355B4C2501 /* GarminActivityUITests.swift in Sources */,
 				1DAF8A7B8F008223FA81CAC4 /* GarminMorningUITests.swift in Sources */,
 				262052E7C125765E04FCCC17 /* GarminTick217UITests.swift in Sources */,
+				450CAA1BB09CAA3C018352A9 /* Guide222UITests.swift in Sources */,
 				D1B3CF6C1C812D872B5308CF /* ICloudUITests.swift in Sources */,
 				69A73EA86C0D305CA6B13922 /* KeysUITests.swift in Sources */,
 				375029A7F041CC327A0E570A /* LogExtrasUITests.swift in Sources */,
@@ -914,7 +1134,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 101;
+				CURRENT_PROJECT_VERSION = 102;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -928,7 +1148,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.21;
+				MARKETING_VERSION = 2.22;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -974,7 +1194,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 101;
+				CURRENT_PROJECT_VERSION = 102;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = D24ENP83QQ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -994,7 +1214,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 2.21;
+				MARKETING_VERSION = 2.22;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

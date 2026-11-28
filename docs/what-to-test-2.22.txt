@@ -1,0 +1,8 @@
+One change to look at: Settings > How this works.
+1. It now reads as 31 parts (before: 38 parts of long paragraphs). Each has a title and a few short lines; 25 of them also show one picture of the real screen.
+2. Look at it by day and by night. The pictures follow your phone's look. They show an invented plan, never yours.
+3. Busy pictures have numbered circles. Each number matches the line that starts with the same number.
+4. Tap a picture, or the small "Tap to see it bigger" under it. On iPhone it opens in a sheet; on iPad and Mac it fills the screen, with the lines beside a phone picture. Pinch or double-tap to go closer. Done closes it (Escape on a Mac).
+5. Signs in this app is shorter, sorted by part of the app, and has the numbered circle too.
+Try it on iPhone, iPad and Mac.
+Nothing else in the app changed.
