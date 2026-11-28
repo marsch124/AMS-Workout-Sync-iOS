@@ -330,6 +330,10 @@ final class WorkoutSyncUITests: XCTestCase {
         let question = app.staticTexts["feel-question"]
         XCTAssertTrue(question.waitForExistence(timeout: 15), "Today does not ask how he feels")
         app.buttons["feel-4"].tap()
+        // Since 2.10 the face is saved at once but the card stays for a few words; Skip closes it.
+        let skip = app.buttons["feel-note-skip"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 5), "no Skip on the card after the face")
+        skip.tap()
         XCTAssertTrue(question.waitForNonExistence(timeout: 5), "the question stays after it was answered")
         let line = app.descendants(matching: .any).matching(identifier: "morning-line").firstMatch
         XCTAssertTrue(line.waitForExistence(timeout: 5))

@@ -54,6 +54,14 @@ final class PlanMaker30UITests: XCTestCase {
         XCTAssertTrue(any(app, "pm-week-session").exists)
     }
 
+    /* The draft page is long: the two buttons at its foot exist only once they are near the screen. */
+    private func scrollTo(_ app: XCUIApplication, _ id: String) -> XCUIElement {
+        let el = any(app, id)
+        var n = 0
+        while !el.exists && n < 10 { app.swipeUp(); n += 1 }
+        return el
+    }
+
     /* Claude's look on an invented draft: three lines, its picks, and the two answers. */
     func testClaudesLookShowsThreeLinesAndItsPicks() {
         let app = launch(["AMSWS_PLANMAKER": "claude"])
@@ -61,8 +69,8 @@ final class PlanMaker30UITests: XCTestCase {
         for n in 1...3 { XCTAssertTrue(any(app, "pm-claude-line-\(n)").exists, "line \(n) missing") }
         XCTAssertTrue(any(app, "pm-claude-use").exists)
         XCTAssertTrue(any(app, "pm-claude-keep").exists)
-        XCTAssertTrue(any(app, "pm-switch-open").exists)
-        XCTAssertTrue(any(app, "pm-delete").exists)
+        XCTAssertTrue(scrollTo(app, "pm-switch-open").exists, "no Switch to this plan")
+        XCTAssertTrue(scrollTo(app, "pm-delete").exists, "no Delete draft")
     }
 
     /* Switching: the page says what happens, switches in one tap and offers the one Undo. */

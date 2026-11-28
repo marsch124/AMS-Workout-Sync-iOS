@@ -32,11 +32,14 @@ final class Score30UITests: XCTestCase {
     }
 
     func testProgressHasTheCardAndItsPage() {
-        let app = launch(["AMSWS_TAB": "progress"])
-        let card = app.descendants(matching: .any)["fitter-card"]
-        XCTAssertTrue(card.waitForExistence(timeout: 20), "no Fitter card")
-        XCTAssertTrue(app.descendants(matching: .any)["fitter-line-run"].exists)
-        card.tap()
+        // Since 2.20 Progress opens with the colour tiles and the card sits far down: open it at the Routes card, which the card follows.
+        let app = launch(["AMSWS_TAB": "progress", "AMSWS_SCROLL": "routes"])
+        // The card is a button, and SwiftUI names a button after the identifiers inside it ("fitter-line-run-fitter-line-ride-..."),
+        // so "fitter-card" is not on the screen: the card is found by its lines, and a tap on the first line is a tap on the card.
+        let run = app.descendants(matching: .any)["fitter-line-run"]
+        XCTAssertTrue(run.waitForExistence(timeout: 20), "no Fitter card")
+        XCTAssertTrue(app.descendants(matching: .any)["fitter-line-ride"].exists)
+        run.tap()
         XCTAssertTrue(app.descendants(matching: .any)["fitter-page"].waitForExistence(timeout: 10), "the page did not open")
         XCTAssertTrue(app.descendants(matching: .any)["fitter-tile-run"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["fitter-tile-ride"].exists)

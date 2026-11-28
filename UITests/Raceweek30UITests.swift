@@ -8,12 +8,14 @@ final class Raceweek30UITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
 
-    private func launch(_ switches: [String]) -> XCUIApplication {
+    private func launch(_ switches: [String], home: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
         app.launchEnvironment["AMSWS_FILE"] = plan.path
         app.launchEnvironment["AMSWS_TODAY"] = "2026-09-16"
         app.launchEnvironment["AMSWS_RESET"] = "1"
+        // The room card is offered only when the app is the plan's home (Store.canChangePlan).
+        if home { app.launchEnvironment["AMSWS_HOME"] = "app" }
         for s in switches { app.launchEnvironment[s] = "1" }
         app.launch()
         return app
@@ -28,7 +30,7 @@ final class Raceweek30UITests: XCTestCase {
     }
 
     func testTheRoomCardOffersTakeItAndKeepMyPlanOrOneGreyLine() {
-        let app = launch(["AMSWS_TUNEUP_ROOM"])
+        let app = launch(["AMSWS_TUNEUP_ROOM"], home: true)
         XCTAssertTrue(any(app, "tuneup-tile-" + "2026-10-11").waitForExistence(timeout: 15))
         let card = any(app, "tuneup-room-card"), grey = any(app, "tuneup-room-grey")
         XCTAssertTrue(card.waitForExistence(timeout: 5) || grey.exists, "neither the card nor the grey line")

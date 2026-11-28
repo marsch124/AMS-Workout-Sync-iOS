@@ -11,6 +11,17 @@ final class RaceGearUITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
 
+    /* The race page is longer since 2.18 (the forecast and age-group cards sit above the leg tiles), and the screen shows only
+       part of it: scroll until the element is on screen (up first, then back down). */
+    private func reveal(_ app: XCUIApplication, _ id: String) -> XCUIElement {
+        let el = any(app, id)
+        var n = 0
+        while !(el.exists && el.isHittable) && n < 10 { app.swipeUp(); n += 1 }
+        n = 0
+        while !(el.exists && el.isHittable) && n < 10 { app.swipeDown(); n += 1 }
+        return el
+    }
+
     private func launch(_ switchName: String) -> XCUIApplication {
         let app = XCUIApplication()
         let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
@@ -26,20 +37,20 @@ final class RaceGearUITests: XCTestCase {
         let app = launch("AMSWS_RACE_PAGE")
         XCTAssertTrue(any(app, "race-page").waitForExistence(timeout: 15), "the race page did not open")
         XCTAssertTrue(any(app, "race-countdown").exists)
-        for leg in ["swim", "t1", "bike", "t2", "run"] { XCTAssertTrue(any(app, "race-leg-" + leg).exists, "no tile for \(leg)") }
-        XCTAssertTrue(any(app, "race-finish").label.contains("Planned finish"), "finish said \(any(app, "race-finish").label)")
-        XCTAssertTrue(any(app, "race-fuel-row-0").exists)
-        XCTAssertTrue(any(app, "race-fuel-add").exists)
+        for leg in ["swim", "t1", "bike", "t2", "run"] { XCTAssertTrue(reveal(app, "race-leg-" + leg).exists, "no tile for \(leg)") }
+        let finish = reveal(app, "race-finish")
+        XCTAssertTrue(finish.label.contains("Planned finish"), "finish said \(finish.label)")
+        XCTAssertTrue(reveal(app, "race-fuel-row-0").exists)
+        XCTAssertTrue(reveal(app, "race-fuel-add").exists)
 
         // Ticking a kit item changes the count.
-        let count = any(app, "race-checklist-count")
-        app.swipeUp(); app.swipeUp()
+        let count = reveal(app, "race-checklist-count")
         let before = count.label
-        any(app, "race-check-2").tap()
+        reveal(app, "race-check-2").tap()
         XCTAssertNotEqual(count.label, before, "the tick did not change the count")
 
         // Untick all asks first.
-        any(app, "race-untick-all").tap()
+        reveal(app, "race-untick-all").tap()
         // (The page's own button is also labelled "Untick all", so the question is found by its title.)
         let afterTick = count.label
         let question = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'packed items?'")).firstMatch
@@ -51,8 +62,7 @@ final class RaceGearUITests: XCTestCase {
         XCTAssertEqual(count.label, afterTick, "keeping them should leave the ticks")
 
         // The times page has Cancel and Save.
-        app.swipeDown(); app.swipeDown(); app.swipeDown()
-        any(app, "race-edit-pacing").tap()
+        reveal(app, "race-edit-pacing").tap()
         XCTAssertTrue(any(app, "race-pacing-swim").waitForExistence(timeout: 5))
         XCTAssertTrue(any(app, "race-pacing-save").exists)
         any(app, "race-pacing-cancel").tap()

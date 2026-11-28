@@ -12,6 +12,15 @@ final class Raceplan30UITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
 
+    /* The pacing page draws its sections in a lazy grid (bike first, then run): only the rows near the screen exist,
+       so swipe up until the one wanted is there. */
+    private func scrollTo(_ app: XCUIApplication, _ id: String) -> XCUIElement {
+        let el = any(app, id)
+        var n = 0
+        while !el.exists && n < 10 { app.swipeUp(); n += 1 }
+        return el
+    }
+
     private func launch(open: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
         let plan = Bundle(for: Self.self).url(forResource: "plan", withExtension: "xlsx")!
@@ -51,7 +60,7 @@ final class Raceplan30UITests: XCTestCase {
         XCTAssertTrue(any(app, "race-pacing-page").waitForExistence(timeout: 10))
         XCTAssertTrue(any(app, "race-pacing-bike-0").exists, "no first bike section")
         XCTAssertTrue(any(app, "race-pacing-bike-1").label.contains("bpm"), "no pulse on a bike section")
-        XCTAssertTrue(any(app, "race-pacing-run-0").exists, "no first run lap")
-        XCTAssertTrue(any(app, "race-pacing-legend").exists)
+        XCTAssertTrue(scrollTo(app, "race-pacing-run-0").exists, "no first run lap")
+        XCTAssertTrue(scrollTo(app, "race-pacing-legend").exists)
     }
 }
